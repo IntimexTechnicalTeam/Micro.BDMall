@@ -1,0 +1,678 @@
+﻿* {
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body,
+div,
+span,
+applet,
+object,
+iframe,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+pre,
+a,
+abbr,
+acronym,
+address,
+big,
+cite,
+code,
+del,
+dfn,
+em,
+img,
+ins,
+kbd,
+q,
+s,
+samp,
+small,
+strike,
+strong,
+sub,
+sup,
+tt,
+var,
+b,
+u,
+i,
+center,
+dl,
+dt,
+dd,
+ol,
+ul,
+li,
+fieldset,
+form,
+label,
+legend,
+table,
+caption,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td,
+article,
+aside,
+canvas,
+details,
+embed,
+figure,
+figcaption,
+footer,
+header,
+hgroup,
+menu,
+nav,
+output,
+ruby,
+section,
+summary,
+time,
+mark,
+audio,
+video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+ol,
+ul {
+    list-style: none;
+}
+
+/*body {
+    font-family: 'Adobe 黑体 Std';
+    min-width: 1200px;
+}*/
+
+/*Login Page*/
+.loginPage {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-image: url('/images/system/bg.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.loginBox {
+    width: 662px;
+    min-height: 615px;
+    max-height: 90%;
+    background-color: rgba(243, 243, 243, .8);
+    border: 1px solid rgba(255, 255, 255, .6);
+    padding: 70px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: column;
+    position: relative;
+    /*font-weight: 100;*/
+}
+
+.loginPage .loginBox .logo {
+    max-width: 100%;
+    max-height: 150px;
+}
+
+#loginForm {
+    width: 71%;
+    /*color: #434343;*/
+    font-size: 14px;
+}
+
+#loginForm .form-group label {
+    margin-bottom: 10px;
+}
+
+#loginForm .form-group input[type="text"],
+#loginForm .form-group input[type="Password"] {
+    background-color: rgba(255, 255, 255, .1);
+    border: 1px solid rgba(0, 0, 0, 0.5);
+    border-bottom-color: #11582c;
+    border-bottom-width: 1.5px;
+    outline: none;
+    color: #000;
+    height: 45px;
+    border-radius: 6px;
+}
+
+#loginForm .form-group input[type="text"]::-webkit-input-placeholder,
+#loginForm .form-group input[type="Password"]::-webkit-input-placeholder { /* WebKit browsers 适配谷歌 */
+    color: #434343;
+}
+#loginForm .form-group input[type="text"]:-moz-placeholder,
+#loginForm .form-group input[type="Password"]:-moz-placeholder { /* Mozilla Firefox 4 to 18 适配火狐 */
+    color: #434343;
+}
+#loginForm .form-group input[type="text"]::-moz-placeholder,
+#loginForm .form-group input[type="Password"]::-moz-placeholder { /* Mozilla Firefox 19+ 适配火狐 */
+    color: #434343;
+}
+#loginForm .form-group input[type="text"]:-ms-input-placeholder,
+#loginForm .form-group input[type="Password"]:-ms-input-placeholder { /* Internet Explorer 10+  适配ie*/
+    color: #434343;
+}
+
+#loginForm .login_bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#loginForm .login_bottom .checkbox label[for="RememberMe"] {
+    margin: 0;
+}
+
+#loginForm .login_bottom .checkbox label[for="RememberMe"] input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 1px solid;
+    outline: none;
+    background-color: rgba(255, 255, 255, .45);
+    border-radius: 2px;
+    margin-top: 0;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+
+#loginForm .login_bottom .checkbox label[for="RememberMe"] input[type="checkbox"]:checked {
+    background-color: #11582c;
+    border-color: #11582c;
+}
+
+#loginForm .login_bottom .checkbox label[for="RememberMe"] input[type="checkbox"]:checked:after {
+    position: absolute;
+    content: "";
+    width: 5px;
+    height: 10px;
+    top: 1px;
+    left: 5px;
+    border: 2px solid #fff;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg);
+}
+
+#loginForm .login_bottom a {
+    color: #000;
+    text-decoration: none;
+}
+
+#loginForm .form-group .errorTip {
+    color: red;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+.login_btn {
+    width: 71%;
+}
+
+.login_btn .btn {
+    height: 50px;
+    border: 0;
+    background-color: #11582c;
+    outline: none;
+    color: #fff;
+    font-size: 15px;
+    border-radius: 5px;
+}
+
+.copyright {
+    position: absolute;
+    /*bottom: -60px;*/
+    top: calc(100% + 20px);
+    font-size: 17px;
+    display: flex;
+    align-items: center;
+}
+
+.copyright .SysFooterLogo {
+    max-height: 40px;
+    margin: 0 10px;
+}
+
+#loginForm .form-group .field-validation-error {
+    margin-top: 5px;
+    display: inline-block;
+    color: red;
+}
+
+
+/*.header {
+    background-color: #E76F3A;
+    color: #666666;
+    font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif;
+}*/
+.norSelect {
+    width: 300px;
+    height: 24px;
+}
+
+.realtionSelect {
+    width: 200px;
+    height: 24px;
+}
+
+[v-cloak] {
+    display: none;
+}
+
+.error {
+    color: red;
+}
+
+.clear {
+    clear: both;
+}
+
+.btn-action-default{
+    width:150px;
+}
+
+.btn-action-small{
+    width:100px;
+}
+
+.btn-action-large{
+    width:200px;
+}
+
+.review-detail-star .star {
+    display: inline-block;
+    width: 18px;
+    height: 17px;
+    margin-right: 2px;
+}
+
+.review-detail-star .star-orange {
+    background: url('../../images/star-orange.png') no-repeat center center;
+}
+
+.review-detail-star .star-grey {
+    background: url('../../images/star-grey.png') no-repeat center center;
+}
+
+.instatus {
+    width: 95%;
+    vertical-align:bottom;
+    text-align: center;
+    background-color: forestgreen;
+    font-size: large;
+    color: aliceblue;
+    padding:2px;
+}
+
+.outofstatus {
+    width: 95%;
+    vertical-align:bottom;
+    text-align: center;
+    background-color:lightgreen;
+    font-size: large;
+    color: aliceblue;
+    padding:2px;
+}
+
+
+/*nav*/
+.navbar {
+    margin-bottom: 0 !important;
+    border-radius: 0;
+}
+
+.topbar {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    /*background-image: url(/images/bg_head.gif);*/
+}
+
+.company-logo .logo {
+    height: 50px;
+}
+
+.company-logo .company-name {
+    font-weight: bold;
+    display: inline-block;
+}
+
+.menu-item {
+    line-height: 60px;
+    vertical-align: middle;
+    background-image: url(/images/lefttitle.gif);
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+}
+
+.topbar .dropdown-menu > li:first-child {
+    display: none;
+}
+
+.topbar .dropdown-menu > li.divider:nth-child(2) {
+    display: none;
+}
+
+.form-group.cross {
+    display: flex;
+    align-items: center;
+}
+
+.form-group.cross label {
+    flex-shrink: 0;
+    margin-right: 8px;
+}
+
+.range_group input {
+    display: inline-block;
+    width: 43%;
+}
+
+.form-horizontal.label_left .control-label {
+    text-align: left;
+}
+
+.outer-box {
+    padding: 8px;
+    margin-bottom: 20px;
+}
+
+.pc-show {
+    display: block;
+}
+
+.mobile-show {
+    display: none;
+}
+
+#MainContent {
+    padding: 15px;
+}
+
+#main-nav a {
+    cursor: pointer;
+}
+
+.layuimini-tab .layui-tab-tool .layui-nav-child {
+    right: 0;
+    min-width: 120px;
+    width: auto;
+}
+
+.layui-layout-admin .layui-side {
+    width: 230px;
+}
+
+.layui-layout-admin .layui-body {
+    left: 230px;
+}
+
+@media (min-width: 769px) {
+    .body_block {
+        display: none !important;
+    }
+}
+
+/*nav响应式*/
+@media (max-width: 768px) {
+    body {
+        min-width: unset;
+    }
+
+    /*Login Page*/
+    .loginPage {
+        background-image: url('/images/system/m_bg.jpg');
+    }
+
+    .loginBox {
+        width: 91%;
+        /*height: auto;*/
+        min-height: unset;
+        padding: 4.2rem 4rem;
+    }
+
+    .loginPage .loginBox .logo {
+        max-width: 100%;
+        max-height: 12rem;
+        margin-bottom: 1.5rem;
+    }
+
+    #loginForm {
+        width: 100%;
+        font-size: 1.2rem;
+    }
+
+    #loginForm .login_bottom .checkbox label[for="RememberMe"] {
+        padding-left: 25px;
+    }
+
+    #loginForm .login_bottom .checkbox label[for="RememberMe"] input[type="checkbox"] {
+        margin-left: 0;
+        left: 0;
+    }
+
+    #loginForm .form-group input[type="text"],
+    #loginForm .form-group input[type="Password"] {
+        font-size: 1.2rem;
+        height: 3.2rem;
+        border-width: 1px;
+    }
+
+    #loginForm .form-group input[type="text"]::-webkit-input-placeholder,
+    #loginForm .form-group input[type="Password"]::-webkit-input-placeholder { /* WebKit browsers 适配谷歌 */
+        font-size: 1.2rem;
+    }
+    #loginForm .form-group input[type="text"]:-moz-placeholder,
+    #loginForm .form-group input[type="Password"]:-moz-placeholder { /* Mozilla Firefox 4 to 18 适配火狐 */
+        font-size: 1.2rem;
+    }
+    #loginForm .form-group input[type="text"]::-moz-placeholder,
+    #loginForm .form-group input[type="Password"]::-moz-placeholder { /* Mozilla Firefox 19+ 适配火狐 */
+        font-size: 1.2rem;
+    }
+    #loginForm .form-group input[type="text"]:-ms-input-placeholder,
+    #loginForm .form-group input[type="Password"]:-ms-input-placeholder { /* Internet Explorer 10+  适配ie*/
+        font-size: 1.2rem;
+    }
+
+    #loginForm .form-group img {
+        width: 1.2rem;
+    }
+
+    .login_btn {
+        width: 100%;
+    }
+
+    .login_btn .btn {
+        height: 3.5rem;
+        font-size: 1.3rem;
+    }
+
+    .copyright {
+        /*bottom: -3rem;*/
+        top: calc(100% + 1rem);
+        font-size: 1.1rem;
+    }
+
+    .copyright .SysFooterLogo {
+        max-height: 2.3rem;
+        margin: 0 0.5rem;
+    }
+
+
+    /*tabs*/
+    /*#mainFrameTabs.bTabs{
+        padding-top: 10px;
+    }*/
+
+    #MainContent {
+        padding: 1rem;
+    }
+
+    .tab_container {
+        padding: 0;
+    }
+
+    #mainFrameTabs.bTabs>ul.nav-tabs {
+        white-space: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-left: 0;
+        margin-bottom: 0;
+    }
+
+    #mainFrameTabs.bTabs .nav-tabs>li {
+        display: inline-block;
+        float: none;
+    }
+
+    #mainFrameTabs.bTabs .nav-tabs > li > a {
+        border: 1px solid #d6d6d6;
+        border-bottom: 0;
+    }
+
+
+    .topbar .user-menu {
+        margin: 8px;
+    }
+
+    .topbar .user-name {
+        display: none;
+    }
+
+    .topbar .dropdown-menu {
+        left: unset;
+        right: 0;
+    }
+
+    .topbar .dropdown-menu > li:first-child {
+        display: block;
+    }
+
+    .topbar .dropdown-menu > li.divider:nth-child(2) {
+        display: block;
+    }
+
+    #menuArea {
+        /*width: 100%;*/
+        height: auto !important;
+        position: absolute;
+        width: 100%;
+        background-color: #f0f0f0;
+        z-index: 999;
+        max-height: calc(100% - 60px);
+        /*max-height: 100%;
+        background-color: #f0f0f0;
+        z-index: 3;*/
+    }
+
+    /*#mainArea .bTabs ul.ui-sortable {
+        display: none;
+    }*/
+
+    .form-group.cross {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+    }
+
+    .form-group.cross label {
+        flex-shrink: 0;
+        margin-right: 8px;
+    }
+
+    /*layuimini-tab*/
+    .layuimini-tab .layui-tab-title, .layuimini-tab .layui-tab-control {
+        display: none;
+    }
+
+    .layuimini-tab .layui-tab-content {
+        height: 100% !important;
+    }
+
+    .pc-show {
+        display: none;
+    }
+
+    .mobile-show {
+        display: block;
+    }
+
+    .layui-body{
+        left: 0px!important;
+    }
+
+    .layui-layout-admin .header {
+        position: unset;
+    }
+
+    .layui-layout-admin .layui-side {
+        position: unset;
+        width: unset;
+    }
+
+    .chart_swiper {
+        padding-bottom: 32px;
+    }
+
+    /*首页导航展示块*/
+    .HomeNavItem {
+        width: 95%;
+        margin: 5rem auto;
+    }
+
+    .HomeNavItem ul {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .HomeNavItem li {
+        width: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .HomeNavItem li:nth-child(2n) {
+        border-left: 1px solid #eee;
+    }
+
+    .HomeNavItem li:last-child,.HomeNavItem li:nth-last-child(2) {
+        border-bottom: 0; 
+    }
+
+    .HomeNavItem li a {
+        text-align: center;
+    }
+
+    .HomeNavItem li img {
+        max-width: 60%;
+    }
+
+    .HomeNavItem li p {
+        text-align: center;
+        margin-top: 1rem;
+    }
+}

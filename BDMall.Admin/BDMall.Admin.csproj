@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="5.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="5.0.12" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="5.0.2" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="1.6.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BusinessLayer\BDMall.BLL\BDMall.BLL.csproj" />
+    <ProjectReference Include="..\Infrastructure\Web.AutoFac\Web.AutoFac.csproj" />
+    <ProjectReference Include="..\Infrastructure\Web.Framework\Web.Framework.csproj" />
+    <ProjectReference Include="..\Infrastructure\Web.Jwt\Web.Jwt.csproj" />
+    <ProjectReference Include="..\Infrastructure\Web.MediatR\Web.MediatR.csproj" />
+    <ProjectReference Include="..\Infrastructure\Web.MQ\Web.MQ.csproj" />
+    <ProjectReference Include="..\Infrastructure\Web.Mvc\Web.Mvc.csproj" />
+    <ProjectReference Include="..\Infrastructure\WebCache\WebCache.csproj" />
+    <ProjectReference Include="..\Models\BuyMall.Domain\BDMall.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

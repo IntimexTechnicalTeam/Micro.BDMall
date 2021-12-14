@@ -1,0 +1,1074 @@
+﻿@{
+    //ViewBag.Title = @BDMall.Resources.Menu.Desktop;
+    Layout = "~/Views/Shared/_LayoutSimple.cshtml";
+    bool isMerchant = (bool)ViewBag.IsMerchant;
+}
+
+
+<div id="app" class="container-fluid" v-cloak>
+    <div class="row">
+        <div class="col-lg-12">
+            <!--新收到的訂單-->
+            <div class="col-lg-4" style="height:400px;">
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        @*<h3 class="panel-title">@BDMall.Resources.Label.ShowCaseNewReceivedOrderLst</h3>*@
+                    </div>
+                    <div class="panel-body">
+                        <table id="tblNewOrders" class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    @*<th>@BDMall.Resources.Label.OrderNO</th>
+                                    <th>@BDMall.Resources.Label.CreateDate</th>*@
+                                </tr>
+                                <tr v-for="(order,index) in newReceivedOrderLst">
+                                    <td>
+                                        <span class="badge" style="cursor:pointer;background-color:red" v-on:click="openOrderDtlTab(order)">New</span>
+                                        <span style="cursor:pointer" v-on:click="openOrderDtlTab(order)">{{order.OrderNO}}</span>
+                                    </td>
+                                    <td>{{order.CreateDate}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="panel-footer">
+                        @*<div class="btn btn-default" v-on:click="showOrder">@BDMall.Resources.Label.More</div>*@
+                    </div>
+                </div>
+            </div>
+            <!--處理中的訂單-->
+            <div class="col-lg-4" style="height:400px;">
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        @*<h3 class="panel-title">@BDMall.Resources.Label.ShowCaseProcessingOrderLst</h3>*@
+                    </div>
+                    <div class="panel-body">
+                        <table id="tblProcessingOrders" class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    @*<th>@BDMall.Resources.Label.OrderNO</th>
+                                    <th>@BDMall.Resources.Label.UpdateDate</th>*@
+                                </tr>
+                                <tr v-for="(order,index) in processingOrderLst">
+                                    <td>
+                                        <span class="badge" style="cursor:pointer;background-color:red" v-on:click="openOrderDtlTab(order)">New</span>
+                                        <span style="cursor:pointer" v-on:click="openOrderDtlTab(order)">{{order.OrderNO}}</span>
+                                    </td>
+                                    <td>{{order.UpdateDate}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="panel-footer">
+                        @*<div class="btn btn-default" v-on:click="showOrder">@BDMall.Resources.Label.More</div>*@
+                    </div>
+                </div>
+            </div>
+            <!--已確認付款的訂單-->
+            <div class="col-lg-4" style="height:400px;">
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        @*<h3 class="panel-title">@BDMall.Resources.Label.ShowCaseConfirmPaymentOrderLst</h3>*@
+                    </div>
+                    <div class="panel-body">
+                        <table id="tblNewOrders" class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    @*<th>@BDMall.Resources.Label.OrderNO</th>
+                                    <th>@BDMall.Resources.Label.UpdateDate</th>*@
+                                </tr>
+                                <tr v-for="(order,index) in confirmedPayOrderLst">
+                                    <td>
+                                        <span style="cursor:pointer" v-on:click="openOrderDtlTab(order)">{{order.OrderNO}}</span>
+                                    </td>
+                                    <td>{{order.UpdateDate}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="panel-footer">
+                        @*<div class="btn btn-default" v-on:click="showOrder">@BDMall.Resources.Label.More</div>*@
+                    </div>
+                </div>
+            </div>
+            <!--已完成的訂單-->
+            <div class="col-lg-4" style="height:400px;">
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        @*<h3 class="panel-title">@BDMall.Resources.Label.ShowCaseCompletedOrderLst</h3>*@
+                    </div>
+                    <div class="panel-body">
+                        <table id="tblNewOrders" class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    @*<th>@BDMall.Resources.Label.OrderNO</th>
+                                    <th>@BDMall.Resources.Label.UpdateDate</th>*@
+                                </tr>
+                                <tr v-for="(order,index) in completedOrderLst">
+                                    <td>
+                                        <span style="cursor:pointer" v-on:click="openOrderDtlTab(order)">{{order.OrderNO}}</span>
+                                    </td>
+                                    <td>{{order.UpdateDate}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="panel-footer">
+                        @*<div class="btn btn-default" v-on:click="showOrder">@BDMall.Resources.Label.More</div>*@
+                    </div>
+                </div>
+            </div>
+            @*<div class="col-lg-4" style="height:400px;">
+                <div class="panel panel-info">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">@BDMall.Resources.Label.ShowCasePendingOrderLst</h3>
+                            </div>
+                            <div class="panel-body">
+                                <table id="tblNewOrders" class="table table-bordered">
+                                    <tbody>
+                                        <tr>
+                                            <th>@BDMall.Resources.Label.DeliveryNO</th>
+                                            <th>@BDMall.Resources.Label.UpdateDate</th>
+                                        </tr>
+                                        <tr v-for="(order,index) in pendingOrderLst">
+                                            <td>
+                                                <span style="cursor:pointer" v-on:click="openOrderDtlTab(order)">{{order.OrderNO}}</span>
+                                            </td>
+                                            <td>{{order.UpdateDate}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="panel-footer">
+                                <div class="btn btn-default" v-on:click="showOrder">@BDMall.Resources.Label.More</div>
+                            </div>
+                        </div>
+                    </div>*@
+            <!--近六個月訂單統計-->
+            <div class="col-lg-4" style="height:400px;">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                       @* <h3 class="panel-title">@BDMall.Resources.Label.ShowCaseMonthlySalesOrder</h3>*@
+                    </div>
+                    <div class="panel-body">
+                        <canvas id="chartMonthlySalesOrder" width="400" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+            <!--待审批产品-->
+            <div class="col-lg-4" style="height:400px;">
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        @*<h3 class="panel-title">@BDMall.Resources.Label.ShowCaseProductApprove</h3>*@
+                    </div>
+                    <div class="panel-body">
+                        <table id="tblWaitingApproveProd" class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    @*<th>@BDMall.Resources.Label.ProductCode</th>
+                                    <th>@BDMall.Resources.Label.UpdateDate</th>*@
+                                </tr>
+                                <tr v-for="(product,index) in waitingApproveProdLst">
+                                    <td>
+                                        <span style="cursor:pointer" v-on:click="openProductApproveDtlTab(product)">{{product.Code}}</span>
+                                    </td>
+                                    <td>{{product.UpdateDateString}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="panel-footer">
+                        @*<div class="btn btn-default" v-on:click="showProduct">@BDMall.Resources.Label.More</div>*@
+                    </div>
+                </div>
+            </div>
+            <!--熱銷產品（本月）-->
+            <div class="col-lg-4" style="height:400px;">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        @*<h3 class="panel-title">@BDMall.Resources.Label.ShowCaseMonthlyHotSales</h3>*@
+                    </div>
+                    <div class="panel-body">
+                        <canvas id="chartMonthlyHotSales" width="400" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+            <!--熱銷產品（本週）-->
+            <div class="col-lg-4" style="height:400px;">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        @*<h3 class="panel-title">@BDMall.Resources.Label.ShowCaseWeeklyHotSales</h3>*@
+                    </div>
+                    <div class="panel-body">
+                        <canvas id="chartWeeklyHotSales" width="400" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+            <!--熱銷產品（今日）-->
+            <div class="col-lg-4" style="height:400px;">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        @*<h3 class="panel-title">@BDMall.Resources.Label.ShowCaseTodayHotSales</h3>*@
+                    </div>
+                    <div class="panel-body">
+                        <canvas id="chartTodayHotSales" width="400" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+
+
+            <!--產品點擊率（本月）-->
+            <div class="col-lg-4" style="height:400px;">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        @*<h3 class="panel-title">@BDMall.Resources.Label.ShowCaseMonthlyClickRate</h3>*@
+                    </div>
+                    <div class="panel-body">
+                        <canvas id="chartMonthlyClickRate" width="400" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+            <!--產品點擊率（本週）-->
+            <div class="col-lg-4" style="height:400px;">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        @*<h3 class="panel-title">@BDMall.Resources.Label.ShowCaseWeeklyClickRate</h3>*@
+                    </div>
+                    <div class="panel-body">
+                        <canvas id="chartWeeklyClickRate" width="400" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+            <!--產品點擊率（今日）-->
+            <div class="col-lg-4" style="height:400px;">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        @*<h3 class="panel-title">@BDMall.Resources.Label.ShowCaseTodayClickRate</h3>*@
+                    </div>
+                    <div class="panel-body">
+                        <canvas id="chartTodayClickRate" width="400" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!--產品搜索次數（本月）-->
+            <div class="col-lg-4" style="height:400px;">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        @*<h3 class="panel-title">@BDMall.Resources.Label.ShowCaseMonthlySearchClickRate</h3>*@
+                    </div>
+                    <div class="panel-body">
+                        <canvas id="chartMonthlySearchClickRate" width="400" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+            <!--產品搜索次數（本週）-->
+            <div class="col-lg-4" style="height:400px;">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        @*<h3 class="panel-title">@BDMall.Resources.Label.ShowCaseWeeklySearchClickRate</h3>*@
+                    </div>
+                    <div class="panel-body">
+                        <canvas id="chartWeeklySearchClickRate" width="400" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+            <!--產品搜索次數（今日）-->
+            <div class="col-lg-4" style="height:400px;">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        @*<h3 class="panel-title">@BDMall.Resources.Label.ShowCaseTodaySearchClickRate</h3>*@
+                    </div>
+                    <div class="panel-body">
+                        <canvas id="chartTodaySearchClickRate" width="400" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+            <!--退貨單-->
+            @*<div class="col-lg-4" style="height:400px;">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">@BDMall.Resources.Label.ShowCaseReturnOrder</h3>
+                        </div>
+                        <div class="panel-body">
+                            <table id="tblWaitingApproveProd" class="table table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <th>@BDMall.Resources.Label.ReturnOrderNo</th>
+                                        <th>@BDMall.Resources.Label.CreateDate</th>
+                                    </tr>
+                                    <tr v-for="(order,index) in returnOrderLst">
+                                        <td>
+                                            <span style="cursor:pointer" v-on:click="openReturnOrderDtlTab(order)">{{order.OrderNO}}</span>
+                                        </td>
+                                        <td>{{order.CreateDate}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="panel-footer">
+                            <div class="btn btn-default" v-on:click="showReturnOrder">@BDMall.Resources.Label.More</div>
+                        </div>
+                    </div>
+                </div>*@
+            @*<div class="col-lg-4" style="height:400px;">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">@BDMall.Resources.Label.ShowCaseProductComment</h3>
+                        </div>
+                        <div class="panel-body">
+                            <table id="tblWaitingApproveProd" class="table table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <th>@BDMall.Resources.Label.ProductCode</th>
+                                        <th>@BDMall.Resources.Label.CreateDate</th>
+                                    </tr>
+                                    <tr v-for="(comment,index) in commentLst">
+                                        <td>
+                                            <span style="cursor:pointer" v-on:click="showProductComment">{{comment.OrderNO}}</span>
+                                        </td>
+                                        <td>{{comment.CreateDate}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="panel-footer">
+                            <div class="btn btn-default" v-on:click="showProductComment">@BDMall.Resources.Label.More</div>
+                        </div>
+                    </div>
+                </div>*@
+            @*商家審批*@
+            @*<div class="col-lg-4" style="height:400px;" v-if="!isMerchant">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">@BDMall.Resources.Label.ApplyMerchant</h3>
+                        </div>
+                        <div class="panel-body">
+                            <table id="tblWaittingApprovalMerchant" class="table table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <th>@BDMall.Resources.Label.MerchantName</th>
+                                        <th>@BDMall.Resources.Label.ApplyDate</th>
+                                    </tr>
+                                    <tr v-for="(merchant,index) in merchantApprovalLst">
+                                        <td>
+                                            <span style="cursor:pointer" v-on:click="openMerchantDtlTab(merchant)">{{merchant.SupplierId}}</span>
+                                        </td>
+                                        <td>{{merchant.UpdateDate}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="panel-footer">
+                            <div class="btn btn-default" v-on:click="showMoreMerchant">@BDMall.Resources.Label.More</div>
+                        </div>
+                    </div>
+                </div>*@
+            @*<div class="col-lg-4" style="height:400px;" v-if="isMerchant">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">@BDMall.Resources.Label.StockOutProduct</h3>
+                        </div>
+                        <div class="panel-body">
+                            <table id="tblStockOutProduct" class="table table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <th>@BDMall.Resources.Label.ProductCode</th>
+                                    </tr>
+                                    <tr v-for="(product,index) in stockOutProductLst">
+                                        <td>{{product}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4" style="height:400px;" v-if="isMerchant">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">@BDMall.Resources.Label.StockOutProduct</h3>
+                        </div>
+                        <div class="panel-body">
+                            <ul class="list-group">
+                                <li class="list-group-item" v-for="item in notifyProductLst">
+                                    <span class="badge">{{item.Text}}</span>
+                                    {{item.Id}}
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>*@
+            <!--會員管理-->
+            <div class="col-lg-4" style="height:400px;" v-if="!isMerchant">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        @*<h3 class="panel-title">@BDMall.Resources.Label.MemberManagement</h3>*@
+                    </div>
+                    <div class="panel-body">
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <span class="badge" style="cursor:pointer;" v-on:click="showMember()">{{mbrSummary.MemberTotal}}</span>
+                                @*@BDMall.Resources.Label.MemberNumber*@
+                            </li>
+                            <li class="list-group-item">
+                                <span class="badge" style="cursor:pointer;" v-on:click="getLastMthMbr()">{{mbrSummary.LastMth}}</span>
+                                @*@BDMall.Resources.Label.NumberOfRegisteredMembersLastMonth*@
+                            </li>
+                            <li class="list-group-item">
+                                <span class="badge" style="cursor:pointer;" v-on:click="getThisMthMbr()">{{mbrSummary.ThisMth}}</span>
+                               @* @BDMall.Resources.Label.NumberOfRegisteredMembersThisMonth*@
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/Chart.js"></script>
+@section scripts{
+    @*
+        <script type="text/javascript" src="~/Scripts/Chart.js"></script>*@
+    <script type="text/javascript">
+    var mBackColorBox = [
+        'rgba(255, 99, 132, 0.2)',
+        'rgba(54, 162, 235, 0.2)',
+        'rgba(255, 206, 86, 0.2)',
+        'rgba(75, 192, 192, 0.2)',
+        'rgba(153, 102, 255, 0.2)',
+        'rgba(255, 159, 64, 0.2)'
+    ];
+    var mBoderColorBox = [
+        'rgba(255, 99, 132, 1)',
+        'rgba(54, 162, 235, 1)',
+        'rgba(255, 206, 86, 1)',
+        'rgba(75, 192, 192, 1)',
+        'rgba(153, 102, 255, 1)',
+        'rgba(255, 159, 64, 1)'
+    ];
+
+    layui.use(['miniTab'], function () {
+        var layer = layui.layer,
+            miniTab = layui.miniTab;
+    });
+    var vm = new Vue({
+        el: "#app",
+        data: {
+            isMerchant:@Html.Raw(isMerchant.ToString().ToLower()),
+            mbrSummary: {
+                MemberTotal: "0",
+                LastMth: "0",
+                ThisMth: "0"
+            },
+            newReceivedOrderLst: [{
+                Id: 0,
+                OrderNO: "",
+                FullName: "",
+                CreateDate: ""
+            }],
+            confirmedPayOrderLst: [{
+                Id: 0,
+                OrderNO: "",
+                FullName: "",
+                UpdateDate: ""
+            }],
+            completedOrderLst: [{
+                Id: 0,
+                OrderNO: "",
+                FullName: "",
+                UpdateDate: ""
+            }],
+            pendingOrderLst: [{
+                Id: 0,
+                OrderNO: "",
+                FullName: "",
+                UpdateDate: ""
+            }],
+            returnOrderLst: [{
+                Id: 0,
+                OrderNO: "",
+                FullName: "",
+                UpdateDateString: ""
+            }],
+            commentLst: [{
+                Id: 0,
+                OrderNO: "",
+                FullName: "",
+                UpdateDateString: ""
+            }],
+            processingOrderLst: [{
+                Id: 0,
+                OrderNO: "",
+                FullName: "",
+                UpdateDate: ""
+            }],
+            waitingApproveProdLst: [{
+                ProductId: "",
+                Code: "",
+                Name: "",
+                UpdateDateString: ""
+            }],
+            merchantApprovalLst: [{
+                Id: "",
+                Name: "",
+                UpdateDateString:""
+            }],
+            stockOutProductLst:[],
+            notifyProductLst: [{
+                Key: "",
+                Value:0
+            }]
+        },
+        methods: {
+            getMemberSummary: function () {
+                var data = new Object();
+
+                WS.AjaxP("get",
+                    "/adminapi/Member/GetMbrSummary",
+                    data,
+                    function (response) {
+                        vm.mbrSummary = response;
+                    },
+                    function () { });
+            },
+            showMember: function () {
+                var tabId = self.frameElement.parentElement.id;
+                miniTab.openNewTabByIframe({
+                    href:"/Member/Index/",
+                    title:"",
+                });
+            },
+            showOrder: function () {
+                var tabId = self.frameElement.parentElement.id;
+                miniTab.openNewTabByIframe({
+                    href:"/Order/Index/",
+                    title: ""
+                });
+            },
+            showProduct: function () {
+                var tabId = self.frameElement.parentElement.id;
+                miniTab.openNewTabByIframe({
+                    href:"/Product/ApproveProduct/",
+                    title: ""
+                });
+            },
+            showReturnOrder: function () {
+                var tabId = self.frameElement.parentElement.id;
+                miniTab.openNewTabByIframe({
+                    href:"/ReturnOrder/Index",
+                    title: ""
+                });
+            },
+            showProductComment: function () {
+                var tabId = self.frameElement.parentElement.id;
+                miniTab.openNewTabByIframe({
+                    href:"/Marketing/ProductCommentIndex",
+                    title: ""
+                });
+            },
+            showMoreMerchant: function () {
+                var tabId = self.frameElement.parentElement.id;
+                miniTab.openNewTabByIframe({
+                    href:"/Merchant/Index",
+                    title: ""
+                });
+            },
+            getLastMthMbr: function () {
+                var date = new Date();
+                var year = date.getFullYear();
+                var month = date.getMonth();
+                var firstdate = year + '-' + month + '-01';
+                var lastDateOfCurrentMonth = new Date(year, month, 0);
+                var end = year + "-" + month + "-" + lastDateOfCurrentMonth.getDate();
+                var tabId = self.frameElement.parentElement.id;
+                miniTab.openNewTabByIframe({
+                    href:"/Member/Index/" + firstdate + "/" + end,
+                    title: ""
+                });
+            },
+            getThisMthMbr: function () {
+                var date = new Date();
+                var year = date.getFullYear();
+                var month = date.getMonth() + 1;
+                var firstdate = year + '-' + month + '-01';
+                var lastDateOfCurrentMonth = new Date(year, month, 0);
+                var end = year + "-" + month + "-" + lastDateOfCurrentMonth.getDate();
+                var tabId = self.frameElement.parentElement.id;
+                miniTab.openNewTabByIframe({
+                    href:"/Member/Index/" + firstdate + "/" + end,
+                    title: ""
+                });
+            },         
+            //合并當月熱銷，當週熱銷，當日熱銷产品图表
+            showHotSales: function () {
+                var data = new Object();
+                data.topMonthQty = 6;
+                data.topWeekQty = 6;
+                data.topDayQty = 6;
+
+                WS.AjaxP("get", "/adminapi/SalesReport/GetHotSalesSummary", data, function (response) {
+
+                    if (response.chartTodayHotSales != undefined)
+                    {
+                        BindHotSaleProductData("chartTodayHotSales",response.chartTodayHotSales);
+                    }
+
+                    if (response.chartMonthlyHotSales != undefined) {
+                        BindHotSaleProductData("chartMonthlyHotSales", response.chartMonthlyHotSales);
+                    }
+
+                    if (response.chartWeeklyHotSales != undefined) {
+                        BindHotSaleProductData("chartWeeklyHotSales", response.chartWeeklyHotSales);
+                    }
+
+                }, function () { });
+            },
+            //合并產品點擊(日，周，月)       
+            showClickRate: function () {
+                var data = new Object();
+                data.topMonthQty = 6;
+                data.topWeekQty = 6;
+                data.topDayQty = 6;
+
+                WS.AjaxP("get", "/adminapi/Product/GetClickRateSummary", data, function (response) {
+
+                    if (response.chartMonthlyClickRate != undefined) {
+                        BindProductClickOrSearchRateData("chartMonthlyClickRate", response.chartMonthlyClickRate);
+                    }
+
+                    if (response.chartWeeklyClickRate != undefined) {
+                        BindProductClickOrSearchRateData("chartWeeklyClickRate", response.chartWeeklyClickRate);
+                    }
+
+                    if (response.chartTodayClickRate != undefined) {
+                        BindProductClickOrSearchRateData("chartTodayClickRate", response.chartTodayClickRate);
+                    }
+
+                    //if (response.chartMonthlySearchClickRate != undefined) {
+                    //    BindProductClickOrSearchRateData("chartMonthlySearchClickRate", response.chartMonthlySearchClickRate);
+                    //}
+
+                    //if (response.chartWeeklySearchClickRate != undefined) {
+                    //    BindProductClickOrSearchRateData("chartWeeklySearchClickRate", response.chartWeeklySearchClickRate);
+                    //}
+
+                    //if (response.chartTodaySearchClickRate != undefined) {
+                    //    BindProductClickOrSearchRateData("chartTodaySearchClickRate", response.chartTodaySearchClickRate);
+                    //}
+
+                }, function () { });
+            },
+            //合并產品搜索(日，周，月)       
+            showSearchRate: function () {
+                var data = new Object();
+                data.topMonthQty = 6;
+                data.topWeekQty = 6;
+                data.topDayQty = 6;
+
+                WS.AjaxP("get", "/adminapi/Product/GetSearchRateSummary", data, function (response) {
+              
+                    if (response.chartMonthlySearchClickRate != undefined) {
+                        BindProductClickOrSearchRateData("chartMonthlySearchClickRate", response.chartMonthlySearchClickRate);
+                    }
+
+                    if (response.chartWeeklySearchClickRate != undefined) {
+                        BindProductClickOrSearchRateData("chartWeeklySearchClickRate", response.chartWeeklySearchClickRate);
+                    }
+
+                    if (response.chartTodaySearchClickRate != undefined) {
+                        BindProductClickOrSearchRateData("chartTodaySearchClickRate", response.chartTodaySearchClickRate);
+                    }                    
+                }, function () { });
+            },
+            
+            //展示最近幾個月的訂單數量圖表
+            showMonthlySalesOrder: function () {
+                var data = new Object();
+                data.scope = 6;
+
+                WS.AjaxP("get", "/adminapi/SalesReport/GetMonthlySalesOrderSummary", data, function (response) {
+                    if (response != undefined) {
+                        var ctx = document.getElementById("chartMonthlySalesOrder").getContext('2d');
+                        var titleList = response.TitleList;
+
+                        var datasetLst = [];
+                        for (var i = 0; i < response.SalesOrderDetailList.length; i++) {
+                            var detail = response.SalesOrderDetailList[i];
+                            var dataset = new Object();
+                            dataset.label = detail.ItemName;
+                            var dataValLst = [];
+                            dataValLst.push(detail.Qty);
+                            dataset.data = dataValLst;
+                            dataset.borderWidth = 1;
+                            if (i <= 5) {
+                                dataset.backgroundColor = mBackColorBox[i];
+                                dataset.borderColor = mBoderColorBox[i];
+                            }
+                            else {
+                                var len = i % 5;
+                                dataset.backgroundColor = mBackColorBox[len];
+                                dataset.borderColor = mBoderColorBox[len];
+                            }
+                            datasetLst.push(dataset);
+                        }
+
+                        var myChart = new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: titleList,
+                                datasets: datasetLst
+                            },
+                            options: {
+                                scales: {
+                                    yAxes: [
+                                        {
+                                            ticks: {
+                                                beginAtZero: true
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        });
+                    }
+                }, function () { });
+            },
+            //合并 收到的新訂單，處理中的訂單，確認付款的訂單，已完成的訂單
+            showOrderLst: function () {
+
+                var data = {};
+
+                data.OrderCondList = [];
+
+                var obj = {};
+                //新收到訂單
+                obj.TopQty = 5;
+                obj.OrderStatus = 0;
+                obj.TableType = "newReceivedOrderLst";
+                data.OrderCondList.push(obj);
+
+                //已确认付款
+                obj = {};
+                obj.TopQty = 5;
+                obj.OrderStatus = 1;
+                obj.TableType = "confirmedPayOrderLst";
+                data.OrderCondList.push(obj);
+
+                //处理中
+                obj = {};
+                obj.TopQty = 5;
+                obj.OrderStatus = 2;
+                obj.TableType = "processingOrderLst";
+                data.OrderCondList.push(obj);
+
+                //已完成
+                obj = {};
+                obj.TopQty = 5;
+                obj.OrderStatus = 4;
+                obj.TableType = "completedOrderLst";
+                data.OrderCondList.push(obj);
+
+                WS.AjaxP("post",
+                    "/adminapi/SalesReport/GetOrderShowList",
+                    data,
+                    function (response) {
+
+                        if (response.newReceivedOrderLst != undefined) 
+                            vm.newReceivedOrderLst = response.newReceivedOrderLst;
+                       
+                        if (response.confirmedPayOrderLst != undefined) 
+                            vm.confirmedPayOrderLst = response.confirmedPayOrderLst;
+                     
+                        if (response.processingOrderLst != undefined) 
+                            vm.processingOrderLst = response.processingOrderLst;
+                       
+                        if (response.completedOrderLst != undefined) 
+                            vm.completedOrderLst = response.completedOrderLst;                    
+                    },
+                    function () { });
+            },
+
+            //过期未处理的订单
+            showPendingOrderLst: function () {
+                var data = new Object();
+                data.getQty = 5;
+
+                WS.AjaxP("get",
+                    "/adminapi/SalesReport/GetPendingOrderLst",
+                    data,
+                    function (response) {
+                        vm.pendingOrderLst = response;
+                    },
+                    function () { });
+            },
+            showReturnOrderLst: function () {
+                var data = new Object();
+                data.getQty = 5;
+                WS.AjaxP("get",
+                    "/adminapi/SalesReport/GetReturnOrderLst",
+                    data,
+                    function (response) {
+                        vm.returnOrderLst = response;
+                    },
+                    function () { });
+            },
+            //新評論
+            showCommentLst: function () {
+                var data = new Object();
+                data.getQty = 5;
+                WS.AjaxP("get",
+                    "/adminapi/SalesReport/ShowCommentLst",
+                    data,
+                    function (response) {
+                        vm.commentLst = response;
+                    },
+                    function () { });
+            },
+            //新申請審批的商家
+            showApplyMerchantLst: function () {
+                var data = new Object();
+                data.getQty = 5;
+                WS.AjaxP("get",
+                    "/adminapi/SalesReport/ShowApplyMerchantLst",
+                    data,
+                    function (response) {
+                        vm.merchantApprovalLst = response;
+                    },
+                    function () { });
+            },
+            //待審批產品列表
+            showWaitingApproveProductLst: function () {
+                var data = new Object();
+                data.getQty = 5;
+
+                WS.AjaxP("get",
+                    "/adminapi/SalesReport/GetWaitingApproveProdLst",
+                    data,
+                    function (response) {
+                        vm.waitingApproveProdLst = response;
+                    },
+                    function () { });
+            },
+            getStockOutProductLst: function () {
+                var data = new Object();
+                data.getQty = 5;
+
+                WS.AjaxP("get",
+                    "/adminapi/SalesReport/GetStockOutProductLst",
+                    data,
+                    function (response) {
+                        vm.stockOutProductLst = response;
+                    },
+                    function () { });
+            },
+            //獲取貨到通知產品的sum
+            getNotifyMeProductLst: function () {
+                var data = new Object();
+                data.getQty = 5;
+
+                WS.AjaxP("get",
+                    "/adminapi/SalesReport/GetNotifyMeProductLst",
+                    data,
+                    function (response) {
+                        vm.notifyProductLst = response;
+                    },
+                    function () { });
+            },
+            //打開訂單詳細分頁
+            openOrderDtlTab: function (data) {
+                if (data != undefined) {
+                    var id = data.Id;
+                    var orderNO = data.OrderNO;
+                    var tabId = self.frameElement.parentElement.id;
+                    miniTab.openNewTabByIframe({
+                        href: "/Order/Edit/" + id,
+                        title: '' + "-" + orderNO
+                    });
+                }
+            },
+            openReturnOrderDtlTab: function (data)
+            {
+                if (data != undefined) {
+                    var strId = data.Id;
+                    var strROrderNo = data.OrderNO;
+                    var tabId = self.frameElement.parentElement.id;
+                    miniTab.openNewTabByIframe({
+                        href:  "/ReturnOrder/Edit/" + strId,
+                        title: '' + "-" + strROrderNo
+                    });
+                }
+            },
+            openMerchantDtlTab: function (data)
+            {
+                if (data != undefined) {
+                    var strId = data.Id;
+                    var strMerchantName = data.SupplierId;
+                    var tabId = self.frameElement.parentElement.id;
+                    miniTab.openNewTabByIframe({
+                        href:   "/Merchant/MerchantEdit/" + strId+"/Modify",
+                        title: '' + "-" + strMerchantName
+                    });
+                }
+            },
+            openProductApproveDtlTab: function (data) {
+                if (data != undefined) {
+                    var id = data.ProductId;
+                    var name = data.Name;
+                    var tabId = self.frameElement.parentElement.id;
+                    miniTab.openNewTabByIframe({
+                        href: "/Product/ApproveProductDetail/" + id,
+                        title: '' + "-" + name
+                    });
+                }
+            },
+        }
+    });
+
+
+    $(document).ready(function () {
+        //vm.showThisMonHotSales();
+        //vm.showThisWeekHotSales();
+        //vm.showTodayHotSales();
+        vm.showHotSales();
+
+        //vm.showThisMonClickRate();
+        //vm.showThisWeekClickRate();
+        //vm.showTodayClickRate();   
+        vm.showClickRate();
+        //vm.showThisMonSearchClickRate();
+        //vm.showThisWeekSearchClickRate();
+        //vm.showTodaySearchClickRate();
+
+        vm.showSearchRate();
+
+        vm.showMonthlySalesOrder();
+
+        //vm.showNewRecOrderLst();
+        //vm.showProcessingOrderLst();
+        //vm.showConfirmPayOrderLst();
+        //vm.showCompletedOrderLst();
+        vm.showOrderLst();
+
+        //vm.showPendingOrderLst();
+        //vm.showReturnOrderLst();
+        //vm.showCommentLst();
+        if (!vm.isMerchant) {
+            vm.getMemberSummary();
+            vm.showWaitingApproveProductLst();
+            //vm.showApplyMerchantLst();
+        }
+        else
+        {
+            //vm.getStockOutProductLst();
+            //vm.getNotifyMeProductLst();
+        }
+    });
+
+    $(document).ajaxStart(function () {
+        showLoading();
+    });
+    $(document).ajaxStop(function () {
+        hideLoading();
+    });
+
+        ///绑定商品销量数据
+        function BindHotSaleProductData(name, response) {           
+            var ctx = document.getElementById(name).getContext('2d');
+            var titleList = response.TitleList;
+
+            var datasetLst = [];
+            for (var i = 0; i < response.HotSalesDetailList.length; i++) {
+                var hotSalesDtl = response.HotSalesDetailList[i];
+                var dataset = new Object();
+                dataset.label = hotSalesDtl.ProductName;
+                var dataValLst = [];
+                dataValLst.push(hotSalesDtl.Qty);
+                dataset.data = dataValLst;
+                dataset.borderWidth = 1;
+                if (i <= 5) {
+                    dataset.backgroundColor = mBackColorBox[i];
+                    dataset.borderColor = mBoderColorBox[i];
+                }
+                else {
+                    var len = i % 5;
+                    dataset.backgroundColor = mBackColorBox[len];
+                    dataset.borderColor = mBoderColorBox[len];
+                }
+                datasetLst.push(dataset);
+            }
+
+            var myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: titleList,
+                    datasets: datasetLst
+                },
+                options: {
+                    scales: {
+                        yAxes: [
+                            {
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }
+                        ]
+                    }
+                }
+            });
+
+        }
+
+        ///绑定商品浏览，商品搜索数据
+        function BindProductClickOrSearchRateData(name, response) {
+            var ctx = document.getElementById(name).getContext('2d');
+            var titleList = response.TitleList;
+
+            var datasetLst = [];
+            for (var i = 0; i < response.ClickRateDetailList.length; i++) {
+                var clickRateDtl = response.ClickRateDetailList[i];
+                var dataset = new Object();
+                dataset.label = clickRateDtl.ProductName;
+                var dataValLst = [];
+                dataValLst.push(clickRateDtl.Qty);
+                dataset.data = dataValLst;
+                dataset.borderWidth = 1;
+                if (i <= 5) {
+                    dataset.backgroundColor = mBackColorBox[i];
+                    dataset.borderColor = mBoderColorBox[i];
+                }
+                else {
+                    var len = i % 5;
+                    dataset.backgroundColor = mBackColorBox[len];
+                    dataset.borderColor = mBoderColorBox[len];
+                }
+                datasetLst.push(dataset);
+            }
+
+            var myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: titleList,
+                    datasets: datasetLst
+                },
+                options: {
+                    scales: {
+                        yAxes: [
+                            {
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }
+                        ]
+                    }
+                }
+            });
+        }
+        
+
+    </script>
+
+}

@@ -1,0 +1,134 @@
+﻿@{
+    Layout = null;
+    ViewBag.Title = "BuyDong Admin Login";
+}
+<link href="~/Content/bootstrap.css" rel="stylesheet"/>
+<link href="~/Content/Site.css" rel="stylesheet"/>
+<link href="~/Content/admin/admin.css" rel="stylesheet"/>
+
+<div id="app" class="loginPage" v-cloak>
+    <div class="loginBox">
+        <img v-bind:src="SysLogo" class="logo">
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label><img src="/images/system/user-icon.png"></label>
+
+                <input type="text" name="user" v-model="LoginInfo.Account">
+            </div>
+            <div class="form-group">
+                <label><img src="/images/system/password.png"></label>
+
+                <input type="password" name="password" class="form-control" v-model="LoginInfo.Password">
+
+                <p class="field-validation-error" v-show="message">{{message}}</p>
+            </div>
+        </form>
+        <div class="login_btn">
+            <input type="button" value="登录" class="btn btn-block" v-on:click="login" />
+        </div>
+        <p class="copyright">@ViewBag.CopyRight | Powered by Intimex.<img class="SysFooterLogo" src="../../../images/system/logo.png" alt="projet_logo" /><img  class="SysFooterLogo" src="../../../images/system/transin_logo.jpg" alt="logo_intimexm" /></p>
+    </div>
+</div>
+
+<script src="~/Scripts/jquery-1.12.4.js"></script>
+<script src="~/Scripts/jquery.blockUI.js"></script>
+<script src="~/Scripts/jquery.cookie.js"></script>
+<script src="~/Scripts/jquery.unobtrusive-ajax.js"></script>
+<script src="~/Scripts/jquery.validate.js"></script>
+<script src="~/Scripts/jquery.validate.unobtrusive.js"></script>
+<script src="~/Scripts/vue.js"></script>
+<script src="~/Scripts/bootstrap.js"></script>
+<script src="~/Scripts/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js"></script>
+<script src="~/Scripts/bootstrap-select/js/bootstrap-select.min.js"></script>
+<script src="~/Scripts/bootstraptable/js/bootstrap-table.min.js"></script>
+<script src="~/Scripts/bootstrap3-dialog/js/bootstrap-dialog.min.js"></script>
+<script src="~/Scripts/bDialog/js/b.dialog.min.js"></script>
+<script src="~/Scripts/respond.js"></script>
+<script src="~/Scripts/admin/Common-v100.js"></script>
+
+    
+ <script type="text/javascript">
+        var message ="";
+        var RequiredField = "必填";
+
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                SysLogo: "../../../images/system/logo.png",
+                message: message,
+                LoginInfo: {
+                    //ReturnUrl: "/default/index",
+                    Account: '',
+                    Password: '',                  
+                    RememberMe: false,
+                    //AppId: "@ViewBag.AppId"
+                }
+            },
+            methods: {
+                login: function () {
+                    if (!validator.form()) {
+                        return;
+                    }
+                    showLoading("Loading");
+
+                    WS.AjaxP("post", "/AdminApi/Account/LoginByAPI", this.LoginInfo, function (response) {
+                        hideLoading();
+                        
+                        console.log("sss");
+                        if (response.Succeeded == true) {
+                            vm.message = "";
+                            window.localStorage.setItem("access_token",response.ReturnValue);
+                            window.location.href = "/default/index";
+                        }
+                        else {                           
+                            vm.message = response.Message;
+                        }
+                    }, function () { })
+                }
+            },
+            mounted: function() {
+               
+            }
+        });
+
+    $(document).ready(function () {
+       
+         //启动时，清除一下token
+         window.localStorage.removeItem('access_token');
+         $.cookie("access_token", "", { path: '/',expires:-1 });
+    });
+
+    var validator = $("#loginForm").validate({
+        debug: true,
+        rules: {
+            user: {
+                required: true
+            },
+            password: {
+                required: true
+            }
+        },
+        messages: {
+            user: {
+                required: RequiredField
+            },
+            password: {
+                required: RequiredField
+            }
+        },
+        errorElement: "p",
+        errorPlacement: function (error, element) {
+            console.log(element, 'element.parent()');
+            error.appendTo(element.parents('.form-group'));
+        },
+        showErrors: function (errorMap, errorList) {
+            if (errorList && errorList.length > 0) {
+                errorList[0].element.focus();
+            }
+            this.defaultShowErrors();
+        },
+        errorClass: "errorTip"
+    });
+
+</script>

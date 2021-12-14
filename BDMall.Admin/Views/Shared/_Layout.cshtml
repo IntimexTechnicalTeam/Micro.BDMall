@@ -1,0 +1,45 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>@ViewBag.Title</title>
+   
+ <style src="~/Content/bootstrap.css"></style>
+<style src="~/Content/Site.css"></style>
+<style src="~/Content/admin/admin.css"></style>
+
+
+
+</head>
+
+<body>
+    @RenderBody()
+@*
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/Vue")
+    @Scripts.Render("~/bundles/bootstrap")
+    @Scripts.Render("~/bundles/common")*@
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/Scripts/jquery.blockUI.js"></script>
+    <script src="~/Scripts/jquery.cookie.js"></script> 
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/Scripts/bDialog/js/jquery-ui.min.js"></script>
+    <script src="~/Scripts/bDialog/js/b.dialog.min.js"></script>
+    <script src="~/Scripts/respond.js"></script>
+    <script src="~/Scripts/vue.js"></script>
+    <script src="~/Scripts/layui/lib/layui-v2.5.5/layui.js"></script> 
+    <script src="~/Scripts/layui/js/lay-config.js?v=2.0.0"></script> 
+
+    <script src="~/Scripts/admin/Common-v100.js"></script>
+    <script src="~/Scripts/admin/admin.js"></script>
+
+
+    @RenderSection("scripts", required: false)
+</body>
+</html>

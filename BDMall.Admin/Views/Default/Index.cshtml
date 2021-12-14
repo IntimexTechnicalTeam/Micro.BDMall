@@ -1,0 +1,326 @@
+﻿
+@{
+    string StoreName = ViewBag.StoreName;
+    ViewBag.Title = StoreName + " Management System";
+    Layout = "~/Views/Shared/_LayoutHome.cshtml";
+}
+
+<style>
+    body {
+        /*background: url("/Images/system/BG.jpg");*/
+        overflow: hidden;
+    }
+
+
+
+    #main-nav {
+        margin-left: 1px;
+        padding: 0;
+    }
+
+        #main-nav.nav-tabs.nav-stacked > li > a {
+            padding: 10px 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #4A515B;
+            background: #E9E9E9;
+            background: -moz-linear-gradient(top, #FAFAFA 0%, #E9E9E9 100%);
+            background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#FAFAFA), color-stop(100%,#E9E9E9));
+            background: -webkit-linear-gradient(top, #FAFAFA 0%,#E9E9E9 100%);
+            background: -o-linear-gradient(top, #FAFAFA 0%,#E9E9E9 100%);
+            background: -ms-linear-gradient(top, #FAFAFA 0%,#E9E9E9 100%);
+            background: linear-gradient(top, #FAFAFA 0%,#E9E9E9 100%);
+            filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#FAFAFA', endColorstr='#E9E9E9');
+            -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr='#FAFAFA', endColorstr='#E9E9E9')";
+            border: 1px solid #D5D5D5;
+            border-radius: 4px;
+        }
+
+            #main-nav.nav-tabs.nav-stacked > li > a > span {
+                color: #4A515B;
+            }
+
+            #main-nav.nav-tabs.nav-stacked > li.active > a, #main-nav.nav-tabs.nav-stacked > li > a:hover {
+                color: #FFF;
+                background: #3C4049;
+                background: -moz-linear-gradient(top, #4A515B 0%, #3C4049 100%);
+                background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#4A515B), color-stop(100%,#3C4049));
+                background: -webkit-linear-gradient(top, #4A515B 0%,#3C4049 100%);
+                background: -o-linear-gradient(top, #4A515B 0%,#3C4049 100%);
+                background: -ms-linear-gradient(top, #4A515B 0%,#3C4049 100%);
+                background: linear-gradient(top, #4A515B 0%,#3C4049 100%);
+                filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#4A515B', endColorstr='#3C4049');
+                -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr='#4A515B', endColorstr='#3C4049')";
+                border-color: #2B2E33;
+            }
+
+        /*#main-nav.nav-tabs.nav-stacked > li.active > a, #main-nav.nav-tabs.nav-stacked > li > a:hover > span {
+                    color: #FFF;
+                }*/
+
+        #main-nav.nav-tabs.nav-stacked > li {
+            margin-bottom: 4px;
+        }
+
+    /*定义二级菜单样式*/
+    .secondmenu a {
+        font-size: 14px;
+        color: #4A515B;
+        text-align: left;
+    }
+
+    .navbar-static-top {
+        background-color: #D5D5D5;
+        margin-bottom: 5px;
+    }
+
+    .navbar-brand {
+        background: url('') no-repeat 10px 8px;
+        display: inline-block;
+        vertical-align: middle;
+        padding-left: 50px;
+        color: #fff;
+    }
+    /*overwrite boostrap*/
+    .nav > li > a:hover,
+    .nav > li > a:focus {
+        text-decoration: none;
+        background-color: #0094ff;
+    }
+
+    /*current menu start*/
+    .activeMenu a {
+        color: white;
+        background-color: forestgreen;
+    }
+
+        .activeMenu a:focus {
+            background-color: forestgreen !important;
+        }
+
+        .activeMenu a:hover {
+            background-color: forestgreen !important;
+        }
+    /*current menu end*/
+
+    .body_block {
+        position: fixed;
+        background-color: hsla(0, 0%, 0%, 0.5);
+        width: 100%;
+        height: 100%;
+        z-index: 999;
+        display: none;
+    }
+</style>
+<div class="layui-layout-admin">
+    <div class="body_block"></div>
+    <div class="layui-header header">
+        <nav class="navbar navbar-default" role="navigation">
+            <div class="container-fluid">
+                <div class="row topbar">
+                    <div class="col-lg-4 col-sm-4 col-xs-6">
+                        <div style="float: left">
+                            <img src="@ViewBag.Logo" style="height: 50px; width: auto" />
+                        </div>
+                        <div style="float: left; margin-top: 20px; margin-left: 5px; font-weight: bold">
+                            @*<div>[@StoreName]</div>*@
+                        </div>
+                    </div>
+                    <div class="col-lg-8 col-sm-8 col-xs-6">
+                        <div style="text-align: right;">
+                            <div class="btn-group user-menu">
+                                @*大屏时显示*@
+
+                                <!-- <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown" type="button">
+                                    @ViewBag.UserName @*<span class="badge">4</span>*@
+                                    <span class="caret"></span>
+                                </button> -->
+                                <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown" type="button">
+                                    <i class="glyphicon glyphicon-user"></i> <span class="user-name">@ViewBag.UserName</span> <span id="labMessageQty" class="badge"></span>
+                                    <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu" role="menu">
+                                    <li class="divider"></li>
+                                    @*<li><a onclick="changeLang('E')">@BDMall.Resources.Label.English</a></li>
+                                    <li><a onclick="changeLang('C')">@BDMall.Resources.Label.ChineseTW</a></li>
+                                    <li><a onclick="changeLang('S')">@BDMall.Resources.Label.ChineseSimplified</a></li>*@
+                                    <li><a href="/account/logoff">Logout</a> </li>
+                                </ul>
+                            </div>
+                            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-nav">
+                                <span class="sr-only">切换导航</span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <!--内容-->
+    <div class="layui-side" id="mainArea">
+        <menu-item v-bind:items="treeNodes"></menu-item>
+    </div>
+
+    <div class="layui-body">
+        <div class="layuimini-tab layui-tab-rollTool layui-tab" lay-filter="layuiminiTab" lay-allowclose="true">
+            <ul class="layui-tab-title">
+                <li class="layui-this" id="layuiminiHomeTabId" lay-id=""></li>
+            </ul>
+            <div class="layui-tab-control">
+                <li class="layuimini-tab-roll-left layui-icon layui-icon-left"></li>
+                <li class="layuimini-tab-roll-right layui-icon layui-icon-right"></li>
+                <li class="layui-tab-tool layui-icon layui-icon-down">
+                    <ul class="layui-nav close-box">
+                        <li class="layui-nav-item">
+                            <a href="javascript:;"><span class="layui-nav-more"></span></a>
+                            <dl class="layui-nav-child">
+                                @*<dd><a href="javascript:;" layuimini-tab-close="current">@BDMall.Resources.Label.CloseCurrentTab</a></dd>
+                                <dd><a href="javascript:;" layuimini-tab-close="other">@BDMall.Resources.Label.CloseOtherTab</a></dd>
+                                <dd><a href="javascript:;" layuimini-tab-close="all">@BDMall.Resources.Label.CloseAllTabs</a></dd>*@
+                            </dl>
+                        </li>
+                    </ul>
+                </li>
+            </div>
+            <div class="layui-tab-content">
+                <div id="layuiminiHomeTabIframe" class="layui-tab-item layui-show"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/Scripts/admin/system/index.js"></script>
+ <script>
+    var jsMessage = {
+    CloseCurrentTab: '关闭当前Tab',
+    CloseOtherTab: '关闭其他Tab',
+    CloseAllTabs: '关闭所有Tab'
+        };
+
+    layui.use(['jquery', 'layer', 'miniAdmin'], function() {
+        var $ = layui.jquery,
+            layer = layui.layer,
+            miniAdmin = layui.miniAdmin,
+            miniTongji = layui.miniTongji;
+
+        var lang = '@ViewBag.Language';
+        var options = {
+            iniUrl: "/Scripts/layui/api/init_" + lang+ ".json", // 初始化接口
+            clearUrl: "/Scripts/layui/api/clear.json", // 缓存清理接口
+            urlHashLocation: false, // 是否打开hash定位
+            bgColorDefault: false, // 主题默认配置
+            multiModule: true, // 是否开启多模块
+            menuChildOpen: false, // 是否默认展开菜单
+            loadingTime: 0, // 初始化加载时间
+            pageAnim: false, // iframe窗口动画
+            maxTabNum: 20 // 最大的tab打开数量
+        };
+        miniAdmin.render(options);
+    });
+    </script>
+    <script type="text/javascript">
+
+        function SetMailService(state) {
+            $.ajax({
+                type: "get",
+                url: "/Default/SetMailService",
+                data: { state: state }               
+            });
+        }
+
+        function changeLang(lang) {
+            //  $.cookie("Language", lang);
+            WS.Get(
+                "/Account/ChangeLang",
+                { Lang: lang },
+                function (result) {
+                    setCookie("Language", lang, "/");
+                    window.location.href = "/Default/Index";
+                });
+        }
+
+        function setIframeHeight() {
+            var height = document.documentElement.clientHeight - 70;
+            $('#mainFrameTabs').height(height);
+            $('#menuArea').height(height);
+        }
+
+        function setSrcTobTab(id, title, href, checkLogin, callback, parentId) {
+            $('#mainFrameTabs').bTabsAdd(id, title, href, checkLogin, parentId, callback);
+        }
+
+        function addTab(obj) {
+            $('#mainFrameTabs').bTabsAdd(obj.id, obj.title, obj.href, obj.checkLogin, obj.parentId, obj.callback);
+        }
+
+        function closeTab(id) {
+            $('#mainFrameTabs').bTabsClose(id);
+        }
+
+        function InitbTabs() {
+
+            var height = document.documentElement.clientHeight - 70;
+            $('#mainFrameTabs').height(height);
+            $('#menuArea').height(height);
+
+
+            $(".menu-link").click(function () {
+                //校验登录是否超时，通常使用ajax访问服务端测试登录是否超时
+                //若页面端已有超时自动跳转的处理，则不需要设置该回调
+                var checkLogin = function () {
+                    return true;
+                };
+                setSrcTobTab(this.id, this.title, this.href, checkLogin, undefined, undefined);
+                $(".activeMenu").removeClass("activeMenu");
+                $(this).parent().addClass("activeMenu");
+                return false;
+            });
+            //插件的初始化
+            // $('#mainFrameTabs').bTabs({
+            //     //登录界面URL，用于登录超时后的跳转
+            //     'loginUrl': 'http://xxx.com/login',
+            //     //用于初始化主框架的宽度高度等，另外会在窗口尺寸发生改变的时候，也自动进行调整
+            //     'resize': function () {
+            //         setIframeHeight();
+            //     }
+            // });
+        }
+
+        function navCollapse() {
+            // var navToggle = document.querySelector(".navbar-toggle");
+            $("#main-nav li a").click(function (e) {
+                if (!$(e.target).parent().find('ul').length && $(window).width() < 768) {
+                    // navToggle.click();
+                    $("#main-nav").collapse('hide');
+                    setTimeout(function () {
+                        $(".body_block").hide();
+                    }, 250);
+                }
+            })
+
+            $(".navbar-toggle").click(function (e) {
+                let navHeight = document.getElementById('main-nav').offsetHeight;
+                if (navHeight) {
+                    setTimeout(function () {
+                        $(".body_block").hide();
+                    }, 250);
+                } else {
+                    let a = $(".navbar").height() + 2;
+                    $(".body_block").css({ "height": "calc(100% - " + a + "px)", "top": a + "px" })
+                    $(".body_block").show();
+                }
+            })
+
+            $(".body_block").click(function () {
+                $("#main-nav").collapse('hide');
+                setTimeout(function () {
+                    $(".body_block").hide();
+                }, 250);
+            })
+        }
+
+    </script>

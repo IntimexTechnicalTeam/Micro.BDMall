@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <DocumentationFile>bin\Debug\BDMall.Domain.XML</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="10.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Infrastructure\Web.Framework\Web.Framework.csproj" />
+    <ProjectReference Include="..\BuyMall.Enums\BDMall.Enums.csproj" />
+    <ProjectReference Include="..\BuyMall.Model\BDMall.Model.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="UserMNG\" />
+  </ItemGroup>
+
+</Project>
