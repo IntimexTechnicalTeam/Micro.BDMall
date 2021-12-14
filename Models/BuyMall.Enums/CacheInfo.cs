@@ -9,7 +9,22 @@ namespace BDMall.Enums
     public enum CacheKey
     {
         Ticket=100,
-        CurrentUser =101,
-        //Permission =102,
+        CurrentUser,
+        InvtActualQty,
+        SalesQty,
+        InvtReservedQty,
+        InvtHoldQty,
+
+        CodeMaster,
+
+        RefuseCountries,
+
+        SupportCountries,
+
+        Translations,
+
+        PriceLimit,
+
+        ShoppingCart,
     }
 }

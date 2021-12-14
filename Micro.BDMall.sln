@@ -49,6 +49,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BDMall.BLL", "BusinessLayer
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Web.Jwt", "Infrastructure\Web.Jwt\Web.Jwt.csproj", "{58E87827-3CE2-49BF-BE61-46F0E7062E38}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HandleUpdateQtyService", "MonitorService\HandlerUpdateQtyService\HandleUpdateQtyService.csproj", "{9091F0BD-31D3-4BA2-B694-AB6404C2B6CB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -131,6 +133,10 @@ Global
 		{58E87827-3CE2-49BF-BE61-46F0E7062E38}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{58E87827-3CE2-49BF-BE61-46F0E7062E38}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{58E87827-3CE2-49BF-BE61-46F0E7062E38}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9091F0BD-31D3-4BA2-B694-AB6404C2B6CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9091F0BD-31D3-4BA2-B694-AB6404C2B6CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9091F0BD-31D3-4BA2-B694-AB6404C2B6CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9091F0BD-31D3-4BA2-B694-AB6404C2B6CB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -152,6 +158,7 @@ Global
 		{FF5429B4-E3EA-47D8-8944-38C80FAACC25} = {07B10484-137A-4002-8291-260A08014000}
 		{C90267B4-1EDD-4DA0-8176-CEF67054FF41} = {07B10484-137A-4002-8291-260A08014000}
 		{58E87827-3CE2-49BF-BE61-46F0E7062E38} = {D393D3E3-A961-46CE-8682-5766B2DCA0FC}
+		{9091F0BD-31D3-4BA2-B694-AB6404C2B6CB} = {081EB2B6-A0E9-49F7-A2E3-4C16C0E3C3AD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E3C1B58-B172-4103-9DF2-CF3BC3D6748D}

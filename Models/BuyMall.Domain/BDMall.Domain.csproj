@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="InventoryMNG\" />
     <Folder Include="UserMNG\" />
   </ItemGroup>
 
