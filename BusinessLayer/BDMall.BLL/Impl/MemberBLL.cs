@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Web.Framework;
 using BDMall.Repository;
+using BDMall.Enums;
+using System.Threading.Tasks;
 
 namespace BDMall.BLL
 {
@@ -72,6 +74,40 @@ namespace BDMall.BLL
             //var mc = new MemberCreate<MemberDto>() { Param = member };             
             //this.Mediator.Publish(mc);
 
+            result.Succeeded = true;
+            return result;
+        }
+
+        public async Task<SystemResult> ChangeLang(CurrentUser currentUser, Language Lang)
+        {
+            var result = new SystemResult() { Succeeded =false };
+            
+            var member  = await baseRepository.GetModelByIdAsync<Member>(currentUser.UserId);
+            member.Language = Lang;
+
+            if (currentUser.IsLogin)
+                await baseRepository.UpdateAsync(member);
+
+            var newToken = jwtToken.RefreshToken(CurrentUser.Token, Lang, "");
+
+            result.ReturnValue = newToken;
+            result.Succeeded = true;
+            return result;
+        }
+
+        public async Task<SystemResult> ChangeCurrencyCode(CurrentUser currentUser, string CurrencyCode)
+        {
+            var result = new SystemResult() { Succeeded = false };
+
+            var member = await baseRepository.GetModelByIdAsync<Member>(currentUser.UserId);
+            member.CurrencyCode = CurrencyCode;
+
+            if (currentUser.IsLogin)
+                await baseRepository.UpdateAsync(member);
+
+            var newToken = jwtToken.RefreshToken(CurrentUser.Token, null, CurrencyCode);
+
+            result.ReturnValue = newToken;
             result.Succeeded = true;
             return result;
         }

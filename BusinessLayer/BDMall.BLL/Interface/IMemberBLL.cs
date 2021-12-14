@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Web.Framework;
+using BDMall.Enums;
 
 namespace BDMall.BLL
 {
@@ -18,5 +19,9 @@ namespace BDMall.BLL
         PageData<MemberDto> SearchMember(MbrSearchCond cond);
 
         SystemResult CreateMember(RegisterMember member);
+
+        Task<SystemResult> ChangeLang(CurrentUser currentUser, Language Lang);
+
+        Task<SystemResult> ChangeCurrencyCode(CurrentUser currentUser, string CurrencyCode);
     }
 }

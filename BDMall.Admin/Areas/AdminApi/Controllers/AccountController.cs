@@ -20,18 +20,19 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
     [ApiController]
     public class AccountController : BaseApiController
     {
+        IUserBLL userBLL;
         public AccountController(IComponentContext services) : base(services)
         {
-           
+            userBLL = Services.Resolve<IUserBLL>();
         }
 
         /// <summary>
-        /// 
+        /// 后台用户登录
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
         [AllowAnonymous]
-        [HttpPost]      
+        [HttpPost]
         public async Task<SystemResult> LoginByAPI([FromForm] LoginInput input)
         {
             var user = await loginBLL.CheckAdminLogin(input);
@@ -42,9 +43,10 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
 
                 var claimList = new List<Claim>() { };
                 claimList.Add(new Claim("UserId", $"{userInfo.Id }"));
-                claimList.Add(new Claim("Lang", userInfo.Language.ToString()));      
+                claimList.Add(new Claim("Lang", userInfo.Language.ToString()));
                 claimList.Add(new Claim("CurrencyCode", "HKD"));                     //为了兼容默认一个
                 claimList.Add(new Claim("Account", $"{userInfo.Account}"));
+                claimList.Add(new Claim("IsLogin", "true"));
                 claimList.Add(new Claim("LoginType", $"{ userInfo.LoginType.ToInt() }"));
 
                 userInfo.Token = jwtToken.CreateToken(claimList);
@@ -66,13 +68,11 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
         /// </summary>
         /// <param name="Lang"></param>
         /// <returns></returns>       
-        [HttpGet]      
+        [HttpGet]
         public async Task<SystemResult> ChangeLang(Language Lang)
         {
             var result = new SystemResult() { Succeeded = true };
-
-            //根据header中的token和Lang参数，重新生成token,返回token
-
+            result.ReturnValue = await userBLL.ChangeLang(CurrentUser, Lang);
             return result;
         }
 

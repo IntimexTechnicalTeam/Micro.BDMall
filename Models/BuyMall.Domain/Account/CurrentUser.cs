@@ -19,6 +19,8 @@ namespace BDMall.Domain
 
         public string CurrencyCode { get; set; } = "HKD";
 
+        public bool IsLogin { get; set; } = false;
+
         public List<RoleDto> Roles { get; set; } = new List<RoleDto>();
     }
 

@@ -28,7 +28,7 @@ namespace BDMall.WebApi.Controllers
         /// <param name="condition"></param>
         /// <returns></returns>
         [HttpPost("Search")]
-        [ProducesResponseType(typeof(PageData<MemberDto>), 200)]
+        [ProducesResponseType(typeof(SystemResult), 200)]
         public SystemResult Search([FromBody] MbrSearchCond condition)
         {
             var result = new SystemResult() { Succeeded =true };

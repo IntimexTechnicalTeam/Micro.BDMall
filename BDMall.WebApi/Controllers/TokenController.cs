@@ -29,6 +29,7 @@ namespace BDMall.WebApi.Controllers
         /// <returns></returns>
         [AllowAnonymous]
         [HttpGet("CreateToken")]
+        [ProducesResponseType(typeof(SystemResult), 200)]
         public async Task<SystemResult> CreateToken()
         {
             string ticket = jwtToken.CreateDefautToken();
@@ -42,6 +43,7 @@ namespace BDMall.WebApi.Controllers
         /// </summary>
         [AllowAnonymous]
         [HttpGet("RefreshToken")]
+        [ProducesResponseType(typeof(SystemResult), 200)]
         public async Task<SystemResult> RefreshToken(string Token)
         { 
             string ticket = jwtToken.RefreshToken(Token);

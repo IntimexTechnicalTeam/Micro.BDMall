@@ -18,9 +18,13 @@ namespace BDMall.WebApi.Controllers
     [ApiController]
     public class AccountController : BaseApiController
     {
-        
+        IMemberBLL memberBLL;
+        IJwtToken jwtToken;
+
         public AccountController(IComponentContext service) : base(service)
         { 
+            jwtToken = this.Services.Resolve<IJwtToken>();
+            memberBLL = this.Services.Resolve<IMemberBLL>();
         }
 
         /// <summary>
@@ -30,6 +34,7 @@ namespace BDMall.WebApi.Controllers
         /// <returns></returns>
         [AllowAnonymous]
         [HttpPost("Login")]
+        [ProducesResponseType(typeof(SystemResult), 200)]
         public async Task<SystemResult> Login([FromBody] LoginInput input)
         {
             var result = await loginBLL.Login(input);
@@ -43,6 +48,7 @@ namespace BDMall.WebApi.Controllers
                 claimList.Add(new Claim("Lang", userInfo.Language.ToString()));
                 claimList.Add(new Claim("CurrencyCode",userInfo.CurrencyCode));
                 claimList.Add(new Claim("Account", userInfo.Account));
+                claimList.Add(new Claim("IsLogin", "true"));
                 claimList.Add(new Claim("LoginType", $"{ LoginType.Member.ToInt() }"));
                 string ticket = jwtToken.CreateToken(claimList);
 
@@ -54,11 +60,12 @@ namespace BDMall.WebApi.Controllers
         }
 
         /// <summary>
-        /// 用户登出
+        /// 会员登出
         /// </summary>
         /// <returns></returns>
         [AllowAnonymous]
         [HttpGet("Logout")]
+        [ProducesResponseType(typeof(SystemResult), 200)]
         public async Task<SystemResult> Logout()
         {
             string ticket = jwtToken.CreateDefautToken();
@@ -73,12 +80,11 @@ namespace BDMall.WebApi.Controllers
         /// <param name="Lang"></param>
         /// <returns></returns>       
         [HttpGet("ChangeLang")]
+        [ProducesResponseType(typeof(SystemResult), 200)]
         public async Task<SystemResult> ChangeLang(Language Lang)
         {
-            var result = new SystemResult() { Succeeded = true };           
-
-             //根据header中的token和Lang参数，重新生成token,返回token
-
+            var result = new SystemResult() { Succeeded = true };
+            result.ReturnValue = await memberBLL.ChangeLang(CurrentUser, Lang);
             return result;
         }
 
@@ -88,12 +94,11 @@ namespace BDMall.WebApi.Controllers
         /// <param name="CurrencyCode"></param>
         /// <returns></returns>       
         [HttpGet("ChangeCurrencyCode")]
+        [ProducesResponseType(typeof(SystemResult), 200)]
         public async Task<SystemResult> ChangeCurrencyCode(string CurrencyCode)
         {
             var result = new SystemResult() { Succeeded = true };
-
-            //根据header中的token和CurrencyCode参数，重新生成token,返回token
-
+            result.ReturnValue =await memberBLL.ChangeCurrencyCode(CurrentUser, CurrencyCode);          
             return result;
         }
 

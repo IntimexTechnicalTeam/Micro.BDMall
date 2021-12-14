@@ -1,7 +1,9 @@
 using Autofac;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Rewrite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -62,7 +64,6 @@ namespace BDMall.WebApi
 
             //注入支付宝的配置
             //Web.AliPay.ServiceCollectionExtensions.AddServices(services, this.Configuration);
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -75,11 +76,11 @@ namespace BDMall.WebApi
                 app.UseDeveloperExceptionPage();
                 app.ConfigureSwagger();
             }
-
+           
             app.UseMiddleware<GlobalErrorHandlingMiddleware>();         //全局异常处理
             //app.UseMiddleware<JwtAuthenticationMiddleware>();
 
-            //app.UseHttpsRedirection();  HTTPS重定向
+            app.UseHttpsRedirection();  ////HTTPS重定向
             app.UseRouting();
             app.UseAuthorization();
             app.UseEndpoints(endpoints =>
