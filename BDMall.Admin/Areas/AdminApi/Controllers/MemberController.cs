@@ -1,4 +1,6 @@
 ﻿using Autofac;
+using BDMall.BLL;
+using BDMall.Domain;
 using BDMall.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,15 +13,18 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
     [AdminApiAuthorize(Module = "", Modules = new string[] { ModuleConst.MemberModule, ModuleConst.MerchantModule })]
     public class MemberController : BaseApiController
     {
+        public IMemberBLL memberBLL;
+
         public MemberController(IComponentContext services) : base(services)
         {
+            memberBLL = Services.Resolve<MemberBLL>();
         }
 
         [HttpGet]
-        public object GetMbrSummary()
+        public RegSummary GetMbrSummary()
         {
-
-            return new { };
+            var  mbrSummary = memberBLL.GetRegSummary();
+            return mbrSummary;
         }
     }
 }

@@ -23,5 +23,7 @@ namespace BDMall.BLL
         Task<SystemResult> ChangeLang(CurrentUser currentUser, Language Lang);
 
         Task<SystemResult> ChangeCurrencyCode(CurrentUser currentUser, string CurrencyCode);
+
+        RegSummary GetRegSummary();
     }
 }

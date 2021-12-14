@@ -42,5 +42,24 @@ namespace BDMall.Repository
 
         public DbSet<User> Users { get; set; }
 
+        public DbSet<InventoryReserved> InventoryReserveds { get; set; }
+
+        public DbSet<InvTransactionDtl> InvTransactionDtls { get; set; }
+
+        public DbSet<ProductQty> ProductQties { get; set; }
+
+        public DbSet<PushMessage> PushMessages { get; set; }
+
+        public DbSet<Order> Orders { get; set; }
+
+        public DbSet<Order> OrderDetails { get; set; }
+
+        public DbSet<Product> Products { get; set; }
+
+        public DbSet<ProductClickRateSummry> ProductClickRateSummrys { get; set; }
+
+        public DbSet<CodeMaster> CodeMasters { get; set; }
+
+        public DbSet<ProductSalesSummry> ProductSalesSummrys { get; set; }
     }
 }

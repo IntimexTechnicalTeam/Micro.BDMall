@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using BDMall.BLL;
 using BDMall.Domain;
 using BDMall.Enums;
 using Microsoft.AspNetCore.Http;
@@ -15,24 +16,25 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
     [ApiController]
     public class ProductController : BaseApiController
     {
+        IProductBLL productBLL;
+
         public ProductController(IComponentContext services) : base(services)
         {
+            productBLL = Services.Resolve<IProductBLL>();
         }
 
         [HttpGet]
-        public Dictionary<string, object> GetClickRateSummary(int topMonthQty, int topWeekQty, int topDayQty)
+        public Dictionary<string, ClickRateSummaryView> GetClickRateSummary(int topMonthQty, int topWeekQty, int topDayQty)
         {
-            //var data = _productBLL.GetClickRateView(topMonthQty, topWeekQty, topDayQty);
-            //Dictionary<string, ClickRateSummaryView>
-
-            return new Dictionary<string, object>();
+            var data = productBLL.GetClickRateView(topMonthQty, topWeekQty, topDayQty);
+            return data;
         }
 
         [HttpGet]
-        public Dictionary<string, object> GetSearchRateSummary(int topMonthQty, int topWeekQty, int topDayQty)
+        public Dictionary<string, ClickRateSummaryView> GetSearchRateSummary(int topMonthQty, int topWeekQty, int topDayQty)
         {
-            //var data = _productBLL.GetSearchRateView(topMonthQty, topWeekQty, topDayQty);
-            return new Dictionary<string, object>();
+            var data = productBLL.GetSearchRateView(topMonthQty, topWeekQty, topDayQty);
+            return data;
         }
     }
 }

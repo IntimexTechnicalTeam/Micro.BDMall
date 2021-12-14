@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using BDMall.BLL;
 using BDMall.Domain;
 using BDMall.Enums;
 using Microsoft.AspNetCore.Http;
@@ -16,8 +17,11 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
     [ApiController]
     public class SalesReportController : BaseApiController
     {
+        ISalesReportBLL salesReportBLL;
+
         public SalesReportController(IComponentContext services) : base(services)
         {
+            salesReportBLL = Services.Resolve<ISalesReportBLL>();
         }
 
         /// <summary>
@@ -30,7 +34,8 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
         [HttpGet]
         public Dictionary<string, HotSalesSummaryView> GetHotSalesSummary(int topMonthQty, int topWeekQty, int topDayQty)
         {
-            return new Dictionary<string, HotSalesSummaryView>();
+            var data = salesReportBLL.GetHotSalesProductList(topMonthQty, topWeekQty,topDayQty, SortType.DESC);
+            return data;
         }
 
         /// <summary>
@@ -67,11 +72,8 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
         [HttpPost]
         public Dictionary<string, List<OrderShowCaseSummary>> GetOrderShowList([FromForm]OrderShowCond Cond)
         {
-            //Dictionary<string, List<OrderShowCaseSummary>>
-            //var data = SalesReportBLL.GetOrderShowList(Cond);
-            //return data;
-
-            return new Dictionary<string, List<OrderShowCaseSummary>>();
+            var data = salesReportBLL.GetOrderShowList(Cond);
+            return data;
         }
 
         /// <summary>
@@ -81,17 +83,8 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
         [HttpGet]
         public List<ProductSummary> GetWaitingApproveProdLst(int getQty)
         {
-            //var productList = new List<ProductSummary>();
-            //try
-            //{
-            //    productList = SalesReportBLL.GetWaitingApproveProdLst(getQty);
-            //}
-            //catch (Exception ex)
-            //{
-            //    productList = null;
-            //    throw CreateCustomException(ex);
-            //}
-            return new List<ProductSummary>();
+            var data = salesReportBLL.GetWaitingApproveProdLst(getQty);
+            return data;
         }
     }
 }

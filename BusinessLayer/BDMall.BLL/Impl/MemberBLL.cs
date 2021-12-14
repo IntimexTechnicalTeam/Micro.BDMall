@@ -111,5 +111,19 @@ namespace BDMall.BLL
             result.Succeeded = true;
             return result;
         }
+
+        public RegSummary GetRegSummary()
+        {
+            RegSummary summary = new RegSummary();
+
+            DateTime now = DateTime.Now;
+            DateTime preMonth = (new DateTime(now.Year, now.Month, 1)).AddMonths(-1);
+            DateTime d1 = new DateTime(now.Year, now.Month, 1);
+
+            summary.MemberTotal = baseRepository.GetList<Member>().Count(d => !d.IsDeleted);
+            summary.LastMth = baseRepository.GetList<Member>().Count(d => d.CreateDate.Month == preMonth.Month && !d.IsDeleted);
+            summary.ThisMth = baseRepository.GetList<Member>().Count(d => d.CreateDate > d1 && d.CreateDate < DateTime.Now && !d.IsDeleted);
+            return summary;
+        }
     }
 }
