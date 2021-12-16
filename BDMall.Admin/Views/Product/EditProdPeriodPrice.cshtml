@@ -1,0 +1,259 @@
+﻿
+@{
+    ViewBag.Title = "EditProdPeriodPrice";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="app">
+    <div>
+        <table>
+            <tr>
+                <td class="col-md-2">@BDMall.Resources.Label.MerchantName</td>
+                <td class="col-md-10">
+                    @*<select id="cbosubBuyerGroup2" class="form-control col-md-6 " v-model="items.ExpressId" onchange="InitCountry();"></select>*@
+
+                    <div class="form-inline">
+
+                        <input type="text" class="form-control" id="txtexName" v-model="items.MerchantName" style="width:300px;" v-bind:disabled="items.PPHour.MerchantId!='00000000-0000-0000-0000-000000000000'" >
+                        <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Select" v-on:click="selectMerchant" v-show="items.PPHour.MerchantId=='00000000-0000-0000-0000-000000000000'"/>
+
+
+                    </div>
+
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">@BDMall.Resources.Label.ProductName</td>
+                <td class="col-sm-10">
+                    @*<select id="cbosubBuyerGroup2" class="form-control col-md-6 " v-model="items.ExpressId" onchange="InitCountry();"></select>*@
+                    <div class="form-inline">
+                        <input type="text" class="form-control" id="txtProdCode" style="width:300px;" v-model="items.ProductName">
+                        <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Select" v-on:click="selectProductItem"  />
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">
+                    <span style="color:red;">*</span>@BDMall.Resources.Label.Currency
+                </td>
+                <td class="col-md-10">
+
+                    <select id="cboCurrency" class="form-control" data-width="300px" name="Currency"> </select>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">@BDMall.Resources.Label.Price</td>
+                <td class="col-sm-10">
+
+                    <input type="number" class="form-control" style="width:300px;" v-model="items.PPHour.TimePrice" value="0">
+
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">
+                    @BDMall.Resources.Label.Date
+                </td>
+                <td colspan="3" class="col-md-10">
+                    <div class="form-inline">
+                        <input type="text" name="DateTimePicker" data-format="yyyy-MM-dd HH:mm" v-model="items.BeginEffectTimeString" class="form-control" style="width:300px;" id="dtEffectDateFrom" />
+                        @BDMall.Resources.Label.To
+                        <input type="text" name="DateTimePicker" data-format="yyyy-MM-dd HH:mm" v-model="items.EndEffectTimeString" class="form-control" style="width:300px;" id="dtEffectDateTo" />
+                    </div>
+                </td>
+            </tr>
+            <tr style="display:none;">
+                <td class="col-md-2">@BDMall.Resources.Label.TimeField</td>
+                <td class="col-md-10">
+
+                    <div class="form-inline">
+                        <input type="time" class="form-control" id="txtTimeFieldB" v-model="items.PPHour.BeginTimeStr">
+                        <label>~</label>
+                        <input type="time" class="form-control" id="txtTimeFieldE" v-model="items.PPHour.EndTimeStr">
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">@BDMall.Resources.Label.IsActive</td>
+                <td class="col-md-10">
+                    <input type="checkbox" value="true" v-model="items.PPHour.IsActive" />
+                </td>
+            </tr>
+
+        </table>
+    </div>
+    <div id="checkedHidden" style="display:none;"></div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default" onclick="clowWin();">@BDMall.Resources.Action.Close</button>
+        <button type="button" class="btn btn-primary" v-on:click="Save">@BDMall.Resources.Action.Save</button>
+    </div>
+
+</div>
+@section scripts{
+    <style type="text/css">
+        li {
+            list-style: none;
+        }
+    </style>
+    <script src="~/Scripts/admin/vue-component/multilangbar.js"></script>
+    <script type="text/javascript">
+        var mMerchantId = "@ViewBag.MerchantId";
+        var zType ='@ViewBag.Type';
+        var zId = '@ViewBag.Id';
+
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                exId: "00000000-0000-0000-0000-000000000000",
+
+                action: "",
+                subAction: "",
+                items: {
+                    PPHour: {
+                        Id: "00000000-0000-0000-0000-000000000000",
+                        MerchantId: "",
+                        BeginTimeStr: "",
+                        EndTimeStr: "",
+                        ProductId: "",
+                        TimePrice: "",
+                        ProductCode: "",
+                        CurrencyCode: "",
+                        EndEffectTime: "",
+                        BeginEffectTime:"",
+                        IsActive: false
+                    },
+                    MerchantName: "",
+                    ProductName: "",
+                    Type: zType,
+                },
+                check: [{ countryId:0,provinceList:[]}],
+                selected: [],
+                province: [],
+                country: [],
+                countryId: 0,
+                languageType: "",
+            },
+            methods: {
+                GetPPHourItem: function () {
+                    vm.items.PPHour.MerchantId = mMerchantId;
+                    InitBootstrapSelect("cboCurrency", "/adminapi/Currency/GetCurrList", 1, false, false, null, function () {
+                        $("#cboCurrency").selectpicker('val', vm.items.PPHour.CurrencyCode);
+                    });
+                    if (vm.items.Type == "Modify") {
+                        var data = new Object();
+                        data.id = zId;
+                        WS.AjaxP("get", "/adminapi/product/GetProductPriceHourById", data, function (response) {
+                            vm.items = response;
+
+                            if (vm.items.PPHour.BeginEffectTimeString == "") {
+                                $("#dtEffectDateFrom").val("");
+                            }
+                            if (vm.items.PPHour.EndEffectTimeString == "") {
+                                $("#dtEffectDateTo").val("");
+                            }
+                            $("#cboCurrency").selectpicker('val', vm.items.PPHour.CurrencyCode);
+
+                        }, function () { });
+                    }
+
+                },
+                Save: function () {
+                    vm.items.PPHour.BeginTime = $("#dtEffectDateFrom").val();;
+                    vm.items.PPHour.EndTime = $("#dtEffectDateTo").val();
+                    vm.items.Type = zType;
+                    vm.items.PPHour.CurrencyCode = $("#cboCurrency").val();
+                    WS.AjaxP("post", "/adminapi/product/SaveProductPriceHourInfo", vm.items, function (response) {
+                        if (response.Succeeded == true) {
+                            vm.items.Id = response.ReturnValue;
+                            vm.GetPPHourItem();
+                            @*clowWin();*@
+                            showCloseInfo(response.Message);
+
+
+                        }
+                        else {
+                            showWarn('@BDMall.Resources.Message.SaveFail' + response.Message);
+                        }
+                    }, function () { })
+                },
+                selectLanguage: function (obj) {
+                    vm.$refs.langbar.setCurrentLanguage(obj.Lang.Code);
+                    vm.languag = obj.Lang.Text;
+                    vm.languageType = obj.Lang.Code;
+                },
+                setDefaultLanguage: function (data) {
+                    if (data.length > 0) {
+                        var defaultLang = data[0].Lang.Code;
+                        vm.$refs.langbar.setCurrentLanguage(defaultLang);
+                        vm.language = data[0].Lang.Text;
+                        vm.languageType = data[0].Lang.Code;
+                    }
+                },
+                selectProductItem: function () {
+                    var mercahntId = vm.items.PPHour.MerchantId;
+                    OpenDialog("@BDMall.Resources.Label.SelectProduct", 1000, 700, "/Product/SelectProduct/0/" + mercahntId + "/0", null, function (data) {
+                        if (data && data.results && data.results.length > 0) {
+
+                            vm.items.PPHour.ProductId = data.results[0].ProductId;
+                            vm.items.PPHour.ProductCode = data.results[0].Code;
+
+                            vm.items.ProductName = data.results[0].Name;
+
+                        }
+                    });
+                },
+                selectMerchant: function () {
+
+                    OpenDialog("@BDMall.Resources.Label.Merchant", 1000, 700, "/Merchant/SelectMerchant/1/0/0", null, function (data) {
+                        if (data && data.results && data.results.length > 0) {
+                            data.results.forEach(function (val) {
+
+                                vm.items.PPHour.MerchantId = val.Id;
+                                vm.items.MerchantName = val.Name;
+                                //mMerchantId = val.Id;
+
+                            });
+
+                        }
+                    });
+                },
+                GetMerchantName: function () {
+                    if (mMerchantId !='00000000-0000-0000-0000-000000000000') {
+                        var data = new Object();
+                        data.id = mMerchantId;
+                        WS.AjaxP("get", "/adminapi/Delivery/GetMerchantName", data, function (response) {
+                            vm.items.MerchantName = response.Text;
+                        }, function () { });
+                    }
+                }
+            }
+        });
+
+
+
+
+        function Search() {
+
+        }
+
+        $(document).ready(function () {
+
+            $("input[name^='DateTimePicker']").datetimepicker({
+                todayBtn: true
+            });
+
+            vm.GetPPHourItem();
+
+            vm.GetMerchantName();
+
+
+
+            InitDateTimePicker();
+
+        });
+
+
+
+
+    </script>
+}
+

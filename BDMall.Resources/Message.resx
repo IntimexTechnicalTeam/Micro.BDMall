@@ -1,0 +1,1224 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ActivateAccountFailed" xml:space="preserve">
+    <value>Activate Account Failed.</value>
+  </data>
+  <data name="ActivateAccountSucceeded" xml:space="preserve">
+    <value>Activate Account Succeeded.</value>
+  </data>
+  <data name="Activated" xml:space="preserve">
+    <value>This account has been activated.</value>
+  </data>
+  <data name="AddCombosalesProductFail" xml:space="preserve">
+    <value>Add combosales product fail!</value>
+  </data>
+  <data name="AddtoCartFail" xml:space="preserve">
+    <value>Failed to join the shopping cart. Please try again later.</value>
+  </data>
+  <data name="CatalogHasUse" xml:space="preserve">
+    <value>The Catalog is already in use,can not delete!</value>
+  </data>
+  <data name="CodeMasterValueExists" xml:space="preserve">
+    <value>this value is already exist!</value>
+  </data>
+  <data name="CodeMustFill" xml:space="preserve">
+    <value>The Code can not be empty</value>
+  </data>
+  <data name="ConfirmDelete" xml:space="preserve">
+    <value>Confirm Delete?</value>
+  </data>
+  <data name="CourierRequire" xml:space="preserve">
+    <value>Courier is required.</value>
+  </data>
+  <data name="CreateAccountFaile" xml:space="preserve">
+    <value>Create Account Faile.</value>
+  </data>
+  <data name="CreateImageFail" xml:space="preserve">
+    <value>Create image fail!</value>
+  </data>
+  <data name="DataNotFound" xml:space="preserve">
+    <value>Data not found</value>
+  </data>
+  <data name="DataVerifyFail" xml:space="preserve">
+    <value>Data Verification is unsuccessful!</value>
+  </data>
+  <data name="Deactivated" xml:space="preserve">
+    <value>This account has been deactivated.</value>
+  </data>
+  <data name="DeleteCatalogFail" xml:space="preserve">
+    <value>Delete catalog fail!</value>
+  </data>
+  <data name="DeleteConfirm" xml:space="preserve">
+    <value>Confirm to Delete?</value>
+  </data>
+  <data name="DeleteFailed" xml:space="preserve">
+    <value>Delete failed.</value>
+  </data>
+  <data name="DeleteSelect" xml:space="preserve">
+    <value>Please select at least one Item</value>
+  </data>
+  <data name="DeleteSucceeded" xml:space="preserve">
+    <value>Delete Succeeded</value>
+  </data>
+  <data name="DeliveryAddressRequire" xml:space="preserve">
+    <value>Delivery address is required.</value>
+  </data>
+  <data name="DeliveryTypeRequire" xml:space="preserve">
+    <value>Delivery type is required.</value>
+  </data>
+  <data name="DetermineActivation" xml:space="preserve">
+    <value>Determine activation?</value>
+  </data>
+  <data name="DetermineDisable" xml:space="preserve">
+    <value>Determine Disable?</value>
+  </data>
+  <data name="DisableAccountFailed" xml:space="preserve">
+    <value>Disable Account Failed.</value>
+  </data>
+  <data name="DisableAccountSucceeded" xml:space="preserve">
+    <value>Disable Account Succeeded.</value>
+  </data>
+  <data name="EmailAddrFormatIncorrect" xml:space="preserve">
+    <value>The email address is incorrectly formatted.</value>
+  </data>
+  <data name="EmailExist" xml:space="preserve">
+    <value>Email Existed.</value>
+  </data>
+  <data name="FileFormatIncorrect" xml:space="preserve">
+    <value>The file format is incorrect !</value>
+  </data>
+  <data name="FillAllLanguage" xml:space="preserve">
+    <value>Please fill in product name in all language</value>
+  </data>
+  <data name="GetCartListFail" xml:space="preserve">
+    <value>Failed to query the shopping cart. Please try again later.</value>
+  </data>
+  <data name="GetCatalogFail" xml:space="preserve">
+    <value>Get catalog fail!</value>
+  </data>
+  <data name="GetCatalogTreeFail" xml:space="preserve">
+    <value>Get catalog tree fail!</value>
+  </data>
+  <data name="GetEmailTemplateFail" xml:space="preserve">
+    <value>Get emailtemplate failed!</value>
+  </data>
+  <data name="GetProductFail" xml:space="preserve">
+    <value>Get Product Failed.</value>
+  </data>
+  <data name="GetProductImgFail" xml:space="preserve">
+    <value>Get product image fail!</value>
+  </data>
+  <data name="HasDone" xml:space="preserve">
+    <value>This Client Order have been done!</value>
+  </data>
+  <data name="ConfirmMoveMember" xml:space="preserve">
+    <value>Confirm move members to this group?</value>
+  </data>
+  <data name="LangRequire" xml:space="preserve">
+    <value>Language Require</value>
+  </data>
+  <data name="LoadTableFail" xml:space="preserve">
+    <value>Load table data failed!</value>
+  </data>
+  <data name="MaxAdditionalImageOneTime" xml:space="preserve">
+    <value>Max. 5 additional images can be uploaded in one time .</value>
+  </data>
+  <data name="MaxAdditionalImageUpload" xml:space="preserve">
+    <value>Max. 10 additional images can be uploaded</value>
+  </data>
+  <data name="ModifyOneItem" xml:space="preserve">
+    <value>Please select one item to modify!</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="OneSelect" xml:space="preserve">
+    <value>Please select at least one Item</value>
+  </data>
+  <data name="PaymentTypeRequire" xml:space="preserve">
+    <value>Payment method is required.</value>
+  </data>
+  <data name="PhoneNumFormatIncorrect" xml:space="preserve">
+    <value>The phone number is incorrectly formatted.</value>
+  </data>
+  <data name="PleaseInputDesc" xml:space="preserve">
+    <value>Please Input Code</value>
+  </data>
+  <data name="PleaseSelect" xml:space="preserve">
+    <value>Please select</value>
+  </data>
+  <data name="Processing" xml:space="preserve">
+    <value>Processing please wait!</value>
+  </data>
+  <data name="ProductDeleted" xml:space="preserve">
+    <value>The product has been removed.</value>
+  </data>
+  <data name="ProductIsExists" xml:space="preserve">
+    <value>The product already exists</value>
+  </data>
+  <data name="ProductNotExist" xml:space="preserve">
+    <value>No item found.</value>
+  </data>
+  <data name="ProductOrClientNotExist" xml:space="preserve">
+    <value>Product or Client does not exist!</value>
+  </data>
+  <data name="Registration" xml:space="preserve">
+    <value>Registration</value>
+  </data>
+  <data name="RegSuccess" xml:space="preserve">
+    <value>Registration Successful</value>
+  </data>
+  <data name="RemoveCartItemFail" xml:space="preserve">
+    <value>Failed to delete cart item. Please try again later.</value>
+  </data>
+  <data name="RequestFail" xml:space="preserve">
+    <value>Request Failure.</value>
+  </data>
+  <data name="RequiredField" xml:space="preserve">
+    <value>* Required Field. Information must be provided.</value>
+  </data>
+  <data name="ResetPwdSucceeded" xml:space="preserve">
+    <value>Reset password succeeded.</value>
+  </data>
+  <data name="SaveCatalogFail" xml:space="preserve">
+    <value>Save catalog fail!</value>
+  </data>
+  <data name="SaveCoFailed" xml:space="preserve">
+    <value>Save clients order failed.</value>
+  </data>
+  <data name="SaveFail" xml:space="preserve">
+    <value>Save Fail</value>
+  </data>
+  <data name="SaveSuccess" xml:space="preserve">
+    <value>Save Successful.</value>
+  </data>
+  <data name="SendEmailFailed" xml:space="preserve">
+    <value>Send email failed.</value>
+  </data>
+  <data name="SendEmailSucceeded" xml:space="preserve">
+    <value>Send Email Succeeded.</value>
+  </data>
+  <data name="SubAttributeIsExist" xml:space="preserve">
+    <value>this sub attribute is already exist!</value>
+  </data>
+  <data name="SubMemberGroupIsExist" xml:space="preserve">
+    <value>this sub member group is already exist!</value>
+  </data>
+  <data name="SystemError" xml:space="preserve">
+    <value>Something went wrong with the system. Please try again later.</value>
+  </data>
+  <data name="UnkownError" xml:space="preserve">
+    <value>The system is abnormal, please try again later, we will deal with the problem as soon as possible.</value>
+  </data>
+  <data name="UpdataImgSeqFail" xml:space="preserve">
+    <value>Updata image seq fail!</value>
+  </data>
+  <data name="UpdateCartItemQtyFail" xml:space="preserve">
+    <value>Failed to update quantity. Please try again later.</value>
+  </data>
+  <data name="UploadFail" xml:space="preserve">
+    <value>Upload failed!</value>
+  </data>
+  <data name="UploadImage" xml:space="preserve">
+    <value>Please upload image first.</value>
+  </data>
+  <data name="UploadImgSucceeded" xml:space="preserve">
+    <value>Upload image succeeded!</value>
+  </data>
+  <data name="WebStoreInfoIsNull" xml:space="preserve">
+    <value>web store info is null</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="MerchantCompanyNameExist" xml:space="preserve">
+    <value>The company name already exists.</value>
+  </data>
+  <data name="ConfirmCancel" xml:space="preserve">
+    <value>Are you sure you need to cancel it？</value>
+  </data>
+  <data name="ReceivedInquiry" xml:space="preserve">
+    <value>We have received your inquiry information</value>
+  </data>
+  <data name="WarehouseNameMultiRequire" xml:space="preserve">
+    <value>One Warehouse Name is required at least!</value>
+  </data>
+  <data name="PlaseSelectRecipients" xml:space="preserve">
+    <value>Please select recipients！</value>
+  </data>
+  <data name="FillAllSubject" xml:space="preserve">
+    <value>Please fill all subject!</value>
+  </data>
+  <data name="GetWarehouseFail" xml:space="preserve">
+    <value>Get Warehouse fail!</value>
+  </data>
+  <data name="SupplierNameMultiRequire" xml:space="preserve">
+    <value>One Supplier Name is required at least!</value>
+  </data>
+  <data name="CreateFileFailed" xml:space="preserve">
+    <value>Create file failed!</value>
+  </data>
+  <data name="EmailCountNotEnough" xml:space="preserve">
+    <value>Email Count is not enough!</value>
+  </data>
+  <data name="AddtoCartSuccess" xml:space="preserve">
+    <value>Successfully added to the shopping cart.</value>
+  </data>
+  <data name="AccountExist" xml:space="preserve">
+    <value>Login name is existed.</value>
+  </data>
+  <data name="SalesReturnQtyOverrun" xml:space="preserve">
+    <value>Qty is greater than the upper!</value>
+  </data>
+  <data name="SalesReturnQtySufficient" xml:space="preserve">
+    <value>Qty should be greater than zero!</value>
+  </data>
+  <data name="PleaseSelectWarehouse" xml:space="preserve">
+    <value>Please select Warehouse.</value>
+  </data>
+  <data name="SalesReturnDateRequire" xml:space="preserve">
+    <value>Date is required.</value>
+  </data>
+  <data name="PleaseCancelEditStatus" xml:space="preserve">
+    <value>Please cancel the edit status of input.</value>
+  </data>
+  <data name="UpdateOrderStatusFail" xml:space="preserve">
+    <value>Update order status failed!</value>
+  </data>
+  <data name="NoRecord" xml:space="preserve">
+    <value>No matching records found</value>
+  </data>
+  <data name="DateRequire" xml:space="preserve">
+    <value>Date is require!</value>
+  </data>
+  <data name="BatchNumRequire" xml:space="preserve">
+    <value>Batch Number is required.</value>
+  </data>
+  <data name="PleaseSelectSupplier" xml:space="preserve">
+    <value>Please select supplier.</value>
+  </data>
+  <data name="MustIntger" xml:space="preserve">
+    <value>Please enter only digits.</value>
+  </data>
+  <data name="MustValidURL" xml:space="preserve">
+    <value>Please enter a valid URL.</value>
+  </data>
+  <data name="PrmtCatNameRequire" xml:space="preserve">
+    <value>Name is required.</value>
+  </data>
+  <data name="PrmtCatSEOKwDescRequire" xml:space="preserve">
+    <value>Keyword description is required.</value>
+  </data>
+  <data name="PrmtCatSEOKwRequire" xml:space="preserve">
+    <value>Keyword is required.</value>
+  </data>
+  <data name="DelFailedPrmtCatOwnChild" xml:space="preserve">
+    <value>Delete failed.This record has been bound to other records.</value>
+  </data>
+  <data name="NumberNotLessThan" xml:space="preserve">
+    <value>Number not less than</value>
+  </data>
+  <data name="FillAllRequiredFields" xml:space="preserve">
+    <value>Please fill in all required fields！</value>
+  </data>
+  <data name="UniqueSeq" xml:space="preserve">
+    <value>Seq cannot be repeated!</value>
+  </data>
+  <data name="UpdateFail" xml:space="preserve">
+    <value>Update Failed!</value>
+  </data>
+  <data name="UpdateSuccess" xml:space="preserve">
+    <value>Update Succeeded!</value>
+  </data>
+  <data name="CustomPrcRngValueRequire" xml:space="preserve">
+    <value>Max value or min value is required at least!</value>
+  </data>
+  <data name="CurrencyRequire" xml:space="preserve">
+    <value>Currency is required</value>
+  </data>
+  <data name="PleaseSelectCatalog" xml:space="preserve">
+    <value>Please select catalog!</value>
+  </data>
+  <data name="LoginFail" xml:space="preserve">
+    <value>Login Fail</value>
+  </data>
+  <data name="SendWhatsappFailed" xml:space="preserve">
+    <value>Send whatsapp failed!</value>
+  </data>
+  <data name="SendWhatsappSucceeded" xml:space="preserve">
+    <value>Send whatsapp succeeded!</value>
+  </data>
+  <data name="FolderLayerOverrun" xml:space="preserve">
+    <value>The layer qty. of folder is overrun!</value>
+  </data>
+  <data name="RootUploadFolderDelFail" xml:space="preserve">
+    <value>Could not delete the root folder of upload!</value>
+  </data>
+  <data name="RootUploadFolderUpdateFail" xml:space="preserve">
+    <value>Could not update the root folder of upload's name!</value>
+  </data>
+  <data name="UserNotExist" xml:space="preserve">
+    <value>This user can not be found,pleas try again later.</value>
+  </data>
+  <data name="PleaseSelectMerchant" xml:space="preserve">
+    <value>Please select merchant.</value>
+  </data>
+  <data name="AccountNotExist" xml:space="preserve">
+    <value>The user does not exist, please re-enter the correct email</value>
+  </data>
+  <data name="LoginSuccess" xml:space="preserve">
+    <value>Login Success</value>
+  </data>
+  <data name="AccountDisabled" xml:space="preserve">
+    <value>Account Disabled</value>
+  </data>
+  <data name="ProductInStock" xml:space="preserve">
+    <value>The associated product has been recorded in stock</value>
+  </data>
+  <data name="PasswordNotMatch" xml:space="preserve">
+    <value>Password not match.</value>
+  </data>
+  <data name="LoginFailMessage" xml:space="preserve">
+    <value>Incorrect username/e-mail or password. Type in correct data and try again.</value>
+  </data>
+  <data name="MenuCodeIsExist" xml:space="preserve">
+    <value>Menu code si existed!</value>
+  </data>
+  <data name="AnnounceContentRequire" xml:space="preserve">
+    <value>Content is required.</value>
+  </data>
+  <data name="AnnounceHadPublished" xml:space="preserve">
+    <value>Announce had been published</value>
+  </data>
+  <data name="AnnounceHadWithdrawed" xml:space="preserve">
+    <value>Announce had been withdrawed</value>
+  </data>
+  <data name="AnnounceSubjectRequire" xml:space="preserve">
+    <value>Subject is required.</value>
+  </data>
+  <data name="ConfirmPublish" xml:space="preserve">
+    <value>Publish confirmed？</value>
+  </data>
+  <data name="ConfirmWithdraw" xml:space="preserve">
+    <value>Withdraw confirmed?</value>
+  </data>
+  <data name="ModifyAnnounceFail" xml:space="preserve">
+    <value>Some system announcement had published, you could operate after cancel them!</value>
+  </data>
+  <data name="PublishFailed" xml:space="preserve">
+    <value>Publish is fail.</value>
+  </data>
+  <data name="PublishSucceeded" xml:space="preserve">
+    <value>Publish is successful.</value>
+  </data>
+  <data name="WithdrawFailed" xml:space="preserve">
+    <value>Withdraw is fail.</value>
+  </data>
+  <data name="WithdrawSucceeded" xml:space="preserve">
+    <value>Withdraw is successful.</value>
+  </data>
+  <data name="JoinWithComma" xml:space="preserve">
+    <value>Please use comma (,) to separate words</value>
+  </data>
+  <data name="CreateAccountSucess" xml:space="preserve">
+    <value>Create account sucessfully.</value>
+  </data>
+  <data name="CreateMerchantActFail" xml:space="preserve">
+    <value>Crate Merchant Account Fail :</value>
+  </data>
+  <data name="DataFormatError" xml:space="preserve">
+    <value>Data Format Error</value>
+  </data>
+  <data name="MerchantAccountCreated" xml:space="preserve">
+    <value>Merchant account has been created already!</value>
+  </data>
+  <data name="AttributeIsUsed" xml:space="preserve">
+    <value>Attribute has been used!</value>
+  </data>
+  <data name="AddFavoriteFail" xml:space="preserve">
+    <value>Add  to favorite failure.</value>
+  </data>
+  <data name="AddFavoriteSuccess" xml:space="preserve">
+    <value>Add  to favorite successful.</value>
+  </data>
+  <data name="RemoveFavoriteSuccess" xml:space="preserve">
+    <value>Remove successful.</value>
+  </data>
+  <data name="RevmveFavoriteFail" xml:space="preserve">
+    <value>remove  to favorite failure.</value>
+  </data>
+  <data name="PleaseSelectDiffWarehouse" xml:space="preserve">
+    <value>Please select different warehouse.</value>
+  </data>
+  <data name="AttributeNotNull" xml:space="preserve">
+    <value>Attribute not allow empty!</value>
+  </data>
+  <data name="SKUNotExists" xml:space="preserve">
+    <value>Sku not exist</value>
+  </data>
+  <data name="SaveSuccessButMod" xml:space="preserve">
+    <value>Save successful！Please change the charge price for this zone.</value>
+  </data>
+  <data name="WrongProductImageFormat" xml:space="preserve">
+    <value>Wrong product image upload format</value>
+  </data>
+  <data name="PleaseLogin" xml:space="preserve">
+    <value>Please Login!</value>
+  </data>
+  <data name="NotMerchantToOperate" xml:space="preserve">
+    <value>Not merchant accounts are not allowed to operate</value>
+  </data>
+  <data name="ApprovedProductNotAllowModify" xml:space="preserve">
+    <value>This is a approved product not allow modify.If you want to modify it,Please create a new version.</value>
+  </data>
+  <data name="HasSameProductInTimePeriod" xml:space="preserve">
+    <value>A version of this product already exists within a time period{0} and cannot be readded!</value>
+  </data>
+  <data name="Sellout" xml:space="preserve">
+    <value>Sellout</value>
+  </data>
+  <data name="NoContent" xml:space="preserve">
+    <value>No Content</value>
+  </data>
+  <data name="EmailCodeInvalid" xml:space="preserve">
+    <value>The verification code is invalid. Please retrieve the update message.</value>
+  </data>
+  <data name="KeyInvalid" xml:space="preserve">
+    <value>Key Invalid</value>
+  </data>
+  <data name="EnableSysLangRequire" xml:space="preserve">
+    <value>One system language should be active at least!</value>
+  </data>
+  <data name="ActiveConfirm" xml:space="preserve">
+    <value>Confirm to activate?</value>
+  </data>
+  <data name="DeactiveConfirm" xml:space="preserve">
+    <value>Confirm to deactive?</value>
+  </data>
+  <data name="ActiveFail" xml:space="preserve">
+    <value>Activation is fail!</value>
+  </data>
+  <data name="DeactiveFail" xml:space="preserve">
+    <value>Deactive is fail!</value>
+  </data>
+  <data name="FileNotMoreThan" xml:space="preserve">
+    <value>FileNotMoreThan</value>
+  </data>
+  <data name="OnlyUploadImage" xml:space="preserve">
+    <value>OnlyUploadImage</value>
+  </data>
+  <data name="SelectAddressAgain" xml:space="preserve">
+    <value>Please select divery address again.</value>
+  </data>
+  <data name="AccountCodeRequired" xml:space="preserve">
+    <value>Account Code is required.</value>
+  </data>
+  <data name="CostCenterRequired" xml:space="preserve">
+    <value>Cost Center is required.</value>
+  </data>
+  <data name="AccountIsActive" xml:space="preserve">
+    <value>This account is activated.</value>
+  </data>
+  <data name="IsNotRegistered" xml:space="preserve">
+    <value>This email is not registered</value>
+  </data>
+  <data name="NotEnableAutonomousActive" xml:space="preserve">
+    <value>The system does not enable autonomous activation, please contact the site administrator to activate.</value>
+  </data>
+  <data name="ApproveSucceeded" xml:space="preserve">
+    <value>Approve Succeeded</value>
+  </data>
+  <data name="PleaseSelectImage" xml:space="preserve">
+    <value>Please select image</value>
+  </data>
+  <data name="NoMerchantPermisson" xml:space="preserve">
+    <value>There is no Merchant Permisson.</value>
+  </data>
+  <data name="OldPwdIncorrect" xml:space="preserve">
+    <value>Old password is not match.</value>
+  </data>
+  <data name="MbrAccountDeleted" xml:space="preserve">
+    <value>The account has been marked as delete state and cannot be used.</value>
+  </data>
+  <data name="ApproveFail" xml:space="preserve">
+    <value>Approve Failed!</value>
+  </data>
+  <data name="AddZoneFirst" xml:space="preserve">
+    <value>Please add zone first</value>
+  </data>
+  <data name="InvaildPromotionCode" xml:space="preserve">
+    <value>Invaild Promotion Code</value>
+  </data>
+  <data name="PromotionCodeIsExist" xml:space="preserve">
+    <value>Promotion code is exist!</value>
+  </data>
+  <data name="HasExist" xml:space="preserve">
+    <value>HasExist！</value>
+  </data>
+  <data name="HaveNoInventoryRecord" xml:space="preserve">
+    <value>inventory is zero.</value>
+  </data>
+  <data name="InvenToryQtyNotEnough" xml:space="preserve">
+    <value>inventory is not enough.</value>
+  </data>
+  <data name="DataLengthOverFlow" xml:space="preserve">
+    <value>The length of Data[{0}] is overflow：{1}。</value>
+  </data>
+  <data name="EditorWordCountMsg" xml:space="preserve">
+    <value>The current edit content HTML code length is ：{#count}，You can also type in the length：{#leave}</value>
+  </data>
+  <data name="EditorWordOverFlowMsg" xml:space="preserve">
+    <value>The current edit content HTML code length exceeds the limit.</value>
+  </data>
+  <data name="GTSaleQuota" xml:space="preserve">
+    <value>Ordered quantity cannot be greater than the sales quota.</value>
+  </data>
+  <data name="DeliveryInformation" xml:space="preserve">
+    <value>Delivery Information</value>
+  </data>
+  <data name="Destination" xml:space="preserve">
+    <value>Destination</value>
+  </data>
+  <data name="Coupon" xml:space="preserve">
+    <value>Coupon</value>
+  </data>
+  <data name="MemberGroup" xml:space="preserve">
+    <value>Member Group</value>
+  </data>
+  <data name="PromotionCode" xml:space="preserve">
+    <value>Promotion Code</value>
+  </data>
+  <data name="PromotionRule" xml:space="preserve">
+    <value>Promotion Rule</value>
+  </data>
+  <data name="NotAllowLargeThan" xml:space="preserve">
+    <value>Not allow Larger than </value>
+  </data>
+  <data name="ResetPwdEmail" xml:space="preserve">
+    <value>Reset password email is sended to your email box,please check.</value>
+  </data>
+  <data name="EveryLanguageAllowedUploadFiveImage" xml:space="preserve">
+    <value>Every language allow upload 5 image.</value>
+  </data>
+  <data name="AccountIsNotActive" xml:space="preserve">
+    <value>This account is not activated.</value>
+  </data>
+  <data name="NoRecordToTrace" xml:space="preserve">
+    <value>No record to trace</value>
+  </data>
+  <data name="MailTemplateIncomplete" xml:space="preserve">
+    <value>The mail template is incomplete!</value>
+  </data>
+  <data name="CantFindOrder" xml:space="preserve">
+    <value>Can't find order</value>
+  </data>
+  <data name="GenerateNumFailed" xml:space="preserve">
+    <value>Auto generate order number failed</value>
+  </data>
+  <data name="GenerateReNumFailed" xml:space="preserve">
+    <value>Auto generate returnorder number failed</value>
+  </data>
+  <data name="MerberNotExist" xml:space="preserve">
+    <value>Member is not exist:</value>
+  </data>
+  <data name="NoMember" xml:space="preserve">
+    <value>no member exist</value>
+  </data>
+  <data name="NotValidProduct" xml:space="preserve">
+    <value>The cart does not have a valid product！</value>
+  </data>
+  <data name="ProductCodeEmpty" xml:space="preserve">
+    <value>product code is empty.</value>
+  </data>
+  <data name="ProductExpired" xml:space="preserve">
+    <value>The current product has expired, product number:</value>
+  </data>
+  <data name="ProductNotSale" xml:space="preserve">
+    <value>Product is not on sale.</value>
+  </data>
+  <data name="RePasswordFail" xml:space="preserve">
+    <value>Reset password fail.</value>
+  </data>
+  <data name="AddArrivalNotifyFail" xml:space="preserve">
+    <value>Add notify failed!</value>
+  </data>
+  <data name="AddArrivalNotifySuccess" xml:space="preserve">
+    <value>Add notify succeeded!</value>
+  </data>
+  <data name="CheckGoodsEx" xml:space="preserve">
+    <value>Check if the goods in the member's shopping cart have expired.</value>
+  </data>
+  <data name="CheckOrderEx" xml:space="preserve">
+    <value>Check if the member's order has expired.</value>
+  </data>
+  <data name="ExOrderNo" xml:space="preserve">
+    <value>Expired order number</value>
+  </data>
+  <data name="ExOrderQty" xml:space="preserve">
+    <value>Expired order quantity</value>
+  </data>
+  <data name="IdEmpty" xml:space="preserve">
+    <value>Id is empty.</value>
+  </data>
+  <data name="RecordExist" xml:space="preserve">
+    <value>Record is not exist.</value>
+  </data>
+  <data name="RemainOrderQty" xml:space="preserve">
+    <value>Remaining order quantity</value>
+  </data>
+  <data name="SendMailFailed" xml:space="preserve">
+    <value>Failed to send mail</value>
+  </data>
+  <data name="AddRelatedProductSucceed" xml:space="preserve">
+    <value>Add related product succeeded!</value>
+  </data>
+  <data name="ConfirmPwdNotEq" xml:space="preserve">
+    <value>Confirm password is not same with the password.</value>
+  </data>
+  <data name="PwdMaxLength" xml:space="preserve">
+    <value>Password max length is {0}.</value>
+  </data>
+  <data name="PwdMinLength" xml:space="preserve">
+    <value>Password min length is {0}.</value>
+  </data>
+  <data name="LogoNotAllowEmpty" xml:space="preserve">
+    <value>Logo  is required.</value>
+  </data>
+  <data name="NoPermission" xml:space="preserve">
+    <value>The current account does not have permission to do this, please contact the system administrator.</value>
+  </data>
+  <data name="ProductNotAllowedEmpty" xml:space="preserve">
+    <value>Product not allowed empty!</value>
+  </data>
+  <data name="ShipCodeNotAllowedEmpty" xml:space="preserve">
+    <value>ShipCode not allowed empty!</value>
+  </data>
+  <data name="SaveCatalogConfirm" xml:space="preserve">
+    <value>After the product is created in this catalog,the attributes of the catalog cannot be modified. Please confirm whether the attributes are set correct! Please click "yes" to confirm saving and "no" to cancel saving.</value>
+  </data>
+  <data name="PleaseInputEmbeddedLink" xml:space="preserve">
+    <value>Please input embedded link</value>
+  </data>
+  <data name="DeleteInvtHoldFailed" xml:space="preserve">
+    <value>Delete hold of goods failed.</value>
+  </data>
+  <data name="EmailNotNull" xml:space="preserve">
+    <value>Email Address not allowed empty！</value>
+  </data>
+  <data name="FuncParameterNotNull" xml:space="preserve">
+    <value>Function Parameter not allowed empty！</value>
+  </data>
+  <data name="SkuProductNotFound" xml:space="preserve">
+    <value>Sku Product is not found!</value>
+  </data>
+  <data name="PleaseSelectOffSaleProduct" xml:space="preserve">
+    <value>Please select the product that has been removed from the shelf to active! The following is a list of error products[{0}].</value>
+  </data>
+  <data name="PleaseSelectRightTimeProduct" xml:space="preserve">
+    <value>Please select the product with valid time period to active! The following is a list of error products[{0}].</value>
+  </data>
+  <data name="PleaseSelectOnSaleProduct" xml:space="preserve">
+    <value>Please select the products that are on the shelves to active! The following is a list of error products[{0}].</value>
+  </data>
+  <data name="ProdNotOnSale" xml:space="preserve">
+    <value>Currently, the product has expired, product number: {0}</value>
+  </data>
+  <data name="InvaildMCNCode" xml:space="preserve">
+    <value>Invaild mail collection number!</value>
+  </data>
+  <data name="CatalogCodeIsExist" xml:space="preserve">
+    <value>Catalog code is existed!</value>
+  </data>
+  <data name="ImageSizeMustBe" xml:space="preserve">
+    <value>Image size must less than {0}</value>
+  </data>
+  <data name="DateCompare" xml:space="preserve">
+    <value>The end date shall not be less than the beginning date</value>
+  </data>
+  <data name="PasswordFormatError" xml:space="preserve">
+    <value>At least eight (8) characters long, with a mixture of numbers and letters</value>
+  </data>
+  <data name="AreYouSureToCancelOrder" xml:space="preserve">
+    <value>Confirm to cancel this sub order?</value>
+  </data>
+  <data name="AreYouSureToSendBack" xml:space="preserve">
+    <value>Confirm to sendback this sub order?</value>
+  </data>
+  <data name="InventoryQtyNotNull" xml:space="preserve">
+    <value>The qty. of stock is more than 1. </value>
+  </data>
+  <data name="PromotionRuleInUse" xml:space="preserve">
+    <value>The promotion rule has been used and cannot be modified</value>
+  </data>
+  <data name="DiscountExpired" xml:space="preserve">
+    <value>Discount {0} has expired</value>
+  </data>
+  <data name="SupplierIdExist" xml:space="preserve">
+    <value>The supplier id already exists.</value>
+  </data>
+  <data name="PleaseInputCorrectChar" xml:space="preserve">
+    <value>Cannot enter special characters</value>
+  </data>
+  <data name="ConfirmApprove" xml:space="preserve">
+    <value>Approve Confirmed？</value>
+  </data>
+  <data name="CancelArrivalNotifyFail" xml:space="preserve">
+    <value>Cancel notify failed!</value>
+  </data>
+  <data name="CancelArrivalNotifySuccess" xml:space="preserve">
+    <value>Cancel notify succeeded!</value>
+  </data>
+  <data name="EnterEmailForSubscribe" xml:space="preserve">
+    <value>Invalid email address</value>
+  </data>
+  <data name="ThanksForSubscribe" xml:space="preserve">
+    <value>Thank you for your subscription</value>
+  </data>
+  <data name="SubscribeFail" xml:space="preserve">
+    <value>Subscribe to the failure</value>
+  </data>
+  <data name="RemoveCartItemSuccess" xml:space="preserve">
+    <value>Remove successful.</value>
+  </data>
+  <data name="ShipCodeIsExist" xml:space="preserve">
+    <value>ShipCode is Exist!</value>
+  </data>
+  <data name="TrackingNoOutofRange" xml:space="preserve">
+    <value>TrackingNo is out of range.Please contact the administrator.</value>
+  </data>
+  <data name="PleaseSetupLCTrackingNo" xml:space="preserve">
+    <value>Please set LCTrackingNoSetting correctly</value>
+  </data>
+  <data name="CurrentNoLengthMust" xml:space="preserve">
+    <value>LCTrackingNoSetting currentno length must be {0}.</value>
+  </data>
+  <data name="SubOrderNumNotGreaterThan" xml:space="preserve">
+    <value>The number of suborders shall not be greater than {0}.</value>
+  </data>
+  <data name="ExtSupplierIdNotAvailable" xml:space="preserve">
+    <value>The supplier id is not available!</value>
+  </data>
+  <data name="PleaseGenShipLabel" xml:space="preserve">
+    <value>Please generate shipping label.</value>
+  </data>
+  <data name="PleasePostMail" xml:space="preserve">
+    <value>Please post the mail.</value>
+  </data>
+  <data name="PasswordRule" xml:space="preserve">
+    <value>At least eight (8) characters long, with a mixture of numbers and letters</value>
+  </data>
+  <data name="FieldRequire" xml:space="preserve">
+    <value>This field is mandatory</value>
+  </data>
+  <data name="ResetPwdNoAccount" xml:space="preserve">
+    <value>The user does not exist, please re-enter the correct email</value>
+  </data>
+  <data name="ResetPwdEmailIncorrect" xml:space="preserve">
+    <value>Invalid email address</value>
+  </data>
+  <data name="ResetPwdEnterRegEmail" xml:space="preserve">
+    <value>Please enter the registered email</value>
+  </data>
+  <data name="EnterEmail" xml:space="preserve">
+    <value>Please enter your email address.</value>
+  </data>
+  <data name="PrmtNameLenTips" xml:space="preserve">
+    <value>Note that the length should not exceed the length of the foreground design layout.</value>
+  </data>
+  <data name="UpdatePwdSuccess" xml:space="preserve">
+    <value>Update password successful .</value>
+  </data>
+  <data name="Digits" xml:space="preserve">
+    <value>Please enter only digits.</value>
+  </data>
+  <data name="Number" xml:space="preserve">
+    <value>Please enter a valid number.</value>
+  </data>
+  <data name="FailToUseDiscount" xml:space="preserve">
+    <value>Fail to use the discount</value>
+  </data>
+  <data name="ValueLengthLessThan" xml:space="preserve">
+    <value>Please enter a value less than or equal to {0}.</value>
+  </data>
+  <data name="ZipInconCountry" xml:space="preserve">
+    <value>The zip code filled in is inconsistent with the selected country</value>
+  </data>
+  <data name="ZipInconProvince" xml:space="preserve">
+    <value>The zip code filled in is inconsistent with the selected province</value>
+  </data>
+  <data name="NoMailTrackingMessage" xml:space="preserve">
+    <value>No mail delivery information.</value>
+  </data>
+  <data name="PleaseEnterCorrectPhoneNumber" xml:space="preserve">
+    <value>Please enter the valid mobile phone number</value>
+  </data>
+  <data name="PleaseEnterSenderData" xml:space="preserve">
+    <value>Please enter the sender's information</value>
+  </data>
+  <data name="PleaseSelectPostCounter" xml:space="preserve">
+    <value>Please choose the pick-up point</value>
+  </data>
+  <data name="NameAndPhoneNotAllowedEmpty" xml:space="preserve">
+    <value>Recipient and recipient phones cannot be empty</value>
+  </data>
+  <data name="PleaseEnterTrackingNumber" xml:space="preserve">
+    <value>Please enter the tracking number</value>
+  </data>
+  <data name="ECShipChargeError" xml:space="preserve">
+    <value>Since EC-Ship is temporarily out of service, ShopThruPost can only provide a limited option of posting methods until EC-Ship resumes normal . We are sorry for any inconvenience caused.</value>
+  </data>
+  <data name="OpenChatFailed" xml:space="preserve">
+    <value>Open dialog failed.</value>
+  </data>
+  <data name="SpamResetEmail" xml:space="preserve">
+    <value>An Email was sent by system to your registered email address. Please check it to activate your account. If you do not receive the email, please contact us. The email may be spammed, please check and mark it as "Non spam / Not spam".</value>
+  </data>
+  <data name="DecimalPlacesLessThan" xml:space="preserve">
+    <value>The maximum number of decimal places is {0}</value>
+  </data>
+  <data name="MassUploadProductSuccess" xml:space="preserve">
+    <value>Upload file successfully! Please select the merchant and click [upload product] to upload the product in batches</value>
+  </data>
+  <data name="PleaseUploadCorrectFormat" xml:space="preserve">
+    <value>Please upload file in {0} format and the file size cannot exceed {1} KB</value>
+  </data>
+  <data name="LengthLimit" xml:space="preserve">
+    <value>The {0} length must not exceed {1}</value>
+  </data>
+  <data name="ProductCatalogNotExist" xml:space="preserve">
+    <value>The catalog does not exist</value>
+  </data>
+  <data name="ContactAdmin" xml:space="preserve">
+    <value>Unknown error, please contact administrator</value>
+  </data>
+  <data name="SalseReturnQtyOverSalesQty" xml:space="preserve">
+    <value>Qty. is greater than the sales qty.!</value>
+  </data>
+  <data name="BatchNumExsit" xml:space="preserve">
+    <value>The batch num already exsits.</value>
+  </data>
+  <data name="IsRequiredField" xml:space="preserve">
+    <value>{0} Is Required Field. Information must be provided.</value>
+  </data>
+  <data name="ValueNotLessThan" xml:space="preserve">
+    <value>{0} value not less than {1}</value>
+  </data>
+  <data name="CannotShipped" xml:space="preserve">
+    <value>Order cannot be shipped to this destination.</value>
+  </data>
+  <data name="OrderIsOverweight" xml:space="preserve">
+    <value>Please select the other shipping methods or split the order.</value>
+  </data>
+  <data name="DateFormatError" xml:space="preserve">
+    <value>Date format error!</value>
+  </data>
+  <data name="StatusHasChanged" xml:space="preserve">
+    <value>The state has changed</value>
+  </data>
+  <data name="ServerBusy" xml:space="preserve">
+    <value>The system is now busy processing a large number of customer orders
+Thank you for your patience.</value>
+  </data>
+  <data name="DateCompareToday" xml:space="preserve">
+    <value>The date cannot be less than today</value>
+  </data>
+  <data name="MbrRegistrationInstruction" xml:space="preserve">
+    <value>An Account Activation Email was sent by system to your registered email address. Please check it to activate your account. If you do not receive the email, please contact us. The email may be spammed, please check and mark it as "Non spam / Not spam".</value>
+  </data>
+  <data name="ThanksForMbrRegistration" xml:space="preserve">
+    <value>Thank you for your registration!</value>
+  </data>
+  <data name="EnterCorrectName" xml:space="preserve">
+    <value>Please enter the correct name format</value>
+  </data>
+  <data name="EnterZipCode" xml:space="preserve">
+    <value>Please enter the zip code</value>
+  </data>
+  <data name="AccountIsActivated" xml:space="preserve">
+    <value>Your account has been activated, please login.</value>
+  </data>
+  <data name="AccountVerificationFailedDesc" xml:space="preserve">
+    <value>Verification failed. Please register again.</value>
+  </data>
+  <data name="AccountVerifyCodeDeactivated" xml:space="preserve">
+    <value>The verification code is deactivated, please try to reactivate.</value>
+  </data>
+  <data name="CreateOrderFail" xml:space="preserve">
+    <value>Create Order Failed!</value>
+  </data>
+  <data name="ShoppingCartItemChanged" xml:space="preserve">
+    <value>Products in the shopping cart have been changed/expired, please check again.</value>
+  </data>
+  <data name="AreYouSureToChangeECShipStatus" xml:space="preserve">
+    <value>Confirm to change ecshipstatus?</value>
+  </data>
+  <data name="ConfirmWithoutPrmtBannerList" xml:space="preserve">
+    <value>No promotion banner is added. Confirm to save?</value>
+  </data>
+  <data name="ConfirmWithoutPrmtProdList" xml:space="preserve">
+    <value>No promotion product is added. Confirm to save?</value>
+  </data>
+  <data name="NonReturnableItemAlert" xml:space="preserve">
+    <value>The order contains non-returnable items. Request for return failed.</value>
+  </data>
+  <data name="AccountLinkuped" xml:space="preserve">
+    <value>Your account is linked up with Hongkong Post ID. Please login with Hongkong Post ID Login Name.</value>
+  </data>
+  <data name="InvalidLoginName" xml:space="preserve">
+    <value>Invalid login name.</value>
+  </data>
+  <data name="MigrtionContent" xml:space="preserve">
+    <value>&lt;span class='MigContent1'&gt;Hongkong Post has launched a new single account Hongkong Post ID, you may upgrade your ShopThruPost account to Hongkong Post ID and use one single account to log in Hongkong Post’s online services.&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;
+&lt;span class='MigContent2'&gt;Note: From 1st March 2020, ShopThruPost account holder must use Hongkong Post ID to login ShopThruPost.&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;</value>
+  </data>
+  <data name="MigrtionTitle" xml:space="preserve">
+    <value>Upgrade ShopThruPost account to Hongkong Post ID</value>
+  </data>
+  <data name="AppLinkupTips" xml:space="preserve">
+    <value>Email of Hongkong Post ID has been existed in ShopThruPost. If you are the owner of this email, you may linkup. </value>
+  </data>
+  <data name="NotLinkMsg" xml:space="preserve">
+    <value>Linkup Existing “ShopThruPost” Account:&lt;br/&gt;
+If you have an account of “ShopThruPost”, you can link it up to your HKP ID.&lt;br/&gt;
+&lt;br/&gt;
+Get Started “ShopThruPost”:&lt;br/&gt;
+Try “ShopThruPost” online service now.&lt;br/&gt;</value>
+  </data>
+  <data name="OMOSVerifyCodeNotMatch" xml:space="preserve">
+    <value>Verify code is not matched!</value>
+  </data>
+  <data name="OMOSVerifyCodeRequire" xml:space="preserve">
+    <value>Verify code is required!</value>
+  </data>
+  <data name="EntryDataIncomplete" xml:space="preserve">
+    <value>The data entry is incomplete.</value>
+  </data>
+  <data name="HKPIDLinkuped" xml:space="preserve">
+    <value>HKPID has been Linkuped.</value>
+  </data>
+  <data name="ExistHTMLLabel" xml:space="preserve">
+    <value>HTML tags are not allowed</value>
+  </data>
+  <data name="MobileAppCartSOSRefuse" xml:space="preserve">
+    <value>Advance Order Service is not available in the “ShopThruPost” Mobile App, please switch to the web browser of your mobile phone to complete your advance order. Sorry for any inconvenience caused. For enquiries, please call (852) 2785 5711, email aos@hkpo.gov.hk or fax to (852) 2191 9296.</value>
+  </data>
+  <data name="CounterCollectionNotExist" xml:space="preserve">
+    <value>CounterCollection[{0}] not Exist!</value>
+  </data>
+  <data name="MailServerNotExist" xml:space="preserve">
+    <value>Mailbox server configuration does not exist, please contact customer service</value>
+  </data>
+  <data name="PleaseEnterCorrectEmail" xml:space="preserve">
+    <value>Please enter correct email</value>
+  </data>
+  <data name="GetTreeFail" xml:space="preserve">
+    <value>Get tree fail</value>
+  </data>
+  <data name="OpenWithNewTab" xml:space="preserve">
+    <value>Open with the new TAB</value>
+  </data>
+  <data name="PromotionCodeDeleted" xml:space="preserve">
+    <value>PromotionCode is deleted</value>
+  </data>
+  <data name="PromotionCodeExpired" xml:space="preserve">
+    <value>PromotionCode is expired</value>
+  </data>
+  <data name="NoPromotionCode" xml:space="preserve">
+    <value>No code is generated</value>
+  </data>
+  <data name="ActiveCanNotModify" xml:space="preserve">
+    <value>Cannot be modified after activation. Is it active?</value>
+  </data>
+  <data name="OldMerchantMbrEmpty" xml:space="preserve">
+    <value>The original business lacks administrators</value>
+  </data>
+  <data name="AttributeInUsed" xml:space="preserve">
+    <value>Attribute [{0}] is already in use, do not delete</value>
+  </data>
+  <data name="CustomUrlIsExist" xml:space="preserve">
+    <value>CustomUrl is exists</value>
+  </data>
+  <data name="TS_AdSyncFail" xml:space="preserve">
+    <value>Update failed, advertising data synchronization failed.</value>
+  </data>
+  <data name="TS_VideoFileNotExists" xml:space="preserve">
+    <value>The AD video file does not exist.</value>
+  </data>
+  <data name="GreaterThanMaxLimitDayFun" xml:space="preserve">
+    <value>You have redeemed more points than the maximum for the day</value>
+  </data>
+  <data name="GreaterThanMaxLimitMonthFun" xml:space="preserve">
+    <value>You have redeemed more points than the maximum for the month</value>
+  </data>
+  <data name="GreaterThanMaxLimitYearFun" xml:space="preserve">
+    <value>You have redeemed more points than the maximum for the year</value>
+  </data>
+  <data name="MemberNotExist" xml:space="preserve">
+    <value>Forbidden Operator：Not Find Member</value>
+  </data>
+  <data name="MemberPointsNotExist" xml:space="preserve">
+    <value>Forbidden Operator：Not Find MemberPoints</value>
+  </data>
+  <data name="PointsRecordIsDeadLine" xml:space="preserve">
+    <value>The record is death line</value>
+  </data>
+  <data name="PointsRecordIsDeal" xml:space="preserve">
+    <value>The record is already change</value>
+  </data>
+  <data name="PointsRecordNotExist" xml:space="preserve">
+    <value>Forbidden Operator：Not Find PointsRecord</value>
+  </data>
+  <data name="DoNotTryAgain" xml:space="preserve">
+    <value>Do not perform this operation frequently.  Try again later</value>
+  </data>
+  <data name="NotFoundAssociatedUser" xml:space="preserve">
+    <value>The associated user cannot be found</value>
+  </data>
+  <data name="WrongFun" xml:space="preserve">
+    <value>WrongFun</value>
+  </data>
+  <data name="AnsonloTicketMsg" xml:space="preserve">
+    <value>Successfully get one “Showbiz Spy” movie Ticket</value>
+  </data>
+  <data name="FirstRunTicketMsg" xml:space="preserve">
+    <value>Successfully get one “Showbiz Spy” Premiere Ticket</value>
+  </data>
+  <data name="PosterMsg" xml:space="preserve">
+    <value>Successfully get one “Showbiz Spy” official poster</value>
+  </data>
+  <data name="TicketMsg" xml:space="preserve">
+    <value>Successfully get {0} “Showbiz Spy” Special Tickets</value>
+  </data>
+  <data name="Event0" xml:space="preserve">
+    <value> Congratulations! You get one “Showbiz Spy” Premiere Ticket, please check your email to get redeem details.</value>
+  </data>
+  <data name="Event1" xml:space="preserve">
+    <value>Congratulations! You get {0}“Showbiz Spy” Special Tickets, please check your email to get redeem details.</value>
+  </data>
+  <data name="Event2" xml:space="preserve">
+    <value>Congratulations! You get one “Showbiz Spy” official poster, please check your email to get redeem details.</value>
+  </data>
+  <data name="Event3" xml:space="preserve">
+    <value>Congratulations! You get one “Showbiz Spy” movie Ticket, please check your email to get redeem details.</value>
+  </data>
+  <data name="Event4" xml:space="preserve">
+    <value>Special area for “Showbiz Spy” Premiere Ticket will be published on 12/11 (Friday) at 9:30am. Stay tuned.</value>
+  </data>
+</root>

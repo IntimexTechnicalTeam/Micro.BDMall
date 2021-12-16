@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BDMall.Model
+namespace BDMall.Domain
 {
     public class SystemLang
     {

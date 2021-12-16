@@ -1,0 +1,338 @@
+﻿
+@{
+    ViewBag.Title = "MassUploadProduct";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="app" v-cloak class="container">
+    <div class="form-inline">
+        <div class="col-md-2">@BDMall.Resources.Label.MerchantName</div>
+        <div class="col-md-10">
+            <select id="cboMerchant" class="form-control" v-model="merchId"></select>
+
+        </div>
+    </div>
+    <div class="form-inline">
+        <div class="col-md-2">@BDMall.Resources.Label.UploadFile</div>
+
+        <div class="col-md-10">
+            <input type="button" class="btn btn-primary" value="@BDMall.Resources.Action.SelectFile" v-on:click="uploadFile" />@string.Format(BDMall.Resources.Message.PleaseUploadCorrectFormat, "XLSX", ViewBag.CSVMaxSize)
+            <div style="display:none;">
+                <input name="txt_file" id="txt_file" type="file" class="file" />
+            </div>
+        </div>
+    </div>
+    <div class="form-inline">
+        <div class="col-md-12">
+            <input type="button" class="btn btn-primary" value="@BDMall.Resources.Action.ProcessData" v-on:click="uploadProduct" v-bind:disabled="filePath=='' || merchId=='-1'" />
+        </div>
+    </div>
+
+
+    <div class="form-inline">
+        <div class="col-md-2">@BDMall.Resources.Label.UploadImage</div>
+
+        <div class="col-md-10">
+            <input type="button" class="btn btn-primary" value="@BDMall.Resources.Action.SelectFile" v-on:click="uploadZip" />@string.Format(BDMall.Resources.Message.PleaseUploadCorrectFormat, "ZIP", ViewBag.ImageMaxSize)
+            <div style="display:none;">
+                <input name="txt_file" id="uploadZip" type="file" class="file" />
+            </div>
+        </div>
+    </div>
+    <div class="form-inline">
+        <div class="col-md-12">
+            <input type="button" class="btn btn-primary" value="@BDMall.Resources.Action.ProcessData" v-on:click="uploadImage" v-bind:disabled="zipPath==''" />
+        </div>
+    </div>
+
+    <div>
+
+        <div id="toolbar" class="btn-group">
+            <button id="btn_add" type="button" class="btn btn-default" onclick="downLoadFile('/File/GuideLine.xlsx','GuideLine.xlsx');">
+                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>@BDMall.Resources.Action.TemplateGuidLine
+            </button>
+            <button id="btn_add" type="button" class="btn btn-default" onclick="downLoadFile('/File/MassUploadTemplate.xlsx','MassUploadTemplate.xlsx');">
+                <span class="glyphicon glyphicon-download" aria-hidden="true"></span>@BDMall.Resources.Action.DownLoadTemplate
+            </button>
+        </div>
+        <table id="tblMassUploadInfo"></table>
+    </div>
+    <a download="" id="exportLink" href="" target="_blank" hidden></a>
+
+</div>
+
+@section scripts{
+    @Styles.Render("~/Content/bootstrapfile")
+    @Scripts.Render("~/bundles/bootstrapfile")
+
+
+
+    <script type="text/javascript">
+        layui.use(['miniTab'], function () {
+            var layer = layui.layer,
+                miniTab = layui.miniTab;
+        });
+        var isMerch = Boolean(@ViewBag.IsMerchant);
+        var csvMaxSize = @ViewBag.CSVMaxSize;
+        var imageMaxSize = @ViewBag.ImageMaxSize;
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                filePath: "",
+                zipPath:"",
+                merchId: "-1",
+            },
+            methods: {
+                getMassUploadProcess: function () {
+                    $("#tblMassUploadInfo").bootstrapTable("refresh", { url: "/adminapi/product/GetMassUploadProcess", pageNumber: 1 });
+                },
+                uploadFile: function () {
+                    $("#txt_file").click();
+                },
+                uploadZip: function ()
+                {
+                    $("#uploadZip").click();
+                },
+                uploadImage: function ()
+                {
+                    WS.AjaxP("get", "/adminapi/product/MassUploadImage", { merchantId: vm.merchId, filePath: vm.zipPath }, function (response) {
+                        vm.getMassUploadProcess();
+                        vm.zipPath = "";
+                    }, function () { });
+                },
+                reUploadImage: function (id)
+                {
+                    WS.AjaxP("get", "/adminapi/product/ReUploadImage", { uploadId: id }, function (response) {
+                        vm.getMassUploadProcess();
+                    }, function () { });
+                },
+                uploadProduct: function () {
+                    WS.AjaxP("get", "/adminapi/product/MassUploadProduct", { merchantId: vm.merchId, filePath: vm.filePath }, function (response) {
+                        if (response.Succeeded == true) {
+                            vm.getMassUploadProcess();
+                            vm.filePath = "";
+                        }
+                        else
+                        {
+                            showWarn(response.Message)
+                            vm.filePath = "";
+                        }
+                        
+                    }, function () { });
+                },
+                reUploadProduct: function (id) {
+                    WS.AjaxP("get", "/adminapi/product/ReUploadProduct", { uploadId: id }, function (response) {
+                        vm.getMassUploadProcess();
+                    }, function () { });
+                }
+            }
+        });
+
+
+          var orderTableInit = function () {
+
+            var oTableInit = new Object();
+            oTableInit.Init = function () {
+
+                $("#tblMassUploadInfo").bootstrapTable({
+                    method: 'post',                      //请求方式（*）
+                    //url: '/adminapi/Product/SearchTableData',         //请求后台的URL（*）
+                    queryParams: oTableInit.queryParams,//传递参数（*）
+                    //queryParamsType:'limit',
+                    toolbar: '#toolbar',                //工具按钮用哪个容器
+                    striped: true,                      //是否显示行间隔色
+                    cache: true,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                    sortable: true,                     //是否启用排序
+                    sortOrder: "asc",                   //排序方式
+                    sidePagination: "client",           //分页方式：client客户端分页，server服务端分页（*）
+                    pageNumber: 1,                       //初始化加载第一页，默认第一页
+                    pageSize: 10,                       //每页的记录行数（*）
+                    pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                    smartDisplay: false,
+                    showRefresh: true,                  //是否显示刷新按钮
+                    clickToSelect: false,                //是否启用点击选中行
+                    //height: 750,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+                    uniqueId: "Id",                     //每一行的唯一标识，一般为主键列
+                    cardView: false,                    //是否显示详细视图
+                    detailView: false,                   //是否显示父子表
+                    pagination: true,                   //是否显示分页（*）
+                    ajaxOptions: {
+                        beforeSend: function (request) {
+                            var access_token = $.cookie("access_token");
+                            request.setRequestHeader("Authorization", "Bearer " + access_token);
+                        }
+                    },
+                    columns: [{
+                        field: 'Id',
+                        title: 'Id',
+                        visible: false
+                    }, {
+                        field: 'MerchantName',
+                        title: '@BDMall.Resources.Label.MerchantName',
+                        sortable: true,
+                    }, {
+                        field: 'FileName',
+                        title: '@BDMall.Resources.Label.FileName'
+                    }, {
+                        field: 'FileType',
+                        visible: false
+                    }, {
+                        field: 'FileTypeString',
+                        title: '@BDMall.Resources.Label.Type'
+                    }, {
+                        field: 'Total',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.Total'
+                    }
+                    , {
+                        field: 'SuccessTotal',
+                        title: '@BDMall.Resources.Label.SuccessTotal',
+                        formatter: function (value, row, index) {
+                            return '<a href="#" onClick="showSuccessDetail(\'' + row.Id + '\' ,\'' + row.FileName + '\');">' + value + '</a>';
+                        }
+                    },
+                    {
+                        field: 'FailTotal',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.FailTotal',
+                        formatter: function (value, row, index) {
+                            return '<a href="#" onClick="showFailDetail(\'' + row.Id + '\' ,\'' + row.FileName + '\');">' + value + '</a>';
+                        }
+                    },{
+                        field: 'Status',
+                        visible: false
+                    },
+                    {
+                        field: 'StautsString',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.Status'
+                    },
+                    {
+                        field: 'UpdateDateString',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.UpdateDate'
+                    },
+                    {
+                        field: '',
+                        title: '@BDMall.Resources.Label.Action',
+                            formatter: function (value, row, index) {
+                                var buttons = '';
+                                buttons += '<input type="button" class="btn btn-primary" value="@BDMall.Resources.Action.DownLoad" onClick="downLoadFile(\'' + row.FilePath + '\',\'' + row.FileName + '\')"></input>';
+                                if (row.Status == 2)
+                                {
+                                    buttons += '<input type="button" class="btn btn-primary" value="@BDMall.Resources.Action.ReTry" onClick="reUpload(\'' + row.Id + '\',' + row.FileType + ')"></input>';
+                                }
+                                return buttons;
+                        }
+                    }]
+
+                });
+            };
+
+            oTableInit.queryParams = function (params) {
+                var page = 1;
+                if (params.offset > 0) {
+                    page = parseInt(params.offset / params.limit) + 1;
+                }
+
+                var sortedBy = params.sort;
+                var sorted = params.order;
+
+                return null;
+
+            }
+            return oTableInit;
+        }
+
+
+
+        var fileOption = new FileInputOption();
+        fileOption.CtrlName = "txt_file";
+        fileOption.UploadUrl = "/adminapi/FileUpload/UploadFileToTmp";
+        fileOption.MaxFile = 1;
+        fileOption.FileSize = csvMaxSize;
+        fileOption.FileExtensions = ['xlsx'];
+        //fileOption.ShowUpload = true;
+        fileOption.ShowRemove = true;
+        //fileOption.ShowCaption = true;
+        fileOption.ShowPerview = false;
+        fileOption.SuccessCallback = function (data) {
+            vm.filePath = data.response.ReturnValue.Path;
+            //showInfo('@BDMall.Resources.Message.MassUploadProductSuccess');
+        };
+        fileOption.ErrorCallback = function (data) {
+            showWarn('@BDMall.Resources.Message.UploadFail');
+        };
+        FileInputInit(fileOption);
+
+
+         var zipOption = new FileInputOption();
+         zipOption.CtrlName = "uploadZip";
+         zipOption.UploadUrl = "/adminapi/FileUpload/UploadFileToTmp";
+         zipOption.MaxFile = 1;
+         zipOption.FileSize = imageMaxSize;
+         zipOption.FileExtensions = ['zip'];
+        //fileOption.ShowUpload = true;
+         zipOption.ShowRemove = true;
+        //fileOption.ShowCaption = true;
+         zipOption.ShowPerview = false;
+         zipOption.SuccessCallback = function (data) {
+            vm.zipPath = data.response.ReturnValue.Path;
+            //showInfo('@BDMall.Resources.Message.MassUploadProductSuccess');
+        };
+         zipOption.ErrorCallback = function (data) {
+            showWarn('@BDMall.Resources.Message.UploadFail');
+        };
+         FileInputInit(zipOption);
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+
+        function showFailDetail(id, name)
+        {
+            miniTab.openNewTabByIframe({
+                href: "/Product/MassUploadDetail/" + id + "/0",
+                title: '@BDMall.Resources.Action.Detail' + "-" + name,
+            }); 
+        }
+        function showSuccessDetail(id, name)
+        {
+            miniTab.openNewTabByIframe({
+                href: "/Product/MassUploadDetail/" + id + "/1",
+                title: '@BDMall.Resources.Action.Detail' + "-" + name,
+            }); 
+        }
+
+        function downLoadFile(path, name) {
+            $("#exportLink").attr("href", path);
+            $("#exportLink").attr("download", name);
+            document.getElementById("exportLink").click();
+        }
+
+        function reUpload(id, type) {
+            if (type == 0) {
+                vm.reUploadProduct(id);
+            }
+            else
+            {
+                vm.reUploadImage(id);
+            }
+
+        }
+
+        $(document).ready(function () {
+            var isSelectAll = !isMerch;
+            InitNormalSelect("cboMerchant", "/adminapi/Merchant/GetMerchantOptions", isSelectAll, null, false);
+
+            var objTable = new orderTableInit();
+            objTable.Init();
+
+            vm.getMassUploadProcess();
+        });
+    </script>
+}
+

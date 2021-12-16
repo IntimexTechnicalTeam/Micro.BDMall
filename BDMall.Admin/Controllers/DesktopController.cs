@@ -22,7 +22,7 @@ namespace BDMall.Admin.Controllers
             ViewBag.IsMerchant = false;
             if (CurrentUser == null ) 
                 ViewBag.IsMerchant = false;
-            else if (CurrentUser.LoginType == LoginType.Merchant) 
+            else if (CurrentUser.LoginType <= LoginType.ThirdMerchantLink) 
                 ViewBag.IsMerchant = true;
             
             return View();

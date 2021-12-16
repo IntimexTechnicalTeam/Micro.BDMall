@@ -13,5 +13,7 @@ namespace BDMall.BLL
         Dictionary<string, ClickRateSummaryView> GetClickRateView(int topMonthQty, int topWeekQty, int topDayQty);
 
         Dictionary<string, ClickRateSummaryView> GetSearchRateView(int topMonthQty, int topWeekQty, int topDayQty);
+
+        PageData<ProductSummary> SearchBackEndProductSummary(ProdSearchCond cond);
     }
 }

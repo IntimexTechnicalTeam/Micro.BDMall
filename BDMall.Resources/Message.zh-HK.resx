@@ -1,0 +1,1227 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AccountCodeRequired" xml:space="preserve">
+    <value>銀行帳號不能為空。</value>
+  </data>
+  <data name="AccountDisabled" xml:space="preserve">
+    <value>帳號禁用</value>
+  </data>
+  <data name="AccountExist" xml:space="preserve">
+    <value>帳號已經存在</value>
+  </data>
+  <data name="AccountIsActive" xml:space="preserve">
+    <value>該帳號為啟動狀態</value>
+  </data>
+  <data name="AccountIsNotActive" xml:space="preserve">
+    <value>帳戶未啟動。</value>
+  </data>
+  <data name="AccountNotExist" xml:space="preserve">
+    <value>用戶不存在, 請重新輸入正確電郵地址。</value>
+  </data>
+  <data name="ActivateAccountFailed" xml:space="preserve">
+    <value>啟動帳戶失敗</value>
+  </data>
+  <data name="ActivateAccountSucceeded" xml:space="preserve">
+    <value>啟動帳戶成功</value>
+  </data>
+  <data name="Activated" xml:space="preserve">
+    <value>這個帳戶以及被啟動</value>
+  </data>
+  <data name="ActiveConfirm" xml:space="preserve">
+    <value>是否確認啟用？</value>
+  </data>
+  <data name="ActiveFail" xml:space="preserve">
+    <value>啟用失敗!</value>
+  </data>
+  <data name="AddArrivalNotifyFail" xml:space="preserve">
+    <value>添加返貨郵件通知失敗！</value>
+  </data>
+  <data name="AddArrivalNotifySuccess" xml:space="preserve">
+    <value>添加返貨郵件通知成功！</value>
+  </data>
+  <data name="AddCombosalesProductFail" xml:space="preserve">
+    <value>添加產品配件失敗！</value>
+  </data>
+  <data name="AddFavoriteFail" xml:space="preserve">
+    <value>收藏失敗</value>
+  </data>
+  <data name="AddFavoriteSuccess" xml:space="preserve">
+    <value>收藏成功</value>
+  </data>
+  <data name="AddtoCartFail" xml:space="preserve">
+    <value>加入購物車失敗，請重試。</value>
+  </data>
+  <data name="AddtoCartSuccess" xml:space="preserve">
+    <value>成功加入購物車。</value>
+  </data>
+  <data name="AddZoneFirst" xml:space="preserve">
+    <value>請先添加區域</value>
+  </data>
+  <data name="AnnounceContentRequire" xml:space="preserve">
+    <value>內容不能為空。</value>
+  </data>
+  <data name="AnnounceHadPublished" xml:space="preserve">
+    <value>公告已發佈</value>
+  </data>
+  <data name="AnnounceHadWithdrawed" xml:space="preserve">
+    <value>公告已撤銷</value>
+  </data>
+  <data name="AnnounceSubjectRequire" xml:space="preserve">
+    <value>主旨不能為空。</value>
+  </data>
+  <data name="ApprovedProductNotAllowModify" xml:space="preserve">
+    <value>這是已審批產品不允許修改，如果需要修改可以創建一個新版本。</value>
+  </data>
+  <data name="ApproveFail" xml:space="preserve">
+    <value>審批失敗。</value>
+  </data>
+  <data name="ApproveSucceeded" xml:space="preserve">
+    <value>審批成功</value>
+  </data>
+  <data name="AttributeIsUsed" xml:space="preserve">
+    <value>屬性已被使用！</value>
+  </data>
+  <data name="AttributeNotNull" xml:space="preserve">
+    <value>屬性不能為空！</value>
+  </data>
+  <data name="BatchNumRequire" xml:space="preserve">
+    <value>請輸入批號。</value>
+  </data>
+  <data name="CantFindOrder" xml:space="preserve">
+    <value>找不到該訂單</value>
+  </data>
+  <data name="CatalogHasUse" xml:space="preserve">
+    <value>該目錄正在使用，不能刪除</value>
+  </data>
+  <data name="CodeMasterValueExists" xml:space="preserve">
+    <value>這個值已經存在！</value>
+  </data>
+  <data name="CodeMustFill" xml:space="preserve">
+    <value>編號不能為空</value>
+  </data>
+  <data name="ConfirmCancel" xml:space="preserve">
+    <value>確定要取消嗎？</value>
+  </data>
+  <data name="ConfirmDelete" xml:space="preserve">
+    <value>確定要刪除嗎?</value>
+  </data>
+  <data name="ConfirmMoveMember" xml:space="preserve">
+    <value>確認移動會員到這個分組？</value>
+  </data>
+  <data name="ConfirmPublish" xml:space="preserve">
+    <value>是否確認發佈？</value>
+  </data>
+  <data name="ConfirmWithdraw" xml:space="preserve">
+    <value>是否確認撤回？</value>
+  </data>
+  <data name="CostCenterRequired" xml:space="preserve">
+    <value>成本中心不能為空。</value>
+  </data>
+  <data name="Coupon" xml:space="preserve">
+    <value>優惠券</value>
+  </data>
+  <data name="CourierRequire" xml:space="preserve">
+    <value>郵遞公司不能為空。</value>
+  </data>
+  <data name="CreateAccountFaile" xml:space="preserve">
+    <value>創建帳戶失敗。</value>
+  </data>
+  <data name="CreateAccountSucess" xml:space="preserve">
+    <value>創建帳戶成功</value>
+  </data>
+  <data name="CreateFileFailed" xml:space="preserve">
+    <value>創建檔失敗！</value>
+  </data>
+  <data name="CreateImageFail" xml:space="preserve">
+    <value>生成圖片失敗！</value>
+  </data>
+  <data name="CreateMerchantActFail" xml:space="preserve">
+    <value>創建商家帳號失敗</value>
+  </data>
+  <data name="CurrencyRequire" xml:space="preserve">
+    <value>貨幣不能為空。</value>
+  </data>
+  <data name="CustomPrcRngValueRequire" xml:space="preserve">
+    <value>至少需要輸入上限值或下限值！</value>
+  </data>
+  <data name="DataFormatError" xml:space="preserve">
+    <value>資料格式錯誤</value>
+  </data>
+  <data name="DataLengthOverFlow" xml:space="preserve">
+    <value>內容[{0}]超出限制長度：{1}。</value>
+  </data>
+  <data name="DataNotFound" xml:space="preserve">
+    <value>查不到數據！</value>
+  </data>
+  <data name="DataVerifyFail" xml:space="preserve">
+    <value>校驗資料失敗</value>
+  </data>
+  <data name="DateRequire" xml:space="preserve">
+    <value>日期不能為空。</value>
+  </data>
+  <data name="Deactivated" xml:space="preserve">
+    <value>這個帳戶已停用。</value>
+  </data>
+  <data name="DeactiveConfirm" xml:space="preserve">
+    <value>是否確認停用？</value>
+  </data>
+  <data name="DeactiveFail" xml:space="preserve">
+    <value>停用失敗!</value>
+  </data>
+  <data name="DeleteCatalogFail" xml:space="preserve">
+    <value>刪除目錄失敗！</value>
+  </data>
+  <data name="DeleteConfirm" xml:space="preserve">
+    <value>確定刪除嗎？</value>
+  </data>
+  <data name="DeleteFailed" xml:space="preserve">
+    <value>刪除失敗。</value>
+  </data>
+  <data name="DeleteSelect" xml:space="preserve">
+    <value>請選擇刪除資料。</value>
+  </data>
+  <data name="DeleteSucceeded" xml:space="preserve">
+    <value>刪除成功</value>
+  </data>
+  <data name="DelFailedPrmtCatOwnChild" xml:space="preserve">
+    <value>刪除失敗，該類別記錄已存在其他資料關係，請刪除後再試。</value>
+  </data>
+  <data name="DeliveryAddressRequire" xml:space="preserve">
+    <value>郵遞位址不能為空。</value>
+  </data>
+  <data name="DeliveryInformation" xml:space="preserve">
+    <value>派遞信息</value>
+  </data>
+  <data name="DeliveryTypeRequire" xml:space="preserve">
+    <value>投寄類型不能為空。</value>
+  </data>
+  <data name="Destination" xml:space="preserve">
+    <value>目的地</value>
+  </data>
+  <data name="DetermineActivation" xml:space="preserve">
+    <value>確定啟動？</value>
+  </data>
+  <data name="DetermineDisable" xml:space="preserve">
+    <value>確定停用？</value>
+  </data>
+  <data name="DisableAccountFailed" xml:space="preserve">
+    <value>禁用帳戶失敗</value>
+  </data>
+  <data name="DisableAccountSucceeded" xml:space="preserve">
+    <value>禁用帳戶成功</value>
+  </data>
+  <data name="EditorWordCountMsg" xml:space="preserve">
+    <value>當前編輯內容HTML代碼長度：{#count}，還可以輸入長度：{#leave}</value>
+  </data>
+  <data name="EditorWordOverFlowMsg" xml:space="preserve">
+    <value>當前編輯內容HTML代碼長度超出限制</value>
+  </data>
+  <data name="EmailAddrFormatIncorrect" xml:space="preserve">
+    <value>電子郵箱位址格式不正確。</value>
+  </data>
+  <data name="EmailCodeInvalid" xml:space="preserve">
+    <value>驗證碼已失效，請重新獲取獲取更新郵件。</value>
+  </data>
+  <data name="EmailCountNotEnough" xml:space="preserve">
+    <value>可發送郵件數量不足！</value>
+  </data>
+  <data name="EmailExist" xml:space="preserve">
+    <value>郵箱地址已經存在。</value>
+  </data>
+  <data name="EnableSysLangRequire" xml:space="preserve">
+    <value>至少啟用一種系統語言!</value>
+  </data>
+  <data name="EveryLanguageAllowedUploadFiveImage" xml:space="preserve">
+    <value>每種語言只允許上傳5張圖片</value>
+  </data>
+  <data name="FileFormatIncorrect" xml:space="preserve">
+    <value>上傳檔案格式不正確！</value>
+  </data>
+  <data name="FileNotMoreThan" xml:space="preserve">
+    <value>檔不能多於</value>
+  </data>
+  <data name="FillAllLanguage" xml:space="preserve">
+    <value>請用所有語言填寫產品名稱</value>
+  </data>
+  <data name="FillAllRequiredFields" xml:space="preserve">
+    <value>請填寫所有必填項！</value>
+  </data>
+  <data name="FillAllSubject" xml:space="preserve">
+    <value>請填寫所有主旨！</value>
+  </data>
+  <data name="FolderLayerOverrun" xml:space="preserve">
+    <value>目錄層級已超出上限。</value>
+  </data>
+  <data name="GenerateNumFailed" xml:space="preserve">
+    <value>自動生成訂單編號失敗</value>
+  </data>
+  <data name="GenerateReNumFailed" xml:space="preserve">
+    <value>自動生成退貨訂單編號失敗</value>
+  </data>
+  <data name="GetCartListFail" xml:space="preserve">
+    <value>無法查詢購物車，請稍後再試。</value>
+  </data>
+  <data name="GetCatalogFail" xml:space="preserve">
+    <value>獲取目錄資訊失敗！</value>
+  </data>
+  <data name="GetCatalogTreeFail" xml:space="preserve">
+    <value>獲取目錄樹失敗！</value>
+  </data>
+  <data name="GetEmailTemplateFail" xml:space="preserve">
+    <value>獲取郵件範本失敗！</value>
+  </data>
+  <data name="GetProductFail" xml:space="preserve">
+    <value>獲取產品資訊失敗！</value>
+  </data>
+  <data name="GetProductImgFail" xml:space="preserve">
+    <value>獲取產品圖片失敗！</value>
+  </data>
+  <data name="GetWarehouseFail" xml:space="preserve">
+    <value>獲取倉庫資訊失敗！</value>
+  </data>
+  <data name="GTSaleQuota" xml:space="preserve">
+    <value>訂購數量不能超過銷售限額。</value>
+  </data>
+  <data name="HasDone" xml:space="preserve">
+    <value>該附件已經完成！</value>
+  </data>
+  <data name="HasExist" xml:space="preserve">
+    <value>已經存在！</value>
+  </data>
+  <data name="HasSameProductInTimePeriod" xml:space="preserve">
+    <value>該產品在此時間段內{0}存在一個版本，不能重複添加！</value>
+  </data>
+  <data name="HaveNoInventoryRecord" xml:space="preserve">
+    <value>沒有庫存。</value>
+  </data>
+  <data name="InvaildPromotionCode" xml:space="preserve">
+    <value>無效的推廣優惠碼</value>
+  </data>
+  <data name="InvenToryQtyNotEnough" xml:space="preserve">
+    <value>庫存不足。</value>
+  </data>
+  <data name="IsNotRegistered" xml:space="preserve">
+    <value>該郵箱未註冊</value>
+  </data>
+  <data name="JoinWithComma" xml:space="preserve">
+    <value>請用逗號（，）分隔單詞</value>
+  </data>
+  <data name="KeyInvalid" xml:space="preserve">
+    <value>連結碼已被佔用</value>
+  </data>
+  <data name="LangRequire" xml:space="preserve">
+    <value>需要語言參數</value>
+  </data>
+  <data name="LoadTableFail" xml:space="preserve">
+    <value>載入數據失敗</value>
+  </data>
+  <data name="LoginFail" xml:space="preserve">
+    <value>登入失敗</value>
+  </data>
+  <data name="LoginFailMessage" xml:space="preserve">
+    <value>不正確的用戶名/郵箱或者密碼，請重新填寫。</value>
+  </data>
+  <data name="LoginSuccess" xml:space="preserve">
+    <value>登入成功</value>
+  </data>
+  <data name="MailTemplateIncomplete" xml:space="preserve">
+    <value>郵件範本未完成</value>
+  </data>
+  <data name="MaxAdditionalImageOneTime" xml:space="preserve">
+    <value>最多可以一次上傳5張額外的圖像。</value>
+  </data>
+  <data name="MaxAdditionalImageUpload" xml:space="preserve">
+    <value>最多可以上傳10張額外的圖像</value>
+  </data>
+  <data name="MbrAccountDeleted" xml:space="preserve">
+    <value>帳號已被標記為刪除狀態，不能使用！</value>
+  </data>
+  <data name="MemberGroup" xml:space="preserve">
+    <value>會員優惠</value>
+  </data>
+  <data name="MenuCodeIsExist" xml:space="preserve">
+    <value>菜單編號已經存在！</value>
+  </data>
+  <data name="MerberNotExist" xml:space="preserve">
+    <value>會員不存在：</value>
+  </data>
+  <data name="MerchantAccountCreated" xml:space="preserve">
+    <value>商家帳戶已經創建過了，不能再創建。</value>
+  </data>
+  <data name="MerchantCompanyNameExist" xml:space="preserve">
+    <value>公司名稱已經存在。</value>
+  </data>
+  <data name="ModifyAnnounceFail" xml:space="preserve">
+    <value>系統公告已發佈，請撤回後再操作！</value>
+  </data>
+  <data name="ModifyOneItem" xml:space="preserve">
+    <value>只能對一條資料進行操作。</value>
+  </data>
+  <data name="MustIntger" xml:space="preserve">
+    <value>請填入整數。</value>
+  </data>
+  <data name="MustValidURL" xml:space="preserve">
+    <value>請輸入正確的路徑</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>否</value>
+  </data>
+  <data name="NoContent" xml:space="preserve">
+    <value>暫無內容</value>
+  </data>
+  <data name="NoMember" xml:space="preserve">
+    <value>沒有成員存在</value>
+  </data>
+  <data name="NoMerchantPermisson" xml:space="preserve">
+    <value>需要商家使用者進行操作。</value>
+  </data>
+  <data name="NoRecord" xml:space="preserve">
+    <value>沒有找到記錄</value>
+  </data>
+  <data name="NoRecordToTrace" xml:space="preserve">
+    <value>沒有追蹤記錄</value>
+  </data>
+  <data name="NotAllowLargeThan" xml:space="preserve">
+    <value>不允許大於</value>
+  </data>
+  <data name="NotEnableAutonomousActive" xml:space="preserve">
+    <value>系統未開啟自主啟動功能，請聯繫網站管理員進行啟動</value>
+  </data>
+  <data name="NotMerchantToOperate" xml:space="preserve">
+    <value>不是商家帳戶不能執行操作</value>
+  </data>
+  <data name="NotValidProduct" xml:space="preserve">
+    <value>購物車沒有有效的商品！</value>
+  </data>
+  <data name="NumberNotLessThan" xml:space="preserve">
+    <value>數值不能少於</value>
+  </data>
+  <data name="OldPwdIncorrect" xml:space="preserve">
+    <value>原密碼不匹配</value>
+  </data>
+  <data name="OneSelect" xml:space="preserve">
+    <value>請至少選擇一條資料進行操作。</value>
+  </data>
+  <data name="OnlyUploadImage" xml:space="preserve">
+    <value>僅能上傳圖片</value>
+  </data>
+  <data name="PasswordNotMatch" xml:space="preserve">
+    <value>密碼不正確</value>
+  </data>
+  <data name="PaymentTypeRequire" xml:space="preserve">
+    <value>付款方式不能為空。</value>
+  </data>
+  <data name="PhoneNumFormatIncorrect" xml:space="preserve">
+    <value>電話號碼格式不正確。</value>
+  </data>
+  <data name="PlaseSelectRecipients" xml:space="preserve">
+    <value>請選擇收件人！</value>
+  </data>
+  <data name="PleaseCancelEditStatus" xml:space="preserve">
+    <value>請取消編輯狀態</value>
+  </data>
+  <data name="PleaseInputDesc" xml:space="preserve">
+    <value>請輸入編號</value>
+  </data>
+  <data name="PleaseLogin" xml:space="preserve">
+    <value>請登錄！</value>
+  </data>
+  <data name="PleaseSelect" xml:space="preserve">
+    <value>請選擇</value>
+  </data>
+  <data name="PleaseSelectCatalog" xml:space="preserve">
+    <value>請選擇目錄。</value>
+  </data>
+  <data name="PleaseSelectDiffWarehouse" xml:space="preserve">
+    <value>請選擇不同的倉庫。</value>
+  </data>
+  <data name="PleaseSelectImage" xml:space="preserve">
+    <value>請選擇圖片</value>
+  </data>
+  <data name="PleaseSelectMerchant" xml:space="preserve">
+    <value>請選擇商家。</value>
+  </data>
+  <data name="PleaseSelectSupplier" xml:space="preserve">
+    <value>請選擇供應商。</value>
+  </data>
+  <data name="PleaseSelectWarehouse" xml:space="preserve">
+    <value>請選擇倉庫。</value>
+  </data>
+  <data name="PrmtCatNameRequire" xml:space="preserve">
+    <value>名稱不能為空。</value>
+  </data>
+  <data name="PrmtCatSEOKwDescRequire" xml:space="preserve">
+    <value>SEO關鍵字描述不能為空。</value>
+  </data>
+  <data name="PrmtCatSEOKwRequire" xml:space="preserve">
+    <value>SEO關鍵字不能為空。</value>
+  </data>
+  <data name="Processing" xml:space="preserve">
+    <value>處理中請稍後！</value>
+  </data>
+  <data name="ProductCodeEmpty" xml:space="preserve">
+    <value>產品代碼為空。</value>
+  </data>
+  <data name="ProductDeleted" xml:space="preserve">
+    <value>產品已被移除。</value>
+  </data>
+  <data name="ProductExpired" xml:space="preserve">
+    <value>目前產品已過期，產品編號：</value>
+  </data>
+  <data name="ProductInStock" xml:space="preserve">
+    <value>關聯產品已經存在庫存記錄</value>
+  </data>
+  <data name="ProductIsExists" xml:space="preserve">
+    <value>產品已經存在</value>
+  </data>
+  <data name="ProductNotExist" xml:space="preserve">
+    <value>產品已移除或者已下架。</value>
+  </data>
+  <data name="ProductNotSale" xml:space="preserve">
+    <value>產品已下架。</value>
+  </data>
+  <data name="ProductOrClientNotExist" xml:space="preserve">
+    <value>產品或客戶不存在！</value>
+  </data>
+  <data name="PromotionCode" xml:space="preserve">
+    <value>促銷碼</value>
+  </data>
+  <data name="PromotionCodeIsExist" xml:space="preserve">
+    <value>推廣編碼已經存在！</value>
+  </data>
+  <data name="PromotionRule" xml:space="preserve">
+    <value>促銷活動</value>
+  </data>
+  <data name="PublishFailed" xml:space="preserve">
+    <value>發佈失敗。</value>
+  </data>
+  <data name="PublishSucceeded" xml:space="preserve">
+    <value>發佈成功。</value>
+  </data>
+  <data name="ReceivedInquiry" xml:space="preserve">
+    <value>我們已經收到您的諮詢資訊，稍後工作人員會與你取得聯繫。</value>
+  </data>
+  <data name="Registration" xml:space="preserve">
+    <value>註冊</value>
+  </data>
+  <data name="RegSuccess" xml:space="preserve">
+    <value>註冊成功。</value>
+  </data>
+  <data name="RemoveCartItemFail" xml:space="preserve">
+    <value>無法刪除購物車物品。 請稍後再試。</value>
+  </data>
+  <data name="RemoveFavoriteSuccess" xml:space="preserve">
+    <value>刪除成功。</value>
+  </data>
+  <data name="RePasswordFail" xml:space="preserve">
+    <value>重置密碼失敗。</value>
+  </data>
+  <data name="RequestFail" xml:space="preserve">
+    <value>請求失敗。</value>
+  </data>
+  <data name="RequiredField" xml:space="preserve">
+    <value>這是必填欄位</value>
+  </data>
+  <data name="ResetPwdEmail" xml:space="preserve">
+    <value>重置密碼郵件已經發送到你的郵箱，請檢查。</value>
+  </data>
+  <data name="ResetPwdSucceeded" xml:space="preserve">
+    <value>重置密碼成功。</value>
+  </data>
+  <data name="RevmveFavoriteFail" xml:space="preserve">
+    <value>移除收藏失敗</value>
+  </data>
+  <data name="RootUploadFolderDelFail" xml:space="preserve">
+    <value>不能刪除檔上傳的根目錄！</value>
+  </data>
+  <data name="RootUploadFolderUpdateFail" xml:space="preserve">
+    <value>不能更改檔上傳的根目錄名稱！</value>
+  </data>
+  <data name="SalesReturnDateRequire" xml:space="preserve">
+    <value>日期不能為空。</value>
+  </data>
+  <data name="SalesReturnQtyOverrun" xml:space="preserve">
+    <value>輸入數量大於上限！</value>
+  </data>
+  <data name="SalesReturnQtySufficient" xml:space="preserve">
+    <value>輸入數量需大於零！</value>
+  </data>
+  <data name="SaveCatalogFail" xml:space="preserve">
+    <value>保存目錄失敗！</value>
+  </data>
+  <data name="SaveCoFailed" xml:space="preserve">
+    <value>保存目錄失敗！</value>
+  </data>
+  <data name="SaveFail" xml:space="preserve">
+    <value>保存失敗。</value>
+  </data>
+  <data name="SaveSuccess" xml:space="preserve">
+    <value>保存成功。</value>
+  </data>
+  <data name="SaveSuccessButMod" xml:space="preserve">
+    <value>添加區域成功，請修改該區域運費價格！</value>
+  </data>
+  <data name="SelectAddressAgain" xml:space="preserve">
+    <value>請重新選擇一次送貨地址！</value>
+  </data>
+  <data name="Sellout" xml:space="preserve">
+    <value>商品售罄</value>
+  </data>
+  <data name="SendEmailFailed" xml:space="preserve">
+    <value>郵件發送失敗。</value>
+  </data>
+  <data name="SendEmailSucceeded" xml:space="preserve">
+    <value>郵件發送成功。</value>
+  </data>
+  <data name="SendWhatsappFailed" xml:space="preserve">
+    <value>發送Whatsapp失敗！</value>
+  </data>
+  <data name="SendWhatsappSucceeded" xml:space="preserve">
+    <value>發送Whatsapp成功！</value>
+  </data>
+  <data name="SKUNotExists" xml:space="preserve">
+    <value>庫存屬性不存在</value>
+  </data>
+  <data name="SubAttributeIsExist" xml:space="preserve">
+    <value>這個子屬性已經存在！</value>
+  </data>
+  <data name="SubMemberGroupIsExist" xml:space="preserve">
+    <value>這個子成員組已經存在！</value>
+  </data>
+  <data name="SupplierNameMultiRequire" xml:space="preserve">
+    <value>至少需要輸入一個供應商名稱！</value>
+  </data>
+  <data name="SystemError" xml:space="preserve">
+    <value>系統出了問題。 請稍後再試。</value>
+  </data>
+  <data name="UniqueSeq" xml:space="preserve">
+    <value>序號不能重複！</value>
+  </data>
+  <data name="UnkownError" xml:space="preserve">
+    <value>系統發生異常，請稍後重試，我們會儘快處理問題。</value>
+  </data>
+  <data name="UpdataImgSeqFail" xml:space="preserve">
+    <value>更新圖片排序失敗！</value>
+  </data>
+  <data name="UpdateCartItemQtyFail" xml:space="preserve">
+    <value>無法更新數量。 請稍後再試。</value>
+  </data>
+  <data name="UpdateFail" xml:space="preserve">
+    <value>更新失敗！</value>
+  </data>
+  <data name="UpdateOrderStatusFail" xml:space="preserve">
+    <value>更新訂單狀態失敗！</value>
+  </data>
+  <data name="UpdateSuccess" xml:space="preserve">
+    <value>更新成功！</value>
+  </data>
+  <data name="UploadFail" xml:space="preserve">
+    <value>上傳失敗！</value>
+  </data>
+  <data name="UploadImage" xml:space="preserve">
+    <value>請先上傳圖片。</value>
+  </data>
+  <data name="UploadImgSucceeded" xml:space="preserve">
+    <value>上傳圖片成功！</value>
+  </data>
+  <data name="UserNotExist" xml:space="preserve">
+    <value>用戶不存在，請稍後重試。</value>
+  </data>
+  <data name="WarehouseNameMultiRequire" xml:space="preserve">
+    <value>至少需要輸入一個倉庫名稱！</value>
+  </data>
+  <data name="WebStoreInfoIsNull" xml:space="preserve">
+    <value>網上商店資訊為空</value>
+  </data>
+  <data name="WithdrawFailed" xml:space="preserve">
+    <value>撤回失敗。</value>
+  </data>
+  <data name="WithdrawSucceeded" xml:space="preserve">
+    <value>撤回成功。</value>
+  </data>
+  <data name="WrongProductImageFormat" xml:space="preserve">
+    <value>錯誤的產品圖片上傳格式</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>是</value>
+  </data>
+  <data name="CheckGoodsEx" xml:space="preserve">
+    <value>檢查會員購物車中商品是否已經過期，</value>
+  </data>
+  <data name="CheckOrderEx" xml:space="preserve">
+    <value>檢查會員訂單是否過期，</value>
+  </data>
+  <data name="ExOrderNo" xml:space="preserve">
+    <value>過期訂單編號</value>
+  </data>
+  <data name="ExOrderQty" xml:space="preserve">
+    <value>過期訂單數量</value>
+  </data>
+  <data name="RemainOrderQty" xml:space="preserve">
+    <value>剩余訂單数量</value>
+  </data>
+  <data name="SendMailFailed" xml:space="preserve">
+    <value>發送郵件失敗</value>
+  </data>
+  <data name="IdEmpty" xml:space="preserve">
+    <value>编号是空的。</value>
+  </data>
+  <data name="RecordExist" xml:space="preserve">
+    <value>記錄不存在。</value>
+  </data>
+  <data name="ConfirmPwdNotEq" xml:space="preserve">
+    <value>確認密碼與密碼不相同。</value>
+  </data>
+  <data name="PwdMaxLength" xml:space="preserve">
+    <value>密碼最大長度是{0}.</value>
+  </data>
+  <data name="PwdMinLength" xml:space="preserve">
+    <value>密碼最少長度是{0}.</value>
+  </data>
+  <data name="AddRelatedProductSucceed" xml:space="preserve">
+    <value>添加關聯產品成功！</value>
+  </data>
+  <data name="LogoNotAllowEmpty" xml:space="preserve">
+    <value>圖標不能為空</value>
+  </data>
+  <data name="NoPermission" xml:space="preserve">
+    <value>當前賬戶沒有進行此操作的權限，請聯繫系統管理員。</value>
+  </data>
+  <data name="ProductNotAllowedEmpty" xml:space="preserve">
+    <value>產品不能為空！</value>
+  </data>
+  <data name="ShipCodeNotAllowedEmpty" xml:space="preserve">
+    <value>付運方式不能為空！</value>
+  </data>
+  <data name="SaveCatalogConfirm" xml:space="preserve">
+    <value>在此目錄創建產品后，無法修改目錄的屬性。請確認屬性是否設置正確！請點擊“是”確認保存，“否”取消保存</value>
+  </data>
+  <data name="PleaseInputEmbeddedLink" xml:space="preserve">
+    <value>請輸入嵌入形式的連接</value>
+  </data>
+  <data name="DeleteInvtHoldFailed" xml:space="preserve">
+    <value>刪除商品保留記錄失敗!</value>
+  </data>
+  <data name="EmailNotNull" xml:space="preserve">
+    <value>電郵地址不能為空！</value>
+  </data>
+  <data name="FuncParameterNotNull" xml:space="preserve">
+    <value>函數參數不能為空！</value>
+  </data>
+  <data name="SkuProductNotFound" xml:space="preserve">
+    <value>未能找到指定商品信息！</value>
+  </data>
+  <data name="PleaseSelectOffSaleProduct" xml:space="preserve">
+    <value>請選擇已下架的產品進行操作！以下為錯誤產品列表[{0}]。</value>
+  </data>
+  <data name="PleaseSelectRightTimeProduct" xml:space="preserve">
+    <value>請選擇在有效時間段內的產品進行操作！以下為錯誤產品列表[{0}]。</value>
+  </data>
+  <data name="PleaseSelectOnSaleProduct" xml:space="preserve">
+    <value>請選擇已上架的產品進行操作！以下為錯誤產品列表[{0}]。</value>
+  </data>
+  <data name="ProdNotOnSale" xml:space="preserve">
+    <value>目前產品已過期，產品編號：{0}</value>
+  </data>
+  <data name="InvaildMCNCode" xml:space="preserve">
+    <value>無效的領取郵件編號！</value>
+  </data>
+  <data name="CatalogCodeIsExist" xml:space="preserve">
+    <value>目錄編碼已經存在！</value>
+  </data>
+  <data name="ImageSizeMustBe" xml:space="preserve">
+    <value>圖片的尺寸必須少於{0}</value>
+  </data>
+  <data name="DateCompare" xml:space="preserve">
+    <value>結束日期不得小於開始日期</value>
+  </data>
+  <data name="PasswordFormatError" xml:space="preserve">
+    <value>必須至少使用八個字元，且包含至少一個字母及至少一個數位字元</value>
+  </data>
+  <data name="AreYouSureToCancelOrder" xml:space="preserve">
+    <value>確認要取消該送貨單？</value>
+  </data>
+  <data name="AreYouSureToSendBack" xml:space="preserve">
+    <value>確認要重寄該送貨單？</value>
+  </data>
+  <data name="InventoryQtyNotNull" xml:space="preserve">
+    <value>庫存數量不為空。</value>
+  </data>
+  <data name="PromotionRuleInUse" xml:space="preserve">
+    <value>推廣規則已被使用，不能修改</value>
+  </data>
+  <data name="DiscountExpired" xml:space="preserve">
+    <value>優惠 {0} 已經失效</value>
+  </data>
+  <data name="SupplierIdExist" xml:space="preserve">
+    <value>供應商編號已經存在。</value>
+  </data>
+  <data name="PleaseInputCorrectChar" xml:space="preserve">
+    <value>不能輸入特殊字符</value>
+  </data>
+  <data name="ConfirmApprove" xml:space="preserve">
+    <value>是否確認審批？</value>
+  </data>
+  <data name="CancelArrivalNotifyFail" xml:space="preserve">
+    <value>取消返貨郵件通知失敗！</value>
+  </data>
+  <data name="CancelArrivalNotifySuccess" xml:space="preserve">
+    <value>取消返貨郵件通知成功！</value>
+  </data>
+  <data name="EnterEmailForSubscribe" xml:space="preserve">
+    <value>電郵地址不正確</value>
+  </data>
+  <data name="ThanksForSubscribe" xml:space="preserve">
+    <value>多謝訂閱</value>
+  </data>
+  <data name="SubscribeFail" xml:space="preserve">
+    <value>訂閱失敗</value>
+  </data>
+  <data name="RemoveCartItemSuccess" xml:space="preserve">
+    <value>刪除成功。</value>
+  </data>
+  <data name="ExtSupplierIdNotAvailable" xml:space="preserve">
+    <value>指定的供應商編號不可用!</value>
+  </data>
+  <data name="ShipCodeIsExist" xml:space="preserve">
+    <value>快遞編號已經存在！</value>
+  </data>
+  <data name="TrackingNoOutofRange" xml:space="preserve">
+    <value>快遞單編號已經超出上限，請聯繫管理員。</value>
+  </data>
+  <data name="PleaseSetupLCTrackingNo" xml:space="preserve">
+    <value>請正確設置LCTrackingNoSetting</value>
+  </data>
+  <data name="CurrentNoLengthMust" xml:space="preserve">
+    <value>LCTrackingNoSetting 當前編號長度必須為{0}。</value>
+  </data>
+  <data name="SubOrderNumberLessThan" xml:space="preserve">
+    <value>子訂單的數量不得大於{0}。</value>
+  </data>
+  <data name="PleaseGenShipLabel" xml:space="preserve">
+    <value>請生成出貨標籤</value>
+  </data>
+  <data name="PleasePostMail" xml:space="preserve">
+    <value>請發貨</value>
+  </data>
+  <data name="PasswordRule" xml:space="preserve">
+    <value>必須至少使用八個字元，且包含至少一個字母及至少一個數位字元</value>
+  </data>
+  <data name="FieldRequire" xml:space="preserve">
+    <value>此項為必須填寫</value>
+  </data>
+  <data name="ResetPwdNoAccount" xml:space="preserve">
+    <value>用戶不存在, 請重新輸入正確電郵地址</value>
+  </data>
+  <data name="ResetPwdEnterRegEmail" xml:space="preserve">
+    <value>請輸入已登記的電郵地址</value>
+  </data>
+  <data name="ResetPwdEmailIncorrect" xml:space="preserve">
+    <value>電郵地址不正確</value>
+  </data>
+  <data name="EnterEmail" xml:space="preserve">
+    <value>請輸入你的電郵地址</value>
+  </data>
+  <data name="UpdatePwdSuccess" xml:space="preserve">
+    <value>更新密碼成功。</value>
+  </data>
+  <data name="PrmtNameLenTips" xml:space="preserve">
+    <value>注意長度不要超過前台設計版面長度。</value>
+  </data>
+  <data name="Digits" xml:space="preserve">
+    <value>只能輸入整數。</value>
+  </data>
+  <data name="Number" xml:space="preserve">
+    <value>請輸入有效的數字。</value>
+  </data>
+  <data name="FailToUseDiscount" xml:space="preserve">
+    <value>使用優惠失敗</value>
+  </data>
+  <data name="ValueLengthLessThan" xml:space="preserve">
+    <value>請輸入不大於 {0} 的數值</value>
+  </data>
+  <data name="ZipInconCountry" xml:space="preserve">
+    <value>所填寫的郵政編碼與所擇的國家不一致</value>
+  </data>
+  <data name="ZipInconProvince" xml:space="preserve">
+    <value>所填寫的郵政編碼與所擇的省份不一致</value>
+  </data>
+  <data name="NoMailTrackingMessage" xml:space="preserve">
+    <value>暫時沒有郵件配送的信息</value>
+  </data>
+  <data name="NameAndPhoneNotAllowedEmpty" xml:space="preserve">
+    <value>收件人和收件人電話不能為空</value>
+  </data>
+  <data name="PleaseEnterCorrectPhoneNumber" xml:space="preserve">
+    <value>請輸入正確的流動電話號碼</value>
+  </data>
+  <data name="PleaseEnterSenderData" xml:space="preserve">
+    <value>請輸入寄件人資料</value>
+  </data>
+  <data name="PleaseSelectPostCounter" xml:space="preserve">
+    <value>請選擇領取貨品地點</value>
+  </data>
+  <data name="PleaseEnterTrackingNumber" xml:space="preserve">
+    <value>請輸入郵件編號</value>
+  </data>
+  <data name="ECShipChargeError" xml:space="preserve">
+    <value>由於「投寄易」暫時未能提供服務，本網站只能提供有限度投寄方式，直至「投寄易」系統恢復正常。不便之處，敬請原諒。</value>
+  </data>
+  <data name="OpenChatFailed" xml:space="preserve">
+    <value>打開對話失敗。</value>
+  </data>
+  <data name="SpamResetEmail" xml:space="preserve">
+    <value>閣下將會收到系統發出的電郵。請檢查你登記的電子郵箱以啟動帳戶。如未收到啟動電郵，請聯絡我們。 你的郵箱或會把帳戶啟動電郵送到了「垃圾郵匣」，請查看及把郵件標示為「非垃圾郵件」。</value>
+  </data>
+  <data name="DecimalPlacesLessThan" xml:space="preserve">
+    <value>小數點最多為{0}位</value>
+  </data>
+  <data name="MassUploadProductSuccess" xml:space="preserve">
+    <value>上傳文件成功！請選擇商家并點擊[上傳產品]批量上傳產品。</value>
+  </data>
+  <data name="PleaseUploadCorrectFormat" xml:space="preserve">
+    <value>請上傳{0}格式的文件，文件大小不能超過{1}KB</value>
+  </data>
+  <data name="LengthLimit" xml:space="preserve">
+    <value>{0}長度不能超過{1}</value>
+  </data>
+  <data name="ProductCatalogNotExist" xml:space="preserve">
+    <value>目錄不存在</value>
+  </data>
+  <data name="ContactAdmin" xml:space="preserve">
+    <value>未知錯誤，請聯繫管理員</value>
+  </data>
+  <data name="SalseReturnQtyOverSalesQty" xml:space="preserve">
+    <value>退回數量大於可銷售數量!</value>
+  </data>
+  <data name="BatchNumExsit" xml:space="preserve">
+    <value>此批號已存在。</value>
+  </data>
+  <data name="IsRequiredField" xml:space="preserve">
+    <value>{0}是必填字段</value>
+  </data>
+  <data name="ValueNotLessThan" xml:space="preserve">
+    <value>{0}的值不能少於{1}</value>
+  </data>
+  <data name="CannotShipped" xml:space="preserve">
+    <value>訂單不能付運到該目的地。</value>
+  </data>
+  <data name="OrderIsOverweight" xml:space="preserve">
+    <value>請選擇其他投寄方式或分拆訂單。</value>
+  </data>
+  <data name="DateFormatError" xml:space="preserve">
+    <value>日期格式錯誤！</value>
+  </data>
+  <data name="StatusHasChanged" xml:space="preserve">
+    <value>狀態已經改變</value>
+  </data>
+  <data name="ServerBusy" xml:space="preserve">
+    <value>「郵購網」現正處理大量的顧客訂單交易,因此系統非常繁忙!
+謝謝你們耐心等候。</value>
+  </data>
+  <data name="DateCompareToday" xml:space="preserve">
+    <value>日期不能少於今天</value>
+  </data>
+  <data name="MbrRegistrationInstruction" xml:space="preserve">
+    <value>閣下將會收到系統發出的帳戶啟動電郵。請檢查你登記的電子郵箱以啟動帳戶。如未收到啟動電郵，請聯絡我們。你的郵箱或會把帳戶啟動電郵送到了「垃圾郵匣」，請查看及把郵件標示為「非垃圾郵件」。</value>
+  </data>
+  <data name="ThanksForMbrRegistration" xml:space="preserve">
+    <value>感謝你的註冊！</value>
+  </data>
+  <data name="EnterCorrectName" xml:space="preserve">
+    <value>請輸入正確的名字格式</value>
+  </data>
+  <data name="EnterZipCode" xml:space="preserve">
+    <value>請輸入郵政編碼</value>
+  </data>
+  <data name="AccountIsActivated" xml:space="preserve">
+    <value>您的賬戶已啟動，請登入。</value>
+  </data>
+  <data name="AccountVerificationFailedDesc" xml:space="preserve">
+    <value>驗證失敗，請重新註冊。</value>
+  </data>
+  <data name="AccountVerifyCodeDeactivated" xml:space="preserve">
+    <value>驗證碼已失效，請重新啟動賬戶。</value>
+  </data>
+  <data name="CreateOrderFail" xml:space="preserve">
+    <value>生成訂單失敗！</value>
+  </data>
+  <data name="ShoppingCartItemChanged" xml:space="preserve">
+    <value>購物車內產品已變更/已過期，請重新查看。</value>
+  </data>
+  <data name="AreYouSureToChangeECShipStatus" xml:space="preserve">
+    <value>確認更改投寄易狀態？</value>
+  </data>
+  <data name="ConfirmWithoutPrmtBannerList" xml:space="preserve">
+    <value>未添加任何推廣橫幅數據，確認保存？</value>
+  </data>
+  <data name="ConfirmWithoutPrmtProdList" xml:space="preserve">
+    <value>未添加任何推廣產品數據，確認保存？</value>
+  </data>
+  <data name="NonReturnableItemAlert" xml:space="preserve">
+    <value>訂單中包含不可退貨商品，退貨申請不成功。</value>
+  </data>
+  <data name="STPAccountIsNotActive" xml:space="preserve">
+    <value>此郵購網賬戶未啟動。</value>
+  </data>
+  <data name="STPAccountNotExist" xml:space="preserve">
+    <value>此郵購網賬戶不存在。</value>
+  </data>
+  <data name="OMOSVerifyCodeNotMatch" xml:space="preserve">
+    <value>驗證碼不匹配!</value>
+  </data>
+  <data name="OMOSVerifyCodeRequire" xml:space="preserve">
+    <value>驗證碼不能為空!</value>
+  </data>
+  <data name="EntryDataIncomplete" xml:space="preserve">
+    <value>輸入的數據不完整。</value>
+  </data>
+  <data name="AccountLinkuped" xml:space="preserve">
+    <value>此帳戶已連結香港郵政帳戶，請輸入香港郵政帳戶名稱登入。</value>
+  </data>
+  <data name="InvalidLoginName" xml:space="preserve">
+    <value>無效的登入賬戶。</value>
+  </data>
+  <data name="MigrtionContent" xml:space="preserve">
+    <value>&lt;span class='MigContent1'&gt;香港郵政推出全新的「香港郵政帳戶」，你可以把「郵購網」的帳戶升級至「香港郵政帳戶」。從此只需一個帳戶，便可登入香港郵政的網上服務。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;
+&lt;span class='MigContent2'&gt;注: 由 2020年3月1日開始，「郵購網」帳戶將必須使用「香港郵政帳戶」登入。&lt;/span&gt;&lt;br/&gt;&lt;br/&gt;</value>
+  </data>
+  <data name="MigrtionTitle" xml:space="preserve">
+    <value>把「郵購網」的帳戶升級至「香港郵政帳戶」</value>
+  </data>
+  <data name="AppLinkupTips" xml:space="preserve">
+    <value>「香港郵政帳戶」所附屬的電郵在郵購網已經存在，如閣下是該電郵的持有人，請按此進行連結。閣下亦可填寫其他電郵啟用郵購網。</value>
+  </data>
+  <data name="NotLinkMsg" xml:space="preserve">
+    <value>連結現有「郵購網」帳戶：&lt;br/&gt;
+如閣下已經持有「郵購網」帳戶，你可以連結該帳戶到此香港郵政帳戶。&lt;br/&gt;
+&lt;br/&gt;
+啟動「郵購網」：&lt;br/&gt;
+立即體驗「郵購網」網上服務。&lt;br/&gt;</value>
+  </data>
+  <data name="HKPIDLinkuped" xml:space="preserve">
+    <value>HKPID已經連結.</value>
+  </data>
+  <data name="ExistHTMLLabel" xml:space="preserve">
+    <value>不允許有HTML標籤</value>
+  </data>
+  <data name="MobileAppCartSOSRefuse" xml:space="preserve">
+    <value>郵品訂購服務不適用於「郵購網」手機應用程式版本，請轉用手機瀏覽器完成郵品訂購，不便之處，敬請原諒。如有查詢，可致電(852) 2785 5711 、電郵至aos@hkpo.gov.hk或傳真到(852) 2191 9296。</value>
+  </data>
+  <data name="CounterCollectionNotExist" xml:space="preserve">
+    <value>櫃檯[{0}]不存在</value>
+  </data>
+  <data name="MailServerNotExist" xml:space="preserve">
+    <value>郵箱服務器配置不存在，請聯繫客服</value>
+  </data>
+  <data name="PleaseEnterCorrectEmail" xml:space="preserve">
+    <value>請輸入正確的郵件地址</value>
+  </data>
+  <data name="GetTreeFail" xml:space="preserve">
+    <value>獲取樹失敗！</value>
+  </data>
+  <data name="OpenWithNewTab" xml:space="preserve">
+    <value>打開新的標籤頁</value>
+  </data>
+  <data name="PromotionCodeDeleted" xml:space="preserve">
+    <value>推廣碼已經被刪除</value>
+  </data>
+  <data name="PromotionCodeExpired" xml:space="preserve">
+    <value>推廣碼已經過期</value>
+  </data>
+  <data name="NoPromotionCode" xml:space="preserve">
+    <value>推廣碼未生成</value>
+  </data>
+  <data name="ActiveCanNotModify" xml:space="preserve">
+    <value>啟用後不能修改，是否啟用？</value>
+  </data>
+  <data name="OldMerchantMbrEmpty" xml:space="preserve">
+    <value>原商家缺少管理員</value>
+  </data>
+  <data name="AttributeInUsed" xml:space="preserve">
+    <value>屬性【{0}】已經使用,請不要刪除</value>
+  </data>
+  <data name="CustomUrlIsExist" xml:space="preserve">
+    <value>自定義地址已經存在</value>
+  </data>
+  <data name="TS_AdSyncFail" xml:space="preserve">
+    <value>更新失敗，廣告數據同步失敗。</value>
+  </data>
+  <data name="TS_VideoFileNotExists" xml:space="preserve">
+    <value>找不到可用的廣告影片。</value>
+  </data>
+  <data name="GreaterThanMaxLimitDayFun" xml:space="preserve">
+    <value>你所兌換的積分已超出當天最大額度</value>
+  </data>
+  <data name="GreaterThanMaxLimitMonthFun" xml:space="preserve">
+    <value>你所兌換的積分已超出當月最大額度</value>
+  </data>
+  <data name="GreaterThanMaxLimitYearFun" xml:space="preserve">
+    <value>你所兌換的積分已超出當年最大額度</value>
+  </data>
+  <data name="MemberNotExist" xml:space="preserve">
+    <value>非法操作：找不到會員信息</value>
+  </data>
+  <data name="MemberPointsNotExist" xml:space="preserve">
+    <value>非法操作：不存在的會員積分記錄</value>
+  </data>
+  <data name="PointsRecordIsDeadLine" xml:space="preserve">
+    <value>這個兌換記錄已過期</value>
+  </data>
+  <data name="PointsRecordIsDeal" xml:space="preserve">
+    <value>這個兌換記錄已兌換了</value>
+  </data>
+  <data name="PointsRecordNotExist" xml:space="preserve">
+    <value>非法操作：不存在的兌換記錄</value>
+  </data>
+  <data name="DoNotTryAgain" xml:space="preserve">
+    <value>請勿頻繁執行該操作，稍後再試</value>
+  </data>
+  <data name="NotFoundAssociatedUser" xml:space="preserve">
+    <value>找不到關聯用戶</value>
+  </data>
+  <data name="WrongFun" xml:space="preserve">
+    <value>錯誤的兌換值</value>
+  </data>
+  <data name="PosterMsg" xml:space="preserve">
+    <value>獲得《假冒女團》官方海報一張</value>
+  </data>
+  <data name="AnsonloTicketMsg" xml:space="preserve">
+    <value>獲得《假冒女團》戲飛一張</value>
+  </data>
+  <data name="FirstRunTicketMsg" xml:space="preserve">
+    <value>獲得《假冒女團》首映禮戲飛一張</value>
+  </data>
+  <data name="TicketMsg" xml:space="preserve">
+    <value>獲得電影公司送出的《假冒女團》紀念戲飛{0}張</value>
+  </data>
+  <data name="Event0" xml:space="preserve">
+    <value>恭喜你！獲得《假冒女團》首映禮戲飛一張，請查看電郵了解換領方法。</value>
+  </data>
+  <data name="Event1" xml:space="preserve">
+    <value>恭喜你！獲得電影公司送出的《假冒女團》紀念戲飛{0}張，請查看電郵了解換領方法。</value>
+  </data>
+  <data name="Event2" xml:space="preserve">
+    <value>恭喜你！獲得《假冒女團》官方海報一張，請查看電郵了解換領方法。</value>
+  </data>
+  <data name="Event3" xml:space="preserve">
+    <value>恭喜你！獲得《假冒女團》戲飛一張，請查看電郵了解換領方法。</value>
+  </data>
+</root>

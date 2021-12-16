@@ -1,0 +1,126 @@
+﻿
+@{
+    ViewBag.Title = "UpdatePriceIndex";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="app" v-cloak class="container">
+    <form id="frmUpdateInfo">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">@BDMall.Resources.Menu.BulkUpdatePrice</h3>
+            </div>
+            <div class="panel-body">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <div class="col-md-2">
+                            <label>@BDMall.Resources.Label.RootCatalog</label>
+                        </div>
+                        <div class="col-md-10">
+                            <select id="cboRootCatalog" class="form-control" name="rootCatalog"></select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-2">
+                            <select id="cboUpdatePriceType" class="form-control"></select>
+                        </div>
+                        <div class="col-md-10 form-inline">
+                            <input type="number" v-model="updateInfo.Percent" class="form-control" name="percent" />
+                            %
+                            <input type="button" value="@BDMall.Resources.Action.Confirm" class="btn btn-default" v-on:click="saveCheck" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section scripts {
+    <script type="text/javascript">
+        var frmUpdateInfo;
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                updateInfo: {
+                    UpdateCatalogId: -1,
+                    UpdateType: -1,
+                    Percent: 0
+                }
+            },
+            methods: {
+                updatePrice: function () {
+                    vm.updateInfo.UpdateCatalogId = $("#cboRootCatalog").val();
+                    vm.updateInfo.UpdateType = $("#cboUpdatePriceType").val();
+                    WS.AjaxP("post", "/adminapi/product/BulkUpdPrice", vm.updateInfo, function (response) {
+                        if (response.Succeeded == true) {
+                            showInfo("@BDMall.Resources.Message.UpdateSuccess");
+                        }
+                        else {
+                            showWarn("@BDMall.Resources.Message.UpdateFail");
+                        }
+                    }, function () { })
+                },
+                saveCheck: function () {
+                    if (frmUpdateInfo.form()) {
+                        $("#frmUpdateInfo").submit();
+                    }
+                }
+            }
+
+        });
+
+        function initValidateForm() {
+            frmUpdateInfo = $("#frmUpdateInfo").validate({
+                submitHandler: function () {
+                    vm.updatePrice();
+                },
+                rules: {
+                    rootCatalog: {
+                        min: 1
+                    },
+                    percent: {
+                        required: true,
+                        min: 0
+                    }
+
+                },
+                messages:
+                {
+                    rootCatalog: { min: "@BDMall.Resources.Message.RequiredField" },
+                    percent: {
+                        required: "@BDMall.Resources.Message.RequiredField",
+                        min: "@BDMall.Resources.Message.NumberNotLessThan" + " 0"
+                    }
+                },
+                success: function (label) {
+                    $(label).parent().removeClass('has-error');
+                    //console.log(label);
+                },
+                showErrors: function (errorMap, errorList) {
+                    // 遍历错误列表
+                    focusWrongPlace(errorMap, function (lang) {
+                    });
+                    // 此处注意，一定要调用默认方法，这样保证提示消息的默认效果
+                    this.defaultShowErrors();
+                }
+            });
+        }
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+
+        $(document).ready(function () {
+            initValidateForm();
+            var data = new Object();
+            data.catId = 0;
+            InitBootstrapSelect("cboRootCatalog", "/adminapi/Product/GetCatalogById", 1, false, true, data, function () { });
+            InitBootstrapSelect("cboUpdatePriceType", "/adminapi/Dict/GetUpdPriceType", 1, false, false, null, function () { });
+        });
+    </script>
+}
+

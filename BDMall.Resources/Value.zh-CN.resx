@@ -1,0 +1,351 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Actived" xml:space="preserve">
+    <value>有效</value>
+  </data>
+  <data name="approve" xml:space="preserve">
+    <value>通过</value>
+  </data>
+  <data name="Approved" xml:space="preserve">
+    <value>已审批</value>
+  </data>
+  <data name="Automatic" xml:space="preserve">
+    <value>自动生成</value>
+  </data>
+  <data name="AutoOffSale" xml:space="preserve">
+    <value>自动下架</value>
+  </data>
+  <data name="Basic" xml:space="preserve">
+    <value>基本</value>
+  </data>
+  <data name="CashCoupon" xml:space="preserve">
+    <value>现金券</value>
+  </data>
+  <data name="Decrease" xml:space="preserve">
+    <value>下调价格</value>
+  </data>
+  <data name="DeliveryFee" xml:space="preserve">
+    <value>运费</value>
+  </data>
+  <data name="DiscountCoupon" xml:space="preserve">
+    <value>折扣券</value>
+  </data>
+  <data name="Editing" xml:space="preserve">
+    <value>编辑中</value>
+  </data>
+  <data name="Finish" xml:space="preserve">
+    <value>完成</value>
+  </data>
+  <data name="ForComment" xml:space="preserve">
+    <value>评论赠送</value>
+  </data>
+  <data name="ForLogin" xml:space="preserve">
+    <value>登陆赠送</value>
+  </data>
+  <data name="ForManuallyAdd" xml:space="preserve">
+    <value>人手添加</value>
+  </data>
+  <data name="ForPickup" xml:space="preserve">
+    <value>用户领取</value>
+  </data>
+  <data name="ForRecommend" xml:space="preserve">
+    <value>推荐赠送</value>
+  </data>
+  <data name="ForRegistered" xml:space="preserve">
+    <value>注册赠送</value>
+  </data>
+  <data name="ForShopping" xml:space="preserve">
+    <value>买满赠送</value>
+  </data>
+  <data name="FreeShipProduct" xml:space="preserve">
+    <value>免邮费产品</value>
+  </data>
+  <data name="GS1" xml:space="preserve">
+    <value>GS1</value>
+  </data>
+  <data name="HotSaleProduct" xml:space="preserve">
+    <value>热销产品</value>
+  </data>
+  <data name="ImageBackSide" xml:space="preserve">
+    <value>反面</value>
+  </data>
+  <data name="ImageFrontSide" xml:space="preserve">
+    <value>正面</value>
+  </data>
+  <data name="Increase" xml:space="preserve">
+    <value>上调价格</value>
+  </data>
+  <data name="LangEnglish" xml:space="preserve">
+    <value>英文</value>
+  </data>
+  <data name="LangJapaness" xml:space="preserve">
+    <value>日文</value>
+  </data>
+  <data name="LangSimplifiedChinese" xml:space="preserve">
+    <value>简体中文</value>
+  </data>
+  <data name="LangTraditionalChinese" xml:space="preserve">
+    <value>繁体</value>
+  </data>
+  <data name="Manual" xml:space="preserve">
+    <value>手动生成</value>
+  </data>
+  <data name="ManualOffSale" xml:space="preserve">
+    <value>手动下架</value>
+  </data>
+  <data name="NewProduct" xml:space="preserve">
+    <value>新产品</value>
+  </data>
+  <data name="NotActived" xml:space="preserve">
+    <value>未有效</value>
+  </data>
+  <data name="NotApproved" xml:space="preserve">
+    <value>未审批</value>
+  </data>
+  <data name="NotSent" xml:space="preserve">
+    <value>未发送</value>
+  </data>
+  <data name="NotStarted" xml:space="preserve">
+    <value>未开始</value>
+  </data>
+  <data name="OffSale" xml:space="preserve">
+    <value>已下架</value>
+  </data>
+  <data name="OnSale" xml:space="preserve">
+    <value>已上架</value>
+  </data>
+  <data name="OrderByName" xml:space="preserve">
+    <value>名称</value>
+  </data>
+  <data name="OrderByPrice" xml:space="preserve">
+    <value>价格</value>
+  </data>
+  <data name="OrderByProductCode" xml:space="preserve">
+    <value>产品编号</value>
+  </data>
+  <data name="OrderByTypeASC" xml:space="preserve">
+    <value>升序</value>
+  </data>
+  <data name="OrderByTypeDSC" xml:space="preserve">
+    <value>倒序</value>
+  </data>
+  <data name="Pass" xml:space="preserve">
+    <value>批核</value>
+  </data>
+  <data name="PermissionvForinternaluseonly" xml:space="preserve">
+    <value>内部参考</value>
+  </data>
+  <data name="PermissionvVewablebypublic" xml:space="preserve">
+    <value>公开</value>
+  </data>
+  <data name="PermissionvViewableafterlogin" xml:space="preserve">
+    <value>只供会员</value>
+  </data>
+  <data name="Price" xml:space="preserve">
+    <value>货价</value>
+  </data>
+  <data name="Processing" xml:space="preserve">
+    <value>处理中</value>
+  </data>
+  <data name="ProductSearchTypeAllWords" xml:space="preserve">
+    <value>全部字</value>
+  </data>
+  <data name="ProductSearchTypeAnyWord" xml:space="preserve">
+    <value>任何字</value>
+  </data>
+  <data name="Reject" xml:space="preserve">
+    <value>拒绝</value>
+  </data>
+  <data name="Sent" xml:space="preserve">
+    <value>已发送</value>
+  </data>
+  <data name="SpecialItem_OnSale" xml:space="preserve">
+    <value>推介产品</value>
+  </data>
+  <data name="SpecialItem_SaleOff" xml:space="preserve">
+    <value>售罄</value>
+  </data>
+  <data name="Success" xml:space="preserve">
+    <value>成功</value>
+  </data>
+  <data name="ToBeOnShelf" xml:space="preserve">
+    <value>待上架</value>
+  </data>
+  <data name="WaitingApprove" xml:space="preserve">
+    <value>待审批</value>
+  </data>
+  <data name="In" xml:space="preserve">
+    <value>增加</value>
+  </data>
+  <data name="Out" xml:space="preserve">
+    <value>减少</value>
+  </data>
+  <data name="HightRatingProduct" xml:space="preserve">
+    <value>高评分产品</value>
+  </data>
+  <data name="LoginTimeout" xml:space="preserve">
+    <value>登入超時</value>
+  </data>
+  <data name="UserLogout" xml:space="preserve">
+    <value>用戶登出</value>
+  </data>
+  <data name="CanceledOrder" xml:space="preserve">
+    <value>已取消的订单</value>
+  </data>
+  <data name="DeliveryArranged" xml:space="preserve">
+    <value>已安排送货的订单</value>
+  </data>
+  <data name="OrderCompleteAfterGP" xml:space="preserve">
+    <value>冷静期外的已完成订单</value>
+  </data>
+  <data name="OrderCompleteWithinGP" xml:space="preserve">
+    <value>冷静期内的已完成订单</value>
+  </data>
+  <data name="RefundWithCashAndMallFun" xml:space="preserve">
+    <value>退货单(现金和乐满分)</value>
+  </data>
+  <data name="Refund" xml:space="preserve">
+    <value>退款</value>
+  </data>
+  <data name="TokenExpire" xml:space="preserve">
+    <value>令牌过期</value>
+  </data>
+  <data name="WishList" xml:space="preserve">
+    <value>喜爱清单</value>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>失败</value>
+  </data>
+  <data name="Sendding" xml:space="preserve">
+    <value>发送中</value>
+  </data>
+  <data name="Unknown" xml:space="preserve">
+    <value>未知</value>
+  </data>
+  <data name="WaitingToSend" xml:space="preserve">
+    <value>等待发送</value>
+  </data>
+  <data name="Mall" xml:space="preserve">
+    <value>平台</value>
+  </data>
+  <data name="WaitingOnSale" xml:space="preserve">
+    <value>待上架</value>
+  </data>
+</root>

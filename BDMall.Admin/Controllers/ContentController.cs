@@ -10,9 +10,13 @@ namespace BDMall.Admin.Controllers
         public ContentResult LanguageScript()
         {
             System.Type stringType = typeof(string);
+            PropertyInfo[] scripts = typeof(BDMall.Resources.Javascript).GetProperties();
             System.Collections.Hashtable array = new System.Collections.Hashtable();
-            array.Add("First", "首頁");
-            array.Add("Close","關閉");
+            foreach (var p in scripts)
+            {
+                if (p.PropertyType == stringType)
+                    array.Add(p.Name, p.GetValue(p, null));
+            }
 
             string script = JsonUtil.ToJson(array);
             script = "var Resources =" + script + ";";

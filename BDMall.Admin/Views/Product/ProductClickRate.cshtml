@@ -1,0 +1,158 @@
+﻿
+@{
+    ViewBag.Title = "ProductClickRate";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="app" v-cloak>
+    <div id="divSearch" class="col-md-12 form-horizontal">
+        <div class="row">
+            <label for="cboMerchant" class="control-label col-md-1 text-left">@BDMall.Resources.Label.MerchantName</label>
+            <div class="col-md-3">
+                <select id="cboMerchant" class="form-control" style="width:300px;"></select>
+            </div>
+            <label for="cboMerchant" class="control-label col-md-1 text-left">@BDMall.Resources.Label.ProductCode</label>
+            <div class="col-md-3">
+                <input type="text" class="form-control" v-model="condition.ProductCode" style="width:300px;" />
+            </div>
+            <label for="cboMerchant" class="control-label col-md-1 text-left">@BDMall.Resources.Label.ProductName</label>
+            <div class="col-md-3">
+                <input type="text" class="form-control" v-model="condition.ProductName" style="width:300px;" />
+            </div>
+        </div>
+        <div class="row text-right">
+            <input type="button" class="btn btn-primary" value="@BDMall.Resources.Action.Search" v-on:click="search" />
+        </div>
+
+    </div>
+    <div class="form-group col-sm-12 form-horizontal">
+        <table id="tblMerchantList" class="table table-condensed"></table>
+    </div>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        var isMerch = Boolean(@ViewBag.IsMerchant);
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                isMerchant: isMerch,
+                condition: {
+                    MerchantId: "-1",
+                    ProductCode: "",
+                    ProductName:""
+                }
+            },
+            methods: {
+                search: function ()
+                {
+                    $("#tblMerchantList").bootstrapTable("refresh", { url: "/adminapi/Product/SearchProductClicks", pageNumber: 1 });
+                },
+                //getMapping: function () {
+                //    vm.search();
+                //}
+            }
+        });
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+
+        var merchantListTableInit = function () {
+            var objDataTable = new Object();
+
+            objDataTable.Init = function () {
+                $("#tblMerchantList").bootstrapTable({
+                    method: 'post',                      //请求方式（*）
+                    queryParams: objDataTable.queryParams,//传递参数（*）
+                    //toolbar: '#divToolBar',                //工具按钮用哪个容器
+                    striped: true,                      //是否显示行间隔色
+                    cache: true,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                    sortable: true,                     //是否启用排序
+                    sortOrder: "asc",                   //排序方式
+                    sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+                    pageNumber: 1,                       //初始化加载第一页，默认第一页
+                    pageSize: 10,                       //每页的记录行数（*）
+                    pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                    smartDisplay: false,
+                    showRefresh: true,                  //是否显示刷新按钮
+                    clickToSelect: true,                //是否启用点击选中行
+                    //height: 750,                        //行高，如果没有设置height属性，表格自动根据记录条数決定表格高度
+                    uniqueId: "ProductCode",                     //每一行的唯一标识，一般为主键列
+                    cardView: false,                    //是否显示详细视图
+                    detailView: false,                   //是否显示父子表
+                    pagination: true,                   //是否显示分页（*）
+                    dataField: "Data",
+                    totalField: "TotalRecord",
+                    ajaxOptions: {
+                        beforeSend: function (request) {
+                            var access_token = $.cookie("access_token");
+                            request.setRequestHeader("Authorization", "Bearer " + access_token);
+                        }
+                    },
+                    columns: [{
+                        field: 'ProductId',
+                        title: 'Id',
+                        visible: false
+                    }, {
+                        field: 'MerchantName',
+                        valign: 'middle',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.MerchantName'
+                    }, {
+                        field: 'ProductCode',
+                        valign: 'middle',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.ProductCode'
+                    }, {
+                        field: 'ProductName',
+                        valign: 'middle',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.ProductName'
+                    }, {
+                        field: 'ClickCounter',
+                        valign: 'middle',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.ClickCounter'
+                    },  {
+                        field: 'UpdateDateString',
+                        valign: 'middle',
+                        title: '@BDMall.Resources.Label.UpdateDate',
+                        sortable: true,
+                    }]
+                });
+            };
+
+            objDataTable.queryParams = function (params) {
+                var page = 1;
+                if (params.offset > 0) {
+                    page = parseInt(params.offset / params.limit) + 1;
+                }
+
+                vm.condition.MerchantId = $("#cboMerchant").val();
+                var sortedBy = params.sort;
+                var sorted = params.order;
+
+                vm.condition.Page = page;
+                vm.condition.PageSize = params.limit;
+                vm.condition.SortName = sortedBy;
+                vm.condition.SortOrder = sorted;
+                return vm.condition;
+            }
+            return objDataTable;
+        }
+
+        $(document).ready(function () {
+            var isSelectAll = !isMerch;
+            InitNormalSelect("cboMerchant", "/adminapi/Merchant/GetMerchantOptions", isSelectAll, null, false);
+
+            var tblObj = new merchantListTableInit();
+            tblObj.Init();
+            vm.search();
+        })
+    </script>
+}
+

@@ -1,0 +1,50 @@
+﻿@{
+    ViewBag.Title = "CatalogIndex";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+
+}
+
+
+<div class="row">
+    <div class="col-md-12">
+        <input class="btn btn-default" type="button" value="@BDMall.Resources.Action.AddRoot" v-on:click="addRoot" />
+        <input class="btn btn-default" type="button" value="@BDMall.Resources.Action.Sorted" v-on:click="sorted" />
+    </div>
+    <div class="col-md-8">
+        <menu-item v-bind:items="treeNodes" v-bind:limitlevel="3" v-bind:canedit=@ViewBag.Type v-bind:clickadd="addItem" v-bind:clickedit="editItem"
+                   v-bind:clickremove="removeItem" v-bind:issorted="isSorted" v-bind:activeclick="activeItem"  v-bind:disactiveclick="disActiveItem"></menu-item>
+    </div>
+    <div class="col-md-8 text-right" style="margin:10px 0 0 0;">
+        <input class="btn btn-primary" v-show="isSorted==true" type="button" value="@BDMall.Resources.Action.Save" v-on:click="saveSorted" />
+        <input class="btn btn-warning" v-show="isSorted==true" type="button" value="@BDMall.Resources.Action.Cancel" v-on:click="cancelSorted" />
+    </div>
+    <div id="outerdiv" style="position:fixed;top:0;left:0;background:rgba(0,0,0,0.7);z-index:1200;width:100%;height:100%;display:none;">
+        <div id="innerdiv" style="position:absolute;">
+            <img id="bigimg" style="border:5px solid #fff;" src="" />
+        </div>
+    </div>  
+    
+    
+</div>
+
+@section scripts {
+    <script src="~/Scripts/admin/system/catalogMng.js"></script>
+
+    <script type="text/javascript">
+        var type = '@ViewBag.Type';
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+
+        $(document).ready(function () {
+
+            app.loadMenus(type);
+        });
+
+        
+    </script>
+}

@@ -1,0 +1,1806 @@
+﻿
+@{
+    ViewBag.Title = "EditProduct";
+    Layout = "~/Views/Shared/_LayoutEditor.cshtml";
+
+}
+
+<div id="app" class="col-md-12" v-cloak>
+    <form id="commentForm">
+        <input type="hidden" v-model="productInfo.IsCombProcut" />
+        <div class="row">
+            <ul id="myTab" class="nav nav-tabs">
+                <li class="active" v-on:click="tabClick(0)">
+                    <a name="ProductDetailView" href="#ProductDetailView">@BDMall.Resources.Label.ProductInfo</a>
+                </li>
+                <li v-on:click="tabClick(1)">
+                    <a name="ProductInfoView" href="#ProductInfoView">@BDMall.Resources.Label.ProductParameters</a>
+                </li>
+                <li v-on:click="tabClick(2)">
+                    <a name="ProductAttributeView" href="#ProductAttributeView">@BDMall.Resources.Label.ProductAttribute</a>
+                </li>
+                <li v-on:click="tabClick(4)">
+                    <a name="ProductRefuseDelivery" href="#ProductRefuseDelivery">@BDMall.Resources.Label.DeliverySetting</a>
+                </li>
+                <li v-on:click="tabClick(3)">
+                    <a name="InternalView" href="#InternalView">@BDMall.Resources.Label.InternalView</a>
+                </li>
+                @*<li v-on:click="tabClick(4)">
+                        <a name="FactoryView" href="#FactoryView">@BDMall.Resources.Label.FactoryView</a>
+                    </li>*@
+                <li v-show="action=='Modify'|| action=='NewVer'" v-on:click="tabClick(5)">
+                    <a id="aImg" href="#UploadImgView" onclick="SetProductImgFrameSrc();">@BDMall.Resources.Label.ProductImage</a>
+                </li>
+                @*<li v-if="action=='Modify'" v-on:click="tabClick(6)">
+                        <a href="#AccessoriesProductView" onclick="SetAccessorProductFrameSrc();">@BDMall.Resources.Label.AccessoriesProductView</a>
+                    </li>*@
+                <li v-show="action=='Modify' || action=='NewVer'" v-on:click="tabClick(7)">
+                    <a href="#RelateProductView" onclick="SetRelatedProductFrameSrc();">@BDMall.Resources.Label.RelateProductView</a>
+                </li>
+            </ul>
+
+            <div id="divContent" class="tab-content">
+                <div class="tab-pane fade in active" id="ProductDetailView">
+                    <table class="table">
+                        <tr>
+                            <td class="col-md-2">
+                                <span style="color:red;">*</span>@BDMall.Resources.Label.ProductCode
+                            </td>
+                            <td class="col-md-10">
+                                <div class="form-inline">
+                                    <input type="text" name="ProductCode" class="form-control" style="width:150px;" v-model="productInfo.MerchantSupplierId" v-if="action=='Add' || action=='Copy'" v-bind:disabled="true" maxlength="50" />
+                                    <input type="text" name="ProductCode" class="form-control" style="width:300px;" v-model="productInfo.Code" v-bind:disabled="action=='Modify' || action=='NewVer'" maxlength="50" />
+                                    <input type="hidden" v-model="productInfo.Id" />
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="col-md-2"></td>
+                            <td class="col-md-10">
+                                <multilang-bar v-bind:data="productInfo.ProductNames" ref="langbar" v-bind:selectlanguage="selectLanguage"></multilang-bar>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-2">
+                                <div><span style="color:red;">*</span>@BDMall.Resources.Label.ProductName</div>
+                                <div>@BDMall.Resources.Label.ProductNameTips</div>
+                            </td>
+                            <td class="col-md-10">
+                                <div v-for="pItem in productInfo.ProductNames" v-show="pItem.Lang.Code==languageType">
+                                    <input type="text" v-bind:id="'ProductName_'+pItem.Lang.Code" v-bind:disabled="isEnabled==false" v-bind:name="'ProductName_'+pItem.Lang.Code" class="form-control" v-model="pItem.Desc" />
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-2">
+                                @BDMall.Resources.Label.PageTitle
+                            </td>
+                            <td class="col-md-10">
+                                <div v-for="pItem in productInfo.PageTitles" v-show="pItem.Lang.Code==languageType">
+                                    <input type="text" class="form-control" v-bind:id="'PageTitle_'+pItem.Lang.Code" v-bind:name="'PageTitle_'+pItem.Lang.Code" v-bind:disabled="isEnabled==false" v-model="pItem.Desc" />
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-2">
+                                @BDMall.Resources.Label.SeoKeyWord
+                            </td>
+                            <td class="col-md-10">
+                                <div v-for="pItem in productInfo.SeoKeywords">
+                                    <input type="text" class="form-control" v-bind:id="'SeoKeyWord_'+pItem.Lang.Code" v-bind:name="'SeoKeyWord_'+pItem.Lang.Code" v-show="pItem.Lang.Code==languageType" v-bind:disabled="isEnabled==false" v-model="pItem.Desc" />
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-2">
+                                @BDMall.Resources.Label.SeoDesc
+                            </td>
+                            <td class="col-md-10">
+                                <div v-for="pItem in productInfo.SeoDescs">
+                                    <input type="text" class="form-control" v-bind:id="'SeoDesc_'+pItem.Lang.Code" v-bind:name="'SeoDesc_'+pItem.Lang.Code" v-show="pItem.Lang.Code==languageType" v-bind:disabled="isEnabled==false" v-model="pItem.Desc" />
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-2">
+                                @BDMall.Resources.Label.ProductBrief
+                            </td>
+                            <td class="col-md-10">
+                                <div v-for="pItem in productInfo.ProductBriefs">
+                                    <input type="text" class="form-control" v-bind:id="'ProductBriefs_'+pItem.Lang.Code" v-bind:name="'ProductBriefs_'+pItem.Lang.Code" v-show="pItem.Lang.Code==languageType" v-bind:disabled="isEnabled==false" v-model="pItem.Desc" />
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-2">
+                                @BDMall.Resources.Label.ProductDetail
+                            </td>
+                            <td class="col-md-10">
+                                <div v-for="pItem in productInfo.ProductDetail">
+                                    <div v-show="pItem.Lang.Code==languageType" v-bind:id="'editor_'+pItem.Lang.Code" v-bind:disabled="isEnabled==false" type="text/plain" style="overflow-y:scroll;">
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        @*<tr>
+                                <td class="col-md-2">
+                                    @BDMall.Resources.Label.Ingredient
+                                </td>
+                                <td class="col-md-10">
+                                    <div v-for="pItem in productInfo.Ingredient">
+                                        <div v-show="pItem.Lang.Code==languageType" v-bind:id="'editorIngredient_'+pItem.Lang.Code" type="text/plain" style="overflow-y:scroll;">
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="col-md-2">
+                                    @BDMall.Resources.Label.Specification
+                                </td>
+                                <td class="col-md-10">
+                                    <div v-for="pItem in productInfo.Instructions">
+                                        <div v-show="pItem.Lang.Code==languageType" v-bind:id="'editorInstructions_'+pItem.Lang.Code" type="text/plain" style="overflow-y:scroll;">
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>*@
+
+                        @*<tr>
+                                <td class="col-md-2">
+                                    @BDMall.Resources.Label.PermissionLevel
+                                </td>
+                                <td class="col-md-10">
+                                    <select id="cboPermission" data-width="300px"></select>
+                                </td>
+                            </tr>*@
+                        <tr>
+                            <td class="col-md-2">
+                                <span style="color:red;">*</span>@BDMall.Resources.Label.ActiveDate
+                            </td>
+                            <td class="col-md-10">
+                                <div class="form-inline">
+                                    <input name="DateTimePickerFrom" type="text" class="form-control" id="txtActiveFrom" data-width="300px" v-bind:disabled="isEnabled==false" autocomplete="off">
+                                    <input name="DateTimePickerTo" type="text" class="form-control" id="txtActiveTo" data-width="300px" v-bind:disabled="isEnabled==false" autocomplete="off">
+                                    <label></label>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-2">
+                                @BDMall.Resources.Label.SaleTime
+                            </td>
+                            <td class="col-md-10">
+                                <input name="DateTimePickerSaleTime" type="text" class="form-control" id="txtSaleTime" style="width:200px;" v-bind:disabled="isEnabled==false" autocomplete="off">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-2">
+                                @BDMall.Resources.Label.IsLimitQty
+                            </td>
+                            <td class="col-md-10">
+                                <input type="checkbox" value="true" v-model="productInfo.SpecifExtension.IsLimit" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-2">
+                                @BDMall.Resources.Label.IsSalesReturn
+                            </td>
+                            <td class="col-md-10">
+                                <input type="checkbox" value="true" v-model="productInfo.SpecifExtension.NoRefund" />
+                            </td>
+                        </tr>
+                        @*<tr>
+                                <td class="col-md-2">
+                                    <span style="color:red;">*</span>@BDMall.Resources.Label.ProductTag
+                                </td>
+                                <td class="col-md-10">
+                                    <input id="radBasic" type="radio" name="ProductType" value="4" v-model="productInfo.SpecifExtension.ProductType" />
+                                    <label for="radBasic"> @BDMall.Resources.Value.Basic</label>
+                                    <input id="radNew" type="radio" name="ProductType" value="0" v-model="productInfo.SpecifExtension.ProductType" />
+                                    <label for="radNew"> @BDMall.Resources.Value.NewProduct</label>
+                                    <input id="radHot" type="radio" name="ProductType" value="1" v-model="productInfo.SpecifExtension.ProductType" />
+                                    <label for="radHot"> @BDMall.Resources.Value.HotSaleProduct</label>
+                                </td>
+                            </tr>*@
+                        <tr v-if="productInfo.GS1StatusString!=''">
+                            <td class="col-md-2">
+                                @BDMall.Resources.Label.GS1Status
+                            </td>
+                            <td class="col-md-10">
+                                {{productInfo.GS1StatusString}}
+                            </td>
+                        </tr>
+                        @*<tr>
+                                <td class="col-md-2">
+                                    @BDMall.Resources.Label.SpecialItem
+                                </td>
+                                <td class="col-md-10">
+                                    <ul class="list-inline">
+                                        <li>
+                                            <input type="checkbox" id="chkOnSale" v-model="productInfo.SpecifExtension.IsOnSale" v-bind:disabled="action=='Add'" />
+                                            <label for="chkOnSale">@BDMall.Resources.Value.SpecialItem_OnSale</label>
+                                        </li>
+                                        <li>
+                                            <input type="checkbox" id="chkStock" v-model="productInfo.SpecifExtension.IsSaleOff" v-bind:disabled="action=='Add'" />
+                                            <label for="chkStock">@BDMall.Resources.Value.SpecialItem_SaleOff</label>
+                                        </li>
+                                    </ul>
+                                </td>
+                            </tr>*@
+                    </table>
+
+                </div>
+                <div class="tab-pane fade" id="ProductInfoView">
+                    <table class="table">
+                        <tr>
+                            <td class="col-md-2">
+                                <span style="color:red;">*</span>@BDMall.Resources.Label.Currency
+                            </td>
+                            <td class="col-md-10">
+                                @*{{productInfo.Currency.Code}}*@
+                                <select id="cboCurrency" class="form-control" data-width="300px" name="Currency" disabled="disabled"> </select>
+                            </td>
+                        </tr>
+                        @*<tr>
+                                <td class="col-md-2">
+                                    <span style="color:red;">*</span>@BDMall.Resources.Label.SalesQuota
+                                </td>
+                                <td class="col-md-10">
+                                    <input type="number" name="SalesQuota" class="form-control" style="width:300px;" v-model="productInfo.SpecifExtension.SalesQuota " v-bind:disabled="isEnabled==false" value="1" />
+                                </td>
+                            </tr>*@
+                        <tr>
+                            <td class="col-md-2">
+                                @BDMall.Resources.Label.SafetyStock
+                            </td>
+                            <td class="col-md-10">
+                                <input name="SafetyStock" type="number" class="form-control" style="width:300px;" v-model="productInfo.SpecifExtension.SafetyStock " v-bind:disabled="isEnabled==false" value="1" />
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="col-md-2">
+                                <span style="color:red;">*</span>@BDMall.Resources.Label.MinPurQty
+                            </td>
+                            <td class="col-md-10">
+                                <input type="number" name="MinPurQty" class="form-control" style="width:300px;" v-model="productInfo.SpecifExtension.MinPurQty" v-bind:disabled="isEnabled==false" value="1" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-2">
+                                @BDMall.Resources.Label.SalesQuota
+                            </td>
+                            <td class="col-md-10">
+                                <input type="number" name="SalesQuota" class="form-control" style="width:300px;" v-model="productInfo.SpecifExtension.MaxPurQty" v-bind:disabled="isEnabled==false" value="0" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-2">
+                                <span style="color:red;">*</span>@BDMall.Resources.Label.ListPrice
+                            </td>
+                            <td class="col-md-10">
+                                <input type="number" name="ListPrice" class="form-control" style="width:300px;" v-model="productInfo.OriginalPrice" v-bind:disabled="isEnabled==false" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-2">
+                                <span style="color:red;">*</span>@BDMall.Resources.Label.DiscountPrice
+                            </td>
+                            <td class="col-md-10">
+                                <input type="number" name="SalesPrice" class="form-control" style="width:300px;" v-model="productInfo.TimePrice" v-bind:disabled="isEnabled==false" />
+
+                                <span v-if="productInfo.IsTimeStatus==true">(@BDMall.Resources.Label.TimeFieldPrice: {{productInfo.SalePrice}})</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-2">
+                                @BDMall.Resources.Label.MarkUpPrice
+                            </td>
+                            <td class="col-md-10">
+                                <input type="number" class="form-control" style="width:300px;" v-model="productInfo.MarkupPrice " name="MarkupPrice" v-bind:disabled="isEnabled==false" value="1" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-2">
+                                @BDMall.Resources.Label.ProductDimension
+                            </td>
+                            <td class="col-md-10">
+                                <div class="form-inline">
+                                    <input type="text" class="form-control" style="width:150px;" name="SLength" v-model="productInfo.Specification.Length" v-bind:disabled="isEnabled==false" />(D)X
+
+                                    <input type="text" class="form-control" style="width:150px;" name="SWidth" v-model="productInfo.Specification.Width" v-bind:disabled="isEnabled==false" />(W)X
+
+                                    <input type="text" class="form-control" style="width:150px;" name="SHeight" v-model="productInfo.Specification.Heigth" v-bind:disabled="isEnabled==false" />(H)
+
+
+
+                                    <select id="cboUnit" class="form-control" data-width="300px"></select>
+                                </div>
+
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="col-md-2">
+                                @BDMall.Resources.Label.CtnDimension
+                            </td>
+                            <td class="col-md-10">
+                                <div class="form-inline">
+                                    <input type="text" class="form-control" style="width:150px;" name="SPLength" v-model="productInfo.Specification.PackageLength" v-bind:disabled="isEnabled==false" />(D)X
+
+                                    <input type="text" class="form-control" style="width:150px;" name="SPWidth" v-model="productInfo.Specification.PackageWidth" v-bind:disabled="isEnabled==false" />(W)X
+
+                                    <input type="text" class="form-control" style="width:150px;" name="SPHeight" v-model="productInfo.Specification.PackageHeight" v-bind:disabled="isEnabled==false" />(H)
+
+                                    <select id="cboCtnUnit" class="form-control" data-width="300px"></select>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-2">
+                                @BDMall.Resources.Label.Package
+                            </td>
+                            <td class="col-md-10">
+                                <input type="text" class="form-control" style="width:300px;" name="Package" v-model="productInfo.Specification.PackageDescription" v-bind:disabled="isEnabled==false" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-2">
+                                <span style="color:red;">*</span>@BDMall.Resources.Label.WeightUnit
+                            </td>
+                            <td class="col-md-10">
+                                <select name="WeightUnit" id="cboWeightUnit" class="form-control" data-width="300px"></select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-2">
+                                <span style="color:red;">*</span>@BDMall.Resources.Label.GrossWeight
+                            </td>
+                            <td class="col-md-10">
+                                <input type="number" class="form-control" name="GrossWeight" style="width:300px;" v-model="productInfo.Specification.GrossWeight" v-bind:disabled="isEnabled==false" />
+                                <span>@BDMall.Resources.Label.GrossWeightTips</span>
+
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-2">
+                                @BDMall.Resources.Label.NetWeight
+                            </td>
+                            <td class="col-md-10">
+                                <input type="text" class="form-control" name="NetWeight" style="width:300px;" v-model="productInfo.Specification.NetWeight" v-bind:disabled="isEnabled==false" />
+                                @*@BDMall.Resources.Label.NetWeightTips*@
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="col-md-2">
+                                @BDMall.Resources.Label.YoutubeLink
+                            </td>
+                            <td class="col-md-10">
+                                <input type="text" name="YoutubeLink" placeholder="https://www.youtube.com/embed/XXXXXXXX" class="form-control" style="width:500px;" v-model="productInfo.SpecifExtension.YoutubeLink" v-bind:disabled="isEnabled==false" />
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="col-md-2">
+                                @BDMall.Resources.Label.YoukuLink
+                            </td>
+                            <td class="col-md-10">
+                                <input type="text" name="YoukuLink" placeholder="http://player.youku.com/embed/XXXXXXXX" class="form-control" style="width:500px;" v-model="productInfo.SpecifExtension.YoukuLink" v-bind:disabled="isEnabled==false" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-2">
+                                @BDMall.Resources.Label.HSCode
+                            </td>
+                            <td class="col-md-10">
+                                <input type="text" name="HSCode" class="form-control" style="width:500px;" maxlength="100" v-model="productInfo.SpecifExtension.HSCode" v-bind:disabled="isEnabled==false" />
+                            </td>
+                        </tr>
+                    </table>
+
+                </div>
+                <div class="tab-pane fade" id="ProductAttributeView">
+                    <table class="table">
+                        <tr>
+                            <td class="col-md-2">
+                                <span style="color:red;">*</span>@BDMall.Resources.Label.Category
+                            </td>
+                            <td class="col-md-10">
+                                <div class="form-inline">
+                                    <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Select" v-on:click="showCatalogList" v-bind:disabled="productInfo.IsExistInvRec==true || isEnabled==false || action=='NewVer'" />
+                                    <input type="text" name="CategoryPath" class="form-control" style="width:500px;" v-model="productInfo.CategoryPath" readonly />
+                                    <input type="hidden" v-model="productInfo.Category" />
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <fieldset>
+                                    <table class="table">
+                                        <caption>@BDMall.Resources.Label.NonInvAttribute</caption>
+
+                                        <tr v-for="item,index in NonInvAttributes">
+                                            <td class="col-md-2">{{item.Desc}}</td>
+                                            <td class="col-md-10">
+                                                <select v-bind:id="'cboNonInvAttr'+index" multiple data-width="300px"></select>
+                                                @*<input type="button" class="btn btn-default" v-on:click="addNonInvAttribute(item.Id,item.Desc)" value="@BDMall.Resources.Action.Add" v-bind:disabled="isEnabled==false" />*@
+                                            </td>
+
+                                        </tr>
+                                    </table>
+                                </fieldset>
+                                <fieldset>
+                                    <table class="table">
+                                        <caption>
+                                            @BDMall.Resources.Label.InvtAttribute
+                                            <label style="color:red" v-show="productInfo.IsExistInvRec==true">@BDMall.Resources.Label.ProductHasInvTips</label>
+                                        </caption>
+
+                                        <tr v-for="item,index in InvAttributes">
+                                            <td class="col-md-2">{{item.Desc}}</td>
+                                            <td class="col-md-10">
+                                                <select v-bind:id="'cboInvAttr'+index" multiple data-width="300px" v-bind:disabled="productInfo.IsExistInvRec==true"></select>
+                                                @*<input type="button" class="btn btn-default" v-on:click="addInvAttribute(item.Id,item.Desc)" value="@BDMall.Resources.Action.Add" v-bind:disabled="isEnabled==false" />*@
+                                                <input type="button" class="btn btn-default" value="Price" v-on:click="editAdditionalPrice(index)" />
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </fieldset>
+
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="tab-pane fade" id="ProductRefuseDelivery">
+                    <table class="table">
+                        <tr>
+                            <td class="col-md-2">
+                                <span style="color:red;">*</span>@BDMall.Resources.Label.RefuseCountry
+                            </td>
+                            <td class="col-md-10">
+                                <div class="form-inline">
+                                    <select multiple="multiple" id="country" name="country" class="demo1 col-md-6" style="width:100%;height:350px;">
+                                        <option v-for="c in countries" v-bind:value="c.Id">{{c.Text}}</option>
+                                    </select>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="tab-pane fade" id="InternalView">
+                    <table class="table">
+                        @*<tr>
+                                <td class="col-md-2">
+                                    <span style="color:red;">*</span>@BDMall.Resources.Label.InternalPrice
+                                </td>
+                                <td class="col-md-10">
+                                    <input type="number" name="InternamPrice" class="form-control" style="width:300px;" v-model="productInfo.InternalPrice" v-bind:disabled="isEnabled==false" />
+                                </td>
+                            </tr>*@
+                        <tr>
+                            <td class="col-md-2">
+                                @BDMall.Resources.Label.CMCalType
+                            </td>
+                            <td class="col-md-10">
+                                <div class="form-group">
+                                    <select id="cboCMCalType" class="form-control selectpicker show-tick" name="cmCalType" data-width="300px" onchange="changeCMType()" v-bind:disabled="isEnabled==false"></select>
+                                </div>
+                                <div class="form-group" v-if="productInfo.CommissionConfig">
+                                    <div class="form-inline" v-show="productInfo.CommissionConfig.CMCalType == 2">
+                                        <div class="form-group">
+                                            @BDMall.Resources.Label.CMType_FixedValue :
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="number" name="CMFixedValue" class="form-control" style="width:100px;" v-model="productInfo.CommissionConfig.CMVal" v-bind:disabled="isEnabled==false" />
+                                        </div>
+                                    </div>
+                                    <div class="form-inline" v-show="productInfo.CommissionConfig.CMCalType == 3">
+                                        <div class="form-group">
+                                            @BDMall.Resources.Label.CMType_FixedRate :
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="number" name="CMFixedRate" class="form-control" style="width:100px;" v-model="productInfo.CommissionConfig.CMRate" v-bind:disabled="isEnabled==false" />%
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-2">
+                                @BDMall.Resources.Label.VisitCounter
+                            </td>
+                            <td class="col-md-10">
+                                {{productInfo.VisitCounter}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-2">
+                                @BDMall.Resources.Label.PurchaseCounter
+                            </td>
+                            <td class="col-md-10">
+                                {{productInfo.PurchaseCounter}}
+                            </td>
+                        </tr>
+                    </table>
+
+                </div>
+                <div id="UploadImgView" class="tab-pane fade">
+                    <iframe id="ProductImg" src="" width="100%" height="800" frameborder="0"></iframe>
+                </div>
+                @*<div id="AccessoriesProductView" class="tab-pane fade">
+                        <iframe id="AccessoriesProduct" src="" width="100%" height="900" frameborder="0"></iframe>
+                    </div>*@
+                <div id="RelateProductView" class="tab-pane fade">
+                    <iframe id="RelateProduct" src="" width="100%" height="900" frameborder="0"></iframe>
+                </div>
+                @*<div id="CombinationProductItem" class="tab-pane fade">
+                        <iframe id="CombinationProduct" src="" width="100%" height="900" frameborder="0"></iframe>
+                    </div>*@
+            </div>
+
+
+        </div>
+        <div class="modal-footer">
+            <div class="text-right">
+                <input v-show="isEnabled==true && (action=='Modify'||action=='NewVer')" type="button" class="btn btn-primary btn-action-default" value='@BDMall.Resources.Action.Save' v-on:click="saveCheck" />
+                @*<input v-show="isEnabled==true && action=='Modify'" type="button" class="btn btn-primary btn-action-default" value='@BDMall.Resources.Action.SaveAndApply' v-on:click="saveApply" />*@
+                <input v-show="isEnabled==true && (action=='Add' ||action=='Copy' )" type="button" class="btn btn-primary btn-action-default" value='@BDMall.Resources.Action.Next' v-on:click="saveCheck" />
+                <input type="button" class="btn btn-default btn-action-default" value='@BDMall.Resources.Action.Close' v-on:click="closeTab" />
+
+            </div>
+        </div>
+    </form>
+
+    <div id="myModal" style="display:none; padding:5px;">
+        <div class="modal-header">
+            <span>@BDMall.Resources.Label.ModifyAdditionalPrice</span>
+        </div>
+        <div id="frmInput" class="form-horizontal">
+            <div class="form-group" v-for="item in additionPriceList">
+                <label class="col-md-2 text-left">{{item.Text}}</label>
+                <div class="col-md-10">
+                    <input type="number" class="form-control" v-model="item.Price" />
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" v-on:click="subClose">@BDMall.Resources.Action.Close</button>
+            <button type="button" class="btn btn-primary" v-on:click="subSave">@BDMall.Resources.Action.Save</button>
+        </div>
+    </div>
+</div>
+
+@section scripts
+{
+    @*@Styles.Render("~/Content/ueditor");
+        @Scripts.Render("~/bundles/ueditor");*@
+    <style type="text/css">
+        select#bootstrap-duallistbox-selected-list_country, select#bootstrap-duallistbox-nonselected-list_country {
+            width: 100%;
+        }
+    </style>
+    <script src="~/Scripts/admin/vue-component/multilangbar.js"></script>
+    <link href="~/Scripts/bootstrap-duallistbox-master/css/bootstrap-duallistbox.min.css" rel="stylesheet" />
+    <script src="~/Scripts/bootstrap-duallistbox-master/js/jquery.bootstrap-duallistbox.min.js"></script>
+
+
+    <script type="text/javascript">
+        var formValidate;
+        var lang = (window.parent.$.cookie("Language") == undefined ? "E" : window.parent.$.cookie("Language"));
+        var id = '@ViewBag.Id';
+        var type = '@ViewBag.Type';
+        var isMerchant = Boolean(@ViewBag.IsMerchant);
+        var isCanEidt = '@ViewBag.EditType';
+        var ue_E;
+        var ue_S;
+        var ue_J;
+        var ue_C;
+        var ue_P;
+        var tabId = self.frameElement.parentElement.id;
+        layui.use(['miniTab'], function () {
+            var layer = layui.layer,
+                miniTab = layui.miniTab;
+        });
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                saveAndApply: false,
+                tabType: 0,
+                action: type,
+                isEnabled: true,
+                languageType: "",
+                language: "",
+                SpecialItem: [],
+                InvAttributes: [],
+                NonInvAttributes: [],
+                countries: [],
+                IsMerchant: isMerchant,
+                IsCanEdit: isCanEidt,
+                productInfo: {
+                    OriginalId: WS.GuidEmpty,
+                    Id: WS.GuidEmpty,
+                    Code: "",
+                    Name: "",
+                    MerchantSupplierId:"",
+                    ProductNames: [{ Lang: { Code: "", Text: "" }, Desc: "" }],
+                    PageTitles: [{ Lang: { Code: "", Text: "" }, Desc: "" }],
+                    SeoKeywords: [{ Lang: { Code: "", Text: "" }, Desc: "" }],
+                    SeoDescs: [{ Lang: { Code: "", Text: "" }, Desc: "" }],
+                    ProductBriefs: [{ Lang: { Code: "", Text: "" }, Desc: "" }],
+                    ProductDetail: [{ Lang: { Code: "", Text: "" }, Desc: "" }],
+                    Ingredient: [{ Lang: { Code: "", Text: "" }, Desc: "" }],
+                    Instructions: [{ Lang: { Code: "", Text: "" }, Desc: "" }],
+                    Currency:{},
+                    OriginalPrice: 0,
+                    SalePrice: 0,
+                    TimePrice: 0,
+                    Category: WS.GuidEmpty,
+                    CategoryName:"",
+                    CategoryPath: "",
+                    InveAttrList: [],
+                    Images: [],
+                    AdditionalImages:[],
+                    NonInveAttrList: [],
+                    Specification: { },
+                    SpecifExtension: {},
+                    CommissionConfig: {},
+                    InternalPrice: 0,
+                    VisitCounter: 0,
+                    PurchaseCounter: 0,
+                    Remark: "",
+                    ActiveTimeFrom: "",
+                    ActiveTimeTo: "",
+                    IsApprove: false,
+                    IsExistInvRec: false,
+                    Action: type,
+                    IsPriceRemark: false,
+                    IsTimeStatus: false,
+                    CountryIds:[]
+                },
+                invAttrAdditionPrices: [],
+                additionPriceList: [],
+                additionalIndex:0
+            },
+            methods: {
+                GetProductInfo: function () {
+                    var _this = this;
+                    var data = new Object();
+                    data.id = id;
+
+                    var url = "";
+                    if (type == "Add" || type == "Modify") {
+                        url = "/adminapi/product/GetById";
+                    }
+                    else if (type == "Copy") {
+                        url = "/adminapi/product/GetCopyProduct";
+                    }
+                    else if (type == "NewVer") {
+                        url = "/adminapi/product/GetNewVerProduct";
+                    }
+                    WS.AjaxP("get", url, data, function (response) {
+                        if (response.Code != null) {
+                            vm.productInfo = response;
+                            //if (type == "Copy") {
+                            //    vm.InitAttributeByCatID();
+                            //}
+                            //else
+                            //{
+                            //    vm.InitAttributeByProduct();
+                            //}
+                            vm.InitAttributeByProduct();
+
+                            vm.$nextTick(function () {
+
+                                vm.setDefaultLanguage(vm.productInfo.ProductNames);
+                                vm.productInfo.ProductDetail.forEach(function (val, item) {
+                                    $("#ProductName_" + val.Lang.Code).rules('add', { required: true, messages: { required: '@BDMall.Resources.Message.RequiredField' } });
+                                    $("#ProductName_" + val.Lang.Code).rules('add', { validatorHTML: true });
+                                    $("#PageTitle_" + val.Lang.Code).rules('add', { validatorHTML: true });
+                                    $("#SeoKeyWord_" + val.Lang.Code).rules('add', { validatorHTML: true });
+                                    $("#SeoDesc_" + val.Lang.Code).rules('add', { validatorHTML: true });
+                                    $("#ProductBriefs_" + val.Lang.Code).rules('add', { validatorHTML: true });
+                                    if (val.Lang.Code == "E") {
+                                        $("#ProductName_" + val.Lang.Code).rules('add', { eProductNameLengthLimit: true });
+                                    }
+                                    else {
+                                        $("#ProductName_" + val.Lang.Code).rules('add', { cProductNameLengthLimit: true });
+                                    }
+
+                                    var config = {
+                                        wordCount: true
+                                        , maximumWords: 200000
+                                        , wordCountMsg: "@BDMall.Resources.Message.EditorWordCountMsg"
+                                        , wordOverFlowMsg: "@BDMall.Resources.Message.EditorWordOverFlowMsg"
+                                        , autoHeightEnabled: true
+                                        , autoFloatEnabled: false
+                                    };
+
+                                    var el = "ue_" + val.Lang.Code + " = UE.getEditor('editor_" + val.Lang.Code + "',config);";
+                                    eval(el);
+
+                                    //var elI = "ueI_" + val.Lang.Code + " = UE.getEditor('editorIngredient_" + val.Lang.Code + "',config);";
+                                    //eval(elI);
+
+                                    //var elS = "ueS_" + val.Lang.Code + " = UE.getEditor('editorInstructions_" + val.Lang.Code + "',config);";
+                                    //eval(elS);
+                                });
+                                InitProduct();
+                                setEnabled();
+
+                                //vm.InitCheckTimePrice();
+                            });
+                        }
+                        else {
+                            showWarn('@BDMall.Resources.Message.GetProductFail');
+                        }
+                    }, function () { });
+
+                },
+                InitAttributeByCatID: function () {
+                    if (vm.productInfo.Category != WS.GuidEmpty) {
+                        var data = new Object();
+                        data.catId = vm.productInfo.Category;
+                        //绑定库存属性
+                        WS.AjaxP("get", "/adminapi/ProdAttribute/GetInvAttributeByCatId", data, function (response) {
+                            if (response) {
+                                vm.InvAttributes = response;
+                                vm.productInfo.InveAttrList = JSON.parse(JSON.stringify(vm.InvAttributes));//复制获取到的库存属性对象
+                                vm.productInfo.InveAttrList.forEach(function (val) {
+                                    val.SubItems = [];
+                                });
+                                vm.$nextTick(function () {
+                                    response.forEach(function (val, index) {
+                                        //InitInvAttrValueSelect(val, index);
+                                        InitBootstrapSelectByData("cboInvAttr" + index, val.SubItems, 30, true, false, function () {
+                                            if (vm.productInfo.InveAttrList.length >= index+1) {
+                                                var attrValues = [];
+                                                vm.productInfo.InveAttrList[index].SubItems.forEach(function (val) {
+                                                    attrValues.push(val.Id);
+                                                });
+                                                $('#cboInvAttr' + index).selectpicker('val', attrValues);
+                                            }
+                                        });
+                                    });
+                                })
+
+                            }
+                        }, function () { });
+                        //绑定非库存属性
+                        WS.AjaxP("get", "/adminapi/ProdAttribute/GetNonInvAttributeByCatId", data, function (response) {
+                            if (response) {
+                                vm.NonInvAttributes = response;
+                                vm.productInfo.NonInveAttrList = JSON.parse(JSON.stringify(vm.NonInvAttributes));//复制获取到的库存属性对象
+                                vm.productInfo.NonInveAttrList.forEach(function (val) {
+                                    val.SubItems = [];
+                                });
+                                vm.$nextTick(function () {
+                                    response.forEach(function (val, index) {
+                                        InitBootstrapSelectByData("cboNonInvAttr" + index, val.SubItems, 30, true, false, function () {
+                                            if (vm.productInfo.InveAttrList.length >= index+1) {
+                                                var attrValues = [];
+                                                vm.productInfo.NonInveAttrList[index].SubItems.forEach(function (val) {
+                                                    attrValues.push(val.Id);
+                                                });
+                                                $('#cboNonInvAttr' + index).selectpicker('val', attrValues);
+                                            }
+
+                                        });
+                                    });
+                                });
+                            }
+                        }, function () { });
+                    }
+                },
+                InitAttributeByProduct: function () {
+                    if (vm.productInfo.Id != WS.GuidEmpty) {
+                        var data = new Object();
+                        data.prodId = vm.productInfo.Id;
+                        //绑定库存属性
+                        WS.AjaxP("get", "/adminapi/ProdAttribute/GetInvAttributeByProduct", data, function (response) {
+                            if (response) {
+                                vm.InvAttributes = response;
+                                vm.$nextTick(function () {
+                                    response.forEach(function (val, index) {
+
+                                        InitBootstrapSelectByData("cboInvAttr" + index, val.SubItems, 30, true, false, function () {
+                                            if (vm.productInfo.InveAttrList.length > 0) {
+                                                var vals = getProductInvAttrValues(val.Id);
+                                                $('#cboInvAttr' + index).selectpicker('val', vals); vm.action
+                                            }
+                                            InitInvAttrValueSelect(val, index);//有Bug要再想想
+                                        });
+
+                                    });
+                                });
+                            }
+                        }, function () { });
+                        //绑定非库存属性
+                        WS.AjaxP("get", "/adminapi/ProdAttribute/GetNonInvAttributeByProduct", data, function (response) {
+                            if (response) {
+                                vm.NonInvAttributes = response;
+                                vm.$nextTick(function () {
+                                    response.forEach(function (val, index) {
+                                        InitBootstrapSelectByData("cboNonInvAttr" + index, val.SubItems, 30, true, true, function () {
+                                            if (vm.productInfo.NonInveAttrList.length > 0) {
+                                                var vals = getProductNonInvAttrValues(val.Id);
+                                                $('#cboNonInvAttr' + index).selectpicker('val', vals);
+                                            }
+                                        });
+                                    });
+                                });
+
+                            }
+                        }, function () { });
+                    }
+                },
+                selectLanguage: function (obj) {
+                    vm.$refs.langbar.setCurrentLanguage(obj.Lang.Code);
+                    vm.language = obj.Lang.Text;
+                    vm.languageType = obj.Lang.Code;
+                },
+                setDefaultLanguage: function (data) {
+                    if (data.length > 0) {
+                        var defaultLang = data[0].Lang.Code;
+                        vm.$refs.langbar.setCurrentLanguage(defaultLang);
+                        vm.language = data[0].Lang.Text;
+                        vm.languageType = data[0].Lang.Code;
+                    }
+
+                },
+                saveCheck: function () {
+                    vm.saveAndApply = false;
+                    if (formValidate.form()) {
+                        $("#commentForm").submit();
+                    }
+                },
+                saveApply: function ()
+                {
+                    vm.saveAndApply = true
+                    if (formValidate.form()) {
+                        $("#commentForm").submit();
+                    }
+                },
+                showCatalogList: function () {
+                    OpenDialog('@BDMall.Resources.Label.SelectCatalog', 450, 650, "/Product/SelectCatalog", null, function (obj) {
+                        if (obj.results != null) {
+                            var data = new Object();
+                            data.catID = obj.results[0].Id;
+                            WS.AjaxP("get", "/adminapi/ProdCatalog/GetCatalogPath", data, function (response) {
+                                vm.productInfo.Category = obj.results[0].Id;
+                                vm.productInfo.CategoryPath = response;
+                                vm.InitAttributeByCatID();
+                            }, function () { });
+                        }
+                    });
+                },
+                productSave: function () {
+
+                    if (vm.productInfo.IsTimeStatus == true) {
+                        SystemConfirm('@BDMall.Resources.Message.PreferentialPeriodConfirm', function () {
+                            vm.productInfo.IsPriceRemark = true;
+                            vm.save();
+                        });
+                    }
+                    else {
+
+                        vm.save();
+                    }
+
+                },
+                save: function () {
+                    vm.productInfo.Specification.Unit = $("#cboUnit").val();
+                    //vm.productInfo.SpecifExtension.PermissionLevel = $("#cboPermission").val();
+                    vm.productInfo.Specification.PackageUnit = $("#cboCtnUnit").val();
+                    vm.productInfo.Specification.WeightUnit = $("#cboWeightUnit").val();
+                    vm.productInfo.CurrencyCode = $("#cboCurrency").val();
+                    vm.productInfo.ActiveTimeFrom = $("#txtActiveFrom").val();
+                    vm.productInfo.ActiveTimeTo = $("#txtActiveTo").val();
+                    vm.productInfo.SaleTime = $("#txtSaleTime").val();
+                    vm.productInfo.SalePrice = vm.productInfo.TimePrice;
+                    vm.productInfo.Action = type;
+                    vm.productInfo.CountryIds = $('[name="country"]').val();
+                    GetProductDetail();
+                    fillProductAttrList();
+                    WS.AjaxP("post", "/adminapi/product/Save", vm.productInfo, function (response) {
+                        if (response.Succeeded === true) {
+                            @*showCloseInfo('@BDMall.Resources.Message.SaveSuccess');*@
+                            id = response.ReturnValue;
+                            vm.productInfo.Id = response.ReturnValue;
+                            var oldType = type;
+
+                            vm.action = "Modify";
+                            vm.productInfo.Action = "Modify";
+                            type = "Modify";
+
+                            vm.GetProductInfo();
+
+                            setEnabled();
+
+                            if (oldType == 'Add' || oldType == 'Copy' || oldType == 'NewVer' ) {
+                                $("#aImg").click();
+                                vm.tabClick(6);
+                            }
+                            else
+                            {
+                                if (vm.saveAndApply == true && oldType == 'Modify') {
+                                    WS.Get("/adminapi/Product/ApplyApprove", { id: id },
+                                        function (response) {
+                                            if (response.Succeeded == true) {
+                                                showCloseInfo('@BDMall.Resources.Message.SaveSuccess');
+                                                @*clowWin();*@
+                                            }
+                                            else {
+                                                showWarn(response.Message);
+                                            }
+                                        },
+                                        function () { });
+                                } else
+                                {
+                                    showCloseInfo('@BDMall.Resources.Message.SaveSuccess');
+                                    @*clowWin();*@
+                                }
+                            }
+                        }
+                        else {
+                            showWarn(response.Message);
+                        }
+                    }, function () { });
+                },
+                tabClick: function (index) {
+                    vm.tabType = index;
+                },
+                closeTab: function () {
+                    clowWin();
+                },
+                //cancel: function () {
+                //    vm.isEnabled = false;
+                //    vm.action = "Read";
+                //},
+                //edit: function () {
+                //    vm.isEnabled = true;
+                //    vm.action = "Modify";
+                //},
+                InitCountry: function () {
+                    WS.AjaxP("get", "/adminapi/Product/GetCountry", null, function (a) {
+                        vm.countries = a;
+                    }, function () { });
+                },
+                addInvAttribute:function(attrId,attrDesc)
+                {
+                    miniTab.openNewTabByIframe({
+                        href:"/Product/EditAttribute/" + attrId + "/true" ,
+                        title: '@BDMall.Resources.Action.Modify' + '-' + attrDesc,
+                        callback: vm.reBindAttribute
+                    });
+                },
+                addNonInvAttribute:function(attrId,attrDesc)
+                {
+                    miniTab.openNewTabByIframe({
+                        href:"/Product/EditAttribute/" + attrId + "/false" ,
+                        title: '@BDMall.Resources.Action.Modify' + '-' + attrDesc,
+                        callback: vm.reBindAttribute
+                    });
+                },
+                reBindAttribute:function()
+                {
+                    if(vm.action=="Modify")
+                    {
+                        vm.InitAttributeByProduct();
+                    }
+                    else if (vm.action == "Add" || vm.action == "Copy" || vm.action == "NewVer")
+                    {
+                        vm.InitAttributeByCatID();
+                    }
+                },
+                editAdditionalPrice: function (i) {
+                    var tmpPriceList = [];
+                    var priceList = [];
+                    if (vm.invAttrAdditionPrices) {
+                        vm.invAttrAdditionPrices.forEach(function (val, index) {
+                            if (val.Id == i) {
+                                tmpPriceList = val.Prices;
+                            }
+                        });
+                    }
+
+                    //priceList = //vm.InvAttributes[index].SubItems;
+
+                    if (tmpPriceList.length > 0) {
+                        vm.additionPriceList = tmpPriceList;
+                    }
+
+
+                    vm.additionalIndex = i;
+                    //WS.AjaxP("post", "/adminapi/product/GetAttributeValuePrice", priceList, function (response) { }, function () { });
+                    $("#app").block({
+                        message: $('#myModal'),
+                        css: {
+                            'width': '400px',
+                            'border': '1px',
+                            'border-radius': '6px',
+                            'box-shadow': '0 5px 15px rgba(0,0,0,.5)',
+                            'cursor': 'default'
+                        },
+                        overlayCSS: { backgroundColor: '#000', opacity: '0.6', cursor: 'defalut' }
+                    });
+                },
+                subClose: function () {
+                    $('#app').unblock();
+                },
+                subSave: function () {
+                    vm.InvAttributes[vm.additionalIndex].SubItems = vm.additionPriceList
+                    //if (vm.additionalIndex == 1) {
+                    //    vm.productInfo.SelfDefAttrPrice1 = vm.additionPriceList;
+                    //}
+                    //else if (vm.additionalIndex == 2) {
+                    //    vm.productInfo.SelfDefAttrPrice2 = vm.additionPriceList;
+                    //}
+                    //else if (vm.additionalIndex == 3) {
+                    //    vm.productInfo.SelfDefAttrPrice3 = vm.additionPriceList;
+                    //}
+                    $('#app').unblock();
+                },
+                //初始化时获取一下是否有时间段价格
+                InitCheckTimePrice: function () {
+
+
+                    if (vm.action == "Modify" || vm.action == "NewVer") {
+                        var data = new Object();
+                        data.Code = vm.productInfo.Code;
+                        data.MerchantId = vm.productInfo.MerchantId;
+                        WS.AjaxP("get", "/adminapi/product/CheckTimePriceByCode", data, function (response) {
+                            if (response.Succeeded === true) {
+                                var productpricehour = response.ReturnValue;
+                                var Nowdate = new Date();
+                                var BeginDate = new Date(productpricehour.BeginTime.replace(/-/g, "/"));
+
+                                var dateDiff = BeginDate.getTime() - Nowdate.getTime();//时间差的毫秒数
+
+                                setTimeout(function () {
+                                    ChangeTimePrice(productpricehour);
+                                }, dateDiff);
+
+                            }
+
+                        }, function () { });
+                    }
+                }
+            }
+        });
+
+        function changeCMType() {
+            if (vm && vm.productInfo && vm.productInfo.CommissionConfig) {
+                var calTypeSelected = $("#cboCMCalType").val();
+                if (calTypeSelected) {
+                    vm.productInfo.CommissionConfig.CMCalType = parseInt(calTypeSelected);
+                    if (calTypeSelected == 2) {
+                        vm.productInfo.CommissionConfig.CMVal = 0;
+                        vm.productInfo.CommissionConfig.CMRate = null;
+                    }
+                    else if (calTypeSelected == 3) {
+                        vm.productInfo.CommissionConfig.CMVal = null;
+                        vm.productInfo.CommissionConfig.CMRate = 0;
+                    }
+                    else {
+                        vm.productInfo.CommissionConfig.CMVal = null;
+                        vm.productInfo.CommissionConfig.CMRate = null;
+                    }
+                }
+            }
+        }
+
+        function InitInvAttrValueSelect(val, index) {
+            //var a = $('#cboInvAttr' + index + " option:selected").val;
+            var a = $('#cboInvAttr' + index).selectpicker('val');
+            //a.forEach(function (va) {
+            //    alert(va);
+            //});
+            $('#cboInvAttr' + index).on('changed.bs.select', function (e) {
+                var currentAdditionPrices = [];
+                if (vm.invAttrAdditionPrices) {
+                    vm.invAttrAdditionPrices.forEach(function (atVal) {
+                        if (atVal.Id == index) {
+                            currentAdditionPrices = atVal.Prices;
+                        }
+                    });
+                }
+                var tempPrices = GetNewSelfDefPriceObj(e.target.childNodes, currentAdditionPrices);
+                if (tempPrices) {
+                    var isExist = false;
+                    var obj = {};
+                    obj.Id = index;
+                    obj.Prices = tempPrices;
+
+                    if (vm.invAttrAdditionPrices) {
+                        vm.invAttrAdditionPrices.forEach(function (a, i) {
+                            if (a.Id == index) {
+                                vm.invAttrAdditionPrices[i].Prices = obj.Prices;
+                                isExist = true;
+                            }
+                        });
+                        if (!isExist) {
+                            vm.invAttrAdditionPrices.push(obj);
+                        }
+                    }
+
+                }
+            });
+        }
+
+        function GetProductAdditionPrices(valIds,index) {
+            if (valIds) {
+                var isExist = false;
+                var obj = {};
+                obj.Id = index;
+                obj.Prices = [];
+                var attr = vm.InvAttributes[index];
+                if (attr) {
+                    valIds.forEach(function (id) {
+                        attr.SubItems.forEach(function (val, i) {
+                            if (id == val.Id) {
+                                obj.Prices.push(val);
+                            }
+                        });
+                    });
+                }
+                if (vm.invAttrAdditionPrices) {
+                    vm.invAttrAdditionPrices.forEach(function (a, i) {
+                        if (a.Id == index) {
+                            vm.invAttrAdditionPrices[i].Prices = obj.Prices;
+                            isExist = true;
+                        }
+                    });
+                    if (!isExist) {
+                        vm.invAttrAdditionPrices.push(obj);
+                    }
+                }
+            }
+        }
+
+        function getProductInvAttrValues(attrID) {
+            var vals = [];
+            if (vm.productInfo.InveAttrList) {
+                vm.productInfo.InveAttrList.forEach(function (val,index) {
+                    if (val.Id == attrID) {
+                        if (val.SubItems) {
+                            val.SubItems.forEach(function (item) {
+                                vals.push(item.Text);
+                            });
+                            GetProductAdditionPrices(vals, index);//选中下拉框是，初始化附加价钱对象
+                        }
+                    }
+                });
+            }
+            return vals;
+        }
+
+
+        function GetNewSelfDefPriceObj(selectedValues, selfDefAttrPrice) {
+            var tempPriceList = [];
+            for (var i = 0; i < selectedValues.length; i++) {
+                if (selectedValues[i].selected == true) {
+                    var tempPrice = new Object();
+                    var isExists = false;
+                    for (var j = 0; j < selfDefAttrPrice.length; j++) {
+                        if (selfDefAttrPrice[j].Id == selectedValues[i].value) {
+                            isExists = true;
+                            tempPrice = { Id: selectedValues[i].value, Text: selectedValues[i].text, Price: selfDefAttrPrice[j].Price };
+                            tempPriceList.push(tempPrice);
+                            break;
+                        }
+                    }
+                    if (isExists == false) {
+                        tempPrice = { Id: selectedValues[i].value, Text: selectedValues[i].text, Price: 0 };
+                        tempPriceList.push(tempPrice);
+                    }
+                }
+            }
+            return tempPriceList;
+
+        }
+
+        function getProductNonInvAttrValues(attrID) {
+            var vals = [];
+            if (vm.productInfo.NonInveAttrList) {
+                vm.productInfo.NonInveAttrList.forEach(function (val) {
+                    if (val.Id == attrID) {
+                        if (val.SubItems) {
+                            val.SubItems.forEach(function (item) {
+                                vals.push(item.Text);
+                            });
+                        }
+                    }
+                });
+            }
+            return vals;
+        }
+
+
+
+        //保存时，将选择的属性值保存到对应属性的属性subItem中
+        function fillProductAttrList() {
+            vm.productInfo.InveAttrList.forEach(function (val, index) {
+                var cboValues = $("#cboInvAttr" + index).val();
+                if (cboValues) {
+                    val.SubItems = [];
+                    var additionPrices = vm.InvAttributes[index];
+                    cboValues.forEach(function (a) {
+                        var price = 0;
+                        if (additionPrices.SubItems) {
+                            additionPrices.SubItems.forEach(function (p) {
+                                if (p.Id == a) {
+                                    price = p.Price;
+                                }
+                            })
+                        }
+                        var keyval = {};
+                        keyval.Id = val.Id;
+                        keyval.Text = a;
+                        keyval.Price = price;
+                        val.SubItems.push(keyval);
+                    });
+                }
+                else {
+                    val.SubItems = [];
+                }
+            });
+
+            vm.productInfo.NonInveAttrList.forEach(function (val, index) {
+                var cboValues = $("#cboNonInvAttr" + index).val();
+                if (cboValues) {
+                    val.SubItems = [];
+                    cboValues.forEach(function (a) {
+                        var keyval = {};
+                        keyval.Id = val.Id;
+                        keyval.Text = a;
+                        val.SubItems.push(keyval);
+                    });
+                }
+                else {
+                    val.SubItems = [];
+                }
+            });
+        }
+
+        function GetProductDetail() {
+            vm.productInfo.ProductDetail.forEach(function (val, item) {
+                var el = "if(ue_" + val.Lang.Code + ".queryCommandState('source')==1){ue_" + val.Lang.Code +".execCommand('source')};val.Desc =ue_" + val.Lang.Code + ".getContent();";
+                eval(el);
+            });
+
+            //vm.productInfo.Ingredient.forEach(function (val, item) {
+            //    var elI = "if(ueI_" + val.Lang.Code + ".queryCommandState('source')==1){ueI_" + val.Lang.Code + ".execCommand('source')};val.Desc =ueI_" + val.Lang.Code + ".getContent();";
+            //    eval(elI);
+            //});
+
+            //vm.productInfo.Instructions.forEach(function (val, item) {
+            //    var elS = "if(ueS_" + val.Lang.Code + ".queryCommandState('source')==1){ueS_" + val.Lang.Code + ".execCommand('source')};val.Desc =ueS_" + val.Lang.Code + ".getContent();";
+            //    eval(elS);
+            //});
+
+        }
+        function InitProduct() {
+            var data = new Object();
+            data.lang = lang;
+
+            vm.productInfo.ProductDetail.forEach(function (val, item) {
+                var el = "ue_" + val.Lang.Code + ".addListener('ready',function(){ue_" + val.Lang.Code + ".setContent(val.Desc);ue_" + val.Lang.Code + ".execCommand('serverparam', 'EditorDataId', '" + vm.productInfo.Id + "');});";
+                eval(el);
+            });
+
+            //vm.productInfo.Ingredient.forEach(function (val, item) {
+            //    var elI = "ueI_" + val.Lang.Code + ".addListener('ready',function(){ueI_" + val.Lang.Code + ".setContent(val.Desc);ueI_" + val.Lang.Code + ".execCommand('serverparam', 'EditorDataId', '" + vm.productInfo.Id + "');});";
+            //    eval(elI);
+            //});
+
+            //vm.productInfo.Instructions.forEach(function (val, item) {
+            //    var elS = "ueS_" + val.Lang.Code + ".addListener('ready',function(){ueS_" + val.Lang.Code + ".setContent(val.Desc);ueS_" + val.Lang.Code + ".execCommand('serverparam', 'EditorDataId', '" + vm.productInfo.Id + "');});";
+            //    eval(elS);
+            //});
+
+            //InitBootstrapSelect("cboPermission", "/adminapi/Product/GetPermission", 1, false, false, data, function () {
+            //    $("#cboPermission").selectpicker('val', vm.productInfo.SpecifExtension.PermissionLevel);
+            //});
+            InitBootstrapSelect("cboUnit", "/adminapi/Product/GetProductUnit", 1, false, false, null, function () {
+                $("#cboUnit").selectpicker('val', vm.productInfo.Specification.Unit);
+            });
+            InitBootstrapSelect("cboCtnUnit", "/adminapi/Product/GetCTNUnit", 1, false, false, null, function () {
+                $("#cboCtnUnit").selectpicker('val', vm.productInfo.Specification.PackageUnit);
+            });
+            InitBootstrapSelect("cboWeightUnit", "/adminapi/Product/GetWeightUnit", 1, false, false, null, function () {
+                if (vm.productInfo.Specification.WeightUnit > 0) {
+                    $("#cboWeightUnit").selectpicker('val', vm.productInfo.Specification.WeightUnit);
+                }
+                else {
+                    $("#cboWeightUnit").selectpicker('val', 1);
+                }
+            });
+            InitBootstrapSelect("cboCurrency", "/adminapi/Currency/GetCurrList", 1, false, false, null, function () {
+                $("#cboCurrency").selectpicker('val', vm.productInfo.CurrencyCode);
+            });
+            $("#txtActiveFrom").val(vm.productInfo.ActiveTimeFrom);
+            $("#txtActiveTo").val(vm.productInfo.ActiveTimeTo);
+            $("#txtSaleTime").val(vm.productInfo.SaleTime);
+            //綁定可選的佣金計算方式
+            InitBootstrapSelect("cboCMCalType", "/adminapi/Product/GetCMCalculateTypes", 1, false, false, null, function () {
+                $("#cboCMCalType").selectpicker('val', vm.productInfo.CommissionConfig.CMCalType);
+            });
+
+            var selector = $('.demo1').bootstrapDualListbox();//初始化组件
+            if (vm.productInfo.CountryIds != []) {
+                $.each(vm.productInfo.CountryIds, function (i, val) {
+                    //console.log(val);
+                    $(".demo1 option[value='" + val + "']").attr("selected", "selected");
+                });
+                selector.bootstrapDualListbox('refresh');
+            }
+        }
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+
+        function CheckBoxClick(me) {
+            $(me).find(':checkbox').click();
+        }
+
+
+        function SetProductImgFrameSrc() {
+            $("#ProductImg").attr("src", "/Product/ProductImg/" +id + "/" + vm.productInfo.IsApprove);
+        }
+        //function SetAccessorProductFrameSrc() {
+        //    $("#AccessoriesProduct").attr("src", "/Product/AccessoriesProduct/" + vm.productInfo.Id);
+        //}
+        function SetRelatedProductFrameSrc() {
+            $("#RelateProduct").attr("src", "/Product/RelatedProduct/" + id + "/" + vm.action);
+        }
+
+        function initFormValidate() {
+
+
+
+            formValidate = $("#commentForm").validate({
+                ignore: "",
+                submitHandler: function () {
+                    vm.productSave();
+                },
+                rules: {
+                    ProductCode: {
+                        required: true,
+                        inputFormat: true,
+                        maxlength: 80,
+
+                    },
+                    MinOrderQtys: {
+                        required: true,
+                        digits: true
+                    },
+                    CategoryPath: "required",
+                    MinPurQty: {
+                        required: true,
+                        min: 1,
+                        compareToSaleQuota: true
+                    },
+                    YoutubeLink: {
+                        activeYoutubeLink: true,
+                        validatorHTML: true
+                    },
+                    YoukuLink: {
+                        activeYoukuLink: true,
+                        validatorHTML: true
+                    },
+                    //SafetyStock: {
+                    //    required: true,
+                    //    min: 1
+                    //},
+                    ListPrice: {
+                        required: true,
+                        min: 1,
+                        decimalPlacesLessThan: true
+                    },
+                    SalesPrice: {
+                        required: true,
+                        min: 1,
+                        decimalPlacesLessThan:true
+                    },
+                    MarkupPrice: {
+                        decimalPlacesLessThan: true
+                    },
+                    WeightUnit: {
+                        weightUnitIsRequired: true
+                    },
+                    GrossWeight:
+                    {
+                        required: true,
+                        min: 0.1,
+                        compareToGrossWeight: true
+                    },
+                    NetWeight:
+                    {
+                        //required: true,
+                        //min: 0.1,
+                        //compareToGrossWeight: true,
+                        validatorHTML: true
+
+                    },
+                    DateTimePickerFrom:
+                    {
+                        required: true,
+                        //dateCompare: true
+                    },
+                    DateTimePickerTo:
+                    {
+                        required: true,
+                        dateCompare: true,
+                        dateCompareToDay: true
+                    },
+                    SLength:
+                    {
+                        validatorHTML:true
+                    },
+                    SWidth:
+                    {
+                        validatorHTML: true
+                    },
+                    SHeight:
+                    {
+                        validatorHTML: true
+                    },
+                    SPLength:
+                    {
+                        validatorHTML: true
+                    },
+                    SPWidth:
+                    {
+                        validatorHTML: true
+                    },
+                    SPHeight:
+                    {
+                        validatorHTML: true
+                    },
+                    Package:
+                    {
+                        validatorHTML: true
+                    }
+
+                },
+                messages:
+                {
+                    ProductCode: {
+                        required: '@BDMall.Resources.Message.RequiredField',
+                        maxlength:'@string.Format(BDMall.Resources.Message.ValueLengthLessThan, 80)'
+                    },
+                    MinOrderQtys: {
+                        required: '@BDMall.Resources.Message.RequiredField',
+                        digits: "@BDMall.Resources.Message.MustIntger"
+                    },
+                    CategoryName: '@BDMall.Resources.Message.RequiredField',
+
+                    MinPurQty: {
+                        required: '@BDMall.Resources.Message.RequiredField',
+                        min: '@BDMall.Resources.Message.NumberNotLessThan' + " 1",
+                    },
+                    @*SafetyStock: {
+                        required: '@BDMall.Resources.Message.RequiredField',
+                        min: '@BDMall.Resources.Message.NumberNotLessThan' + " 1"
+                    },*@
+                    ListPrice: {
+                        required: '@BDMall.Resources.Message.RequiredField',
+                        min: '@BDMall.Resources.Message.NumberNotLessThan' + " 1"
+                    },
+                    SalesPrice: {
+                        required: '@BDMall.Resources.Message.RequiredField',
+                        min: '@BDMall.Resources.Message.NumberNotLessThan' + " 1"
+                    },
+                    GrossWeight: {
+                        required: '@BDMall.Resources.Message.RequiredField',
+                        min: '@BDMall.Resources.Message.NumberNotLessThan' + " 0.1"
+                    },
+                    NetWeight: {
+                        required: '@BDMall.Resources.Message.RequiredField',
+                        min: '@BDMall.Resources.Message.NumberNotLessThan' + " 0.1"
+                    },
+                    DateTimePickerFrom:
+                    {
+                        required: '@BDMall.Resources.Message.RequiredField',
+
+                    },
+                    DateTimePickerTo:
+                    {
+                        required: '@BDMall.Resources.Message.RequiredField',
+
+                    }
+
+                },
+                success: function (label) {
+                    $(label).parent().removeClass('has-error');
+                },
+                showErrors: function (errorMap, errorList) {
+
+                    focusWrongPlace(errorMap, function (lang) {
+                        vm.$refs.langbar.setCurrentLanguage(lang);
+                        vm.languageType = lang;
+                    });
+                    // 此处注意，一定要调用默认方法，这样保证提示消息的默认效果
+                    this.defaultShowErrors();
+                },
+                errorPlacement: function (error, element) {
+                    if (element[0].name == "DateTimePickerFrom" || element[0].name == "DateTimePickerTo") {
+                        error.appendTo(element.parent());
+                    }
+                    else {
+                        if (error.length > 0)
+                        {
+                            if (error[0].innerHTML != '') {
+                                error.insertAfter(element);
+                            }
+                        }
+                    }
+
+                }
+            });
+        }
+
+        function setEnabled() {
+
+            if (type == "Copy" || type == "NewVer") {
+                vm.isEnabled = true;
+            }
+            else
+            {
+                if (vm.IsMerchant == false || vm.productInfo.Status==4 || vm.IsCanEdit=='') {
+                    vm.isEnabled = false;
+                }
+                else {
+                    vm.isEnabled = true;
+                }
+            }
+
+            //if (type == "Modify") {
+            //    $("#txtActiveFrom").datepicker('disable');
+            //    $("#txtActiveTo").datepicker('disable');
+            //}
+        }
+
+        function selfDefineRules() {
+            //var result = false;
+            jQuery.validator.addMethod("compareToSaleQuota", function (value, element, param) {
+                if (vm.productInfo.SpecifExtension.MaxPurQty > 0) {
+                    if (parseFloat(vm.productInfo.SpecifExtension.MinPurQty) > parseFloat(vm.productInfo.SpecifExtension.MaxPurQty)) {
+                        return false;
+                    }
+                    else {
+                        return true;
+                    }
+                }
+                else {
+                    return true;
+                }
+            }, '@BDMall.Resources.Label.MinPurQty' + '@BDMall.Resources.Message.NotAllowLargeThan' + '@BDMall.Resources.Label.SalesQuota');
+
+            jQuery.validator.addMethod("compareToGrossWeight", function (value, element, param) {
+                if (vm.productInfo.Specification.GrossWeight > 0) {
+                    if (parseFloat(vm.productInfo.Specification.NetWeight) > parseFloat(vm.productInfo.Specification.GrossWeight)) {
+                        return false;
+                    }
+                    else {
+                        return true;
+                    }
+                }
+                else {
+                    return true;
+                }
+            },'@BDMall.Resources.Label.NetWeight'+'@BDMall.Resources.Message.NotAllowLargeThan'+'@BDMall.Resources.Label.GrossWeight');
+
+            jQuery.validator.addMethod("activeYoutubeLink", function (value, element, param) {
+                if (vm.productInfo.SpecifExtension.YoutubeLink) {
+                    if (vm.productInfo.SpecifExtension.YoutubeLink.indexOf("embed") < 0) {
+                        return false;
+                    }
+                    else {
+                        return true;
+                    }
+                }
+                else {
+                    return true;
+                }
+            }, '@BDMall.Resources.Message.PleaseInputEmbeddedLink');
+
+            jQuery.validator.addMethod("activeYoukuLink", function (value, element, param) {
+                if (vm.productInfo.SpecifExtension.YoukuLink) {
+                    if (vm.productInfo.SpecifExtension.YoukuLink.indexOf("embed") < 0) {
+                        return false;
+                    }
+                    else {
+                        return true;
+                    }
+                }
+                else {
+                    return true;
+                }
+            }, '@BDMall.Resources.Message.PleaseInputEmbeddedLink');
+
+            $.validator.addMethod("weightUnitIsRequired", function (value, element, param) {
+                var val = $("#cboWeightUnit").val();
+                if (val<=0) {
+                    return false;
+                }
+                else {
+                    return true;
+                }
+            }, '@BDMall.Resources.Message.RequiredField');
+
+            $.validator.addMethod("dateCompare", function (value, element, param) {
+                if ($("#txtActiveFrom").val() > $("#txtActiveTo").val()) {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+
+            }, '@BDMall.Resources.Message.DateCompare');
+
+            $.validator.addMethod("dateCompareToDay", function (value, element, param) {
+                var nowDate = new Date();
+                var activeFrom = new Date($("#txtActiveTo").val());
+
+                if (activeFrom.getFullYear() < nowDate.getFullYear()) {
+                    return false;
+                }
+                else
+                {
+                    //年份相同時，才需要比較月份
+                    if (activeFrom.getFullYear() == nowDate.getFullYear()) {
+                        if (activeFrom.getMonth() < nowDate.getMonth()) {
+                            return false;
+                        }
+                        else {
+                            //月份相同時，才需要比較日期
+                            if (activeFrom.getMonth() == nowDate.getMonth()) {
+                                if (activeFrom.getDate() < nowDate.getDate()) {
+                                    return false;
+                                }
+                                else {
+                                    return true;
+                                }
+                            }
+                            else {
+                                return true;
+                            }
+                        }
+                    }
+                    else {
+                        return true;
+                    }
+                }
+
+                //if (activeFrom < nowDate) {
+                //    return false;
+                //}
+                //else
+                //{
+                //    return true;
+                //}
+
+
+            }, '@BDMall.Resources.Message.DateCompareToday');
+
+
+            $.validator.addMethod("inputFormat", function (value, element, param) {
+                var pattern = new RegExp("[`~!#$^&*()=|{}':;,.<>/?~！#￥……&*（）——|【】‘；：”“'。，、？%+ 　\"\\\\]");
+                var specialStr = "";
+                var code = vm.productInfo.Code;
+                for (var i = 0; i < code.length; i++) {
+                    specialStr += code.substr(i, 1).replace(pattern, '');
+                }
+
+                if (specialStr == value) {
+                    return true;
+                }
+
+                return false;
+
+
+            }, '@BDMall.Resources.Message.PleaseInputCorrectChar');
+
+
+            $.validator.addMethod("eProductNameLengthLimit", function (value, element, param) {
+                if (element.value.length > 60) {
+                    return false;
+                }
+                else {
+                    return true;
+                }
+
+            }, '@string.Format(BDMall.Resources.Message.ValueLengthLessThan, 60)');
+            $.validator.addMethod("cProductNameLengthLimit", function (value, element, param) {
+                if (element.value.length > 60) {
+                    return false;
+                }
+                else {
+                    return true;
+                }
+
+            }, '@string.Format(BDMall.Resources.Message.ValueLengthLessThan, 60)');
+
+            $.validator.addMethod("decimalPlacesLessThan", function (value, element, param) {
+                var returnVal = true;
+                inputZ = value;
+                var ArrMen = inputZ.split(".");    //截取字符串
+                if (ArrMen.length == 2) {
+                    if (ArrMen[1].length > 1) {    //判断小数点后面的字符串长度
+                        return false;
+                    }
+                }
+                return true;
+            }, '@string.Format(BDMall.Resources.Message.DecimalPlacesLessThan, 1)');
+            //return result;
+        }
+
+        $(document).ready(function () {
+            vm.InitCountry();
+            InitDateTimePickerWithTime();
+            vm.GetProductInfo();
+
+            //1
+            $("#myTab a").click(function (e) {
+                $(this).tab('show');
+            })
+            validatorHTML();
+            selfDefineRules();
+            initFormValidate();
+        });
+
+        //改变时段价格
+        function ChangeTimePrice(Obj) {
+
+            var data = new Object();
+            data.Id = Obj.Id;
+            WS.AjaxP("get", "/adminapi/product/ChangeTimePrice", data, function (response) {
+
+                if (response.Succeeded === true) {
+
+                    vm.productInfo.TimePrice = response.ReturnValue.TimePrice;
+
+                    setTimeout(function () {
+                        //alert(JSON.stringify(response.ReturnValue));
+                        ReChangeTimePrice(response.ReturnValue);
+                    }, Obj.TimeField);
+
+                }
+
+            }, function () { });
+
+        }
+
+        //恢复时段价格
+        function ReChangeTimePrice(Obj) {
+
+            var data = new Object();
+            data.Id = Obj.Id;
+            WS.AjaxP("get", "/adminapi/product/ReChangeTimePrice", data, function (response) {
+
+                if (response.Succeeded === true) {
+
+                    vm.productInfo.TimePrice = response.ReturnValue.TimePrice;
+
+                    vm.InitCheckTimePrice();
+
+                }
+
+            }, function () { });
+
+        }
+
+
+    </script>
+}

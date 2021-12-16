@@ -77,8 +77,8 @@ WS.Get = function (url, data, success, error) {
         url: pmServer + url,
         data: data,
         beforeSend: function (request) {
-            //var access_token = $.cookie("access_token");
-            //request.setRequestHeader("Authorization", "Bearer " + access_token);
+            var access_token = $.cookie("access_token");
+            request.setRequestHeader("Authorization", "Bearer " + access_token);
             //var userLanguage = $.cookie("Language");
             //request.setRequestHeader("UserLanguage", userLanguage);
         },
@@ -125,8 +125,8 @@ WS.Post = function (url, data, success, error) {
         url: pmServer + url,
         data: data,
         beforeSend: function (request) {
-            //var access_token = $.cookie("access_token");
-            //request.setRequestHeader("Authorization", "Bearer " + access_token);
+            var access_token = $.cookie("access_token");
+            request.setRequestHeader("Authorization", "Bearer " + access_token);
             //var userLanguage = $.cookie("Language");
             //request.setRequestHeader("UserLanguage", userLanguage);
         },
@@ -159,12 +159,12 @@ WS.Post = function (url, data, success, error) {
 }
 function checkToken() {
     //var access_token = $.cookie("access_token");
+    //if (!access_token)  window.location.href = "/Account/Login";
 
-    //if (!access_token) {
-
-    //    window.location.href = "/Account/login?returnUrl=" + window.location.pathname;
-    //}
+    //access_token = window.localStorage.getItem("access_token");
+    //if (!access_token) window.location.href = "/Account/Login"; 
 }
+
 //single parameter
 WS.AjaxSP = function (p) {
     checkToken();
@@ -339,8 +339,8 @@ function InitNormalSelect(eid, url, isNeedAll, para, async) {
             }
         },
         beforeSend: function (request) {
-            //var access_token = $.cookie("access_token");
-            //request.setRequestHeader("Authorization", "Bearer " + access_token);
+            var access_token = $.cookie("access_token");
+            request.setRequestHeader("Authorization", "Bearer " + access_token);
             //var userLanguage = $.cookie("Language");
             //request.setRequestHeader("UserLanguage", userLanguage);
         }
@@ -389,8 +389,8 @@ function InitNormalTreeSelect(eid, url, isNeedAll, para, async) {
             }
         },
         beforeSend: function (request) {
-            //var access_token = $.cookie("access_token");
-            //request.setRequestHeader("Authorization", "Bearer " + access_token);
+            var access_token = $.cookie("access_token");
+            request.setRequestHeader("Authorization", "Bearer " + access_token);
             //var userLanguage = $.cookie("Language");
             //request.setRequestHeader("UserLanguage", userLanguage);
         }
@@ -492,8 +492,8 @@ function InitBootstrapSelect(eid, url, maxOption, liveSearch, isNeedAll, para, c
             callback();
         },
         beforeSend: function (request) {
-            //var access_token = $.cookie("access_token");
-            //request.setRequestHeader("Authorization", "Bearer " + access_token);
+            var access_token = $.cookie("access_token");
+            request.setRequestHeader("Authorization", "Bearer " + access_token);
             //var userLanguage = $.cookie("Language");
             //request.setRequestHeader("UserLanguage", userLanguage);
         },

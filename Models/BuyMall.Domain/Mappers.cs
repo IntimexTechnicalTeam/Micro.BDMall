@@ -16,8 +16,10 @@ namespace Domain
             ConfigMap<User, UserDto>();
             ConfigMap<Role, RoleDto>();
             ConfigMap<Permission, PermissionDto>();
-            //ConfigMap<RolePermission, RolePermissionDto>();
+            ConfigMap<ProductCatalog, ProductCatalogDto>();
+            ConfigMap<ProductAttributeValue, ProductAttributeValueDto>();
 
+            ConfigMap<ProductCatalogDto, ProductCatalogEditModel>();
         }
         void ConfigMap<TSource, TDestination>()
         {

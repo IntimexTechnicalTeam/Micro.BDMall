@@ -1,0 +1,433 @@
+﻿
+@{
+    ViewBag.Title = "AccessoriesProduct";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="app" class="col-md-12" v-cloak>
+    <ul id="myTab" class="nav nav-tabs">
+        <li class="active">
+            <a href="#divAddAccessoriesProduct" data-toggle="tab">@BDMall.Resources.Label.AddAccessoriesProduct</a>
+        </li>
+        <li>
+            <a href="#divModifyAccessoriesProduct" data-toggle="tab">@BDMall.Resources.Label.ModifyAccessoriesProduct</a>
+
+        </li>
+    </ul>
+    <div id="divContent" class="tab-content">
+        <div class="tab-pane fade in active" id="divAddAccessoriesProduct">
+            <table class="table">
+                <tr>
+                    <td>@BDMall.Resources.Label.ProductCode</td>
+                    <td><input type="text" class="form-control" id="txtProductCode" v-model="condition.ProductCode" /></td>
+                    <td>@BDMall.Resources.Label.ProductName</td>
+                    <td><input type="text" class="form-control" id="txtProductName" v-model="condition.ProductName" /></td>
+                </tr>
+                <tr>
+                    <td>@BDMall.Resources.Label.Category</td>
+                    <td colspan="3">
+                        <combobox-item v-bind:getcombobox="GetCombobox"></combobox-item>
+                    </td>
+                </tr>
+                <tr>
+                    <td>{{ProductType.AttributeName}}</td>
+                    <td colspan="3">
+                        <select id="cboBrands"></select>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="4" class="text-right">
+                        <input type="button" id="btnSearch" value="@BDMall.Resources.Action.Search" class="btn btn-default" v-on:click="Search" />
+                    </td>
+                </tr>
+            </table>
+            <div id="toolbar" class="btn-group">
+                <button id="btn_add" type="button" class="btn btn-default" v-on:click="AddCombosalesProduct">
+                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>@BDMall.Resources.Action.AddCombosalesProduct
+                </button>
+                <button id="btn_edit" type="button" class="btn btn-default" v-on:click="AddCombosalesProductAllcombinations">
+                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>@BDMall.Resources.Action.AddCombosalesProductAllcombinations
+                </button>
+            </div>
+            <table id="tblProducts"></table>
+        </div>
+        <div class="tab-pane fade" id="divModifyAccessoriesProduct">
+            <div id="divAccessToolbar" class="btn-group">
+                <button type="button" class="btn btn-default" v-on:click="DeleteAccessoriesProduct">
+                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>@BDMall.Resources.Action.DeleteAccessoriesProduct
+                </button>
+                <button type="button" class="btn btn-default" v-on:click="DeleteAllAccessoriesProduct">
+                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>@BDMall.Resources.Action.DeleteALLAccessoriesProduct
+                </button>
+            </div>
+            <table id="tblAccessories"></table>
+        </div>
+    </div>
+
+</div>
+@section scripts {
+    <script src="~/Scripts/admin/vue-component/productCatalog.js"></script>
+
+    <script type="text/javascript">
+        var sku =@ViewBag.Sku;
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                condition: {
+                    Sku:sku,
+                    ProductCode: "",
+                    ProductName: "",
+                    CategoryID: -1,
+                    Brand: -1
+                },
+                ProductType:{AttributeId:0,AttributeName:"",AttributeValue:[]}
+            },
+            methods: {
+                Search: function () {
+                    vm.condition.Brand = $("#cboBrands").val();
+                    $("#tblProducts").bootstrapTable("refresh", { url: "/adminapi/Product/SearchAccessoriesProduct",pageNumber: 1 });
+
+                },
+                GetCombobox: function (data) {
+                    vm.condition.CategoryID = data.currentValue;
+                },
+                AddCombosalesProduct:function()
+                {
+
+                    var a= $("#tblProducts").bootstrapTable("getSelections");
+                    var relatedSkus="";
+                    if (a.length == 0) {
+                        showWarn('@BDMall.Resources.Message.PleaseSelect');
+                        return;
+                    }
+
+                    for(var i=0;i<a.length;i++)
+                    {
+                        if(relatedSkus=="")
+                        {
+                            relatedSkus+=a[i].Sku;
+                        }
+                        else
+                        {
+                            relatedSkus+=","+a[i].Sku;
+                        }
+                    }
+                    var data = new Object();
+                    data.OriginalSku = sku;
+                    data.products = relatedSkus;
+                    WS.AjaxP("get","/adminapi/Product/AddCombosalesProduct",data  ,function(response){
+                        if(response.Succeeded==true){
+                            vm.BindAccessoriesProduct();
+                            a.forEach(function(val){
+                                $("#tblProducts").bootstrapTable("removeByUniqueId",val.Sku);
+                            });
+                        }
+                        else
+                        {
+                            if(response.Message!="")
+                            {
+                                showWarn(response.Message);
+                            }
+                        }
+
+                    },function(){});
+
+                },
+                AddCombosalesProductAllcombinations:function()
+                {
+                    var a= $("#tblProducts").bootstrapTable("getSelections");
+                    var relatedSkus="";
+                    if (a.length == 0) {
+                        showWarn('@BDMall.Resources.Message.PleaseSelect');
+                        return;
+                    }
+
+                    for(var i=0;i<a.length;i++)
+                    {
+                        if(relatedSkus=="")
+                        {
+                            relatedSkus+=a[i].Sku;
+                        }
+                        else
+                        {
+                            relatedSkus+=","+a[i].Sku;
+                        }
+                    }
+                    var data = new Object();
+                    data.OriginalSku = sku;
+                    data.products = relatedSkus;
+                    WS.AjaxP("get","/adminapi/Product/AddAllCombinationCombosalesProduct",data  ,function(response){
+                        if(response.Succeeded==true){
+                            vm.BindAccessoriesProduct();
+                            a.forEach(function(val){
+                                $("#tblProducts").bootstrapTable("removeByUniqueId",val.Sku);
+                            });
+                        }
+                        else
+                        {
+                            if(response.Message!="")
+                            {
+                                showWarn(response.Message);
+                            }
+                        }
+
+                    },function(){});
+                },
+                BindAccessoriesProduct:function()
+                {
+                    $("#tblAccessories").bootstrapTable("refresh", { url: "/adminapi/Product/GetAccessoriesProduct",pageNumber: 1 });
+                },
+                DeleteAccessoriesProduct:function(){
+                    var a= $("#tblAccessories").bootstrapTable("getSelections");
+                    var relatedSkus="";
+                    if (a.length == 0) {
+                        showWarn('@BDMall.Resources.Message.PleaseSelect');
+                        return;
+                    }
+
+                    for(var i=0;i<a.length;i++)
+                    {
+                        if(relatedSkus=="")
+                        {
+                            relatedSkus+=a[i].Sku;
+                        }
+                        else
+                        {
+                            relatedSkus+=","+a[i].Sku;
+                        }
+                    }
+
+                    SystemConfirm('@BDMall.Resources.Message.ConfirmDelete',function(){
+                        var data = new Object();
+                        data.OriginalSku = sku;
+                        data.products = relatedSkus;
+                        WS.AjaxP("get","/adminapi/Product/DeleteCombosalesProduct",data  ,function(response){
+                            if(response.Succeeded==true){
+                                vm.BindAccessoriesProduct();
+                            }
+                            else
+                            {
+                                if(response.Message!="")
+                                {
+                                    showWarn(response.Message);
+                                }
+                            }
+
+                        },function(){});
+                    });
+
+                },
+                DeleteAllAccessoriesProduct()
+                {
+                    SystemConfirm('@BDMall.Resources.Message.ConfirmDelete',function(){
+                        var data = new Object();
+                        data.sku = sku;
+                        WS.AjaxP("get","/adminapi/Product/DeleteAllCombosalesProduct",data  ,function(response){
+                            if(response.Succeeded==true){
+                                vm.BindAccessoriesProduct();
+                            }
+                            else
+                            {
+                                if(response.Message!="")
+                                {
+                                    showWarn(response.Message);
+                                }
+                            }
+
+                        },function(){});
+                    });
+                }
+            }
+
+        });
+
+        var ProductTableInit = function () {
+
+            var oTableInit = new Object();
+            oTableInit.Init = function () {
+
+                $("#tblProducts").bootstrapTable({
+                    method: 'post',                      //请求方式（*）
+                    //url: '/adminapi/Product/SearchAccessoriesProduct',         //请求后台的URL（*）
+                    queryParams: oTableInit.queryParams,//传递参数（*）
+                    //queryParamsType:'limit',
+                    toolbar: '#toolbar',                //工具按钮用哪个容器
+                    striped: true,                      //是否显示行间隔色
+                    cache: true,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                    sortable: false,                     //是否启用排序
+                    sortOrder: "asc",                   //排序方式
+                    sidePagination: "client",           //分页方式：client客户端分页，server服务端分页（*）
+                    pageNumber: 1,                       //初始化加载第一页，默认第一页
+                    pageSize: 10,                       //每页的记录行数（*）
+                    pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                    smartDisplay: false,
+                    showRefresh: true,                  //是否显示刷新按钮
+                    clickToSelect: true,                //是否启用点击选中行
+                    //height: 750,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+                    uniqueId: "Sku",                     //每一行的唯一标识，一般为主键列
+                    cardView: false,                    //是否显示详细视图
+                    detailView: false,                   //是否显示父子表
+                    pagination: true,                   //是否显示分页（*）
+                    ajaxOptions: {
+                        beforeSend: function (request) {
+                            var access_token = $.cookie("access_token");
+                            request.setRequestHeader("Authorization", "Bearer " + access_token);
+                        }
+                    },
+                    columns: [{
+                        checkbox: true
+                    },
+                    {
+                        field: 'Sku',
+                        title: 'RelatedSku',
+                        visible: false
+                    },{
+                        field: 'OriginalSku',
+                        title: 'OriginalSku',
+                        visible: false
+                    }, {
+                        field: 'Img_SM',
+                        title: '@BDMall.Resources.Label.Img',
+                        formatter: function (value, row, index) {
+                            return '<img  src="' + value + '" width="100" >';
+                        }
+                    }, {
+                        field: 'Code',
+                        title: '@BDMall.Resources.Label.ProductCode'
+                    }, {
+                        field: 'Name',
+                        title: '@BDMall.Resources.Label.ProductName'
+                    },{
+                        field: 'CategoryID',
+                        title: '',
+                        visible:false
+                    }, {
+                        field: 'CategoryPathName',
+                        title: '@BDMall.Resources.Label.Category'
+                    }, {
+                        field: 'Brand',
+                        title: '@BDMall.Resources.Label.Brand'
+                    }]
+                    //,
+                    //formatLoadingMessage: function () {
+                    //    //return '<%=Resources.Message.Processing%>';
+                    //    return '';
+                    //}
+
+                });
+            };
+
+            oTableInit.queryParams = function (params) {
+                //var page = 1;
+                //if (params.offset > 0) {
+                //    page = parseInt(params.offset / params.limit) + 1;
+                //}
+                //var SortedBy = $("#cboSortedKey").val();
+                //var Sorted = $("#cboSortedType").val();
+                return vm.condition;
+
+            }
+            return oTableInit;
+        }
+        var AccessoriesTableInit = function () {
+
+            var aTableInit = new Object();
+            aTableInit.Init = function () {
+
+                $("#tblAccessories").bootstrapTable({
+                    method: 'get',                      //请求方式（*）
+                    //url: '/adminapi/Product/SearchAccessoriesProduct',         //请求后台的URL（*）
+                    queryParams: aTableInit.queryParams,//传递参数（*）
+                    //queryParamsType:'limit',
+                    toolbar: '#divAccessToolbar',                //工具按钮用哪个容器
+                    striped: true,                      //是否显示行间隔色
+                    cache: true,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                    sortable: false,                     //是否启用排序
+                    sortOrder: "asc",                   //排序方式
+                    sidePagination: "client",           //分页方式：client客户端分页，server服务端分页（*）
+                    pageNumber: 1,                       //初始化加载第一页，默认第一页
+                    pageSize: 10,                       //每页的记录行数（*）
+                    pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                    smartDisplay: false,
+                    showRefresh: true,                  //是否显示刷新按钮
+                    clickToSelect: true,                //是否启用点击选中行
+                    //height: 750,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+                    uniqueId: "Sku",                     //每一行的唯一标识，一般为主键列
+                    cardView: false,                    //是否显示详细视图
+                    detailView: false,                   //是否显示父子表
+                    pagination: true,                   //是否显示分页（*）
+                    ajaxOptions: {
+                        beforeSend: function (request) {
+                            var access_token = $.cookie("access_token");
+                            request.setRequestHeader("Authorization", "Bearer " + access_token);
+                        }
+                    },
+                    columns: [{
+                        checkbox: true
+                    } ,{
+                        field: 'Sku',
+                        title: 'RelatedSku',
+                        visible: false
+                    },{
+                        field: 'OriginalSku',
+                        title: 'OriginalSku',
+                        visible: false
+                    }, {
+                        field: 'Img_SM',
+                        title: '@BDMall.Resources.Label.Img',
+                        formatter: function (value, row, index) {
+                            return '<img  src="' + value + '" width="100" >';
+                        }
+                    }, {
+                        field: 'Code',
+                        title: '@BDMall.Resources.Label.ProductCode'
+                    }, {
+                        field: 'Name',
+                        title: '@BDMall.Resources.Label.ProductName'
+                    },{
+                        field: 'CategoryID',
+                        title: '',
+                        visible:false
+                    }, {
+                        field: 'CategoryPathName',
+                        title: '@BDMall.Resources.Label.Category'
+                    }]
+
+
+                });
+            };
+
+            aTableInit.queryParams = function (params) {
+                return {
+                    id:sku
+                };
+
+
+            }
+            return aTableInit;
+        }
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+
+        $(document).ready(function () {
+            WS.AjaxP("get","/adminapi/product/GetProductTypeObject",null,function(response){
+                vm.ProductType = response;
+                InitBootstrapSelectByData("cboBrands", response.AttributeValue, 1, true, true, function () { });
+            },function(){});
+            
+            var oTable = new ProductTableInit();
+            oTable.Init();
+
+            var aTable = new AccessoriesTableInit();
+            aTable.Init();
+
+            vm.BindAccessoriesProduct();
+        });
+    </script>
+}
+

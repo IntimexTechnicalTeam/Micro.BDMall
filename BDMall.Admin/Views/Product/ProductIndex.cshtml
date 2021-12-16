@@ -1,0 +1,750 @@
+﻿
+@{
+    ViewBag.Title = "ProductIndex";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+<div id="app" class="col-md-12" v-cloak>
+
+    <div>
+        <table class="table table-condensed">
+            <tr>
+                <td class="col-xs-1">
+                    @BDMall.Resources.Label.ProductCode
+                </td>
+                <td class="col-xs-5">
+                    <input type="text" v-model="condition.ProductCode" class="form-control input-sm" />
+                </td>
+                <td class="col-xs-1">
+                    @BDMall.Resources.Label.ProductName
+                </td>
+                <td class="col-xs-5">
+                    <div class="row">
+                        <div class="col-xs-9">
+                            <input type="text" v-model="condition.Key" class="form-control input-sm" />
+                        </div>
+                        <div class="col-xs-3">
+                            <select id="cboKeyWordType" class="form-control input-sm"></select>
+                        </div>
+                    </div>
+                </td>
+
+            </tr>
+        </table>
+        <div id="collapseOne" class="panel-collapse collapse">
+            <table class="table table-condensed">
+                <tr>
+                    <td class="col-xs-1">
+                        @BDMall.Resources.Label.Category
+                    </td>
+                    <td colspan="3" class="col-xs-11">
+                        <combobox-item v-bind:getcombobox="GetCurrentCategory"></combobox-item>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-xs-1">
+                        @BDMall.Resources.Label.AllAttribute
+                    </td>
+                    <td colspan="3" class="col-xs-5">
+                        <form class="form-inline">
+                            <select id="cboAttribute" class="form-control" style="width:300px;" onchange="ShowAttributeValue(this)"></select>
+                            <select id="cboAttributeValue" class="form-control" style="width:300px;" v-show="IsShowAttributeValue"></select>
+                        </form>
+                    </td>
+                    @*<td class="col-xs-1">
+                            @BDMall.Resources.Label.PermissionLevel
+                        </td>
+                        <td class="col-xs-5">
+
+                            <select id="cboPermission" class="form-control" style="width:300px;"></select>
+
+                        </td>*@
+                </tr>
+                <tr>
+                    <td class="col-xs-1">
+                        @BDMall.Resources.Label.Status
+                    </td>
+                    <td class="col-xs-5">
+                        <select id="cboStatus" class="form-control" data-width="300" multiple v-model="statusSelect"></select>
+                    </td>
+                    <td>
+                        <span v-if="IsMerchant==false">
+                            @BDMall.Resources.Label.MerchantName
+                        </span>
+                    </td>
+                    <td>
+                        <select id="cboMerchant" class="form-control" style="width:300px;" v-if="IsMerchant==false"></select>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-xs-1">
+                        @BDMall.Resources.Label.IsActive
+                    </td>
+                    <td class="col-xs-5">
+                        <select id="cboIsActive" v-model="condition.IsActive" class="form-control" style="width:300px;">
+                            <option value="-1">@BDMall.Resources.Label.PleaseSelect</option>
+                            <option value="1">@BDMall.Resources.Label.Yes</option>
+                            <option value="0" selected="selected">@BDMall.Resources.Label.No</option>
+                        </select>
+                    </td>
+                    <td>
+                        @BDMall.Resources.Label.IsDeleted
+                    </td>
+                    <td>
+                        <select id="cboIsDeleted" v-model="condition.IsDeleted" class="form-control" style="width:300px;">
+                            <option value="-1">@BDMall.Resources.Label.PleaseSelect</option>
+                            <option value="1" selected="selected">@BDMall.Resources.Label.Yes</option>
+                            <option value="0">@BDMall.Resources.Label.No</option>
+                        </select>
+                    </td>
+                </tr>
+
+            </table>
+        </div>
+        <div class="text-right">
+            <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Search" onclick="search();" />
+            <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.ExtraCondition" data-toggle="collapse" data-target="#collapseOne" />
+        </div>
+    </div>
+
+
+    <div>
+        <div class="panel-body">
+            <div id="toolbar" class="btn-group" v-if="CanEdit==true">
+                <button id="btn_add" type="button" class="btn btn-default" v-on:click="Add">
+                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>@BDMall.Resources.Action.Add
+                </button>
+                <button id="btn_delete" type="button" class="btn btn-default" v-on:click="Delete" v-bind:disabled="IsDelete">
+                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>@BDMall.Resources.Action.Delete
+                </button>
+
+                <button id="btn_ActiveProduct" type="button" class="btn btn-default" v-on:click="activeProducts" v-bind:disabled="IsOnSale==false">
+                    <span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>@BDMall.Resources.Action.PutOn
+                </button>
+                <button id="btn_DisActiveProduct" type="button" class="btn btn-default" v-on:click="disActiveProducts" v-bind:disabled="IsOffSale==false">
+                    <span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>@BDMall.Resources.Action.PullOff
+                </button>
+                <a id="exportLink" href="" hidden></a>
+            </div>
+            <table id="tblProduct"></table>
+        </div>
+    </div>
+
+
+    @*<data-pager url="/adminapi/Product/Search" ref='pager' v-bind:condition="condition" v-bind:pagesize="CurrentSize" v-on:load="LoadData"></data-pager>*@
+    <div id="outerdiv" style="position:fixed;top:0;left:0;background:rgba(0,0,0,0.7);z-index:1200;width:100%;height:100%;display:none;">
+        <div id="innerdiv" style="position:absolute;">
+            <img id="bigimg" style="border:5px solid #fff;" src="" />
+        </div>
+    </div>
+</div>
+@section scripts {
+    <script src="~/Scripts/admin/vue-component/productCatalog.js"></script>
+    <script type="text/javascript">
+        layui.use(['miniTab'], function () {
+            var layer = layui.layer,
+                miniTab = layui.miniTab;
+        });
+        var productTable;
+        var CurrentRow = "";
+        var tabId = self.frameElement.parentElement.id;
+        var isMerchant = Boolean(@ViewBag.IsMerchant);
+        var canEdit  = Boolean(@ViewBag.CanEdit);
+        var mSelectStatusList =@ViewBag.StatusList;
+        var timer = null;
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                IsMerchant: isMerchant,
+                CanEdit: canEdit,
+                ViewType: 0,
+                ProductList: [],
+                Selected: [],
+                statusSelect: mSelectStatusList,
+                //SpecialItem: [],
+                condition: {
+                    Language: "",
+                    Key: "",
+                    KeyWordType: "",
+                    ProductCode: "",
+                    Category: -1,
+                    //Brand: -1,
+                    Attribute: -1,
+                    AttributeValue: -1,
+                    //Size: -1,
+                    //Function: -1,
+                    //SelectedSpecialItem: [],
+                    PermissionLevel: "",
+                    //SortedBy: "",
+                    //Sorted: "",
+                    OnSale: false,
+                    SaleOff: false,
+                    CreateDateFrom: "",
+                    CreateDateTo: "",
+                    IsActive: 1,
+                    IsDeleted:0,
+                    IsApprove: -1,
+                    MerchantId: WS.GuidEmpty,
+                    ApproveStatus:"-1"
+                },
+                //IsModify: true,
+                IsDelete: true,
+                IsDelete: true,
+                IsShowAttributeValue: false,
+                IsExport: true,
+                IsOnSale: true,
+                IsOffSale: true,
+                ProductCondtionCache: {
+                    KeyWordTypes: [],
+                    Attributes: [],
+                    AttributeValues: [],
+                    Permissions: [],
+                    SortedKeys: [],
+                    SortedKeyTypes: []
+                },
+                CurrentPage: 1,
+                CurrentSize: 10
+            },
+            methods: {
+                GetCurrentCategory: function (data) {
+                    var obj = new Object();
+                    vm.condition.Category = data.currentValue;
+                    obj.catId = data.currentValue;
+                    InitNormalSelect("cboAttribute",
+                        "/adminapi/product/GetSelfDefineAttributeByCatId",
+                        true,
+                        obj,
+                        true);
+                    $("#cboAttributeValue").empty();
+                    vm.IsShowAttributeValue = false;
+                },
+                Add: function () {
+                    if (vm.IsMerchant == false) {
+                        showInfo('@BDMall.Resources.Message.NotMerchantToOperate');
+                        return;
+                    }
+                    miniTab.openNewTabByIframe({
+                        href:"/Product/EditProduct/" + WS.GuidEmpty + "/Add/0",
+                        title: '@BDMall.Resources.Label.AddProduct',
+                        callback: search
+                    });
+                },
+                Modify: function (id, name, type) {
+                    modifyProduct(id, name,type);
+                },
+                Delete: function () {
+                    var selects = $("#tblProduct").bootstrapTable("getSelections");
+
+                    SystemConfirm('@BDMall.Resources.Message.DeleteConfirm',
+                        function () {
+
+                            var strSkus = "";
+                            //if (vm.ViewType == 0) {
+                            //    selects.forEach(function (val) {
+                            //        strSkus += val.ProductId + ",";
+                            //    });
+                            //} else {
+                            //    strSkus = vm.Selected.join(",");
+                            //}
+                            selects.forEach(function (val) {
+                                strSkus += val.ProductId + ",";
+                            });
+
+                            var data = new Object();
+                            data.prodIDs = strSkus;
+                            WS.AjaxP("get",
+                                "/adminapi/Product/Delete",
+                                data,
+                                function (response) {
+                                    if (response.Succeeded == true) {
+                                        showWarn('@BDMall.Resources.Message.DeleteSucceeded');
+                                        search();
+                                    } else {
+                                        showWarn(response.Message);
+                                    }
+                                },
+                                function () { });
+                        });
+
+                },
+                SetButtonState: function () {
+                    var datas = $("#tblProduct").bootstrapTable("getData");
+                    var selected = $("#tblProduct").bootstrapTable("getSelections");
+
+                    if (selected.length >= 1) {
+                        vm.IsDelete = false;
+                    } else {
+                        vm.IsDelete = true;
+                    }
+
+                    var canOffSale = false;
+                    var canOnSale = false;
+                    if (selected.length >= 1) {
+                        selected.forEach(function (val) {
+                            if (val.ApproveType == 4) {
+                                canOffSale = true;
+                            }
+                            if (val.ApproveType == 0 || val.ApproveType == 5 || val.ApproveType == 6) {
+                                canOnSale = true;
+                            }
+                        });
+                    }
+                    else
+                    {
+                        canOffSale = false;
+                        canOnSale = false;
+                    }
+
+
+                    if (canOffSale) {
+                        vm.IsOffSale = true;
+                    }
+                    else
+                    {
+                        vm.IsOffSale = false;
+                    }
+
+                    if (canOnSale) {
+                        vm.IsOnSale = true;
+                    }
+                    else {
+                        vm.IsOnSale = false;
+                    }
+                    //IsOnSale: true,
+                    //    IsOffSale:true,
+
+                    if (datas.length > 0) {
+                        vm.IsExport = false;
+                    } else {
+                        vm.IsExport = true;
+                    }
+                },
+                activeProducts: function () {
+                    var selects = $("#tblProduct").bootstrapTable("getSelections");
+
+                    var strSkus = "";
+
+                    selects.forEach(function (val) {
+                        strSkus += val.ProductId + ",";
+                    });
+
+                    WS.Get("/adminapi/Product/ActiveProducts",
+                        { ids: strSkus},
+                        function (response) {
+                            if (response.Succeeded == true) {
+                                search();
+                            }
+                            else {
+                                showWarn(response.Message);
+                            }
+                        },
+                        function () { });
+                },
+                disActiveProducts: function ()
+                {
+                    var selects = $("#tblProduct").bootstrapTable("getSelections");
+
+                    var strSkus = "";
+
+                    selects.forEach(function (val) {
+                        strSkus += val.ProductId + ",";
+                    });
+
+                    WS.Get("/adminapi/Product/DisActiveProducts",
+                        { ids: strSkus },
+                        function (response) {
+                            if (response.Succeeded == true) {
+                                search();
+                            }
+                            else {
+                                showWarn(response.Message);
+                            }
+                        },
+                        function () { });
+                },
+                applyApprove: function (id) {
+                    WS.Get("/adminapi/Product/ApplyApprove", { id: id },
+                        function (response) {
+                            if (response.Succeeded == true) {
+                                search();
+                            }
+                            else {
+                                showWarn(response.Message);
+                            }
+                        },
+                        function () { });
+                },
+                getBigImage: function (_this) {
+                    var src = _this.attr("src");
+                    WS.Get("/adminapi/ProdImage/GetBigImgPath", { src: src },
+                        function (response) {
+                            imgShowBySrc("#outerdiv", "#innerdiv", "#bigimg", response);
+                        },
+                        function () { });
+                },
+                openBigImage: function (_this) {
+                    var src = _this.attr("src");
+                    WS.Get("/adminapi/ProdImage/GetBigImgPath", { src: src },
+                        function (response) {
+                            window.open(response);
+                        },
+                        function () { });
+                }
+            }
+        });
+
+        var ProductTableInit = function () {
+
+            var btTable = new Object();
+
+            btTable.queryParams = function (params) {
+                var page = 1;
+                if (params.offset > 0) {
+                    page = parseInt(params.offset / params.limit) + 1;
+                }
+
+                var sortedBy = params.sort;
+                var sorted = params.order;
+
+                vm.condition.KeyWordType = $("#cboKeyWordType").val();
+                vm.condition.Attribute = $("#cboAttribute").val();
+                vm.condition.AttributeValue = $("#cboAttributeValue").val();
+                vm.condition.PermissionLevel = $("#cboPermission").val();
+                vm.condition.ApproveStatus = vm.statusSelect.join(",");// $("#cboStatus").val();
+                vm.condition.MerchantId = $("#cboMerchant").val() == -1 ? WS.GuidEmpty : $("#cboMerchant").val();
+
+                vm.condition.PageInfo = { Page: page, PageSize: params.limit, SortName: sortedBy, SortOrder: sorted };
+
+                //vm.$refs.pager.setPageSize(params.limit);
+                return vm.condition;
+                //return {
+                //    Condition: vm.condition, Page: page, PageSize: params.limit, SortName: sortedBy, SortOrder: sorted
+                //};
+            }
+            btTable.Init = function () {
+
+                $("#tblProduct").bootstrapTable({
+                    method: 'post',                      //请求方式（*）
+                    //url: '/adminapi/Product/Search',         //请求后台的URL（*）
+                    queryParams: btTable.queryParams,//传递参数（*）
+                    //queryParamsType:'limit',
+                    toolbar: '#toolbar',                //工具按钮用哪个容器
+                    striped: true,                      //是否显示行间隔色
+                    cache: true,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                    sortable: true,                     //是否启用排序
+                    sortOrder: "asc",                   //排序方式
+                    sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+                    pageNumber: 1,                       //初始化加载第一页，默认第一页
+                    pageSize: 10,                       //每页的记录行数（*）
+                    pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                    smartDisplay: false,
+                    showRefresh: true,                  //是否显示刷新按钮
+                    clickToSelect: false,                //是否启用点击选中行
+                    //height: 750,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+                    uniqueId: "ProductId",                     //每一行的唯一标识，一般为主键列
+                    cardView: false,                    //是否显示详细视图
+                    detailView: false,                   //是否显示父子表
+                    pagination: true,                   //是否显示分页（*）
+                    dataField: "Data",
+                    totalField: "TotalRecord",
+                    ajaxOptions: {
+                        beforeSend: function (request) {
+                            var access_token = $.cookie("access_token");
+                            request.setRequestHeader("Authorization", "Bearer " + access_token);
+                        }
+                    },
+                    onLoadSuccess: function () {
+                        vm.SetButtonState();
+                    },
+                    onCheck: function (row) {
+                        vm.SetButtonState();
+                    },
+                    onUncheck: function (row) {
+                        vm.SetButtonState();
+                    },
+                    onCheckAll: function (rows) {
+                        vm.SetButtonState();
+                    },
+                    onUncheckAll: function (rows) {
+                        vm.SetButtonState();
+                    },
+
+                    columns: [{
+                        checkbox: true
+                    }, {
+                        field: 'ProductId',
+                        title: 'Id',
+                        visible: false
+                    }, {
+                        field: 'MerchantName',
+                        title: '@BDMall.Resources.Label.MerchantName',
+                        sortable: true
+                    }, {
+                        field: 'Imgs',
+                        title: '@BDMall.Resources.Label.Img',
+                        events: {
+                            'click .dialog': function (e, value, row, index) {
+                                clearTimeout(timer);
+                                timer = setTimeout(function () {
+                                    var el = e.target;
+                                    vm.getBigImage($(el));
+                                }, 300);
+
+                            },
+                            'dblclick .dialog': function (e, value, row, index) {
+                                clearTimeout(timer);
+                                var el = e.target;
+                                vm.openBigImage($(el));
+                            }
+
+                        },
+                        formatter: function (value, row, index) {
+                            return '<img  src="' + value[0] + '" width="64" class="dialog">';
+                        }
+                    }, {
+                        field: 'Code',
+                        title: '@BDMall.Resources.Label.ProductCode',
+                        sortable: true,
+                        formatter: function (value, row, index) {
+                            var name = row.Name.ReplaceAll("'", "<apos>");
+                            name = name.ReplaceAll("\"", "<quot>");
+                            name = name.ReplaceAll("\\r", "");
+                            name = name.ReplaceAll("\\n", "");
+                            name = name.ReplaceAll("\\t", "");
+                            var action = "Modify";
+                            if (row.ApproveType == '5' || row.ApproveType == '6') {
+                                action = "NewVer"
+                            }
+                            return '<a href="#" onClick="modifyProduct(\'' + row.ProductId + '\' ,\'' + name + '\',\'' + action+'\');">' + value + '</a>';
+                        }
+                    }, {
+                        field: 'Name',
+                        title: '@BDMall.Resources.Label.ProductName',
+                        sortable: true,
+                    }, {
+                        field: 'CatalogName',
+                        title: '@BDMall.Resources.Label.Category',
+                        sortable: true,
+                        formatter: function (value, row, index) {
+                            return '<p title="' + row.CatalogPath + '">' + value+'</p>';
+                        }
+
+                    },
+                    {
+                        field: 'GS1StatusString',
+                        title: '@BDMall.Resources.Label.GS1Status',
+                        sortable: true,
+                        },
+                    {
+                        field: 'ApproveType',
+                        title: '',
+                        visible: false
+                    },{
+                        field: 'ApproveTypeString',
+                        title: '@BDMall.Resources.Label.ProductStatus',
+                        sortable: true,
+                        //formatter: function (value, row, index) {
+                        //    var name = row.Name.ReplaceAll("'", "<apos>");
+                        //    name = name.ReplaceAll("\"", "<quot>");
+                        //    return '<a href="#" onClick="showApproveDetail(\'' + row.ProductId + '\' ,\'' + name + '\');">' + value + '</a>';
+                        //}
+                    },{
+                        field: 'UpdateDateString',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.UpdateDate',
+
+                    },{
+                        field: 'IsDeleted',
+                        visible: false
+
+                    },{
+                        field: '',
+                        title: '@BDMall.Resources.Label.Action',
+                            formatter: function (value, row, index) {
+                                var buttons = '';
+                                if (isMerchant == true && canEdit == true) {
+                                    //buttons += '<input type="button" v-if="false" class="btn btn-default" value="@BDMall.Resources.Action.Copy" onClick="copyProduct(\'' + row.ProductId + '\')"></input><input type="button" class="btn btn-default" value="@BDMall.Resources.Action.CreateNewVer" onClick="newVerProduct(\'' + row.ProductId + '\')"></input>';
+                                    buttons += '<input type="button" v-if="false" class="btn btn-default" value="@BDMall.Resources.Action.Copy" onClick="copyProduct(\'' + row.ProductId + '\')">';
+                                    @*if (row.ApproveType == "0" && row.IsDeleted==false)
+                                    {
+                                        buttons+='<input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Apply" onClick="applyApprove(\'' + row.ProductId + '\')"></input>'
+                                    }*@
+
+                                }
+                                return buttons;
+                        }
+                    }],
+                    formatLoadingMessage: function () {
+                        //return '<%=Resources.Message.Processing%>';
+                        return '';
+                    }
+
+                });
+            };
+
+            return btTable;
+        }
+
+        //function divClick(me) {
+        //    $(me).find(':checkbox').click();
+        //}
+
+
+        function ShowAttributeValue(me) {
+            var val = $(me).val();
+            //var data = new Object();
+            //data.id = val;
+            if (val != -1) {
+                //InitNormalSelect("cboAttributeValue", "/adminapi/product/GetSelfDefineAttributeValue", true, data);
+                BindAttributeValueCombobox(val);
+                vm.IsShowAttributeValue = true;
+            }
+            else {
+                $("#cboAttributeValue").empty();
+                vm.IsShowAttributeValue = false;
+            }
+
+        }
+
+        function search() {
+
+
+            $("#tblProduct").bootstrapTable("refresh", { url: "/adminapi/Product/SearchData", pageNumber: 1 });
+
+
+        }
+
+        function modifyProduct(id, name,type) {
+            var id = id;
+            name = name.ReplaceAll("<apos>", "&apos;")
+            name = name.ReplaceAll("<quot>", "&quot;");
+            
+            miniTab.openNewTabByIframe({
+                href:"/Product/EditProduct/" + id + "/" + type,
+                title: '@BDMall.Resources.Action.Modify' + "-" + name,
+                callback: search
+            });
+        }
+        function showApproveDetail(id, name) {
+            name = name.ReplaceAll("<apos>", "&apos;")
+            name = name.ReplaceAll("<quot>", "&quot;")
+            miniTab.openNewTabByIframe({
+                href:"/Product/ApproveProductHistory/" + id,
+                title:'@BDMall.Resources.Action.Approve' + "-" + name,
+            });
+        }
+        function applyApprove(id) {
+            vm.applyApprove(id);
+        }
+        function copyProduct(id) {
+            var ID = id;
+            miniTab.openNewTabByIframe({
+                href:"/Product/EditProduct/" + ID + "/Copy",
+                title: '@BDMall.Resources.Label.CopyProduct',
+                callback: search
+            });
+        }
+        function newVerProduct(id) {
+            var ID = id;
+            miniTab.openNewTabByIframe({
+                href:"/Product/EditProduct/" + ID + "/NewVer",
+                title: '@BDMall.Resources.Label.CreateNewVersion',
+                callback: search
+            });
+        }
+
+
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+
+        function GetProductCondition() {
+            InitNormalSelect("cboMerchant", "/adminapi/Merchant/GetMerchantOptions", true, null, false);
+
+            WS.AjaxP("get", "/AdminAPI/Product/GetProductCondition", null, function (response) {
+                vm.ProductCondtionCache = response.ReturnValue;
+                //InitNormalSelectByData("cboSize", response.Skins.AttributeValue);
+                //InitNormalSelectByData("cboFunction", response.Virtues.AttributeValue);
+                //InitNormalSelectByData("cboBrand", response.ProductTypes.AttributeValue);
+                InitNormalSelectByData("cboKeyWordType", response.ReturnValue.KeyWordTypes);
+                BindAttributeCombobox();
+                InitNormalSelectByData("cboPermission", response.ReturnValue.Permissions);
+                InitNormalSelectByData("cboSortedKey", response.ReturnValue.SortedKeys);
+                InitNormalSelectByData("cboSortedType", response.ReturnValue.SortedKeyTypes);
+                //InitNormalSelectByData("cboIsActive", response.ReturnValue.IsActive);
+                //InitNormalSelectByData("cboStatus", response.ReturnValue.ApproveStatus);
+
+                InitBootstrapSelectByData("cboStatus", response.ReturnValue.ApproveStatus, 7, false, false, function () {
+                    //var arr = [];
+                    //arr.push(0);
+                    //arr.push(1);
+                    //arr.push(2);
+                    //arr.push(3);
+                    //arr.push(4);
+                    //vm.statusSelect = arr;
+                    $('#cboStatus').selectpicker('val', vm.statusSelect);
+                })
+
+
+            }, function () {
+
+            });
+
+        }
+
+        function BindAttributeCombobox() {
+            var data = [];
+            if (vm.ProductCondtionCache != null) {
+
+                vm.ProductCondtionCache.Attributes.forEach(function (val, index, me) {
+                    //if (val.ParentId == parentId) {
+                    var option = new Object();
+                    option.Id = val.Id;
+                    option.Text = val.Text;
+                    data.push(option);
+                    //}
+                });
+                InitNormalSelectByData("cboAttribute", data);
+
+            }
+        }
+
+        function BindAttributeValueCombobox(attributeId) {
+            var data = [];
+            if (vm.ProductCondtionCache != null) {
+
+                vm.ProductCondtionCache.AttributeValues.forEach(function (val, index, me) {
+                    if (val.AttrId == attributeId) {
+                        var option = new Object();
+                        option.Id = val.Id;
+                        option.Text = val.Desc;
+                        data.push(option);
+                    }
+                });
+                InitNormalSelectByData("cboAttributeValue", data);
+
+            }
+        }
+
+        $(document).ready(function () {
+
+            GetProductCondition();
+
+            var oTable = ProductTableInit();
+            oTable.Init();
+            search();
+
+            //setTimeout(search, 1000);
+            //cover();
+
+
+
+        });
+
+    </script>
+}
+
+

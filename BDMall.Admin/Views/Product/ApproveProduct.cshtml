@@ -1,0 +1,322 @@
+﻿
+@{
+    ViewBag.Title = "ApproveProduct";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="app" v-cloak>
+    <div>
+        <table class="table table-condensed">
+            <tr>
+                <td>
+                    @BDMall.Resources.Label.MerchantName
+                </td>
+                <td>
+                    <select id="cboMerchant" class="form-control" data-width="400"></select>
+                </td>
+                <td>
+                    <input type="button" class="form-control" value="@BDMall.Resources.Action.Search" onclick="search();" />
+                </td>
+            </tr>
+        </table>
+
+        @*<div class="text-right">
+                <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Search" v-on:click="approveProduct()" />
+            </div>*@
+    </div>
+
+    <div>
+        <div class="panel-body">
+            <div id="toolbar" class="btn-group">
+                <button id="btn_add" type="button" class="btn btn-default" v-on:click="approveProduct" v-bind:disabled="isApprove==false">
+                    <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>@BDMall.Resources.Action.BatchApprove
+                </button>
+            </div>
+            <table id="tblProduct"></table>
+        </div>
+    </div>
+</div>
+<div id="outerdiv" style="position:fixed;top:0;left:0;background:rgba(0,0,0,0.7);z-index:1200;width:100%;height:100%;display:none;">
+    <div id="innerdiv" style="position:absolute;">
+        <img id="bigimg" style="border:5px solid #fff;" src="" />
+    </div>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        layui.use(['miniTab'], function () {
+            var layer = layui.layer,
+                miniTab = layui.miniTab;
+        });
+        var tabId = self.frameElement.parentElement.id;
+        var timer = null;
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                isApprove: false,
+                condition: {
+                    MerchantId: WS.GuidEmpty,
+                    Language: "",
+                    Key: "",
+                    KeyWordType: "",
+                    ProductCode: "",
+                    Category: -1,
+                    Attribute: -1,
+                    AttributeValue: -1,
+                    PermissionLevel: "",
+                    OnSale: false,
+                    SaleOff: false,
+                    CreateDateFrom: "",
+                    CreateDateTo: "",
+                    IsActive: -1,
+                    IsApprove: 0,
+                    ApproveStatus:1
+                },
+            },
+            methods: {
+                showTableData: function () {
+                    $("#tblProduct").bootstrapTable("refresh", { url: "/AdminAPI/Product/SearchData", pageNumber: 1 });
+                },
+                approveProduct: function () {
+                    var selectedProduct = $("#tblProduct").bootstrapTable("getSelections");
+                    var ids = "";
+                    selectedProduct.forEach(function (val) {
+                        if (ids == "") {
+                            ids = val.ProductId;
+                        }
+                        else {
+                            ids +=","+val.ProductId;
+                        }
+                    })
+                    WS.Get("/adminapi/Product/ApproveProduct", { prodIDs: ids }, function (response) {
+                        if (response.Succeeded == true) {
+                            vm.showTableData();
+                        }
+                        else {
+                            showWarn(response.Message);
+                        }
+                    }, function () { });
+                },
+                setButtonState: function () {
+                    var datas = $("#tblProduct").bootstrapTable("getData");
+                    var selected = $("#tblProduct").bootstrapTable("getSelections");
+
+                    if (selected.length >= 1) {
+                        vm.isApprove = true;
+                    } else {
+                        vm.isApprove = false;
+                    }
+
+
+                },
+                getBigImage: function (_this) {
+                    var src = _this.attr("src");
+                    WS.Get("/adminapi/ProdImage/GetBigImgPath", { src: src },
+                        function (response) {
+                            imgShowBySrc("#outerdiv", "#innerdiv", "#bigimg", response);
+                        },
+                        function () { });
+                },
+                openBigImage: function (_this) {
+                    var src = _this.attr("src");
+                    WS.Get("/adminapi/ProdImage/GetBigImgPath", { src: src },
+                        function (response) {
+                            window.open(response);
+                        },
+                        function () { });
+                }
+            }
+        })
+
+         var ProductTableInit = function () {
+
+            var btTable = new Object();
+
+            btTable.queryParams = function (params) {
+                var page = 1;
+                if (params.offset > 0) {
+                    page = parseInt(params.offset / params.limit) + 1;
+                }
+
+                var sortedBy = params.sort;
+                var sorted = params.order;
+
+                if (params.sort == undefined)
+                {
+                    sortedBy = "CreateDateString";
+                    sorted = "desc";
+                }
+
+                vm.condition.MerchantId = $("#cboMerchant").val() == -1 ? WS.GuidEmpty : $("#cboMerchant").val();
+                //vm.CurrentPage = page;
+                //vm.CurrentSize = params.limit;
+
+                vm.condition.PageInfo = { Page: page, PageSize: params.limit, SortName: sortedBy, SortOrder: sorted };
+
+                return vm.condition;
+
+            }
+            btTable.Init = function () {
+
+                $("#tblProduct").bootstrapTable({
+                    method: 'post',                      //请求方式（*）
+                    //url: '/AdminAPI/Product/SearchProductList',         //请求后台的URL（*）
+                    queryParams: btTable.queryParams,//传递参数（*）
+                    //queryParamsType:'limit',
+                    toolbar: '#toolbar',                //工具按钮用哪个容器
+                    striped: true,                      //是否显示行间隔色
+                    cache: true,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                    sortable: true,                     //是否启用排序
+                    sortOrder: "asc",                   //排序方式
+                    sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+                    pageNumber: 1,                       //初始化加载第一页，默认第一页
+                    pageSize: 10,                       //每页的记录行数（*）
+                    pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                    smartDisplay: false,
+                    showRefresh: true,                  //是否显示刷新按钮
+                    //singleSelect: isSingleSelect,
+                    clickToSelect: false,                //是否启用点击选中行
+                    //height: 750,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+                    uniqueId: "ProductId",                     //每一行的唯一标识，一般为主键列
+                    cardView: false,                    //是否显示详细视图
+                    detailView: false,                   //是否显示父子表
+                    pagination: true,                   //是否显示分页（*）
+                    dataField: "Data",
+                    totalField: "TotalRecord",
+                    ajaxOptions: {
+                        beforeSend: function (request) {
+                            var access_token = $.cookie("access_token");
+                            request.setRequestHeader("Authorization", "Bearer " + access_token);
+                        }
+                    },
+                    onLoadSuccess: function () {
+                        vm.setButtonState();
+                    },
+                    onCheck: function (row) {
+                        vm.setButtonState();
+                    },
+                    onUncheck: function (row) {
+                        vm.setButtonState();
+                    },
+                    onCheckAll: function (rows) {
+                        vm.setButtonState();
+                    },
+                    onUncheckAll: function (rows) {
+                        vm.setButtonState();
+                    },
+                    columns: [{
+                        checkbox: true
+                    }, {
+                        field: 'ProductId',
+                        title: 'Id',
+                        visible: false
+                    }, {
+                        field: 'MerchantName',
+                        title: '@BDMall.Resources.Label.MerchantName',
+                        sortable: true,
+                    },{
+                        field: 'Imgs',
+                        title: '@BDMall.Resources.Label.Img',
+                        events: {
+                            'click .dialog': function (e, value, row, index) {
+                                clearTimeout(timer);
+                                timer = setTimeout(function () {
+                                    var el = e.target;
+                                    vm.getBigImage($(el));
+                                }, 300);
+                            },
+                            'dblclick .dialog': function (e, value, row, index) {
+                                clearTimeout(timer);
+                                var el = e.target;
+                                vm.openBigImage($(el));
+                            }
+
+                        },
+                        formatter: function (value, row, index) {
+                            return '<img  src="' + value[0] + '" width="64" class="dialog" >';
+                        }
+                    },  {
+                        field: 'Code',
+                        title: '@BDMall.Resources.Label.ProductCode',
+                        sortable: true,
+                    }, {
+                        field: 'Name',
+                        title: '@BDMall.Resources.Label.ProductName',
+                        sortable: true,
+                    },
+                    {
+                        field: 'GS1StatusString',
+                        title: '@BDMall.Resources.Label.GS1Status',
+                        sortable: true,
+                    },
+                    {
+                        field: 'CatalogName',
+                        title: '@BDMall.Resources.Label.Category',
+                        sortable: true,
+                        formatter: function (value, row, index) {
+                            return '<p title="' + row.CatalogPath + '">' + value+'</p>';
+                        }
+
+                    },{
+                        field: 'CreateDateString',
+                        title: '@BDMall.Resources.Label.CreateDate',
+                        sortable: true,
+                    },{
+                        field: '',
+                        title: '@BDMall.Resources.Label.Action',
+                        formatter: function (value, row, index) {
+                            var name = row.Name.ReplaceAll("'", "<apos>");
+                            name = name.ReplaceAll("\"", "<quot>");
+                            return '<input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Approve" onClick="showApproveProduct(\'' + row.ProductId + '\',\'' + name + '\')"></input>'
+                        }
+                    }],
+                    formatLoadingMessage: function () {
+                        //return '<%=Resources.Message.Processing%>';
+                        return '';
+                    }
+
+                });
+            };
+
+            return btTable;
+        }
+
+
+        function showApproveProduct(id, name) {
+            var id = id;
+            name = name.ReplaceAll("<apos>", "&apos;")
+            name = name.ReplaceAll("<quot>", "&quot;");
+            miniTab.openNewTabByIframe({
+                href:"/Product/ApproveProductDetail/" + id,
+                title: '@BDMall.Resources.Action.Approve' + "-" + name,
+                callback: search
+            });
+        }
+
+
+
+
+        function search() {
+            vm.showTableData();
+        }
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+
+        $(document).ready(function () {
+            //InitNormalSelect("cboMerchant", "/adminapi/Merchant/GetMerchantCboSrc", true, null, false);
+            InitBootstrapSelect("cboMerchant", "/adminapi/Merchant/GetMerchantCboSrc", 1, true, true, null, function () { }, true);
+            var oTable = ProductTableInit();
+            oTable.Init();
+            vm.showTableData();
+            //search();
+
+        });
+    </script>
+}
+
+

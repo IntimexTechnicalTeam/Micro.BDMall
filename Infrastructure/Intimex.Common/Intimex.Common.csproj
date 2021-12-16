@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Models\BuyMall.Domain\BDMall.Domain.csproj" />
+    <ProjectReference Include="..\..\Models\BuyMall.Enums\BDMall.Enums.csproj" />
+    <ProjectReference Include="..\..\Models\BuyMall.Model\BDMall.Model.csproj" />
+  </ItemGroup>
+
+</Project>

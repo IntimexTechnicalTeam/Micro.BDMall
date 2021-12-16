@@ -18,7 +18,7 @@
 
   <ItemGroup>
     <Folder Include="InventoryMNG\" />
-    <Folder Include="UserMNG\" />
+    <Folder Include="MerchantMNG\" />
   </ItemGroup>
 
 </Project>

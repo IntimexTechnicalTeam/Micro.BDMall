@@ -52,7 +52,7 @@ namespace BDMall.Repository
 
         public DbSet<Order> Orders { get; set; }
 
-        public DbSet<Order> OrderDetails { get; set; }
+        public DbSet<OrderDetail> OrderDetails { get; set; }
 
         public DbSet<Product> Products { get; set; }
 
@@ -61,5 +61,16 @@ namespace BDMall.Repository
         public DbSet<CodeMaster> CodeMasters { get; set; }
 
         public DbSet<ProductSalesSummry> ProductSalesSummrys { get; set; }
+
+        public DbSet<ProductSku> ProductSkus { get; set; }
+
+        public DbSet<Merchant> Merchants { get; set; }
+
+        public DbSet<ProductAttribute> ProductAttributes { get; set; }
+        public DbSet<ProductAttributeValue> ProductAttributeValues { get; set; }
+
+        public DbSet<ProductCatalog> ProductCatalogs { get; set; }
+
+        public DbSet<ProductCatalogAttr> ProductCatalogAttrs { get; set; }
     }
 }

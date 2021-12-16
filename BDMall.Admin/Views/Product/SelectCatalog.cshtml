@@ -1,0 +1,43 @@
+﻿
+@{
+    ViewBag.Title = "SelectCatalog";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="row">
+    @*<div class="col-md-12">
+            <input class="btn btn-default" type="button" value="@BDMall.Resources.Action.Sorted" v-on:click="sorted" />
+            <input class="btn btn-default" type="button" value="@BDMall.Resources.Action.AddRoot" v-on:click="addRoot" />
+        </div>*@
+    <div class="col-md-8">
+        <menu-item v-bind:items="treeNodes" v-bind:limitlevel="3" v-bind:canedit=@ViewBag.Type v-bind:clickadd="addItem" v-bind:clickedit="editItem"
+                   v-bind:clickremove="removeItem" v-bind:issorted="isSorted"></menu-item>
+    </div>
+    @*<div class="col-md-8 text-right" style="margin:10px 0 0 0;">
+            <input class="btn btn-default" v-show="isSorted==true" type="button" value="@BDMall.Resources.Action.Save" v-on:click="saveSorted" />
+            <input class="btn btn-default" v-show="isSorted==true" type="button" value="@BDMall.Resources.Action.Cancel" v-on:click="cancelSorted" />
+        </div>*@
+
+
+
+</div>
+
+@section scripts {
+    <script src="~/Scripts/admin/system/catalogMng.js"></script>
+
+    <script type="text/javascript">
+        var type = '@ViewBag.Type';
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+
+        $(document).ready(function () {
+
+            app.loadMenus(type);
+        });
+    </script>
+}

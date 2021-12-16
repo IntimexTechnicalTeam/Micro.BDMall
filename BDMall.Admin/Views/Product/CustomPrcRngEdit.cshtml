@@ -1,0 +1,193 @@
+﻿
+@{
+    ViewBag.Title = "CustomPrcRngEdit";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="divMain" v-cloak>
+    <div id="divEmptyTop" class="form-group"></div>
+    <div id="divContent" class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">@BDMall.Resources.Label.TabNameCustomPrcRng</h3>
+        </div>
+        <div class="panel-body">
+            <input type="hidden" id="hidID" v-model="items.Id" />
+            <form id="frmInput" class="form-horizontal">
+                <div class="form-group">
+                    <label for="txtMaxVal" class="col-sm-2 control-label">@BDMall.Resources.Label.LessThan</label>
+                    <div class="col-sm-8">
+                        <input type="number" class="form-control" id="txtMaxVal" name="MaxVal" placeholder="@BDMall.Resources.Label.LessThan" v-model="items.MaxValue" v-bind:readonly="isReadonly">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="txtMinVal" class="col-sm-2 control-label">@BDMall.Resources.Label.MoreThan</label>
+                    <div class="col-sm-8">
+                        <input type="number" class="form-control" id="txtMinVal" name="MinVal" placeholder="@BDMall.Resources.Label.MoreThan" v-model="items.MinValue" v-bind:readonly="isReadonly">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="cboCurrency" class="control-label col-sm-2">@BDMall.Resources.Label.Currency</label>
+                    <div class="col-sm-8">
+                        <select id="cboCurrency" class="form-control" v-model="items.Currency" v-bind:disabled="isReadonly"></select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="cboCatalog" class="control-label col-sm-2">@BDMall.Resources.Label.ProductCatalog</label>
+                    <div class="col-sm-8">
+                        <select id="cboCatalog" class="form-control" v-model="items.CatId" v-bind:disabled="isReadonly"></select>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <input type="button" class="btn btn-default btn-action-default" value="@BDMall.Resources.Action.Close" v-on:click="closeTab" />
+        <input id="btnEdit" type="button" class="btn btn-default btn-action-default" value="@BDMall.Resources.Action.Edit" v-if="isReadonly" v-on:click="setModifyState" />
+        <input id="btnModify" type="button" class="btn btn-primary btn-action-default" value="@BDMall.Resources.Action.Save" v-if="!isReadonly" v-on:click="saveCheck" />
+        <input id="btnCancelModify" type="button" class="btn btn-default btn-action-default" value="@BDMall.Resources.Action.Cancel" v-if="!isReadonly&&editType=='Modify'" v-on:click="cancelSave" />
+    </div>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        var mId = @ViewBag.Id;
+        var mEditType = '@ViewBag.EditType';
+
+        var vm = new Vue({
+            el: "#divMain",
+            data: {
+                id:mId,
+                editType: mEditType,
+                isReadonly: false,
+                items: {
+                    Id: 0,
+                    MinValue: "",
+                    MaxValue: "",
+                    Currency: "-1",
+                    CatId: "-1",
+                    IsNew: false
+                }
+            },
+            methods: {
+                getCustomPrcRngItem: function () {
+                    var data = new Object();
+                    data.Id = vm.id;
+                    WS.AjaxP("get", "/adminapi/CustomPriceRng/GetCustomPrcRngById", data, function (response) {
+                        vm.items = response;
+                    }, function () { });
+                },
+                saveCheck: function () {
+                    if (cusPrcRngValidate.form()) {
+                        $("#frmInput").submit();
+                    }
+                },
+                save: function () {
+                    if (vm.items != undefined) {
+                        if (vm.editType == "Add") {
+                            vm.items.IsNew = true;
+                        }
+                        else {
+                            vm.items.IsNew = false;
+                        }
+                    }
+
+                    WS.AjaxP("post", "/adminapi/CustomPriceRng/SaveCustomPriceRange", vm.items, function (response) {
+                        if (response.Succeeded == true) {
+                            if (vm.editType == "Add") {
+                                //若當前編輯模式是新增，則更新當前緩存中的記錄ID
+                                vm.id = response.ReturnValue;
+                                vm.items.Id = response.ReturnValue;
+                            }
+                            vm.setModifyState();
+                            showCloseInfo('@BDMall.Resources.Message.SaveSuccess', true);
+                            @*clowWin();*@
+                        }
+                        else {
+                            showWarn('@BDMall.Resources.Message.SaveFail' + "\n\n" + response.Message);
+                        }
+                    }, function () { })
+                }
+                ,
+                closeTab: function () {
+                    clowWin();
+                },
+                cancelSave: function () {
+                    SystemConfirm('@BDMall.Resources.Message.ConfirmCancel', function () {
+                        vm.setReadonlyState();
+                    });
+                },
+                //設置窗體內容為只讀狀態
+                setReadonlyState: function () {
+                    vm.isReadonly = true;
+                    vm.editType = "Readonly";
+
+                    vm.getCustomPrcRngItem();
+                },
+                //設置窗體內容為修改狀態
+                setModifyState: function () {
+                    vm.isReadonly = false;
+                    vm.editType = "Modify";
+                },
+                //設置窗體內容為新增狀態
+                setAddState: function () {
+                    vm.isReadonly = false;
+                    vm.editType = "Add";
+                }
+            }
+        });
+
+        function cusPrcRngValidate() {
+
+            cusPrcRngValidate = $("#frmInput").validate({
+                ignore: "",
+                submitHandler: function () {
+                    vm.save();
+                },
+                rules: {
+                },
+                messages: {
+                },
+                success: function (label) {
+                    $(label).parent().removeClass('has-error');
+                },
+                showErrors: function (errorMap, errorList) {
+                    // 遍历错误列表
+                    focusWrongPlace(errorMap, function (lang) {
+                        vm.$refs.langbar.setCurrentLanguage(lang);
+                        vm.languageType = lang;
+                    });
+                    // 此处注意，一定要调用默认方法，这样保证提示消息的默认效果
+                    this.defaultShowErrors();
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            if (vm.editType == "Readonly") {
+                vm.setReadonlyState();
+            }
+            else if (vm.editType == "Modify") {
+                vm.setModifyState();
+                vm.getCustomPrcRngItem();//填充欄位資料
+            }
+            else if (vm.editType == "Add") {
+                vm.setAddState();
+                vm.getCustomPrcRngItem();//填充欄位資料
+            }
+
+            InitNormalSelect("cboCurrency", "/adminapi/CustomPriceRng/GetCurrencyComboSrc", false, null, false);
+            InitNormalSelect("cboCatalog", "/adminapi/ProdCatalog/GetFirstLvCatalogCboSrc", false, null, false);
+
+            cusPrcRngValidate();
+        });
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+    </script>
+}
+

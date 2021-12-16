@@ -1,0 +1,138 @@
+﻿
+@{
+    ViewBag.Title = "MassUploadDetail";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="app" v-cloak>
+    <table id="tblMassInfo" class="table"></table>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        var id ='@ViewBag.Id';
+        var isFinished = Boolean(@ViewBag.IsFinished);
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                condition: {
+                    Id:WS.GuidEmpty
+                }
+            },
+            methods: {
+                search: function ()
+                {
+                    if (isFinished) {
+                        $("#tblMassInfo").bootstrapTable("refresh", { url: "/adminapi/Product/GetSuccessMassUploadDetails", pageNumber: 1 });
+                    }
+                    else
+                    {
+                        $("#tblMassInfo").bootstrapTable("refresh", { url: "/adminapi/Product/GetFailMassUploadDetails", pageNumber: 1 });
+                    }
+
+                }
+
+            }
+        })
+
+         var MemberTableInit = function () {
+
+            var oTableInit = new Object();
+            oTableInit.Init = function () {
+
+                $("#tblMassInfo").bootstrapTable({
+                    method: 'post',                      //请求方式（*）
+                    //url: '/adminapi/Attribute/GetSelfDefineAttribute',         //请求后台的URL（*）
+                    queryParams: oTableInit.queryParams,//传递参数（*）
+                    //queryParamsType:'limit',
+                    toolbar: '#toolbar',                //工具按钮用哪个容器
+                    striped: true,                      //是否显示行间隔色
+                    cache: true,                        //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                    sortable: true,                    //是否启用排序
+                    sortOrder: "asc",                   //排序方式
+                    sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+                    pageNumber: 1,                       //初始化加载第一页，默认第一页
+                    pageSize: 10,                       //每页的记录行数（*）
+                    pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                    smartDisplay: false,
+                    showRefresh: true,                  //是否显示刷新按钮
+                    clickToSelect: true,                //是否启用点击选中行
+                    //height: 500,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+                    uniqueId: "Id",               //每一行的唯一标识，一般为主键列
+                    cardView: false,                    //是否显示详细视图
+                    detailView: false,                  //是否显示父子表
+                    pagination: true,                   //是否显示分页（*）
+                    dataField: "Data",
+                    totalField: "TotalRecord",
+                    ajaxOptions: {
+                        beforeSend: function (request) {
+                            var access_token = $.cookie("access_token");
+                            request.setRequestHeader("Authorization", "Bearer " + access_token);
+                        }
+                    },
+
+                    columns: [{
+                        field: 'Id',
+                        title: 'id',
+                        visible: false
+                    }, {
+                        field: 'Code',
+                        title: '@BDMall.Resources.Label.Code',
+                    }, {
+                        field: 'IsFinished',
+                        title: '@BDMall.Resources.Label.IsFinish',
+                        formatter: function (val, row, index) {
+                            var result = "";
+                            if (val == 1) {
+                                result = '@BDMall.Resources.Label.Yes';
+                            }
+                            else
+                            {
+                                result = '@BDMall.Resources.Label.No';
+                            }
+                            return result;
+                        },
+                    }, {
+                        field: 'ErrorInfo',
+                        title: '@BDMall.Resources.Label.Desc',
+                    }, {
+                        field: 'CreateDateString',
+                        title: '@BDMall.Resources.Label.CreateDate',
+                    }],
+                    formatLoadingMessage: function () {
+                        //return '<%=Resources.Message.Processing%>';
+                        return '';
+                    }
+                });
+            };
+            oTableInit.queryParams = function (params) {
+
+                var page = 1;
+                if (params.offset > 0) {
+                    page = parseInt(params.offset / params.limit) + 1;
+                }
+
+                vm.condition.Page = page;
+                vm.condition.PageSize = params.limit;
+                vm.condition.Id = id;
+                return vm.condition;
+            }
+
+            return oTableInit;
+        }
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+
+        $(document).ready(function () {
+            var tbObj = new MemberTableInit();
+            tbObj.Init();
+            vm.search();
+        });
+    </script>
+}
+

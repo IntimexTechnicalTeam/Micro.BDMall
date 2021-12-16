@@ -2,7 +2,7 @@ using BDMall.Enums;
 using System;
 
 
-namespace BDMall.Model
+namespace BDMall.Domain
 {
     public class MutiLanguage
     {

@@ -1,0 +1,116 @@
+﻿
+@{
+    ViewBag.Title = "ExportData";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="app">
+    <table class="table">
+        <tr>
+            <td>@BDMall.Resources.Label.ProductCode</td>
+            <td>
+                <input type="text" v-model="condition.ProductCode" class="form-control input-sm" />
+            </td>
+            <td>
+                @BDMall.Resources.Label.Language
+            </td>
+            <td>
+                <select id="cboLanguage" class="form-control input-sm"></select>
+            </td>
+        </tr>
+        <tr>
+            <td>@BDMall.Resources.Label.From</td>
+            <td><input name="DateTimePicker" id="fromDate" size="16" value="" type="text" class="form-control" /></td>
+            <td>@BDMall.Resources.Label.To</td>
+            <td><input name="DateTimePicker" id="toDate" size="16" value="" type="text" class="form-control" /></td>
+        </tr>
+        <tr>
+            <td class="text-right" colspan="4">
+                <input type="button" value="Export" onclick="exportData();" class="btn btn-default" />
+                <a id="exportLink" href="" hidden></a>
+            </td>
+        </tr>
+    </table>
+
+</div>
+
+@section scripts {
+    <script>
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                condition: {
+                    Language: "",
+                    Key: "",
+                    KeyWordType: "",
+                    ProductCode: "",
+                    Category: -1,
+                    Brand: -1,
+                    Attribute: -1,
+                    AttributeValue: -1,
+                    Size: -1,
+                    Function: -1,
+                    //SelectedSpecialItem: [],
+                    PermissionLevel: "",
+                    SortedBy: "",
+                    Sorted: "",
+                    IsCombinationProduct: null,
+                    OnSale: false,
+                    Standard: false,
+                    Combination: false,
+                    Stock: false,
+                    OEM: false,
+                    CreateDateFrom: "",
+                    CreateDateTo: "",
+                },
+            },
+            methods: {
+            }
+        });
+
+        function exportData() {
+            var data = new Object();
+            data.code = vm.condition.ProductCode;
+            data.dateFrom = $("#fromDate").val();
+            data.dateTo = $("#toDate").val();
+            data.lang = $("#cboLanguage").val();
+            WS.AjaxP("get", "/Product/CheckExcekProduct", data, function (response) {
+                if (response.Succeeded == true) {
+                    var link = "/Product/ExportProduct?code=" + vm.condition.ProductCode + "&dateFrom=" + $("#fromDate").val() + "&dateTo=" + $("#toDate").val() + "&lang=" + $("#cboLanguage").val();
+                    $("#exportLink").attr("href", link);
+                    document.getElementById("exportLink").click();
+                }
+                else {
+                    showWarn(response.Message);
+                }
+            }, function () { });
+
+
+            //var data = new Object();
+            //data.code = vm.condition.ProductCode;
+            //data.dateFrom = "";
+            //data.dateTo = "";
+            //data.lang = $("#cboLanguage").val();
+            //WS.AjaxP("get", "/Product/ExportProduct", data, function (response) {
+            //}, function () { });
+        }
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+
+        $(document).ready(function () {
+            InitBootstrapSelect("cboLanguage", "/adminapi/Dict/GetSupportLanguage", 1, false, false, null, function () {
+
+            });
+            InitDateTimePicker();
+        });
+    </script>
+}
+
+
+
+

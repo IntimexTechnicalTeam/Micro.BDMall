@@ -1,0 +1,286 @@
+﻿
+@{
+    ViewBag.Title = "EditCatalog";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<link href="~/Scripts/bootstrap-fileinput/css/fileinput.min.css" rel="stylesheet"/>
+<div id="app" class="container" v-cloak>
+    <form id="commentForm">
+        <div>
+            <div>
+                <input type="hidden" v-model="node.Id" />
+                <input type="hidden" v-model="node.ParentId" />
+                <input type="hidden" v-model="node.Level" />
+                <input type="hidden" v-model="node.Path" />
+                <div class="form-group">
+                    <label for="CatalogCode">@BDMall.Resources.Label.Code</label>
+                    <input type="text" name="catalogCode" class="form-control" id="CatalogCode" v-model="node.Code" placeholder="Catalog Code" v-bind:disabled="node.Id!='00000000-0000-0000-0000-000000000000'">
+                </div>
+
+                <div class="form-group" v-for="n in node.Descs" id="divMutiLang">
+                    <label v-bind:for="'catalogName_'+n.Lang.Code">@BDMall.Resources.Label.CatalogName ({{ n.Lang.Text}})</label>
+                    <input type="text" v-bind:name="'catalogName_'+n.Lang.Code" v-bind:id="'catalogName_'+n.Lang.Code" class="form-control" v-model="n.Desc" />
+
+                </div>
+
+                <div class="form-group">
+                    <label>@BDMall.Resources.Label.InvAttribute</label>
+                    <select id="cboInvAttr" multiple v-model="node.InvAttributes" v-bind:disabled="node.InvAttributes.length==3"></select>
+                </div>
+                <div class="form-group">
+                    <label>@BDMall.Resources.Label.NotInvAttribute</label>
+                    <select id="cboNonInvnAttr" multiple v-model="node.NotInvAttributes" v-bind:disabled="node.InvAttributes.length==5"></select>
+                </div>
+                <div class="form-group">
+                    <div class="form-inline">
+                        <label for="menuIcon">@BDMall.Resources.Label.Image</label>
+                        <img v-bind:src="node.IconPath" />
+                        <input name="txt_file" id="txt_file" type="file" class="file" />
+                        <span>@string.Format(BDMall.Resources.Label.UploadPhotoSize, 930, 240)</span>
+                        <input name="catalogLogo" type="text" v-model="node.IconPath" style="visibility:hidden;width:1px;" />
+                    </div>
+
+                </div>
+                <div class="form-group">
+                    <div class="form-inline">
+                        <label for="menuIcon">@BDMall.Resources.Label.MobileImage</label>
+                        <img v-bind:src="node.IconPathM" />
+                        <input name="txt_fileM" id="txt_fileM" type="file" class="file" />
+                        <span>@string.Format(BDMall.Resources.Label.UploadPhotoSize, 450, 450)</span>
+                        <input name="catalogLogoM" type="text" v-model="node.IconPathM" style="visibility:hidden;width:1px;" />
+                    </div>
+
+                </div>
+                @*<div class="form-group">
+            <input name="txt_file" id="txt_file" type="file" class="file" />
+        </div>*@
+
+                <div class="text-right">
+                    <button type="submit" class="btn btn-primary">@BDMall.Resources.Action.Save</button>
+                    <button type="button" class="btn btn-default" v-on:click="Close">@BDMall.Resources.Action.Close</button>
+                </div>
+
+            </div>
+        </div>
+    </form>
+</div>
+
+@section scripts{
+    
+<script src="~/Scripts/bootstrap-fileinput/js/fileinput.min.js"></script>
+
+<script type="text/javascript">
+        //var params = bDialog.getDialogParams();
+        var parentInfo = '@ViewBag.ParentInfo';
+        var parentId = "";
+        var parentLevel = "";
+        var id = '@ViewBag.Id';
+        var limitSize = @ViewBag.LimitSize;
+        //var parentObject = null;
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                node: {
+                    Id: WS.GuidEmpty,
+                    ParentId: WS.GuidEmpty,
+                    Code: "",
+                    MerchantId: "",
+                    NameTransId: "",
+                    Seq: 1,
+                    Level: 1,
+                    IconPath: "",
+                    IconPathM: "",
+                    //Attrs: [],
+                    InvAttributes: [],
+                    NotInvAttributes: [],
+                    Desc: "",
+                    Descs: [{ Lang: { Text: "", Code: "" }, Desc: "" }],
+                    IsMappingProduct: false,
+                }
+            },
+            methods:
+            {
+                GetCatalog: function (id) {
+                    var data = new Object();
+                    data.id = id;
+                    WS.AjaxP("get", "/adminapi/ProdCatalog/GetById", data,
+                        function (response) {
+
+                            if (response.Succeeded == true) {
+                                vm.node = response.ReturnValue;
+                                if (id == WS.GuidEmpty) {
+                                    if (parentInfo != "") {
+                                        vm.node.ParentId = parentId;
+                                        vm.node.Level = parseInt(parentLevel) + 1;
+                                    }
+                                    else {
+                                        vm.node.ParentId = 0;
+                                        vm.node.Level = 1;
+                                    }
+
+                                }
+                                vm.$nextTick(function () {
+                                    vm.node.Descs.forEach(function (val, item) {
+                                        $("#catalogName_" + val.Lang.Code).rules('add', { validatorHTML: true });
+                                    });
+                                });
+
+
+                                InitBootstrapSelect("cboInvAttr", "/adminapi/ProdAttribute/GetInveAttribute", 3, true, false, null, function () {
+                                    $('#cboInvAttr').selectpicker('val', vm.node.InvAttributes);
+                                });
+                                InitBootstrapSelect("cboNonInvnAttr", "/adminapi/ProdAttribute/GetNonInveAttribute", 5, true, false, null, function () {
+                                    $('#cboNonInvnAttr').selectpicker('val', vm.node.NotInvAttributes);
+                                });
+
+                                vm.$nextTick(function () {
+                                    $("#divMutiLang input").rules('add', { required: true, messages: { required: '@BDMall.Resources.Message.RequiredField' } });
+                                });
+
+                                //$('#cboRelationAttr').selectpicker('val', response.ReturnValue.Attrs);
+                            }
+                            else {
+                                showWarn(response.Message);
+                            }
+
+                        },
+                        function () {
+                            //alert(123);
+                        });
+
+                },
+                saveModel: function () {
+                    //if (CheckSave()) {
+                    //$("#txt_file").fileinput("upload");
+                    SystemConfirm('@BDMall.Resources.Message.SaveCatalogConfirm', function () {
+                        WS.AjaxP("post", "/adminapi/ProdCatalog/Save", vm.node, function (response) {
+                            if (response.Succeeded == true) {
+                                @*vm.GetCatalog(response.ReturnValue);*@
+                                showCloseInfo('@BDMall.Resources.Message.SaveSuccess');
+                                @*clowWin();*@
+                            }
+                            else {
+                                //showWarn('@BDMall.Resources.Message.SaveFail');
+                                showWarn(response.Message);
+                            }
+                        }, function () { })
+                    });
+
+                },
+                Close: function () {
+                    clowWin();
+                }
+            }
+
+
+        });
+
+        @*function CheckSave() {
+            var result = true;
+            if (vm.node.Text == "") {
+                result = false;
+                showWarn('@BDMall.Resources.Message.CodeMustFill');
+            }
+
+            return result;
+        }*@
+
+
+        var iconImgOption = new FileInputOption();
+        iconImgOption.CtrlName = "txt_file";
+        iconImgOption.UploadUrl = "/adminapi/FileUpload/UploadFile";
+        iconImgOption.MaxFile = 1;
+        iconImgOption.ShowRemove = false;
+        iconImgOption.FileSize = limitSize;
+        iconImgOption.SuccessCallback = function (data) {
+            vm.node.SmallIcon = data.response.ReturnValue[0].Name;
+            vm.node.IconPath = data.response.ReturnValue[0].ThumbnailPath;//上傳成功后保存catalog信息
+            clearPerview("txt_file");
+
+            //console.log();
+            var a = document.getElementById("txt_file").files;
+            //$("#txt_file").fileinput("refreshContainer");
+            //$("#txt_file").fileinput("clear");
+
+        };
+        iconImgOption.ErrorCallback = function (data) {
+            vm.node.Icon = "";
+            vm.node.IconPath = "";
+
+            //vm.node.ImgPath = "";
+        };
+        var iconImgOptionM = new FileInputOption();
+        iconImgOptionM.CtrlName = "txt_fileM";
+        iconImgOptionM.UploadUrl = "/adminapi/FileUpload/UploadFile";
+        iconImgOptionM.MaxFile = 1;
+        iconImgOptionM.ShowRemove = false;
+        iconImgOptionM.FileSize = limitSize;
+        iconImgOptionM.SuccessCallback = function (data) {
+            vm.node.MSmallIcon = data.response.ReturnValue[0].Name;
+            vm.node.IconPathM = data.response.ReturnValue[0].ThumbnailPath;//上傳成功后保存catalog信息
+            clearPerview("txt_fileM");
+
+            //console.log();
+            var a = document.getElementById("txt_fileM").files;
+            //$("#txt_file").fileinput("refreshContainer");
+            //$("#txt_file").fileinput("clear");
+
+        };
+        iconImgOptionM.ErrorCallback = function (data) {
+            vm.node.MIcon= "";
+            vm.node.IconPathM = "";
+
+            //vm.node.ImgPath = "";
+        };
+        FileInputInit(iconImgOption);
+        FileInputInit(iconImgOptionM);
+
+
+        function InitValidator() {
+            $("#commentForm").validate({
+                submitHandler: function (form) {   //表单提交句柄,为一回调函数，带一个参数：form
+                    vm.saveModel();
+                },
+                rules: {
+                    catalogCode:
+                    {
+                        required: true,
+                        validatorHTML: true
+                    },
+                    catalogLogo: "required"
+
+                },
+                messages:
+                {
+                    catalogCode: {
+                        required:"@BDMall.Resources.Message.RequiredField",
+                    } ,
+                    catalogLogo: "@BDMall.Resources.Message.RequiredField",
+                }
+            });
+        }
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+
+        $(document).ready(function () {
+
+            if (parentInfo != "") {
+                var arr = parentInfo.split('|');
+                parentId = arr[0];
+                parentLevel = arr[1];
+            }
+
+            vm.GetCatalog(id);
+            validatorHTML();
+            InitValidator();
+            //InitControl();
+        });
+</script>
+}
+

@@ -1,0 +1,565 @@
+﻿
+@{
+    ViewBag.Title = "CombinationProduct";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="app" class="col-md-12" v-cloak>
+    <div class="row">
+        <div class="tab-content">
+            <div id="divCombProduct" class="tab-pane fade in active">
+                @*<div class="col-md-12 h2">@BDMall.Resources.Label.NewCombinationProduct</div>*@
+                <div class="col-md-12">
+                    <table class="table">
+                        <tr>
+                            <td>@BDMall.Resources.Label.ProductCode</td>
+                            <td><input type="text" class="form-control" v-model="combCondition.ProductCode" /></td>
+                            <td>@BDMall.Resources.Label.ProductName</td>
+                            <td><input type="text" class="form-control" v-model="combCondition.ProductName" /></td>
+                        </tr>
+                        <tr>
+                            <td>@BDMall.Resources.Label.Brand</td>
+                            <td>
+                                <select id="cboCombBrand" class="form-control input-sm"></select>
+                            </td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" class="text-right">
+                                <input type="button" id="btnSearch" value="@BDMall.Resources.Action.Search" class="btn btn-default" v-on:click="combSearch" />
+                            </td>
+                        </tr>
+                    </table>
+                    <table id="tblCombProducts" class="tblProducts"></table>
+                    <form id="combForm">
+                        <table class="table">
+                            <tr>
+                                <td>@BDMall.Resources.Label.ProductCodeWithSymbol</td>
+                                <td><input type="text" class="form-control" v-model="combContent.Code" name="ProductCode" /></td>
+                                <td>@BDMall.Resources.Label.DescWithSymbol</td>
+                                <td><input type="text" class="form-control" v-model="combContent.Description" /></td>
+                                <td>@BDMall.Resources.Label.QtyWithSymbol</td>
+                                <td><input type="number" class="form-control" v-model="combContent.Qty" name="Qty" /></td>
+                            </tr>
+                            <tr>
+                                <td colspan="6">
+                                    <input v-if="IsConfirm==false" type="submit" class="btn btn-default" value="@BDMall.Resources.Action.New" />
+                                </td>
+                            </tr>
+                        </table>
+                    </form>
+                </div>
+                <div class="col-md-12">
+                    <table class="table">
+                        <tr>
+                            <th>@BDMall.Resources.Label.Img</th>
+                            <th>@BDMall.Resources.Label.ProductCode</th>
+                            <th>@BDMall.Resources.Label.ProductName</th>
+                            <th>@BDMall.Resources.Label.Price</th>
+                            <th>@BDMall.Resources.Label.Qty</th>
+                            <th>@BDMall.Resources.Label.Action</th>
+                        </tr>
+                        <tr v-for="item in combList">
+                            <td><img v-bind:src="item.ImgPath" /></td>
+                            <td>{{item.Code}}</td>
+                            <td>{{item.Name}}</td>
+                            <td>{{item.Price}}</td>
+                            <td>{{item.Qty}}</td>
+                            <td>
+                                <input v-if="IsConfirm==false" type="button" class="btn btn-default" value="@BDMall.Resources.Action.Delete" v-on:click="deleteCombProduct(item.id)" />
+                                <input v-else type="button" class="btn btn-default" value="@BDMall.Resources.Action.Replaceable" v-on:click="replaceCombProduct(item.Sku)" />
+                            </td>
+                        </tr>
+                    </table>
+                    <input v-if="IsConfirm==false" type="button" class="btn btn-default" value="@BDMall.Resources.Action.Confirm" v-on:click="combConfirm" />
+                    <a id="toReplaceProductView" href="#divReplaceProduct" data-toggle="tab" hidden></a>
+                </div>
+            </div>
+
+
+
+
+            <div id="divReplaceProduct" class="tab-pane fade">
+
+                <div class="col-md-12 h2">@BDMall.Resources.Label.NewReplaceProduct</div>
+                <div class="col-md-12">
+                    <table class="table">
+                        <tr>
+                            <td>@BDMall.Resources.Label.ProductCode</td>
+                            <td><input type="text" class="form-control" id="txtProductCode" v-model="replCondition.ProductCode" /></td>
+                            <td>@BDMall.Resources.Label.ProductName</td>
+                            <td><input type="text" class="form-control" id="txtRProductName" v-model="replCondition.ProductName" /></td>
+                        </tr>
+                        <tr>
+                            <td>@BDMall.Resources.Label.Brand</td>
+                            <td>
+                                <select id="cboReplaceBrand" class="form-control input-sm"></select>
+                            </td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" class="text-right">
+                                <input type="button" id="btnSearch" value="@BDMall.Resources.Action.Search" class="btn btn-default" v-on:click="replSearch" />
+                            </td>
+                        </tr>
+                    </table>
+                    <table id="tblReplaceProducts" class="tblProducts"></table>
+                    <form id="replForm">
+                        <table class="table">
+                            <tr>
+                                <td class="col-md-1">@BDMall.Resources.Label.ProductCodeWithSymbol</td>
+                                <td class="col-md-2"><input type="text" class="form-control" v-model="repContent.Code" name="replaceProductCode" /></td>
+                                <td class="col-md-1">@BDMall.Resources.Label.DescWithSymbol</td>
+                                <td class="col-md-2"><input type="text" class="form-control" v-model="repContent.Description" /></td>
+                                <td class="col-md-1">@BDMall.Resources.Label.QtyWithSymbol</td>
+                                <td class="col-md-2"><input type="number" class="form-control" v-model="repContent.Qty" name="replaceQty" /></td>
+                                <td class="col-md-1">@BDMall.Resources.Label.AdditionalPriceWithSymbol</td>
+                                <td class="col-md-2"><input type="number" class="form-control" v-model="repContent.Amount" name="replaceAmount" /></td>
+                            </tr>
+                            <tr>
+                                <td colspan="8">
+                                    <input type="submit" class="btn btn-default" value="@BDMall.Resources.Action.New"  />
+                                </td>
+                            </tr>
+                        </table>
+                    </form>
+                </div>
+                <div class="col-md-12">
+                    <table class="table">
+                        <tr>
+                            <th>@BDMall.Resources.Label.Img</th>
+                            <th>@BDMall.Resources.Label.ProductCode</th>
+                            <th>@BDMall.Resources.Label.ProductName</th>
+
+                            <th>@BDMall.Resources.Label.Qty</th>
+                            <th>@BDMall.Resources.Label.AdditionalPrice</th>
+                            <th>@BDMall.Resources.Label.Action</th>
+                        </tr>
+                        <tr v-for="item in replaceList">
+                            <td><img v-bind:src="item.ImgPath" /></td>
+                            <td>{{item.Code}}</td>
+                            <td>{{item.Name}}</td>
+                            <td>{{item.Qty}}</td>
+                            <td>{{item.AdditionalPrice}}</td>
+                            <td>
+                                <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Delete" v-on:click="deleteReplaceProduct(item.id)" />
+                            </td>
+                        </tr>
+                    </table>
+                    <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Cancel" v-on:click="replaceCancel" />
+                    <a id="toCombProductView" href="#divCombProduct" data-toggle="tab" hidden></a>
+                </div>
+                @*<div class="col-md-6">
+                        <table class="table table-bordered table-hover table-condensed">
+                            <tr>
+                                <th>col1</th>
+                                <th>col2</th>
+                                <th>col3</th>
+                                <th>col4</th>
+                                <th>col5</th>
+                                <th>Action</th>
+                            </tr>
+                            <tr v-for="item in replaceList">
+                                    <td>{{item.col1}}</td>
+                                    <td>{{item.col2}}</td>
+                                    <td>{{item.col3}}</td>
+                                    <td>{{item.col4}}</td>
+                                    <td>{{item.col5}}</td>
+                                    <td><input type="button" class="btn btn-default" value="Delete" v-on:click="Delete(item)" /></td>
+                                </tr>
+                        </table>
+                        <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Save" v-on:click="replaceSave" />
+                        <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Cancel" v-on:click="replaceCancel" />
+                        <a id="toCombProductView" href="#divCombProduct" data-toggle="tab" hidden></a>
+                    </div>*@
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script type="text/javascript">
+        var sku = '@ViewBag.Sku';
+        var isConfirm = Boolean(@ViewBag.IsConfirm);
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                IsConfirm: isConfirm,
+                combCondition: {
+                    Sku: sku,
+                    ProductCode: "",
+                    ProductName: "",
+                    CategoryID: -1,
+                    Brand: -1
+                },
+                replCondition: {
+                    Sku: "",
+                    ProductCode: "",
+                    ProductName: "",
+                    CategoryID: -1,
+                    Brand: -1
+                },
+                combContent: {
+                    ParentSku: sku,
+                    Sku: "",
+                    Code: "",
+                    Description: "",
+                    Qty: 0
+                },
+                repContent: {
+                    ParentSku: "",
+                    Sku: "",
+                    Code: "",
+                    Description: "",
+                    Qty: 0,
+                    Amount: 0
+                },
+                replaceList: [],
+                combList: [],
+            },
+            methods:
+            {
+                combSearch: function () {
+                    vm.combCondition.Brand = $("#cboCombBrand").val();
+                    $("#tblCombProducts").bootstrapTable("refresh", { url: "/adminapi/Product/SearchCombinationProduct", pageNumber: 1 });
+                },
+                replSearch: function () {
+                    vm.replCondition.Brand = $("#cboReplaceBrand").val();
+                    $("#tblReplaceProducts").bootstrapTable("refresh", { url: "/adminapi/Product/SearchReplaceProduct", pageNumber: 1 });
+                },
+                addCombProduct: function () {
+                    WS.AjaxP("post", "/adminapi/Product/AddCombinationProduct", vm.combContent, function (response) {
+                        vm.combList = response;
+                        vm.cleanCombProduct();
+                    }, function () { });
+                },
+                cleanCombProduct:function()
+                {
+                    vm.combContent.sku = "";
+                    vm.combContent.Code = "";
+                    vm.combContent.Description = "";
+                    vm.combContent.Qty = 0;
+                    vm.combSearch();
+                },
+                deleteCombProduct: function (id) {
+                    var data = new Object();
+                    data.combId = id;
+                    WS.AjaxP("get", "/adminapi/Product/DeleteCombinationProduct", data, function (response) {
+                        if (response.Succeeded == true) {
+                            for (var i = 0; i < vm.combList.length; i++) {
+                                if (vm.combList[i].id == id) {
+                                    vm.combList.splice($.inArray(vm.combList[i], vm.combList), 1);
+                                }
+                            }
+                        }
+                        else {
+                            showWarn('@BDMall.Resources.Message.DeleteFailed');
+                        }
+                    }, function () { });
+                },
+
+                replaceCombProduct: function (sku) {
+                    $("#toReplaceProductView").click();
+                    vm.repContent.ParentSku = sku;
+                    vm.replCondition.Sku = sku;
+                    var data = new Object();
+                    data.combSku = sku;
+                    WS.AjaxP("get", "/adminapi/Product/GetReplaceProducts", data, function (response) {
+                        vm.replaceList = response;
+                    }, function () { });
+                },
+                getCombProduct: function () {
+                    var data = new Object();
+                    data.sku = sku;
+                    WS.AjaxP("get", "/adminapi/Product/GetCombinationProduct", data, function (response) {
+                        vm.combList = response;
+                    }, function () { });
+                },
+                combConfirm: function () {
+                    var data = new Object();
+                    data.sku = sku;
+                    WS.AjaxP("get", "/adminapi/Product/ConfirmCombinationProduct", data, function (response) {
+                        if (response.Succeeded == true) {
+                            vm.IsConfirm = true;
+                        }
+                    }, function () { });
+
+                },
+                addReplaceProduct: function () {
+                    WS.AjaxP("post", "/adminapi/Product/AddReplaceProduct", vm.repContent, function (response) {
+                        vm.replaceList = response;
+                        vm.cleanReplaceProduct();
+                    }, function () { });
+                },
+                cleanReplaceProduct: function () {
+                    vm.repContent.sku = "";
+                    vm.repContent.Code = "";
+                    vm.repContent.Description = "";
+                    vm.repContent.Qty = 0;
+                    vm.repContent.Amount = 0;
+                    vm.replSearch();
+                },
+                deleteReplaceProduct: function (id) {
+                    var data = new Object();
+                    data.repId = id;
+                    WS.AjaxP("get", "/adminapi/Product/DeleteReplaceProduct", data, function (response) {
+                        if (response.Succeeded == true) {
+                            for (var i = 0; i < vm.replaceList.length; i++) {
+                                if (vm.replaceList[i].id == id) {
+                                    vm.replaceList.splice($.inArray(vm.replaceList[i], vm.replaceList), 1);
+                                }
+                            }
+                        }
+                        else {
+                            showWarn('@BDMall.Resources.Message.DeleteFailed');
+                        }
+                    }, function () { });
+                },
+                replaceSave: function () {
+                    $("#toCombProductView").click();
+                },
+                replaceCancel: function () {
+                    $("#toCombProductView").click();
+                }
+                //,
+                //Delete: function (data) {
+                //    for (var i = 0; i < vm.replaceList.length; i++) {
+                //        if (vm.replaceList[i].col1 == data.col1) {
+                //            vm.replaceList.splice($.inArray(data, vm.replaceList), 1);
+                //        }
+                //    }
+                //}
+            }
+        });
+        var combProductTableInit = function () {
+
+            var oTableInit = new Object();
+            oTableInit.Init = function () {
+
+                $("#tblCombProducts").bootstrapTable({
+                    method: 'post',                      //请求方式（*）
+                    //url: '/adminapi/Product/SearchAccessoriesProduct',         //请求后台的URL（*）
+                    queryParams: oTableInit.queryParams,//传递参数（*）
+                    //queryParamsType:'limit',
+                    //toolbar: '#toolbar',                //工具按钮用哪个容器
+                    striped: true,                      //是否显示行间隔色
+                    cache: true,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                    sortable: false,                     //是否启用排序
+                    sortOrder: "asc",                   //排序方式
+                    sidePagination: "client",           //分页方式：client客户端分页，server服务端分页（*）
+                    pageNumber: 1,                       //初始化加载第一页，默认第一页
+                    pageSize: 10,                       //每页的记录行数（*）
+                    pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                    smartDisplay: false,
+                    showRefresh: false,                  //是否显示刷新按钮
+                    clickToSelect: true,                //是否启用点击选中行
+                    //height: 750,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+                    uniqueId: "Sku",                     //每一行的唯一标识，一般为主键列
+                    cardView: false,                    //是否显示详细视图
+                    detailView: false,                   //是否显示父子表
+                    pagination: true,                   //是否显示分页（*）
+                    singleSelect: true,
+                    ajaxOptions: {
+                        beforeSend: function (request) {
+                            var access_token = $.cookie("access_token");
+                            request.setRequestHeader("Authorization", "Bearer " + access_token);
+                        }
+                    },
+                    onCheck: function (row) {
+                        vm.combContent.Code = row.Code;
+                        vm.combContent.Description = row.Name;
+                        vm.combContent.Sku = row.Sku;
+                    },
+                    onUncheck: function (row) {
+                        vm.combContent.Code = "";
+                        vm.combContent.Description = "";
+                        vm.combContent.Sku = "";
+                    },
+                    columns: [{
+                        checkbox: true
+                    },
+                    {
+                        field: 'Sku',
+                        title: 'RelatedSku',
+                        visible: false
+                    }, {
+                        field: 'Img_SM',
+                        title: '@BDMall.Resources.Label.Img',
+                        formatter: function (value, row, index) {
+                            return '<img  src="' + value + '" width="100" >';
+                        }
+                    }, {
+                        field: 'Code',
+                        title: '@BDMall.Resources.Label.ProductCode'
+                    }, {
+                        field: 'Name',
+                        title: '@BDMall.Resources.Label.ProductName'
+                    }, {
+                        field: 'Brand',
+                        title: '@BDMall.Resources.Label.Brand'
+                    }]
+                });
+            };
+
+            oTableInit.queryParams = function (params) {
+                return vm.combCondition;
+
+            }
+            return oTableInit;
+        }
+
+
+        var replaceProductTableInit = function () {
+
+            var oTableInit = new Object();
+            oTableInit.Init = function () {
+
+                $("#tblReplaceProducts").bootstrapTable({
+                    method: 'post',                      //请求方式（*）
+                    //url: '/adminapi/Product/SearchAccessoriesProduct',         //请求后台的URL（*）
+                    queryParams: oTableInit.queryParams,//传递参数（*）
+                    //queryParamsType:'limit',
+                    //toolbar: '#toolbar',                //工具按钮用哪个容器
+                    striped: true,                      //是否显示行间隔色
+                    cache: true,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                    sortable: false,                     //是否启用排序
+                    sortOrder: "asc",                   //排序方式
+                    sidePagination: "client",           //分页方式：client客户端分页，server服务端分页（*）
+                    pageNumber: 1,                       //初始化加载第一页，默认第一页
+                    pageSize: 10,                       //每页的记录行数（*）
+                    pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                    smartDisplay: false,
+                    showRefresh: false,                  //是否显示刷新按钮
+                    clickToSelect: true,                //是否启用点击选中行
+                    //height: 750,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+                    uniqueId: "Sku",                     //每一行的唯一标识，一般为主键列
+                    cardView: false,                    //是否显示详细视图
+                    detailView: false,                   //是否显示父子表
+                    pagination: true,                   //是否显示分页（*）
+                    singleSelect: true,
+                    ajaxOptions: {
+                        beforeSend: function (request) {
+                            var access_token = $.cookie("access_token");
+                            request.setRequestHeader("Authorization", "Bearer " + access_token);
+                        }
+                    },
+                    onCheck: function (row) {
+                        vm.repContent.Code = row.Code;
+                        vm.repContent.Description = row.Name;
+                        vm.repContent.Sku = row.Sku;
+                    },
+                    onUncheck: function (row) {
+                        vm.repContent.Code = "";
+                        vm.repContent.Description = "";
+                        vm.repContent.Sku = "";
+                    },
+                    columns: [{
+                        checkbox: true
+                    },
+                    {
+                        field: 'Sku',
+                        title: 'RelatedSku',
+                        visible: false
+                    }, {
+                        field: 'Img_SM',
+                        title: '@BDMall.Resources.Label.Img',
+                        formatter: function (value, row, index) {
+                            return '<img  src="' + value + '" width="100" >';
+                        }
+                    }, {
+                        field: 'Code',
+                        title: '@BDMall.Resources.Label.ProductCode'
+                    }, {
+                        field: 'Name',
+                        title: '@BDMall.Resources.Label.ProductName'
+                    }, {
+                        field: 'Brand',
+                        title: '@BDMall.Resources.Label.Brand'
+                    }]
+                });
+            };
+
+            oTableInit.queryParams = function (params) {
+                return vm.replCondition;
+
+            }
+            return oTableInit;
+        }
+
+        function BindCombobox() {
+            WS.AjaxP("get", "/AdminAPI/Product/GetProductCombinationCombobox", null, function (response) {
+                combProductComboboxCache = response;
+                InitNormalSelectByData("cboCombBrand", response.ProductTypes);
+                InitNormalSelectByData("cboReplaceBrand", response.ProductTypes);
+
+            }, function () {
+
+            });
+        }
+
+        function InitCombFormValidate() {
+            $("#combForm").validate({
+                submitHandler: function () {
+                    vm.addCombProduct();
+                },
+                rules: {
+                    ProductCode: "required",
+                    Qty: {
+                        required: true,
+                        min: 1
+                    }
+                },
+                messages:
+                {
+                    ProductCode: "@BDMall.Resources.Message.RequiredField",
+                    Qty: "@BDMall.Resources.Message.RequiredField"
+                }
+            });
+        }
+
+        function InitReplaceFormValidate() {
+            $("#replForm").validate({
+                submitHandler: function () {
+                    vm.addReplaceProduct();
+                },
+                rules: {
+                    replaceProductCode: "required",
+                    replaceQty: {
+                        required: true,
+                        min: 1
+                    },
+                    replaceAmount: {
+                        required: true,
+                        min: 1
+                    }
+                },
+                messages:
+                {
+                    ProductCode: "@BDMall.Resources.Message.RequiredField",
+                    Qty: "@BDMall.Resources.Message.RequiredField"
+                }
+            });
+        }
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+
+        $(document).ready(function () {
+            BindCombobox();
+            var combTable = new combProductTableInit();
+            combTable.Init();
+            var replTable = new replaceProductTableInit();
+            replTable.Init();
+            vm.getCombProduct();
+            InitCombFormValidate();
+            InitReplaceFormValidate();
+        });
+    </script>
+}
+

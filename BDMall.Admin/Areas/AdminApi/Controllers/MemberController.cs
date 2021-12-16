@@ -17,7 +17,7 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
 
         public MemberController(IComponentContext services) : base(services)
         {
-            memberBLL = Services.Resolve<MemberBLL>();
+            memberBLL = Services.Resolve<IMemberBLL>();
         }
 
         [HttpGet]

@@ -5,14 +5,47 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Views\Product\AccessoriesProduct.cshtml" />
+    <Content Remove="Views\Product\ApproveProduct.cshtml" />
+    <Content Remove="Views\Product\ApproveProductDetail.cshtml" />
+    <Content Remove="Views\Product\ApproveProductHistory.cshtml" />
+    <Content Remove="Views\Product\CombinationProduct.cshtml" />
+    <Content Remove="Views\Product\CustomPrcRngEdit.cshtml" />
+    <Content Remove="Views\Product\CustomPriceRange.cshtml" />
+    <Content Remove="Views\Product\EditAttribute.cshtml" />
+    <Content Remove="Views\Product\EditProdPeriodPrice.cshtml" />
+    <Content Remove="Views\Product\EditProduct.cshtml" />
+    <Content Remove="Views\Product\ExportData.cshtml" />
+    <Content Remove="Views\Product\MassUploadDetail.cshtml" />
+    <Content Remove="Views\Product\MassUploadInstoreProduct.cshtml" />
+    <Content Remove="Views\Product\MassUploadProduct.cshtml" />
+    <Content Remove="Views\Product\ProdAttributeIndex.cshtml" />
+    <Content Remove="Views\Product\ProdPeriodPriceIndex.cshtml" />
+    <Content Remove="Views\Product\ProductClickRate.cshtml" />
+    <Content Remove="Views\Product\ProductImg.cshtml" />
+    <Content Remove="Views\Product\ProductIndex-backup.cshtml" />
+    <Content Remove="Views\Product\ProductSearchRate.cshtml" />
+    <Content Remove="Views\Product\RelatedProduct.cshtml" />
+    <Content Remove="Views\Product\SelectCatalog.cshtml" />
+    <Content Remove="Views\Product\SelectProduct.cshtml" />
+    <Content Remove="Views\Product\UpdPriceIndex.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="5.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="5.0.12" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.12">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="5.0.2" />
     <PackageReference Include="NLog.Extensions.Logging" Version="1.6.5" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\BDMall.Resources\BDMall.Resources.csproj" />
     <ProjectReference Include="..\BusinessLayer\BDMall.BLL\BDMall.BLL.csproj" />
+    <ProjectReference Include="..\Infrastructure\Intimex.Common\Intimex.Common.csproj" />
     <ProjectReference Include="..\Infrastructure\Web.AutoFac\Web.AutoFac.csproj" />
     <ProjectReference Include="..\Infrastructure\Web.Framework\Web.Framework.csproj" />
     <ProjectReference Include="..\Infrastructure\Web.Jwt\Web.Jwt.csproj" />

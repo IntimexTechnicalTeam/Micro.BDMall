@@ -28,21 +28,21 @@ namespace BDMall.Model
         [NotMapped]
         public string DisplayName { get; set; }
 
-        [NotMapped]
-        public string Remark { get; set; }
+        //[NotMapped]
+        //public string Remark { get; set; }
 
-        /// <summary>
-        /// 名字
-        /// </summary>
-        [NotMapped]
-        public List<MutiLanguage> FullNames { get; set; }
+        ///// <summary>
+        ///// 名字
+        ///// </summary>
+        //[NotMapped]
+        //public List<MutiLanguage> FullNames { get; set; }
 
 
-        /// <summary>
-        /// 名字
-        /// </summary>
-        [NotMapped]
-        public List<MutiLanguage> Remarks { get; set; }
+        ///// <summary>
+        ///// 名字
+        ///// </summary>
+        //[NotMapped]
+        //public List<MutiLanguage> Remarks { get; set; }
 
         /// <summary>
         /// 名字多语言Id

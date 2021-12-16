@@ -146,7 +146,7 @@ namespace Web.Mvc
                 _currentUser.LoginType = (LoginType)Enum.Parse(typeof(LoginType), payload["LoginType"]);
 
                 //admin,商家和第三方商家
-                if (_currentUser.LoginType <= LoginType.ThirdMerchantLink)
+                if (_currentUser.LoginType <= LoginType.Admin)
                 {
                     //加载用户角色，先从缓存读
                     string key = $"{CacheKey.CurrentUser}";

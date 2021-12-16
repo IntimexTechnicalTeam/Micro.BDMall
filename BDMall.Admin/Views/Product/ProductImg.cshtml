@@ -1,0 +1,465 @@
+﻿
+@{
+    ViewBag.Title = "ProductImg";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="app" class="col-md-12" v-cloak>
+    <ul id="myTab" class="nav nav-tabs">
+        <li class="active" v-on:click="TabClick(2)">
+            <a href="#UploadOriginalImg" data-toggle="tab">@BDMall.Resources.Label.UploadOriginalImgView</a>
+        </li>
+        <li v-on:click="TabClick(1)">
+            <a href="#UploadAdditionalImg" data-toggle="tab">@BDMall.Resources.Label.UploadAdditionalImgView</a>
+        </li>
+
+    </ul>
+    <div id="divContent" class="tab-content">
+        <div id="UploadOriginalImg" class="tab-pane fade in active">
+            <div class="row col-md-12" style="margin-top:5px;">
+
+                <div class="col-md-12">
+                    <div class="row  col-md-12" style="margin-top:5px;">
+                        <div class="col-md-4" v-for="attr,index in ProductAttributes">
+                            {{attr.Desc}} <select v-bind:id="'cboAttribute'+index" data-width="150px"></select>
+                        </div>
+                    </div>
+                    <div class="col-md-12" style="margin-top:5px;" v-show="isEnabled">
+                        <input name="txt_file" id="ProductImage" type="file" class="file" />
+                        <span>@string.Format(BDMall.Resources.Label.UploadPhotoSize, 800, 800)</span>
+                    </div>
+                    @*<div class="col-md-12" style="margin-top:5px;">
+                            <input type="button" value="@BDMall.Resources.Action.Upload" class="btn btn-primary btn-action-large" v-on:click="uploadProductImage" v-show="isEnabled==true" />
+                        </div>*@
+                    <table class="table table-hover">
+                        <tr>
+                            <th>@BDMall.Resources.Label.Img</th>
+                            <th>@BDMall.Resources.Label.AttributeName</th>
+                            <th>@BDMall.Resources.Label.AttributeName</th>
+                            <th>@BDMall.Resources.Label.AttributeName</th>
+                            <th>@BDMall.Resources.Label.IsDefaultImage</th>
+                            <th>@BDMall.Resources.Label.Action</th>
+                        </tr>
+                        <tr v-for="item,index in OriginalImgs">
+                            <td><img v-bind:src="item.Image" width="50" style="cursor:pointer;" v-on:click="ShowImage(item.Items[7].Path)" /></td>
+                            <td>{{item.AttrValues1Name}}</td>
+                            <td>{{item.AttrValues2Name}}</td>
+                            <td>{{item.AttrValues3Name}}</td>
+                            <td>{{item.IsDefaultName}}</td>
+                            <td>
+                                <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Detail" v-on:click="showImageDetails(item)" />
+                                <input type="button" class="btn btn-primary" value="@BDMall.Resources.Action.SetDefault" v-on:click="setDefaultImage(item.Id)" v-show="isEnabled==true" />
+                                <input type="button" class="btn btn-warning" value="@BDMall.Resources.Action.Delete" v-on:click="deleteImage(item.Id)" v-show="isEnabled==true" />
+                            </td>
+
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-4">
+
+                </div>
+
+            </div>
+        </div>
+        <div id="UploadAdditionalImg" class="tab-pane fade">
+            <table class="table">
+                <tr>
+                    <td class="col-md-12">
+                        <label class="text-danger">@BDMall.Resources.Message.MaxAdditionalImageOneTime</label>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-12">
+                        <div class="col-md-2" v-for="attr,index in ProductAttributes">
+                            {{attr.Desc}} <select v-bind:id="'cboAdiAttribute'+index" data-width="150px"></select>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-12">
+                        <div v-show="isEnabled">
+                            <input name="AdditionalImg" id="AdditionalImg" type="file" class="file" multiple />
+                            <span>@string.Format(BDMall.Resources.Label.UploadPhotoSize, 800, 800)</span>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            <table id="tblAdditionalImg" class="table table-hover">
+                <tr>
+                    <th>@BDMall.Resources.Label.Seq</th>
+                    <th>@BDMall.Resources.Label.Img</th>
+                    <th>@BDMall.Resources.Label.AttributeName</th>
+                    <th>@BDMall.Resources.Label.AttributeName</th>
+                    <th>@BDMall.Resources.Label.AttributeName</th>
+                    <th>@BDMall.Resources.Label.Action</th>
+                </tr>
+
+                <tr v-for="item,index in AdditionalImgs">
+                    <td>{{index+1}}</td>
+                    <td><img v-bind:src="item.Image" width="50" style="cursor:pointer;" v-on:click="ShowImage(item.Items[2].Path)" /></td>
+                    <td>{{item.AttrValues1Name}}</td>
+                    <td>{{item.AttrValues2Name}}</td>
+                    <td>{{item.AttrValues3Name}}</td>
+                    <td><input type="button" class="btn btn-warning" value="@BDMall.Resources.Action.Delete" v-on:click="deleteAdditionalImage(item.Id)" v-show="isEnabled==true" /></td>
+
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div id="myModal" style="display:none; padding:5px;">
+        <form id="onebyoneImgForm">
+            <div class="modal-header">
+                @*<span>{{SubAttriTitle}}</span>*@
+            </div>
+            <div class="col-md-12">
+                <div id="frmInput" class="form-horizontal">
+                    <div class="form-group">
+                        <div class="col-md-12 text-left" v-show="isEnabled">
+                            <input name="txt_file" id="imgOneByOne" type="file" class="file" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <table class="table table-hover">
+                            <tr>
+                                <td>@BDMall.Resources.Label.Image</td>
+                                <td>@BDMall.Resources.Label.Size</td>
+                                <td>@BDMall.Resources.Label.Pixel</td>
+                                <td>@BDMall.Resources.Label.Action</td>
+                            </tr>
+                            <tr v-for="item in ImageItems">
+                                <td><img v-bind:src="item.Path" width="50" style="cursor:pointer;" v-on:click="ShowImage(item.Path)" /></td>
+                                <td>{{item.Size}}</td>
+                                <td>{{item.Width}}X{{item.Length}}</td>
+                                <td>
+                                    <input type="button" class="btn btn-primary" value="@BDMall.Resources.Action.UploadImage" v-on:click="uploadImageOneByOne(item)" v-show="isEnabled==true" />
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" v-on:click="subClose">@BDMall.Resources.Action.Close</button>
+            </div>
+        </form>
+    </div>
+</div>
+@section scripts{
+    @Styles.Render("~/Content/bootstrapfile")
+    @Scripts.Render("~/bundles/bootstrapfile")
+
+    <script type="text/javascript">
+        var prodID = '@ViewBag.Id';
+        var limitSize = @ViewBag.LimitSize;
+        var isMerchant = Boolean(@ViewBag.IsMerchant);
+        var AutoResizeImgOption = new FileInputOption();
+        var isApprove =  Boolean(@ViewBag.IsApprove);
+
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                type: 0,
+                isEnabled: true,
+                AutoResizePath:"",
+                AutoResizeImg:"",
+                AdditionalImg:"",
+                AdditionalImgPath:"",
+                OriginalImg: "",
+                OneByOneImgPath:"",
+                //OriginalImgPath:"",
+                Images:[{
+                    Sku:"",
+                    ImageType:"",
+                    Image:"",
+                    ImagePath:"",
+                    Size:0
+                }],
+                OnebyOneImg:{
+                    ProductId:"",
+                    SmallImage:"",
+                    MiddleImage:"",
+                    BigImage:"",
+                    LargeImage:"",
+                },
+                Imgs: [],
+                AdditionalImgs:[],
+                OriginalImgs:[],
+                ProductAttributes: [],
+                ImageItems:[]
+
+            },
+            methods: {
+                TabClick:function(type)
+                {
+                    vm.type=type;
+                    //if(type==0 )
+                    //{
+                    //    vm.GetTableProductImg();
+                    //}
+                    if(type==1)
+                    {
+                        vm.GetAdditionalImg();
+                    }
+                    else if (type==2)
+                    {
+                        vm.getOriginalImg();
+                    }
+                },
+                ShowImage:function(path)
+                {
+                    OpenDialog("Image", 850, 850, path, null, function () {
+
+                    });
+                },
+                GetAdditionalImg:function(){
+                    var data = new Object();
+                    data.prodID = prodID;
+                    WS.AjaxP("get","/adminapi/ProdImage/GetAdditionalImg",data,function(response){
+                        vm.AdditionalImgs=response;
+                    },function(){});
+                },
+                getOriginalImg:function(){
+                    var data = new Object();
+                    data.prodID = prodID;
+                    WS.AjaxP("get","/adminapi/ProdImage/GetSkuProductImageList",data,function(response){
+                        vm.OriginalImgs=response;
+                    },function(){});
+                },
+                uploadProductImage:function()
+                {
+                    var data = new Object();
+
+                    data.prodID = prodID;
+                    data.attr1 = $("#cboAttribute0").length == 0 ? WS.GuidEmpty : $("#cboAttribute0").val() == '-1' ? WS.GuidEmpty: $("#cboAttribute0").val();
+                    data.attr2 = $("#cboAttribute1").length == 0 ? WS.GuidEmpty : $("#cboAttribute1").val() == '-1' ? WS.GuidEmpty : $("#cboAttribute1").val();
+                    data.attr3 = $("#cboAttribute2").length == 0 ? WS.GuidEmpty : $("#cboAttribute2").val() == '-1' ? WS.GuidEmpty : $("#cboAttribute2").val();
+
+
+                    data.path = vm.OriginalImg;
+                    if (data.path == "") {
+                        return;
+                    }
+                    WS.AjaxP("get","/adminapi/ProdImage/SaveProductSkuImage",data,function(response){
+                        if(response.Succeeded==true)
+                        {
+                            $("#ProductImage").fileinput("clear");
+                            vm.getOriginalImg();
+
+                        }
+                        else
+                        {
+                            showWarn(response.Message);
+                        }
+                    },function(){});
+                },
+                deleteImage:function(id)
+                {
+                    var data = new Object();
+                    data.imgID=id;
+                    WS.AjaxP("get","/adminapi/ProdImage/DeleteImage",data,function(response){
+                        if(response.Succeeded==true)
+                        {
+                            vm.getOriginalImg();
+                        }
+                        else
+                        {
+                            showWarn("@BDMall.Resources.Message.DeleteFailed");
+                        }
+                    },function(){});
+                },
+                deleteAdditionalImage:function(id)
+                {
+                    var data = new Object();
+                    data.imgID=id;
+                    WS.AjaxP("get","/adminapi/ProdImage/DeleteImage",data,function(response){
+                        if(response.Succeeded==true)
+                        {
+                            vm.GetAdditionalImg();
+                        }
+                        else
+                        {
+                            showWarn("@BDMall.Resources.Message.DeleteFailed");
+                        }
+                    },function(){});
+                },
+                getProductAttributes:function(){
+                    var data = new Object();
+                    data.prodId = prodID;
+                    WS.AjaxP("get", "/adminapi/ProdAttribute/GetInvAttributeByProductWithMap",data,function(response)
+                    {
+                        vm.ProductAttributes = response;
+                        vm.$nextTick(function () {
+                            vm.ProductAttributes.forEach(function (val, index) {
+                                InitBootstrapSelectByData("cboAttribute" + index, val.SubItems, 1, false, true, function () {
+                                });
+                                InitBootstrapSelectByData("cboAdiAttribute" + index, val.SubItems, 1, false, true, function () {
+                                });
+                            });
+
+
+                        });
+                    },function(){});
+                },
+                setDefaultImage: function (imageID) {
+                    var data = new Object();
+                    data.prodId = prodID;
+                    data.imageID = imageID;
+                    WS.AjaxP("get", "/adminapi/ProdImage/SetDefaultImage", data, function (response) {
+                        if (response.Succeeded == true) {
+                            vm.getOriginalImg();
+                        } else {
+                            showWarn(response.Message);
+                        }
+                    }, function () { });
+                },
+                showImageDetails: function (image) {
+                    //alert(vm.isEnabled);
+                    vm.ImageItems = image.Items;
+                    showModal();
+
+                },
+                uploadImageOneByOne: function (imageItem) {
+                    if (vm.OneByOneImgPath == "") {
+                        showWarn("@BDMall.Resources.Message.PleaseSelectImage");
+                    }
+                    else {
+                        imageItem.Path = vm.OneByOneImgPath;
+
+                        WS.AjaxP("get", "/adminapi/ProdImage/UploadImgOneByOne", { prodID: prodID, imageID: imageItem.Id, path: imageItem.Path }, function (response) {
+                            if (response.Succeeded == true) {
+                                vm.GetAdditionalImg();
+                            } else {
+                                showWarn(response.Message);
+                            }
+                        }, function () { });
+                    }
+
+                },
+                subClose: function () {
+                    vm.ImageItems = [];
+                    vm.OneByOneImgPath = "";
+                    $('#app').unblock();
+                    $("#imgOneByOne").fileinput("clear");
+                    vm.getOriginalImg();
+                }
+            },
+            mounted: function()
+            {
+
+            }
+        });
+
+
+        function showModal() {
+            $("#app").block({
+                message: $('#myModal'),
+                css: {
+                    'width': '1000px',
+                    'border': '1px',
+                    'border-radius': '6px',
+                    'box-shadow': '0 5px 15px rgba(0,0,0,.5)',
+                    'cursor': 'default'
+                },
+                overlayCSS: { backgroundColor: '#000', opacity: '0.6', cursor: 'defalut' }
+            });
+        }
+
+        //產品附加圖片上傳圖片初始化
+        var mutiFileOptions = new FileInputOption();
+        mutiFileOptions.CtrlName = "AdditionalImg";
+        mutiFileOptions.UploadUrl = "/adminapi/FileUpload/UploadFile";
+        mutiFileOptions.MaxFile = 5;
+        mutiFileOptions.FileSize = limitSize;
+        mutiFileOptions.SuccessCallback=function(data)
+        {
+            var obj = new Object();
+            obj.prodID = prodID;
+            obj.AttrValue1 = $("#cboAdiAttribute0").length == 0 ? WS.GuidEmpty : $("#cboAdiAttribute0").val() == '-1' ? WS.GuidEmpty : $("#cboAdiAttribute0").val();
+            obj.AttrValue2 = $("#cboAdiAttribute1").length == 0 ? WS.GuidEmpty : $("#cboAdiAttribute1").val() == '-1' ? WS.GuidEmpty : $("#cboAdiAttribute1").val();
+            obj.AttrValue3 = $("#cboAdiAttribute2").length == 0 ? WS.GuidEmpty : $("#cboAdiAttribute2").val() == '-1' ? WS.GuidEmpty : $("#cboAdiAttribute2").val();
+            obj.UploadList = data.response.ReturnValue;
+            WS.AjaxP("post", "/adminapi/ProdImage/SaveProductAdditionalImg", obj, function (response) {
+                if(response.Succeeded==true)
+                {
+                    vm.GetAdditionalImg();
+                }
+                else
+                {
+                    showWarn('@BDMall.Resources.Message.UploadFail');
+                }
+                $("#AdditionalImg").fileinput("clear");
+            },function(){});
+        };
+        mutiFileOptions.ErrorCallback=function()
+        {
+            vm.GetAdditionalImg();
+        };
+
+        FileInputInit(mutiFileOptions);
+
+
+        //產品屬性圖片上傳圖片初始化
+        var OriginalImgOption = new FileInputOption();
+        OriginalImgOption.CtrlName="ProductImage";
+        OriginalImgOption.UploadUrl ="/adminapi/FileUpload/UploadFile";
+        OriginalImgOption.MaxFile = 1;
+        OriginalImgOption.FileSize = limitSize;
+        OriginalImgOption.ShowUpload = true;
+        OriginalImgOption.SuccessCallback=function(data)
+        {
+            vm.OriginalImg = data.response.ReturnValue[0].Name;
+            vm.uploadProductImage();
+            //vm.OriginalImgPath = data.response.Path;
+        };
+        OriginalImgOption.ErrorCallback=function(data)
+        {
+            vm.OriginalImg="";
+            //vm.OriginalImgPath = "";
+        };
+        FileInputInit(OriginalImgOption);
+
+
+        //產品屬性圖片OneByOne上傳圖片初始化
+        var oneByOneImgOption = new FileInputOption();
+        oneByOneImgOption.CtrlName = "imgOneByOne";
+        oneByOneImgOption.UploadUrl = "/adminapi/FileUpload/UploadFile";
+        oneByOneImgOption.MaxFile = 1;
+        oneByOneImgOption.FileSize = limitSize;
+        oneByOneImgOption.SuccessCallback = function (data) {
+            vm.OneByOneImgPath = data.response.ReturnValue[0].Path;
+            //vm.OriginalImgPath = data.response.Path;
+        };
+        oneByOneImgOption.ErrorCallback = function (data) {
+            vm.OneByOneImgPath = "";
+            //vm.OriginalImgPath = "";
+        };
+        FileInputInit(oneByOneImgOption);
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+
+
+        $(document).ready(function () {
+
+            if (isMerchant == false) {
+                vm.isEnabled = false;
+            }
+            else {
+                vm.isEnabled = true;
+            }
+            vm.getOriginalImg();
+            vm.getProductAttributes();
+
+        });
+
+    </script>
+}
+

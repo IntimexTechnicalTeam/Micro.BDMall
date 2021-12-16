@@ -170,6 +170,9 @@ var app = new Vue({
 
             var tabId = self.frameElement.parentElement.id;
             var parentInfo = obj.Id + "|" + obj.Level;
+
+            console.log(parentInfo);
+
             miniTab.openNewTabByIframe({
                 href: "/Product/EditCatalog/" + WS.GuidEmpty + "/" + parentInfo,
                 title: 'Add Catalog',

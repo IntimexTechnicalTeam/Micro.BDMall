@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Web.Framework;
 
 namespace BDMall.BLL
 {
@@ -96,6 +97,49 @@ namespace BDMall.BLL
 
             return dic;
         }
+
+        public PageData<ProductSummary> SearchBackEndProductSummary(ProdSearchCond cond)
+        {
+            PageData<ProductSummary> result = new PageData<ProductSummary>();
+            try
+            {
+                //result = _productRepository.Search(cond);
+                //var currency = CurrencyBLL.GetDefaultCurrency();
+                //foreach (var item in result.Data)
+                //{
+                //    item.Imgs = GetProductImages(item.ProductId);
+                //    item.IconRUrl = PathUtil.GetProductIconUrl(item.IconRType, CurrentUser.ComeFrom, CurrentUser.Language);
+                //    //item.Currency = currency;
+                //}
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return result;
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
         /// <summary>
@@ -305,5 +349,7 @@ namespace BDMall.BLL
              : (diffday / 7)) + 1 + (dayInMonth > firstWeekEndDay ? 1 : 0);
             return WeekNumInMonth;
         }
+
+        
     }
 }

@@ -12,17 +12,14 @@ namespace BDMall.Repository
     /// <summary>
     /// 这里只做数据同步，一切与Redis的数据为准，MQ从Redis中获取数据，回写数据库
     /// </summary>
-    public class DealProductQtyRepository : IDealProductQtyRepository
+    public class DealProductQtyRepository :  PublicBaseRepository ,IDealProductQtyRepository
     {
-        public IBaseRepository baseRepository;
-
-        public IServiceProvider service;
-
-        public DealProductQtyRepository(IServiceProvider services)
+       
+        public DealProductQtyRepository(IServiceProvider service) : base(service)
         {
-            this.service = services;
-            baseRepository = service.GetService(typeof(IBaseRepository)) as IBaseRepository;
+            
         }
+
 
         /// <summary>
         /// 采购入库成功，更新库存

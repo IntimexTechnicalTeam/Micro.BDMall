@@ -9,6 +9,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\BDMall.Resources\BDMall.Resources.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\Intimex.Common\Intimex.Common.csproj" />
     <ProjectReference Include="..\..\Infrastructure\Web.Jwt\Web.Jwt.csproj" />
     <ProjectReference Include="..\..\Infrastructure\Web.MediatR\Web.MediatR.csproj" />
     <ProjectReference Include="..\..\Infrastructure\Web.MQ\Web.MQ.csproj" />

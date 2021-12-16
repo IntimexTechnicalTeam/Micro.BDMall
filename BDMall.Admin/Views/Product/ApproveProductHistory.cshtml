@@ -1,0 +1,72 @@
+﻿
+@{
+    ViewBag.Title = "ApproveProductHistory";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="app" v-cloak>
+    <table class="table">
+        <tr>
+            <td>@BDMall.Resources.Label.ApproveStatus</td>
+            <td>@BDMall.Resources.Label.Operator</td>
+            <td>@BDMall.Resources.Label.OperateDate</td>
+            <td>@BDMall.Resources.Label.Remark</td>
+        </tr>
+        <tr v-for="item in  approveHistory">
+            <td>
+                {{item.ApproveStatus}}
+            </td>
+            <td>
+                {{item.Operator}}
+            </td>
+            <td>
+                {{item.OperateDateString}}
+            </td>
+            <td>
+                {{item.Remark}}
+            </td>
+        </tr>
+
+    </table>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        var id ='@ViewBag.Id';
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                approveHistory: [
+                    {
+                        ApproveStatus: "",
+                        Operator: "",
+                        OperateDateString: "",
+                        Remark: ""
+                    }]
+            },
+            methods: {
+                getApproveHistory: function () {
+                    WS.Get("/adminapi/Product/GetApproveHistory", { id: id }, function (response) {
+                        vm.approveHistory = response;
+                    }, function () { });
+                },
+            }
+        })
+
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+
+        $(document).ready(function () {
+            vm.getApproveHistory();
+        });
+    </script>
+}
+
+
+
+
