@@ -102,12 +102,12 @@ namespace BDMall.Admin
                 endpoints.MapControllerRoute(
                     name: "default",
                     //pattern: "{controller=Home}/{action=Index}/{id?}");
-                    pattern: "{controller=Account}/{action=Login}/{id?}");  //让MVC Controller支持无参或一个参数以上
+                    pattern: "{controller=Account}/{action=Login}/{id?}/{para2?}/{para3?}");  //让MVC Controller支持无参或一个参数以上
 
                 endpoints.MapAreaControllerRoute(
                          name: "areas",
                          areaName: "AdminApi",
-                         pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");      //让Api Controller支持无参或一个参数以上
+                         pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}/{para2?}");      //让Api Controller支持无参或一个参数以上
 
             });
         }

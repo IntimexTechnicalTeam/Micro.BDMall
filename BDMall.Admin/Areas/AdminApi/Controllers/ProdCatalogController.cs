@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Web.Framework;
 using Web.Mvc;
@@ -65,11 +66,61 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
             return result;
         }
 
+        [HttpGet]
 
+        public SystemResult Delete(Guid id)
+        {
+            SystemResult result = new SystemResult();
+            productCatalogBLL.DeleteCatalog(id);
+            result.Succeeded = true;
+            return result;
+        }
 
+        /// <summary>
+        /// 更新各個catalog的順序
+        /// </summary>
+        /// <param name="tree"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<SystemResult> UpdateSeq(List<ProductCatalogEditModel> tree)
+        {
+            SystemResult result = new SystemResult();
+            var list = TreeToList(tree);
+            list = list.Where(p => p.IsChange == true).ToList();
+            await productCatalogBLL.UpdateCatalogSeqAsync(list);
+            result.Succeeded = true;
+            return result;
+        }
 
+        [NonAction]
+        private List<ProductCatalogEditModel> TreeToList(List<ProductCatalogEditModel> tree)
+        {
+            List<ProductCatalogEditModel> list = new List<ProductCatalogEditModel>();
 
+            list = GenList(tree);
 
+            return list;
+        }
+
+        [NonAction]
+        private List<ProductCatalogEditModel> GenList(List<ProductCatalogEditModel> tree)
+        {
+            List<ProductCatalogEditModel> list = new List<ProductCatalogEditModel>();
+            foreach (ProductCatalogEditModel item in tree)
+            {
+                //if (item.IsChange == true)
+                //{
+                list.Add(item);
+                if (item.Children != null)
+                {
+                    list.AddRange(GenList(item.Children));
+                }
+                //}
+            }
+
+            return list;
+
+        }
 
     }
 }

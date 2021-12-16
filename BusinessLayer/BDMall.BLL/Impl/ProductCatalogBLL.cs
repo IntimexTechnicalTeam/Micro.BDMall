@@ -65,7 +65,40 @@ namespace BDMall.BLL
             return result;
         }
 
+        public void DeleteCatalog(Guid id)
+        {          
+            var flag = baseRepository.Any<Product>(x=>x.CatalogId == id && x.IsActive && !x.IsDeleted);
+            if (flag)
+                throw new ServiceException(Resources.Message.CatalogHasUse);
 
+            var catalog = baseRepository.GetModelById<ProductCatalog>(id);
+            if (catalog != null)
+            {
+                catalog.IsDeleted = true;
+
+                baseRepository.Update(catalog);
+
+                var catalogParents = baseRepository.GetList<ProductCatalogParent>(x => x.CatalogId == id);
+                baseRepository.Delete(catalogParents);
+            }
+        }
+
+        public async Task UpdateCatalogSeqAsync(List<ProductCatalogEditModel> list)
+        {
+            await UpdateCatalogSeq(list);
+            //更新缓存，调用PreHeatProductCatalogService.SetDataToHashCache方法
+        }
+
+        private async Task UpdateCatalogSeq(List<ProductCatalogEditModel> list)
+        {         
+            var catalogList =await baseRepository.GetListAsync<ProductCatalog>(x => list.Select(s => s.Id).Contains(x.Id));
+            foreach (var item in catalogList)
+            {
+                item.Seq = list.FirstOrDefault(x => x.Id == item.Id).Seq;
+                item.UpdateDate = DateTime.Now;
+            }
+            await baseRepository.UpdateAsync(catalogList);
+        }
 
         private void GenProductCatalogEditModel(ProductCatalogEditModel item)
         {

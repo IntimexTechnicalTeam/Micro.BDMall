@@ -15,5 +15,9 @@ namespace BDMall.BLL
         List<ProductCatalogEditModel> GetCatalogTree(bool isActive);
 
         ProductCatalogEditModel GetCatalog(Guid catId);
+
+        void DeleteCatalog(Guid id);
+
+        Task UpdateCatalogSeqAsync(List<ProductCatalogEditModel> list);
     }
 }

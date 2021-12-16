@@ -55,6 +55,15 @@ namespace Web.Mvc
                     return;
                 }
 
+                if (ex is BLException)
+                {
+                    result.Succeeded = false;
+                    result.Message = ex.Message;
+
+                    await this.Response(context, result);
+                    return;
+                }
+
                 string error = "\r\n 异常类型：" + ex.GetType().FullName + "\r\n 异常源：" + ex.Source + "\r\n 异常位置=" + ex.TargetSite + " \r\n 异常信息=" + ex.Message + " \r\n 异常堆栈：" + ex.StackTrace;
                 this._logger.LogError(error);
 

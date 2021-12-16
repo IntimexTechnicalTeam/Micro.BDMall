@@ -72,5 +72,7 @@ namespace BDMall.Repository
         public DbSet<ProductCatalog> ProductCatalogs { get; set; }
 
         public DbSet<ProductCatalogAttr> ProductCatalogAttrs { get; set; }
+
+        public DbSet<ProductCatalogParent> ProductCatalogParents { get; set; }
     }
 }
