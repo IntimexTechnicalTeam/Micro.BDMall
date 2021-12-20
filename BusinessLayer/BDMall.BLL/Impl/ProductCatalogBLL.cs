@@ -1,9 +1,11 @@
 ﻿using BDMall.Domain;
+using BDMall.Enums;
 using BDMall.Model;
 using BDMall.Repository;
 using Intimex.Common;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,14 +16,16 @@ namespace BDMall.BLL
     public class ProductCatalogBLL : BaseBLL, IProductCatalogBLL
     {
         IProductCatalogRepository productCatalogRepository;
+        ITranslationRepository translationRepository;
 
         public ProductCatalogBLL(IServiceProvider services) : base(services)
         {
             productCatalogRepository = Services.Resolve<IProductCatalogRepository>();
+            translationRepository = Services.Resolve<ITranslationRepository>();
         }
 
         public List<ProductCatalogSummaryView> GetAllCatalog()
-        {           
+        {
             var catalogs = productCatalogRepository.GetAllActiveCatalog();
             var result = AutoMapperExt.MapTo<List<ProductCatalogSummaryView>>(catalogs);
             return result;
@@ -32,9 +36,9 @@ namespace BDMall.BLL
             List<ProductCatalogEditModel> result = new List<ProductCatalogEditModel>();
 
             var catalogs = isActive ? productCatalogRepository.GetAllActiveCatalog() : productCatalogRepository.GetAllCatalog();
-          
+
             var catalogEditModels = AutoMapperExt.MapTo<List<ProductCatalogEditModel>>(catalogs);
-           
+
             foreach (var item in catalogEditModels)
             {
                 GenProductCatalogEditModel(item);
@@ -58,7 +62,7 @@ namespace BDMall.BLL
 
             var catalog = productCatalogRepository.GetById(catId);
             if (catalog != null)
-            {              
+            {
                 result = AutoMapperExt.MapTo<ProductCatalogEditModel>(catalog);
                 GenProductCatalogEditModel(result);
             }
@@ -66,8 +70,8 @@ namespace BDMall.BLL
         }
 
         public void DeleteCatalog(Guid id)
-        {          
-            var flag = baseRepository.Any<Product>(x=>x.CatalogId == id && x.IsActive && !x.IsDeleted);
+        {
+            var flag = baseRepository.Any<Product>(x => x.CatalogId == id && x.IsActive && !x.IsDeleted);
             if (flag)
                 throw new ServiceException(Resources.Message.CatalogHasUse);
 
@@ -89,26 +93,227 @@ namespace BDMall.BLL
             //更新缓存，调用PreHeatProductCatalogService.SetDataToHashCache方法
         }
 
+        /// <summary>
+        /// 保存catalog
+        /// </summary>
+        /// <param name="productCatalog"></param>
+        public async Task<SystemResult> SaveCatalog(ProductCatalogEditModel productCatalog)
+        {
+            SystemResult result = new SystemResult();
+            var catalog = GenProductCatalog(productCatalog);
+
+            if (productCatalog.Action == ActionTypeEnum.Add)
+            {
+                if (baseRepository.Any<ProductCatalog>(x => x.Code == productCatalog.Code && x.IsActive && !x.IsDeleted))
+                    throw new BLException(Resources.Message.CatalogCodeIsExist);
+
+                result = InsertCatalog(catalog);
+            }
+            else        
+                result = UpdateCatalog(catalog);
+            
+            
+            return result;
+        }
+
+        public async Task<SystemResult> DisActiveCatalogAsync(Guid catId)
+        {
+            var sysRslt = DisActiveCatalog(catId);
+            return sysRslt;
+        }
+
+        public async Task<SystemResult> ActiveCatalogAsync(Guid catId)
+        {
+            var sysRslt = ActiveCatalog(catId);         
+            return sysRslt;
+        }
+
         private async Task UpdateCatalogSeq(List<ProductCatalogEditModel> list)
-        {         
-            var catalogList =await baseRepository.GetListAsync<ProductCatalog>(x => list.Select(s => s.Id).Contains(x.Id));
-            foreach (var item in catalogList)
+        {
+            var catalogList = await baseRepository.GetListAsync<ProductCatalog>(x => list.Select(s => s.Id).Contains(x.Id));
+            var query = catalogList.ToList();
+            foreach (var item in query)
             {
                 item.Seq = list.FirstOrDefault(x => x.Id == item.Id).Seq;
                 item.UpdateDate = DateTime.Now;
             }
-            await baseRepository.UpdateAsync(catalogList);
+
+            if (query.Any())
+                await baseRepository.UpdateAsync(query);
+        }
+
+        private SystemResult InsertCatalog(Tuple<ProductCatalogDto, List<ProductCatalogAttr>> model)
+        {
+            SystemResult result = new SystemResult();
+            var productCatalog = model.Item1;
+            var catalogAttrs = model.Item2;
+
+            //生成catalog目录名称的多语言
+            var catNameTransId = Guid.NewGuid();
+            var cataLogTrans = translationRepository.GenTranslations(productCatalog.Descs, TranslationType.Catalog, catNameTransId);
+
+            //var catalogId = Guid.NewGuid();
+            //if (productCatalog.Id == Guid.Empty) productCatalog.Id = Guid.NewGuid();
+            //productCatalog.Id = catalogId;
+            productCatalog.NameTransId = catNameTransId;
+            productCatalog.Level = productCatalog.ParentId == Guid.Empty ? 1 : productCatalog.Level;
+            productCatalog.CreateDate = DateTime.Now;
+            productCatalog.CreateBy = Guid.Parse(CurrentUser.UserId);
+            productCatalog.IsActive = true;
+            var Catalog = AutoMapperExt.MapTo<ProductCatalog>(productCatalog);
+           
+
+            //生成catalog的父级
+            List<ProductCatalogParent> catalogUrls = new List<ProductCatalogParent>();
+            if (productCatalog.ParentId != Guid.Empty)//如果父目录存在，则继承父目录的url
+            {
+                var parentCatalogUrls = baseRepository.GetList<ProductCatalogParent>(x => x.CatalogId == productCatalog.ParentId);
+                if (parentCatalogUrls != null && parentCatalogUrls.Any())
+                {
+                    foreach (var item in parentCatalogUrls)//继承父目录的url
+                    {
+                        ProductCatalogParent url = new ProductCatalogParent();
+
+                        url.Id = Guid.NewGuid();
+                        url.CatalogId = productCatalog.Id;
+                        url.ParentCatalogId = item.ParentCatalogId;
+                        url.Level = item.Level;
+                        catalogUrls.Add(url);
+                    }
+                    ProductCatalogParent selfUrl = new ProductCatalogParent();
+                    selfUrl.Id = Guid.NewGuid();
+                    selfUrl.CatalogId = productCatalog.Id;
+                    selfUrl.ParentCatalogId = productCatalog.ParentId;
+                    selfUrl.Level = productCatalog.Level;
+                    catalogUrls.Add(selfUrl);
+                }
+            }
+            else
+            {
+                ProductCatalogParent url = new ProductCatalogParent();
+                url.Id = Guid.NewGuid();
+                url.CatalogId = productCatalog.Id;
+                url.ParentCatalogId = Guid.Empty;
+                url.Level = 1;
+                catalogUrls.Add(url);
+            }
+
+            //生成catalog的属性
+            //if (CatalogAttrs.Any())
+            //{
+            //    //foreach (var item in CatalogAttrs)
+            //    //{
+            //    //    item.CatalogId = item.CatalogId == Guid.Empty ? catalogId : item.CatalogId;
+            //    //}
+            //}
+
+            using var tran = baseRepository.CreateTransation();
+            baseRepository.Insert(cataLogTrans);
+            baseRepository.Insert(Catalog);
+            baseRepository.Insert(catalogUrls);
+            baseRepository.Insert(catalogAttrs);
+            tran.Commit();
+
+            result.Succeeded = true;
+            return result;
+        }
+
+        private SystemResult UpdateCatalog(Tuple<ProductCatalogDto, List<ProductCatalogAttr>> model)
+        {
+            SystemResult result = new SystemResult();
+            var productCatalog = model.Item1;
+            var CatalogAttrs = model.Item2;
+            var catalog = baseRepository.GetModelById<ProductCatalog>(productCatalog.Id);
+            if (catalog == null)
+                throw new BLException("找不到ProductCatalog");
+
+            CheckCatalogRemoveByUsed(CatalogAttrs, productCatalog.Id);
+            var dbCatalog = AutoMapperExt.MapTo<ProductCatalog>(catalog);
+            dbCatalog.UpdateDate = DateTime.Now;
+            dbCatalog.BigIcon = productCatalog.BigIcon;
+            dbCatalog.SmallIcon = productCatalog.SmallIcon;
+            dbCatalog.MSmallIcon = productCatalog.MSmallIcon;
+            dbCatalog.OriginalIcon = productCatalog.OriginalIcon;
+            dbCatalog.MBigIcon = productCatalog.MBigIcon;
+            dbCatalog.MOriginalIcon = productCatalog.MOriginalIcon;
+            dbCatalog.Code = productCatalog.Code;
+
+            //处理Catalog的属性
+            var dbCatalogAttrLst = baseRepository.GetList<ProductCatalogAttr>(x => x.CatalogId == productCatalog.Id).ToList();
+            var updateAttrLst = new List<ProductCatalogAttr>();
+            var insertAttrLst = new List<ProductCatalogAttr>();
+            if (CatalogAttrs != null && CatalogAttrs.Any())
+            {
+                foreach (var item in dbCatalogAttrLst)//删除catalog的属性
+                {
+                    var existAttr = CatalogAttrs.Any(p => p.AttrId == item.AttrId);
+                    if (!existAttr)
+                    {
+                        item.IsDeleted = true; item.UpdateDate = DateTime.Now;
+                        updateAttrLst.Add(item);
+                    }
+                }
+
+                foreach (var item in CatalogAttrs)
+                {
+                    var existAttr = dbCatalogAttrLst.FirstOrDefault(p => p.AttrId == item.AttrId);
+
+                    if (existAttr != null)
+                    {
+                        if (existAttr.IsDeleted == true)
+                        {
+                            existAttr.IsDeleted = false;
+                            item.UpdateDate = DateTime.Now;
+                            updateAttrLst.Add(item);
+                        }
+                    }
+                    else
+                    {                      
+                        item.IsDeleted = false;
+                        insertAttrLst.Add(item);
+                    }
+                }
+
+            }
+            else
+            {
+                // 表示界面没有选择属性,数据库的catalog对应的属性全部删除
+                foreach (var item in dbCatalogAttrLst)
+                {
+                    item.IsDeleted = true;
+                }
+            }
+
+            //处理Catalog的多语言
+            var catalogTrans = translationRepository.GetTranslation(dbCatalog.NameTransId);
+            foreach (var item in catalogTrans)
+            {
+                item.Value = productCatalog.Descs.FirstOrDefault(x => x.Lang.Code == item.Lang.ToString())?.Desc ?? "";
+                item.UpdateDate = DateTime.Now;
+            }
+
+            using var tran = baseRepository.CreateTransation();
+            baseRepository.Update(catalogTrans);
+            baseRepository.Update(dbCatalog);
+            baseRepository.Update(dbCatalogAttrLst);
+            baseRepository.Update(updateAttrLst);
+            baseRepository.Insert(insertAttrLst);
+            baseRepository.Insert(ReMappingProductAttrs(dbCatalog));
+
+            tran.Commit();
+
+            return result;
         }
 
         private void GenProductCatalogEditModel(ProductCatalogEditModel item)
         {
             var fileServer = string.Empty;
-            
+
             item.Code = item?.Code ?? "";
             item.ParentId = item?.ParentId ?? Guid.Empty;
             item.NameTransId = item?.NameTransId ?? Guid.Empty;
-            item.InvAttributes = baseRepository.GetList<ProductCatalogAttr>(p => p.IsInvAttribute == true && p.IsDeleted == false).Select(d => d.AttrId).ToList();
-            item.NotInvAttributes = baseRepository.GetList<ProductCatalogAttr>(p => p.IsInvAttribute == false && p.IsDeleted == false).Select(d => d.AttrId).ToList();
+            item.InvAttributes = baseRepository.GetList<ProductCatalogAttr>(p => p.IsInvAttribute && !p.IsDeleted && p.CatalogId == item.Id).Select(d => d.AttrId).ToList();
+            item.NotInvAttributes = baseRepository.GetList<ProductCatalogAttr>(p => !p.IsInvAttribute && !p.IsDeleted && p.CatalogId == item.Id).Select(d => d.AttrId).ToList();
             item.Children = new List<ProductCatalogEditModel>();
             item.Collapse = false;
             item.IsChange = false;
@@ -126,6 +331,178 @@ namespace BDMall.BLL
             item.Desc = item?.Desc ?? "";
             item.IsMappingProduct = baseRepository.Any<Product>(x => x.CatalogId == item.Id);
             item.IsActive = item?.IsActive ?? false;
+        }
+
+        /// <summary>
+        /// 检查是否删除了已经使用的属性
+        /// </summary>
+        /// <param name="viewCatalogs"></param>
+        /// <param name="catalogId"></param>
+        /// <exception cref="BLException"></exception>
+        private void CheckCatalogRemoveByUsed(List<ProductCatalogAttr> viewCatalogs, Guid catalogId)
+        {
+            if (viewCatalogs !=null && viewCatalogs.Any())
+            {
+                var attrInfos = (from a in baseRepository.GetList<ProductAttribute>()
+                                 join t in baseRepository.GetList<Translation>() on new { a1 = a.DescTransId, a2 = CurrentUser.Lang } equals new { a1 = t.TransId, a2 = t.Lang } into tc
+                                 from tt in tc.DefaultIfEmpty()
+                                 select new
+                                 {
+                                     Id = a.Id,
+                                     Name = tt.Value
+                                 });
+
+                //原来catalog的配对属性列表
+                var catalogDBAttrs = baseRepository.GetList<ProductCatalogAttr>().Where(p => p.CatalogId == catalogId).Select(d => d.AttrId).ToList();
+
+                foreach (var dbAttrId in catalogDBAttrs)
+                {
+                    var isExist = viewCatalogs.Any(x=>x.AttrId == dbAttrId);
+                    if (!isExist)//如果原来存在的AttrId不在传入的清单中就判断该值是否已经被使用
+                    {                      
+                        var productUsedAttr = baseRepository.Any<ProductAttr>(p => p.AttrId == dbAttrId && p.CatalogID == catalogId);
+                        //如果被使用了则不能删除了
+                        if (productUsedAttr)
+                        {
+                            var attrInfo = attrInfos.FirstOrDefault(p => p.Id == dbAttrId);
+                            throw new BLException(string.Format(Resources.Message.AttributeInUsed, (attrInfo?.Name ?? "")));
+                        }
+                    }
+                }
+            }
+        }
+
+
+        private List<ProductAttr> ReMappingProductAttrs(ProductCatalog productCatalog)
+        {
+            //当前目录的非库存属性，用于补齐已经配对了目录的产品的非库存、库存属性
+            var viewInvAttrs = baseRepository.GetList<ProductCatalogAttr>(x => x.CatalogId == productCatalog.Id && x.IsInvAttribute).OrderBy(o => o.Seq).ToList();
+            var viewNonInvAttrs = baseRepository.GetList<ProductCatalogAttr>(x => x.CatalogId == productCatalog.Id && !x.IsInvAttribute).OrderBy(o => o.Seq).ToList();
+
+            var catalogProcucts = baseRepository.GetList<Product>(x => x.CatalogId == productCatalog.Id);
+            var catalogAttrs = baseRepository.GetList<ProductAttr>().Where(p => p.CatalogID == productCatalog.Id).ToList();
+
+            List<ProductAttr> productAttrs = new List<ProductAttr>();
+            foreach (var item in catalogProcucts)
+            {
+                if (catalogAttrs.Any(c=>c.ProductId == item.Id))
+                {
+                    var productInvs = catalogAttrs.Where(p => p.ProductId ==item.Id && p.IsInv == true).ToList();
+                    var productNonInvs = catalogAttrs.Where(p => p.ProductId == item.Id && p.IsInv == false).ToList();
+
+                    var invStartIndex = productInvs.Count();
+                    foreach (var newAttr in viewInvAttrs)//如果有新的InvAttr，则分配入产品
+                    {
+                        var isNew = true;
+                        foreach (var prodAttr in productInvs)
+                        {
+                            if (prodAttr.AttrId == newAttr.AttrId)
+                            {
+                                isNew = false;
+                            }
+                        }
+                        if (isNew)
+                        {
+                            invStartIndex += 1;
+                            productAttrs.Add(new ProductAttr
+                            {
+                                Id = Guid.NewGuid(),
+                                AttrId = newAttr.AttrId,
+                                CatalogID = productCatalog.Id,
+                                ProductId = item.Id,
+                                IsInv = newAttr.IsInvAttribute,
+                                Seq = invStartIndex
+                            });
+                        }
+                    }
+                    var nonInvStartIndex = productNonInvs.Count();
+                    foreach (var newAttr in viewNonInvAttrs)//如果有新的NonInvAttr，则分配入产品
+                    {
+                        var isNew = true;
+                        foreach (var prodAttr in productNonInvs)
+                        {
+                            if (prodAttr.AttrId == newAttr.AttrId)
+                            {
+                                isNew = false;
+                            }
+                        }
+                        if (isNew)
+                        {
+                            nonInvStartIndex += 1;
+                            productAttrs.Add(new ProductAttr
+                            {
+                                Id = Guid.NewGuid(),
+                                AttrId = newAttr.AttrId,
+                                CatalogID = productCatalog.Id,
+                                ProductId = item.Id,
+                                IsInv = newAttr.IsInvAttribute,
+                                Seq = nonInvStartIndex
+                            });
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var invAttr in viewInvAttrs)
+                    {
+                        productAttrs.Add(new ProductAttr
+                        {
+                            Id = Guid.NewGuid(),
+                            AttrId = invAttr.AttrId,
+                            CatalogID = productCatalog.Id,
+                            ProductId = item.Id,
+                            IsInv = invAttr.IsInvAttribute,
+                            Seq = invAttr.Seq
+                        });
+                    }
+                    foreach (var nonInvAttr in viewNonInvAttrs)
+                    {
+                        productAttrs.Add(new ProductAttr
+                        {
+                            Id = Guid.NewGuid(),
+                            AttrId = nonInvAttr.AttrId,
+                            CatalogID = productCatalog.Id,
+                            ProductId = item.Id,
+                            IsInv = nonInvAttr.IsInvAttribute,
+                            Seq = nonInvAttr.Seq
+                        });
+                    }
+                }
+            }
+            return productAttrs;
+        }
+
+        private Tuple<ProductCatalogDto, List<ProductCatalogAttr>> GenProductCatalog(ProductCatalogEditModel catalog)
+        {          
+            var productCatalog = new ProductCatalogDto();
+            productCatalog.Id = catalog.Id;
+            productCatalog.Code = catalog.Code;
+            productCatalog.ParentId = catalog.ParentId;
+            productCatalog.NameTransId = catalog.NameTransId;
+            productCatalog.Level = catalog.Level;
+            productCatalog.Seq = 0;
+            productCatalog.SmallIcon = catalog.SmallIcon;
+            productCatalog.BigIcon = catalog.BigIcon;
+            productCatalog.OriginalIcon = catalog.OriginalIcon;
+            productCatalog.MSmallIcon = catalog.MSmallIcon;
+            productCatalog.MBigIcon = catalog.BigIcon;
+            productCatalog.MOriginalIcon = catalog.MOriginalIcon;
+            productCatalog.Desc = catalog.Desc;
+            productCatalog.Descs = catalog.Descs;
+
+            var catalogAttrList = new List<ProductCatalogAttr>();
+            foreach (var item in catalog.InvAttributes)
+            {
+                catalogAttrList.Add(new ProductCatalogAttr {Id = Guid.NewGuid(), AttrId = item,CatalogId = catalog.Id, IsInvAttribute = true});
+            }
+
+            foreach (var item in catalog.NotInvAttributes)
+            {
+                catalogAttrList.Add(new ProductCatalogAttr { Id = Guid.NewGuid(), AttrId = item, CatalogId = catalog.Id, IsInvAttribute = false });
+            }
+
+            var result = new Tuple<ProductCatalogDto, List<ProductCatalogAttr>>( productCatalog, catalogAttrList);
+            return result;
         }
 
         private List<ProductCatalogEditModel> GenCatalogTree(List<ProductCatalogEditModel> data, List<ProductCatalogEditModel> nodes , Guid parentId)
@@ -165,6 +542,51 @@ namespace BDMall.BLL
                     node.Collapse = false;
                 }
             }
+
+            return result;
+        }
+
+        private SystemResult DisActiveCatalog(Guid catId)
+        {
+            SystemResult result = new SystemResult();
+
+          
+            var catalogs = productCatalogRepository.GetAllCatalogChilds(catId);
+            var products = productCatalogRepository.GetAllCatalogChildProducts(catId);
+
+            foreach (var catalog in catalogs)
+            {
+                catalog.IsActive = false;
+            }
+
+            foreach (var product in products)
+            {
+                product.IsActive = false;
+            }
+
+            using var tran = baseRepository.CreateTransation();
+            baseRepository.Update(products);
+            baseRepository.Update(catalogs);
+            tran.Commit();
+
+            result.Succeeded = true;
+
+            return result;
+        }
+
+        private SystemResult ActiveCatalog(Guid catId)
+        {
+            SystemResult result = new SystemResult();
+
+            var catalogs = productCatalogRepository.GetAllCatalogChilds(catId);
+
+            foreach (var catalog in catalogs)
+            {
+                catalog.IsActive = true;
+            }
+
+            baseRepository.Update(catalogs);
+            result.Succeeded = true;
 
             return result;
         }

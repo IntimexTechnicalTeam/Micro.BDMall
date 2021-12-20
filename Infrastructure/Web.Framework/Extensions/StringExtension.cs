@@ -121,5 +121,25 @@ namespace System
         {
             return string.Format(provider, format, args);
         }
+
+        /// <summary>
+        /// 强制转Guid为小写String 
+        /// </summary>
+        /// <param name="guid"></param>
+        /// <returns></returns>
+        public static string ToLowerCase(this Guid guid)
+        {
+            return guid.ToString().ToLower();
+        }
+
+        /// <summary>
+        /// 强制转Guid为大写String 
+        /// </summary>
+        /// <param name="guid"></param>
+        /// <returns></returns>
+        public static string ToUpperCase(this Guid guid)
+        {
+            return guid.ToString().ToUpper();
+        }
     }
 }

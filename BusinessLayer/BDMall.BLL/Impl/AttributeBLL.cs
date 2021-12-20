@@ -16,18 +16,18 @@ namespace BDMall.BLL
         }
 
         public List<KeyValue> GetInveAttribute()
-        {          
+        {
             var inveAttributes = (from e in baseRepository.GetList<ProductAttribute>()
-                                  join t in baseRepository.GetList<Translation>() on new { a1 = e.DescTransId, a2 = CurrentUser.Lang } equals new { a1 = t.TransId, a2 = t.Lang } into tc
-                                  from tt in tc.DefaultIfEmpty() where e.IsActive && !e.IsDeleted && e.IsInvAttribute
-                                  select new KeyValue
-                                  {
-                                      Id = e.Id.ToString(),
-                                      Text = tt.Value
-                                  }).ToList();
+                         join t in baseRepository.GetList<Translation>() on new { a1 = e.DescTransId, a2 = CurrentUser.Lang } equals new { a1 = t.TransId, a2 = t.Lang } into tc
+                         from tt in tc.DefaultIfEmpty()
+                         where e.IsActive && !e.IsDeleted && e.IsInvAttribute
+                         select new KeyValue
+                         {
+                             Id = e.Id.ToString(),
+                             Text = tt.Value
+                         }).ToList();
 
             return inveAttributes;
-
         }
 
         public List<KeyValue> GetNonInveAttribute()

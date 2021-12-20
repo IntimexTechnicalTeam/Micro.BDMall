@@ -88,7 +88,11 @@ namespace BDMall.Repository
         {
             get
             {
+                //注意区分BaseMvcController的写法
                 string token = CurrentContext?.HttpContext?.Request.Headers["Authorization"].FirstOrDefault()?.Substring("Bearer ".Length).Trim() ?? "";
+
+                if (token.IsEmpty()) token = CurrentContext?.HttpContext.Request?.Cookies["access_token"].ToString() ?? "";
+
                 if (_currentUser == null || token.IsEmpty())
                 {
                     _currentUser = new CurrentUser();

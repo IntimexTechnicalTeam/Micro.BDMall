@@ -1,9 +1,12 @@
 ﻿using BDMall.Enums;
+using BDMall.Resources;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Web.Framework;
 
 namespace BDMall.Domain
 {
@@ -48,5 +51,21 @@ namespace BDMall.Domain
         public bool IsMappingProduct { get; set; } = false;
 
         public string Text => Desc;
+
+        public virtual void Validate()
+        {          
+            var pattern = "<\\s*(img|br|p|b|/p|a|div|iframe|button|script|i|html|form|input|frameset|body|table|br|label|link|li|style).*?>";
+            var mateches = Regex.Matches(this.Code, pattern);
+            if (mateches.Count > 0)
+                throw new InvalidInputException(Message.ExistHTMLLabel);
+
+            foreach (var item in Descs)
+            {
+                mateches = Regex.Matches(item.Desc, pattern);
+                if (mateches.Count > 0)
+                    throw new InvalidInputException(Message.ExistHTMLLabel);
+            }
+        }
+
     }
 }

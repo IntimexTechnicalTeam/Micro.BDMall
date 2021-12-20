@@ -12,7 +12,7 @@ tempStr += "                  </div>";
 tempStr += "                    <div v-if='canedit==1' style='float:right;'>";
 tempStr += "                      <div v-if='issorted==true' class='glyphicon'><input type='text' v-model='c.Seq'  style='width:40px;' v-on:change='changeFlag(c)' maxLength=4/></div>";
 tempStr += "                            <div v-bind:class ='BtnEdit' style='cursor:pointer;' v-on:click='editClick(c,$event)'></div>";
-tempStr += "                            <div v-if='!c.Children'v-bind:class ='BtnDelete' style='cursor:pointer;'  v-on:click='removeClick(c,$event)'></div>";
+tempStr += "                            <div v-if='c.Children.length==0'v-bind:class ='BtnDelete' style='cursor:pointer;'  v-on:click='removeClick(c,$event)'></div>";
 tempStr += "                            <div v-if='c.Level<limitlevel' style='cursor:pointer;' v-bind:class ='BtnAdd' v-on:click='addClick(c,$event)'></div>";
 tempStr += "                            <div v-if='c.IsActive==false' style='cursor:pointer;' v-bind:class ='BtnActive' v-on:click='activeClick(c)'></div>";
 tempStr += "                            <div v-else style='cursor:pointer;' v-bind:class ='BtnDisActive' v-on:click='disActiveClick(c)'></div>";
@@ -213,6 +213,8 @@ var app = new Vue({
         saveSorted: function () {
             var data = new Object();
             data.tree = app.treeNodes;
+
+            console.log(data.tree);
             WS.Ajax({
                 type: "post",
                 url: uri + "/UpdateSeq",

@@ -1,4 +1,5 @@
 ﻿using BDMall.Domain;
+using BDMall.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,5 +18,9 @@ namespace BDMall.Repository
         List<ProductCatalogDto> GetAllCatalog();
 
         ProductCatalogDto GetById(Guid id);
+
+        List<ProductCatalog> GetAllCatalogChilds(Guid id);
+
+        List<Product> GetAllCatalogChildProducts(Guid id);
     }
 }

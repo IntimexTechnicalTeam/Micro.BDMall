@@ -8,8 +8,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System.IO;
+using System.Linq;
 using Web.AutoFac;
 using Web.Framework;
 using Web.Mvc;
@@ -35,8 +37,14 @@ namespace BDMall.Admin
             services.AddControllersWithViews()
                 .AddNewtonsoftJson(options =>
                 {
-                    options.SerializerSettings.DateFormatString = "yyyy-MM-dd HH:mm:ss";                ///保证后端输出给前端时，字段大小写一致
+                    // 忽略循环引用
+                    options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                    // 不使用驼峰
                     options.SerializerSettings.ContractResolver = new DefaultContractResolver();
+                    // 设置时间格式
+                    options.SerializerSettings.DateFormatString = "yyyy-MM-dd HH:mm:ss";
+                    // 如字段为null值，该字段不会返回到前端
+                    // options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
                 })
                 .AddRazorRuntimeCompilation();              //可以在编译调试模式下编辑view
 
@@ -45,6 +53,8 @@ namespace BDMall.Admin
                 //options.Filters.Add(typeof(UserAuthorizeAttribute));            //全局鉴权
                 options.EnableEndpointRouting = false;
             });
+
+            this.ConfigureApiBehaviorOptions(services);
 
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                         .AddCookie(opt => { opt.LoginPath = new PathString("/Default/Index"); });
@@ -69,6 +79,8 @@ namespace BDMall.Admin
             Web.Mvc.ServiceCollectionExtensions.AddServiceProvider(services);
             Web.MediatR.ServiceCollectionExtensions.AddServices(services, typeof(Startup));
 
+            Web.Mvc.ServiceCollectionExtensions.AddFileProviderServices(services, Globals.Configuration);
+            //services.AddSingleton<IFileProvider>(new PhysicalFileProvider(Path.Combine(Configuration["UploadPath"], "ClientResources")));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -91,6 +103,16 @@ namespace BDMall.Admin
             //app.UseMiddleware<JwtAuthenticationMiddleware>();
 
             app.UseHttpsRedirection();
+
+            var staticFiles = new StaticFileOptions
+            {
+                FileProvider = new CompositeFileProvider(
+                    new PhysicalFileProvider(Path.Combine(Configuration["UploadPath"], "ClientResources"))
+                    //new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "wwwroot"))                    
+                 ),                
+                RequestPath ="/ClientResources"      //必须设置，否则上传完后相对路径下访问不了
+            };
+            app.UseStaticFiles(staticFiles);
             app.UseStaticFiles();
 
             app.UseRouting();
@@ -116,6 +138,33 @@ namespace BDMall.Admin
         {
             builder.RegisterModule<AutofacRegisterModuleFactory>();
             //builder.RegisterModule<ControllerRegisterModuleFactory>();
-        }    
+        }
+
+
+        /// <summary>
+        /// 模型验证
+        /// </summary>
+        /// <param name="services"></param>
+        void ConfigureApiBehaviorOptions(IServiceCollection services)
+        {
+            services.Configure<ApiBehaviorOptions>(options =>
+            {
+                options.InvalidModelStateResponseFactory = actionContext =>
+                {
+                    //获取验证失败的模型字段 
+                    var errors = actionContext.ModelState
+                     .Where(e => e.Value.Errors.Count > 0)
+                     .Select(e => e.Value.Errors.First().ErrorMessage)
+                     .ToList();
+                    string str = errors.FirstOrDefault();
+                    var result = new SystemResult
+                    {
+                        Succeeded = false,
+                        Message = str,
+                    };
+                    return new OkObjectResult(result);
+                };
+            });
+        }
     }
 }

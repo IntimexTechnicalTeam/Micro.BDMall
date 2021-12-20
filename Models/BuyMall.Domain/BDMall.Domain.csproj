@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\BDMall.Resources\BDMall.Resources.csproj" />
     <ProjectReference Include="..\..\Infrastructure\Web.Framework\Web.Framework.csproj" />
     <ProjectReference Include="..\BuyMall.Enums\BDMall.Enums.csproj" />
     <ProjectReference Include="..\BuyMall.Model\BDMall.Model.csproj" />
