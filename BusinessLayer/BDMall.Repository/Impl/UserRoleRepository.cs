@@ -1,4 +1,5 @@
 ﻿using BDMall.Model;
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,6 +30,17 @@ namespace BDMall.Repository
                 item.PermissionList = baseRepository.GetList<Permission>().Where(x => RolePermissions.Contains(x.Id)).ToList();
             }
             return roles;
+        }
+
+        public bool CheckMerchantAccountExist(Guid merchantId)
+        {
+            string sql = $"select 1 from Users u inner join UserRoles ur on u.Id = ur.UserId inner join Roles r on r.Id = ur.RoleId where u.MerchantId =@MerchantId";
+            List<SqlParameter> paramList = new List<SqlParameter>();
+
+            paramList.Add(new SqlParameter("@MerchantId", merchantId));
+
+            var result = baseRepository.ExecuteSqlCommand(sql, paramList);
+            return result >0 ? true : false;
         }
     }
 }

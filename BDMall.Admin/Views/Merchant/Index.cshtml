@@ -1,0 +1,521 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="divMain" v-cloak>
+    <div id="divEmptyTop" class="form-group"></div>
+    <div id="divSearchBar" class="panel-group">
+        <div class="form-horizontal">
+            <div class="form-group">
+                <label for="txtMMerchNo" class="control-label col-sm-1">@BDMall.Resources.Label.SupplierId</label>
+                <div class="col-sm-4">
+                    <input type="text" class="form-control" id="txtMMerchNo" v-model="Condition.MerchNo" aria-describedby="staMMerchNo">
+                </div>
+                <label for="txtCompanyName" class="control-label col-sm-1">@BDMall.Resources.Label.MerchantName</label>
+                <div class="col-sm-4">
+                    <input type="text" class="form-control" id="txtCompanyName" v-model="Condition.Name">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="cboApproveStatus" class="control-label col-sm-1">@BDMall.Resources.Label.ApproveStatus</label>
+                <div class="col-sm-4">
+                    <select id="cboApproveStatus" class="form-control"></select>
+                </div>
+            </div>
+            <div id="collapseOne" class="panel-collapse collapse">
+                <div class="form-group">
+                    <label for="txtContactEmail" class="control-label col-sm-1">@BDMall.Resources.Label.MerchantContactEmail</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="txtContactEmail" v-model="Condition.ContactEmail">
+                    </div>
+                    <label for="txtOrderEmail" class="control-label col-sm-1">@BDMall.Resources.Label.MerchantOrderEmail</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="txtOrderEmail" v-model="Condition.OrderEmail">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="cboIsActive" class="control-label col-sm-1">@BDMall.Resources.Label.IsActive</label>
+                    <div class="col-sm-4">
+                        <select id="cboIsActive" class="form-control"></select>
+                    </div>
+                    <label for="cboIsAccountCreated" class="control-label col-sm-1">@BDMall.Resources.Label.IsAccountCreated</label>
+                    <div class="col-sm-4">
+                        <select id="cboIsAccountCreated" class="form-control"></select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="CreateDateB" class="control-label col-sm-1">@BDMall.Resources.Label.AccountCreateDate</label>
+                    <div class="form-inline">
+                        <input name="DateTimePicker" type="text" class="form-control" id="CreateDateB" style="width: 300px;">
+                        @BDMall.Resources.Label.To
+                        <input name="DateTimePicker" type="text" class="form-control" id="CreateDateE" style="width: 300px;">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-1"></div>
+                <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Search" v-on:click="searchMerchantList" />
+                <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.ExtraCondition" data-toggle="collapse" data-target="#collapseOne" />
+            </div>
+        </div>
+    </div>
+    <div id="divDataArea" class="tab-content">
+        <div id="divSelfDefine" class="tab-pane fade in active">
+            <div class="panel-body">
+                <div id="divToolBar" class="btn-group">
+                    <button id="btn_add" type="button" class="btn btn-default" v-on:click="addMerchant">
+                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>@BDMall.Resources.Action.Add
+                    </button>
+                    @*<button id="btn_delete" type="button" class="btn btn-default" v-on:click="deleteMerchant" v-bind:disabled="IsMstrDelete">
+                            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>@BDMall.Resources.Action.Delete
+                        </button>*@
+                    <button id="btnActive" type="button" class="btn btn-default" v-on:click="activeMerchant" v-bind:disabled="IsMstrModify">
+                        <span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>@BDMall.Resources.Action.Activate
+                    </button>
+                    <button id="btnDeactive" type="button" class="btn btn-default" v-on:click="deactiveMerchant" v-bind:disabled="IsMstrModify">
+                        <span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>@BDMall.Resources.Action.Deactivate
+                    </button>
+                    <button id="btnCreateAccount" type="button" class="btn btn-default" v-on:click="createMerchantAccount" v-bind:disabled="IsMstrModify">
+                        <span class="glyphicon glyphicon-add" aria-hidden="true"></span>@BDMall.Resources.Action.CreateAccount
+                    </button>
+                    <button id="btnResendAct" type="button" class="btn btn-default" v-on:click="resendActForMerch" v-bind:disabled="IsMstrModify">
+                        <span class="glyphicon glyphicon-add" aria-hidden="true"></span>@BDMall.Resources.Action.ResendActForMerch
+                    </button>
+                </div>
+                <table id="tblMerchantList" class="table table-condensed"></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        layui.use(['miniTab'], function () {
+            var layer = layui.layer,
+                miniTab = layui.miniTab;
+        });
+        var mEmptyGUID = "00000000-0000-0000-0000-000000000000";
+        var mEditA = "Add";
+        var mEditM = "Modify";
+        var isMerchant = Boolean(@ViewBag.IsMerchant);
+        //var mEditR = "Readonly";
+        var mApproveStatus = @ViewBag.Status;
+
+        var vm = new Vue({
+            el: "#divMain",
+            data: {
+                MerchantID: mEmptyGUID,
+                Condition: {
+                    Id: mEmptyGUID,
+                    CompanyName: "",
+                    MerchNo: "",
+                    ApproveStatus: -1,
+                    ContactEmail: "",
+                    OrderEmail: "",
+                    IsActiveCond: -1,
+                    IsAccountCreated: -1,
+                    AccountCreateDateB: "",
+                    AccountCreateDateE: "",
+                },
+                IsMstrModify: true,
+                IsMstrDelete: true
+            },
+            methods: {
+                //設置商家信息列表上方的按鈕狀態
+                setToolbarBtnState: function () {
+                    var objSelections = $("#tblMerchantList").bootstrapTable("getSelections");
+                    if (objSelections.length == 1) {
+                        vm.IsMstrModify = false;
+                    }
+                    else {
+                        vm.IsMstrModify = true;
+                    }
+
+                    if (objSelections.length >= 1) {
+                        vm.IsMstrDelete = false;
+                    }
+                    else {
+                        vm.IsMstrDelete = true;
+                    }
+                },
+                //根據條件搜尋商家記錄列表
+                searchMerchantList: function () {
+                    $("#tblMerchantList").bootstrapTable("refresh", { url: "/adminapi/Merchant/SearchMercLst", pageNumber: 1 });
+                },
+                //新增商家信息
+                addMerchant: function () {
+                    var objCond = new Object();
+                    objCond.MerchantID = mEmptyGUID;
+                    objCond.EditType = mEditA;
+                    var tabId = self.frameElement.parentElement.id;
+                    miniTab.openNewTabByIframe({
+                        href: "/Merchant/MerchantEdit/" + objCond.MerchantID + "/" + objCond.EditType,
+                        title: '@BDMall.Resources.Action.Add' + "-" + '@BDMall.Resources.Label.TabNameMerchant',
+                        callback: vm.searchMerchantList
+                    });
+                },
+                //修改商家信息
+                modifyMerchant: function () {
+                    var objSelections = $("#tblMerchantList").bootstrapTable("getSelections");
+
+                    var objCond = new Object();
+                    objCond.MerchantID = objSelections[0].Id;
+                    objCond.EditType = mEditM;
+                    var name = objSelections[0].Name;
+                    var tabId = self.frameElement.parentElement.id;
+                    miniTab.openNewTabByIframe({
+                        href: "/Merchant/MerchantEdit/" + objCond.MerchantID + "/" + objCond.EditType,
+                        title: '@BDMall.Resources.Action.Modify' + "-" + name,
+                        callback: vm.searchMerchantList
+                    });
+                },
+                //邏輯刪除商家信息
+                deleteMerchant: function () {
+                    var objSelections = $("#tblMerchantList").bootstrapTable("getSelections");
+
+                    if (objSelections.length > 0) {
+                        SystemConfirm('@BDMall.Resources.Message.DeleteConfirm', function () {
+
+                            var strId = "";
+                            objSelections.forEach(function (val) {
+                                strId += val.Id + ",";
+                            });
+
+                            var data = new Object();
+                            data.recIDList = strId;
+
+                            WS.AjaxP("get", "/adminapi/Merchant/LogicalDelMerchRec", data, function (response) {
+                                if (response.Succeeded == true) {
+                                    showInfo('@BDMall.Resources.Message.DeleteSucceeded');
+                                    vm.searchMerchantList();
+                                }
+                                else {
+                                    showWarn('@BDMall.Resources.Message.DeleteFailed' + "\n\n" + response.Message);
+                                }
+                            }, function () { });
+                        });
+                    }
+                },
+                createMerchantAccount: function () {
+                    var objSelections = $("#tblMerchantList").bootstrapTable("getSelections");
+                    if (objSelections.length > 0) {
+                        var strId = "";
+                        objSelections.forEach(function (val) {
+                            strId += val.Id + ",";
+                        });
+
+                        var data = new Object();
+                        data.merchantIds = strId;
+                        WS.Get("/adminapi/User/CreateMerchantAccount", data, function (result) {
+                            if (result.Succeeded == true) {
+                                    showInfo(result.Message);
+                                    vm.searchMerchantList();
+                                }
+                                else {
+                                  showInfo(result.Message);
+                                }
+                            }, function () { });
+                    }
+                },
+                resendActForMerch: function () {
+                    var data = new Object();
+                    var objSelections = $("#tblMerchantList").bootstrapTable("getSelections");
+                    if (objSelections.length >0) {
+                        data.id = objSelections[0].Id;
+                    }
+                    WS.Get("/adminapi/User/ResendActForMerch", data, function (result) {
+                        if (result.Succeeded == true) {
+                            showInfo(result.Message);
+                            vm.searchMerchantList();
+                        }
+                        else {
+                            showInfo(result.Message);
+                        }
+                    }, function () { });
+                },
+                activeMerchant: function () {
+                    var objSelections = $("#tblMerchantList").bootstrapTable("getSelections");
+
+                    if (objSelections.length > 0) {
+                        var isActive = objSelections[0].IsActive;
+                        if (!isActive) {
+                            SystemConfirm('@BDMall.Resources.Message.ActiveConfirm', function () {
+                                var data = new Object();
+                                data.merchID = objSelections[0].Id;
+
+                                WS.AjaxP("get", "/adminapi/Merchant/ActiveMerchant", data, function (response) {
+                                    if (response.Succeeded == true) {
+                                        vm.searchMerchantList();
+                                    }
+                                    else {
+                                        showWarn('@BDMall.Resources.Message.ActiveFail' + "\n\n" + response.Message);
+                                    }
+                                }, function () { });
+                            });
+                        }
+                    }
+                },
+                deactiveMerchant: function () {
+                    var objSelections = $("#tblMerchantList").bootstrapTable("getSelections");
+
+                    if (objSelections.length > 0) {
+                        var isActive = objSelections[0].IsActive;
+                        if (isActive) {
+                            SystemConfirm('@BDMall.Resources.Message.DeactiveConfirm', function () {
+                                var data = new Object();
+                                data.merchID = objSelections[0].Id;
+
+                                WS.AjaxP("get", "/adminapi/Merchant/DeactiveMerchant", data, function (response) {
+                                    if (response.Succeeded == true) {
+                                        vm.searchMerchantList();
+                                    }
+                                    else {
+                                        showWarn('@BDMall.Resources.Message.DeactiveFail' + "\n\n" + response.Message);
+                                    }
+                                }, function () { });
+                            });
+                        }
+                    }
+                }
+            }
+        });
+
+        /*商家信息列表初始化*/
+        var merchantListTableInit = function () {
+            var objDataTable = new Object();
+
+            objDataTable.Init = function () {
+                $("#tblMerchantList").bootstrapTable({
+                    method: 'post',                      //请求方式（*）
+                    queryParams: objDataTable.queryParams,//传递参数（*）
+                    toolbar: '#divToolBar',                //工具按钮用哪个容器
+                    striped: true,                      //是否显示行间隔色
+                    cache: true,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                    sortable: true,                     //是否启用排序
+                    sortOrder: "asc",                   //排序方式
+                    sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+                    pageNumber: 1,                       //初始化加载第一页，默认第一页
+                    pageSize: 10,                       //每页的记录行数（*）
+                    pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                    smartDisplay: false,
+                    showRefresh: true,                  //是否显示刷新按钮
+                    clickToSelect: true,                //是否启用点击选中行
+                    //height: 750,                        //行高，如果没有设置height属性，表格自动根据记录条数決定表格高度
+                    uniqueId: "Id",                     //每一行的唯一标识，一般为主键列
+                    cardView: false,                    //是否显示详细视图
+                    detailView: false,                   //是否显示父子表
+                    pagination: true,                   //是否显示分页（*）
+                    dataField: "Data",
+                    totalField: "TotalRecord",
+                    ajaxOptions: {
+                        beforeSend: function (request) {
+                            var access_token = $.cookie("access_token");
+                            request.setRequestHeader("Authorization", "Bearer " + access_token);
+                        }
+                    },
+                    onCheck: function (row) {
+                        vm.setToolbarBtnState();
+                    },
+                    onUncheck: function (row) {
+                        vm.setToolbarBtnState();
+                    },
+                    onCheckAll: function (rows) {
+                        vm.setToolbarBtnState();
+                    },
+                    onUncheckAll: function (rows) {
+                        vm.setToolbarBtnState();
+                    },
+                    columns: [{
+                        checkbox: true
+                    }, {
+                        field: 'Id',
+                        title: 'Id',
+                        visible: false
+                    }, {
+                        field: 'MerchNo',
+                        title: '@BDMall.Resources.Label.SupplierId',
+                        align: 'left',
+                        valign: 'middle',
+                        sortable: true,
+                        events: operateEvents,
+                        formatter: tbModifyFormatter
+                    }, {
+                        field: 'Name',
+                        valign: 'middle',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.MerchantName'
+                    }, {
+                        field: 'Contact',
+                        valign: 'middle',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.MerchantContact'
+                    }, {
+                        field: 'ContactPhoneNum',
+                        valign: 'middle',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.MerchantContactPhoneNum'
+                    }, {
+                        field: 'FaxNum',
+                        valign: 'middle',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.Fax'
+                    }, {
+                        field: 'ContactAddress',
+                        valign: 'middle',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.MerchantContactAddress'
+                    }, {
+                        field: 'ContactEmail',
+                        valign: 'middle',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.MerchantContactEmail'
+                    }, {
+                        field: 'OrderEmail',
+                        valign: 'middle',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.MerchantOrderEmail'
+                    @*}, {
+                        field: 'AccountCode',
+                        valign: 'middle',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.AccountCode'*@
+                    },  {
+                        field: 'ApproveStatusString',
+                        title: '@BDMall.Resources.Label.ApproveStatus',
+                        formatter: function (value, row, index) {
+                            var name = row.Name.ReplaceAll("'", "<apos>");
+                            name = name.ReplaceAll("\"", "<quot>");
+                            return '<a href="#" onClick="showApproveDetail(\'' + row.Id + '\' ,\'' + name + '\');">' + value + '</a>';
+                        }
+                    },{
+                        field: 'IsActive',
+                        title: '@BDMall.Resources.Label.IsActive',
+                        valign: 'middle',
+                        sortable: true,
+                    }, {
+                        field: 'IsAccountCreated',
+                        valign: 'middle',
+                        title: '@BDMall.Resources.Label.IsAccountCreated',
+                    }],
+                    formatLoadingMessage: function () {
+                        return '';
+                    }
+                });
+            };
+
+            objDataTable.queryParams = function (params) {
+                var page = 1;
+                if (params.offset > 0) {
+                    page = parseInt(params.offset / params.limit) + 1;
+                }
+                
+
+                vm.Condition.ApproveStatus = $("#cboApproveStatus").val();
+                var sortedBy = params.sort;
+                var sorted = params.order;
+
+                var isActive = $("#cboIsActive").val();
+                if (isActive != "-1") {
+                    if (isActive == "Yes" || isActive == "是") {
+                        vm.Condition.IsActiveCond = true;
+                    }
+                    else {
+                        vm.Condition.IsActiveCond = false;
+                    }
+                }
+                else {
+                    vm.Condition.IsActiveCond = null;
+                }
+
+                var isAccountCreated = $("#cboIsAccountCreated").val();
+                if (isAccountCreated != "-1") {
+                    if (isAccountCreated == "Yes" || isAccountCreated == "是") {
+                        vm.Condition.IsAccountCreated = true;
+                    }
+                    else {
+                        vm.Condition.IsAccountCreated = false;
+                    }
+                }
+                else {
+                    vm.Condition.IsAccountCreated = null;
+                }
+
+                vm.Condition.AccountCreateDateB = $("#CreateDateB").val();
+                vm.Condition.AccountCreateDateE = $("#CreateDateE").val();
+
+                return {
+                    Condition: vm.Condition, Page: page, PageSize: params.limit, SortName: sortedBy, SortOrder: sorted
+                };
+            }
+            return objDataTable;
+        }
+
+        function tbModifyFormatter(value, row, index) {
+            return '<a class="Readonly btn btn-link">' + value + '</a>';
+        }
+
+        /*初次進入頁面*/
+        $(document).ready(function () {
+            InitDateTimePicker();
+
+            var objDataTable = merchantListTableInit();
+            objDataTable.Init();
+
+            InitBootstrapSelect("cboApproveStatus", "/adminapi/Merchant/GetApproveStatusList", 1, false, true, null, function () {
+                $('#cboApproveStatus').selectpicker('val', mApproveStatus);
+            }, false);
+
+            InitNormalSelect("cboIsActive", "/adminapi/Dict/GetWhether", true, null, false);
+            InitNormalSelect("cboIsAccountCreated", "/adminapi/Dict/GetWhether", true, null, false);
+
+            vm.searchMerchantList();
+            //鍵盤按下回車後進行搜尋操作
+            $("#txtMMerchNo").keyup(function (e) {
+                if (e.keyCode == 13) {
+                    vm.searchMerchantList();
+                }
+            });
+            $("#txtCompanyName").keyup(function (e) {
+                if (e.keyCode == 13) {
+                    vm.searchMerchantList();
+                }
+            });
+        });
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+
+        function showApproveDetail(id, name) {
+            name = name.ReplaceAll("<apos>", "&apos;");
+            name = name.ReplaceAll("<quot>", "&quot;");
+            miniTab.openNewTabByIframe({
+                href: "/Merchant/ApproveMerchantHistory/" + id,
+                title:'@BDMall.Resources.Action.Approve' + "-" + name
+            });
+        }
+
+        window.operateEvents = {
+            'click .Readonly': function (e, value, row, index) {
+                var objDatas = $("#tblMerchantList").bootstrapTable("getData");
+                var strId = objDatas[index].Id;
+                var merchName = objDatas[index].Name;
+
+                var strTabId = "MerchantModify_" + strId;
+                var tabId = self.frameElement.parentElement.id;
+                miniTab.openNewTabByIframe({
+                    href:"/Merchant/MerchantEdit/" + strId + "/" + mEditM,
+                    title: '@BDMall.Resources.Action.View' + "-" + merchName,
+                    callback: vm.searchMerchantList
+                });
+            }
+        };
+    </script>
+}
+

@@ -6,6 +6,8 @@ using Intimex.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Web.Framework;
 using Web.Mvc;
 
 namespace BDMall.Admin.Areas.AdminApi.Controllers
@@ -16,10 +18,12 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
     public class MerchantController : BaseApiController
     {
         IMerchantBLL merchantBLL;
+        ISettingBLL settingBLL;
 
         public MerchantController(IComponentContext services) : base(services)
         {
             merchantBLL = Services.Resolve<IMerchantBLL>();
+            settingBLL = services.Resolve<ISettingBLL>();
         }
 
         /// <summary>
@@ -31,6 +35,26 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
         {
             List<KeyValue> keyValLIst = merchantBLL.GetMerchantCboSrcByCond(true);
             return keyValLIst;
+        }
+
+        [HttpGet]
+        //[AdminApiAuthorize(Module = ModuleConst.MerchantModule)]
+        public List<KeyValue> GetApproveStatusList()
+        {
+            var statusList = new List<KeyValue>();
+            statusList = settingBLL.GetApproveStatuses();       
+            return statusList;
+        }
+
+        [HttpPost]
+        [AdminApiAuthorize(Module = ModuleConst.MerchantModule)]
+        public PageData<MerchantView> SearchMercLst([FromForm] MerchantPageInfo pageInfo)
+        {
+            PageData<MerchantView> merchVwLst = new PageData<MerchantView>();
+
+            merchVwLst = merchantBLL.GetMerchLstByCond(pageInfo);
+
+            return merchVwLst;
         }
     }
 }

@@ -1,12 +1,15 @@
 ﻿
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using System.ComponentModel;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+
 
 namespace BDMall.Repository
 {
@@ -365,13 +368,13 @@ namespace BDMall.Repository
 
         #endregion
 
-        public override IQueryable<T> GetList<T>(string sql, List<System.Data.SqlClient.SqlParameter> parameters)
+        public override IQueryable<T> GetList<T>(string sql, List<SqlParameter> parameters)
         {
             var result =  UnitWork.DataContext.Set<T>().FromSqlRaw(sql, parameters);
             return result;
         }
 
-        public override async Task<IQueryable<T>> GetListAsync<T>(string sql, List<System.Data.SqlClient.SqlParameter> parameters)
+        public override async Task<IQueryable<T>> GetListAsync<T>(string sql, List<SqlParameter> parameters)
         {
             var result = await UnitWork.DataContext.Set<T>().FromSqlRaw(sql, parameters).ToArrayAsync();
             return result.AsQueryable();

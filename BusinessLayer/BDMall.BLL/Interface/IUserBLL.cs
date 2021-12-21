@@ -13,5 +13,7 @@ namespace BDMall.BLL
     {
 
         Task<SystemResult> ChangeLang(CurrentUser currentUser, Language Lang);
+
+        bool CheckMerchantAccountExist(Guid merchantId);
     }
 }

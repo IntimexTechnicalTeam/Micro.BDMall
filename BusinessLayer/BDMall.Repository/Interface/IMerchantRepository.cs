@@ -1,4 +1,4 @@
-﻿using BDMall.Model;
+﻿using BDMall.Domain;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,10 +8,8 @@ using Web.Framework;
 
 namespace BDMall.Repository
 {
-    public interface IUserRoleRepository:IDependency
+    public interface IMerchantRepository:IDependency
     {
-        List<Role> GetUserRoles(Guid userId);
-
-        bool CheckMerchantAccountExist(Guid merchantId);
+        PageData<MerchantView> SearchMerchByCond(MerchantPageInfo condition);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using BDMall.Domain;
 using BDMall.Enums;
 using BDMall.Model;
+using BDMall.Repository;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,8 +13,11 @@ namespace BDMall.BLL
 {
     public class UserBLL : BaseBLL, IUserBLL
     {
+        IUserRoleRepository userRoleRepository;
+
         public UserBLL(IServiceProvider services) : base(services)
         {
+            userRoleRepository = Services.Resolve<IUserRoleRepository>();
         }
 
         public async Task<SystemResult> ChangeLang(CurrentUser currentUser, Language Lang)
@@ -33,5 +37,10 @@ namespace BDMall.BLL
             return result;
         }
 
+        public bool CheckMerchantAccountExist(Guid merchantId)
+        {
+            var result = userRoleRepository.CheckMerchantAccountExist(merchantId);
+            return result;
+        }
     }
 }

@@ -61,15 +61,7 @@ namespace BDMall.Admin
 
             Web.Framework.AutoMapperConfiguration.InitAutoMapper();
             services.AddSingleton(this.Configuration);
-            //services.AddScoped(typeof(UserAuthorizeAttribute));             //注入Filter
-            services.AddScoped(typeof(AdminApiAuthorizeAttribute));
-
-            //services.AddControllers(options =>
-            //{
-            //    options.EnableEndpointRouting = false;
-            //    options.Filters.Add(typeof(UserAuthorizeAttribute));
-            //    //options.Filters.Add(typeof(AdminAuthorizeAttribute));
-            //});
+            services.AddScoped(typeof(AdminApiAuthorizeAttribute));         //注入Filter
 
             WebCache.ServiceCollectionExtensions.AddCacheServices(services, Globals.Configuration);                        //注入redis组件
             BDMall.Repository.ServiceCollectionExtensions.AddServices(services, Globals.Configuration);                      //注入EFCore DataContext
@@ -79,8 +71,7 @@ namespace BDMall.Admin
             Web.Mvc.ServiceCollectionExtensions.AddServiceProvider(services);
             Web.MediatR.ServiceCollectionExtensions.AddServices(services, typeof(Startup));
 
-            Web.Mvc.ServiceCollectionExtensions.AddFileProviderServices(services, Globals.Configuration);
-            //services.AddSingleton<IFileProvider>(new PhysicalFileProvider(Path.Combine(Configuration["UploadPath"], "ClientResources")));
+            Web.Mvc.ServiceCollectionExtensions.AddFileProviderServices(services, Globals.Configuration);          
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

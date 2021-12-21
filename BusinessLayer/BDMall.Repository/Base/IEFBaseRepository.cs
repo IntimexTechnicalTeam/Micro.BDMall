@@ -1,12 +1,11 @@
-﻿
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Data.SqlClient;
 using System.Threading.Tasks;
 using System;
 using System.Linq;
 using Web.Framework;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Data.SqlClient;
 
 namespace BDMall.Repository
 {

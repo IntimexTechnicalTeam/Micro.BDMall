@@ -14,6 +14,6 @@ namespace BDMall.BLL
 
         List<KeyValue> GetMerchantCboSrcByCond(bool containMall);
 
-      
+        PageData<MerchantView> GetMerchLstByCond(MerchantPageInfo condition);
     }
 }

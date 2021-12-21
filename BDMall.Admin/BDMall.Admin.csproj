@@ -19,7 +19,6 @@
     <Content Remove="Views\Product\MassUploadDetail.cshtml" />
     <Content Remove="Views\Product\MassUploadInstoreProduct.cshtml" />
     <Content Remove="Views\Product\MassUploadProduct.cshtml" />
-    <Content Remove="Views\Product\ProdAttributeIndex.cshtml" />
     <Content Remove="Views\Product\ProdPeriodPriceIndex.cshtml" />
     <Content Remove="Views\Product\ProductClickRate.cshtml" />
     <Content Remove="Views\Product\ProductImg.cshtml" />

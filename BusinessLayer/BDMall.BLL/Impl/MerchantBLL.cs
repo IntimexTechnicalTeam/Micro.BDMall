@@ -1,19 +1,26 @@
 ﻿using BDMall.Domain;
 using BDMall.Enums;
 using BDMall.Model;
+using BDMall.Repository;
 using Intimex.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Web.Framework;
 
 namespace BDMall.BLL
 {
     public class MerchantBLL : BaseBLL, IMerchantBLL
     {
+        IMerchantRepository merchantRepository;
+        IUserBLL userBLL;
+
         public MerchantBLL(IServiceProvider services) : base(services)
         {
+            merchantRepository = Services.Resolve<IMerchantRepository>(); 
+            userBLL  = Services.Resolve<IUserBLL>();
         }
 
         public List<KeyValue> GetMerchantCboSrcByCond(bool containMall)
@@ -38,6 +45,28 @@ namespace BDMall.BLL
             merchantList.AddRange(list);
             return merchantList;
         }
+
+        public PageData<MerchantView> GetMerchLstByCond(MerchantPageInfo condition)
+        {
+            PageData<MerchantView> merchLst = new PageData<MerchantView>();
+
+            merchLst = merchantRepository.SearchMerchByCond(condition);
+            foreach (var item in merchLst.Data)
+            {               
+                var promotion = baseRepository.GetList<MerchantPromotion>(x=>x.MerchantId == item.Id && x.IsActive && x.IsDeleted).OrderByDescending(o => o.CreateDate).FirstOrDefault();
+                if (promotion != null)
+                    item.ApproveStatus = promotion.ApproveStatus;               
+                else
+                    item.ApproveStatus = ApproveType.Editing;
+                item.Score = baseRepository.GetModel<MerchantStatistic>(x => x.MerchId == item.Id && x.IsActive && !x.IsDeleted)?.Score ?? 0;
+                item.IsAccountCreated = userBLL.CheckMerchantAccountExist(item.Id);
+            }
+
+            return merchLst;
+
+        }
+
+
     }
 }
 

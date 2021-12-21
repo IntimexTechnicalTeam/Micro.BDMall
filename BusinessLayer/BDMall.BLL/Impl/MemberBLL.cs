@@ -50,14 +50,6 @@ namespace BDMall.BLL
 
             result.TotalRecord = query.Count();
 
-            if (!cond.SortName.IsEmpty() && !cond.SortOrder.IsEmpty())
-            {
-                var sortBy = (SortType)Enum.Parse(typeof(SortType), cond.SortOrder.ToUpper());
-                query = query.AsQueryable().SortBy(cond.SortName, sortBy);
-            }
-            else
-                query = query.Skip(cond.Offset).Take(cond.PageSize);
-
             result.Data = query.MapToList<Member,MemberDto>();
             
             return result;
