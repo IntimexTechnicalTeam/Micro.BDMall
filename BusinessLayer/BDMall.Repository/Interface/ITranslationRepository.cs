@@ -55,5 +55,7 @@ namespace BDMall.Repository
         string GetDescForLang(Guid transId, Language lang);
 
         Task<Translation> GetTranslationAsync(Guid transId, Language lang);
+
+        List<Translation> GenTranslations(List<MutiLanguage> items, TranslationType type, Guid transId);
     }
 }

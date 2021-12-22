@@ -18,7 +18,7 @@ namespace Domain
             ConfigMap<Permission, PermissionDto>();
             ConfigMap<ProductCatalog, ProductCatalogDto>();
             ConfigMap<ProductAttributeValue, ProductAttributeValueDto>();
-
+            ConfigMap<ProductCatalogSummaryView, ProductCatalogDto>();
             ConfigMap<ProductCatalogDto, ProductCatalogEditModel>();
         }
         void ConfigMap<TSource, TDestination>()

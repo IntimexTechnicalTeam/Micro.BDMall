@@ -162,6 +162,25 @@ namespace BDMall.Repository
             return Guid.Empty;
         }
 
+        public List<Translation> GenTranslations(List<MutiLanguage> items, TranslationType type, Guid transId)
+        {
+            var list = new List<Translation>();
+
+            foreach (var item in items)
+            {
+                Translation trans = new Translation();
+                trans.Id = Guid.NewGuid();
+                trans.TransId = transId;
+                trans.Lang = item.Language;
+                trans.Value = item.Desc ?? string.Empty;
+                trans.Module = type.ToString();
+                list.Add(trans);
+                string key = $"{CacheKey.Translations}_{trans.Lang}";
+                RedisHelper.HSet(key, trans.TransId.ToString(), trans);
+            }
+            return list;
+        }
+
         public Guid UpdateMutiLanguage(Guid transId, List<MutiLanguage> items, TranslationType type)
         {
             if (items != null && items.Any())

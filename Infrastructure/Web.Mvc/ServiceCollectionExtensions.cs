@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using System;
+using System.IO;
 using Web.Framework;
 
 namespace Web.Mvc
@@ -64,6 +66,16 @@ namespace Web.Mvc
             return services;
         }
 
+        public static IServiceCollection AddFileProviderServices(this IServiceCollection services, IConfiguration config)
+        {
+            string path = Path.Combine(config["UploadPath"], "ClientResources");
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
+
+            services.AddSingleton<IFileProvider>(new PhysicalFileProvider(path));
+
+            return services;
+        }
     }
 
 

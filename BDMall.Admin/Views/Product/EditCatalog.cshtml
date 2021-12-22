@@ -115,7 +115,7 @@
                                         vm.node.Level = parseInt(parentLevel) + 1;
                                     }
                                     else {
-                                        vm.node.ParentId = 0;
+                                        vm.node.ParentId = WS.GuidEmpty;
                                         vm.node.Level = 1;
                                     }
 
@@ -153,8 +153,9 @@
                 saveModel: function () {
                     //if (CheckSave()) {
                     //$("#txt_file").fileinput("upload");
-                    SystemConfirm('@BDMall.Resources.Message.SaveCatalogConfirm', function () {
+                    SystemConfirm('@BDMall.Resources.Message.SaveCatalogConfirm', function () {                       
                         WS.AjaxP("post", "/adminapi/ProdCatalog/Save", vm.node, function (response) {
+
                             if (response.Succeeded == true) {
                                 @*vm.GetCatalog(response.ReturnValue);*@
                                 showCloseInfo('@BDMall.Resources.Message.SaveSuccess');
@@ -197,7 +198,6 @@
             vm.node.SmallIcon = data.response.ReturnValue[0].Name;
             vm.node.IconPath = data.response.ReturnValue[0].ThumbnailPath;//上傳成功后保存catalog信息
             clearPerview("txt_file");
-
             //console.log();
             var a = document.getElementById("txt_file").files;
             //$("#txt_file").fileinput("refreshContainer");
@@ -216,7 +216,7 @@
         iconImgOptionM.MaxFile = 1;
         iconImgOptionM.ShowRemove = false;
         iconImgOptionM.FileSize = limitSize;
-        iconImgOptionM.SuccessCallback = function (data) {
+        iconImgOptionM.SuccessCallback = function (data) {          
             vm.node.MSmallIcon = data.response.ReturnValue[0].Name;
             vm.node.IconPathM = data.response.ReturnValue[0].ThumbnailPath;//上傳成功后保存catalog信息
             clearPerview("txt_fileM");

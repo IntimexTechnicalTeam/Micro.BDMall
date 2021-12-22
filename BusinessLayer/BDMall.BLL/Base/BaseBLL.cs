@@ -7,6 +7,7 @@ using Intimex.Common;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -141,13 +142,28 @@ namespace BDMall.BLL
             }
         }
 
+        IHostEnvironment _hostEnvironment;
+        public IHostEnvironment hostEnvironment
+        {
+            get
+            {
+                if (_hostEnvironment == null)
+                {
+                    _hostEnvironment = Services.Resolve<IHostEnvironment>();
+                }
+                return this._hostEnvironment;
+            }
+        }
+
         CurrentUser _currentUser;
         public CurrentUser CurrentUser
         {
             get
             {
-                //注意区分BaseMvcController的写法
+                //注意区分BaseMvcController的写法              
                 string token = CurrentContext?.HttpContext?.Request.Headers["Authorization"].FirstOrDefault()?.Substring("Bearer ".Length).Trim() ?? "";
+
+                if (token.IsEmpty()) token = CurrentContext?.HttpContext.Request?.Cookies["access_token"].ToString() ?? "";
 
                 if (_currentUser == null || token.IsEmpty())
                 {

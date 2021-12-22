@@ -1,4 +1,5 @@
 ﻿using BDMall.Domain;
+using BDMall.Enums;
 using BDMall.Model;
 using Intimex.Common;
 using System;
@@ -88,5 +89,38 @@ namespace BDMall.Repository
             return result;
         }
 
+        public List<ProductCatalog> GetAllCatalogChilds(Guid id)
+        {
+            List<ProductCatalog> list = new List<ProductCatalog>();
+
+            var childList = (from p in baseRepository.GetList<ProductCatalogParent>()
+                             join c in baseRepository.GetList<ProductCatalog>() on p.CatalogId equals c.Id
+                             where !c.IsDeleted && p.ParentCatalogId == id
+                             select c).ToList();
+
+            var rootCatalog = this.baseRepository.GetModel<ProductCatalog>(x => x.Id == id);
+
+            list.Add(rootCatalog);
+            list.AddRange(childList);
+
+            return list;
+        }
+
+        public List<Product> GetAllCatalogChildProducts(Guid id)
+        {
+            List<Product> list = new List<Product>();
+
+            var products = (from p in baseRepository.GetList<ProductCatalogParent>()
+                            join c in baseRepository.GetList<ProductCatalog>() on p.CatalogId equals c.Id
+                            join m in baseRepository.GetList<Product>() on c.Id equals m.CatalogId
+                            where !c.IsDeleted && p.ParentCatalogId == id && m.Status != ProductStatus.AutoOffSale
+                            select m).ToList();
+
+            var rootCatalogProducts = baseRepository.GetList<Product>(p => p.CatalogId == id).ToList();
+
+            list.AddRange(rootCatalogProducts);
+            list.AddRange(products);
+            return list;
+        }
     }
 }

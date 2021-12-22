@@ -18,6 +18,12 @@ namespace BDMall.BLL
 
         void DeleteCatalog(Guid id);
 
+        Task<SystemResult> SaveCatalog(ProductCatalogEditModel productCatalog);
+
         Task UpdateCatalogSeqAsync(List<ProductCatalogEditModel> list);
+
+        Task<SystemResult> DisActiveCatalogAsync(Guid catId);
+
+        Task<SystemResult> ActiveCatalogAsync(Guid catId);
     }
 }
