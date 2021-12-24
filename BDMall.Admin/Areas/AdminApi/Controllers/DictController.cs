@@ -1,7 +1,13 @@
-﻿using System;
+﻿using Autofac;
+using BDMall.BLL;
+using BDMall.Domain;
+using Intimex.Common;
+using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using Intimex.Common;
 using System.Threading.Tasks;
+using Web.Framework;
 using Web.Mvc;
 using Autofac;
 using Microsoft.AspNetCore.Mvc;
@@ -26,6 +32,7 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
 
         public DictController(IComponentContext services) : base(services)
         {
+            codeMasterBLL = Services.Resolve<ICodeMasterBLL>();
             settingBLL = Services.Resolve<ISettingBLL>();
             merchantBLL = Services.Resolve<IMerchantBLL>();   
         }
@@ -135,8 +142,8 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
         /// <returns></returns>
         [HttpGet]
         public async Task<List<MutiLanguage>> GetUseLanguage()
-        {
-            
+            {
+
             return new List<MutiLanguage>();
         }
 
@@ -147,7 +154,7 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
         [HttpGet]
         public async Task<List<KeyValue>> GetSupportLanguage()
         {
-            var langs = settingBLL.GetSupportLanguages();
+                var langs = settingBLL.GetSupportLanguages();
             return langs;
         }
 
@@ -196,19 +203,19 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
         /// <returns></returns>
         [HttpGet]
         public async Task<List<KeyValue>> GetReportType()
-        {
+                {
             return new List<KeyValue>();
-        }
+                }
 
         [HttpGet]
         public async Task<List<KeyValue>> GetWhseComboSrc()
         {
             return new List<KeyValue>();
-        }
+            }
 
         [HttpGet]
         public async Task<List<KeyValue>> GetWhseComboSrcByMerchant(Guid merchantId)
-        {
+            {
             return new List<KeyValue>();
         }
 
@@ -221,7 +228,7 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
         {
             List<KeyValue> keyValLIst = merchantBLL.GetMerchantCboSrcByCond(true);
             return keyValLIst;
-        }
+            }
 
         [HttpGet]
         //[AdminApiAuthorize(Module = ModuleConst.MerchantModule)]
@@ -232,5 +239,34 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
             return statusList;
         }
 
+        /// <summary>
+        /// 獲取系統支持的語言種類
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public List<KeyValue> GetSupportLanguage()
+        {
+            List<KeyValue> list = new List<KeyValue>();
+            string userLang = CurrentUser.Lang.ToString();
+            try
+            {
+
+                var langs = settingBLL.GetSupportLanguages();
+
+                foreach (var item in langs)
+                {
+                    KeyValue entity = new KeyValue();
+                    entity.Id = item.Code;
+                    entity.Text = item.Text;
+                    list.Add(entity);
+                }
+            }
+            catch (BLException blex)
+            {
+
+            }
+
+            return list;
+        }
     }
 }

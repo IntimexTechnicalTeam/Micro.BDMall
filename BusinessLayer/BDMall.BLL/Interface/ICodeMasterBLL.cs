@@ -24,15 +24,15 @@ namespace BDMall.BLL
      /// <param name="lang"></param>
      /// <returns></returns>
      /// <remarks></remarks>
-        List<CodeMaster> GetCodeMasters(CodeMasterModule module, CodeMasterFunction function);
+        List<CodeMasterDto> GetCodeMasters(CodeMasterModule module, CodeMasterFunction function);
 
         /// <summary>
         /// 获取字码主档的分页数据
         /// </summary>
         /// <param name="cond"></param>
         /// <returns></returns>
-        PageData<CodeMaster> GetCodeMastersByPage(CodeMasterCondition cond);
-        List<CodeMaster> GetCodeMasters(string module, string function, string key);
+        PageData<CodeMasterDto> GetCodeMastersByPage(CodeMasterCondition cond);
+        List<CodeMasterDto> GetCodeMasters(string module, string function, string key);
         /// <summary>
         /// 獲取指定module，function,key的設定
         /// Date:2017/11/03
@@ -42,7 +42,7 @@ namespace BDMall.BLL
         /// <param name="function"></param>
         /// <param name="key"></param>
         /// <returns></returns>
-        CodeMaster GetCodeMaster(CodeMasterModule module, CodeMasterFunction function, string key);
+        CodeMasterDto GetCodeMaster(CodeMasterModule module, CodeMasterFunction function, string key);
 
         /// <summary>
         /// 根據key、value獲取字碼主檔
@@ -52,7 +52,7 @@ namespace BDMall.BLL
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        CodeMaster GetCodeMaster(CodeMasterModule module, CodeMasterFunction function, string key, string value);
+        CodeMasterDto GetCodeMaster(CodeMasterModule module, CodeMasterFunction function, string key, string value);
 
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace BDMall.BLL
         /// </summary>
         /// <param name="id">字碼主檔Id</param>
         /// <returns></returns>
-        CodeMaster GetCodeMasterById(int id);
+        CodeMasterDto GetCodeMasterById(int id);
 
         /// <summary>
         /// 通過key獲取字碼主檔信息
@@ -70,18 +70,18 @@ namespace BDMall.BLL
         /// <param name="function"></param>
         /// <param name="key"></param>
         /// <returns></returns>
-        CodeMaster GetCodeMasterByKey(Guid clientId, string module, string function, string key);
+        CodeMasterDto GetCodeMasterByKey(string module, string function, string key);
 
         /// <summary>
         ///插入字碼主檔
         /// </summary>
         /// <param name="codeMaster"></param>
-        void InsertCodeMaster(CodeMaster codeMaster);
+        void InsertCodeMaster(CodeMasterDto codeMaster);
         /// <summary>
         /// 更新字碼主檔
         /// </summary>
         /// <param name="model"></param>
-        void UpdateCodeMaster(CodeMaster model);
+        void UpdateCodeMaster(CodeMasterDto model);
 
 
         /// <summary>
@@ -107,12 +107,12 @@ namespace BDMall.BLL
         /// 获取平台基本信息
         /// </summary>
         /// <returns></returns>
-        List<CodeMaster> GetMallInfo();
+        List<CodeMasterDto> GetMallInfo();
         /// <summary>
         /// 更新平台基本信息
         /// </summary>
         /// <param name="info"></param>
-        void UpdateMallInfo(List<CodeMaster> info);
+        void UpdateMallInfo(List<CodeMasterDto> info);
         /// <summary>
         /// 获取平台基本信息
         /// </summary>
@@ -140,17 +140,6 @@ namespace BDMall.BLL
         /// 保存系统logo
         /// </summary>
         /// <param name="logo"></param>
-        void SaveSystemLogo(SystemLogo logo);
-
-        //PageData<IPoststationView> GetIPoststationByPage(CodeMasterCondition con);
-        //IPoststationView GetIPoststation(int id);
-        //SystemResult SaveIPoststation(IPoststationView view);
-
-        //PageData<CounterCollectionView> GetCounterCollectionByPage(CodeMasterCondition con);
-
-        //CounterCollectionView GetCounterCollection(int id);
-
-        //SystemResult SaveCounterCollection(CounterCollectionView view);
-
+        SystemResult SaveSystemLogo(SystemLogo logo);
     }
 }

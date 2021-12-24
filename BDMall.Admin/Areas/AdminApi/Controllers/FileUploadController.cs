@@ -29,12 +29,12 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
             SystemResult result = new SystemResult();
             var oFiles = (FormFileCollection)this.CurrentContext.HttpContext.Request.Form.Files;
             CheckFileFormat(oFiles);
-            string tempPath = PathUtil.GetPhysicalPath(Configuration["UploadPath"], Guid.Parse(CurrentUser.UserId), FileFolderEnum.TempPath);
-            string relatePath = PathUtil.GetRelativePath(Guid.Parse(CurrentUser.UserId), FileFolderEnum.TempPath);
+            string tempPath = PathUtil.GetPhysicalPath(Configuration["UploadPath"], CurrentUser.UserId, FileFolderEnum.TempPath);
+            string relatePath = PathUtil.GetRelativePath(CurrentUser.UserId, FileFolderEnum.TempPath);
 
-            if (!Directory.Exists(tempPath))          
+            if (!Directory.Exists(tempPath))
                 Directory.CreateDirectory(tempPath);
-            
+
             var fileInfos = new List<UploadFileInfo>();
             for (int i = 0; i < oFiles.Count; i++)
             {
@@ -43,7 +43,7 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
                 string filePath = Path.Combine(tempPath, fileName);
 
                 using (var stream = new FileStream(filePath, FileMode.Create))
-                await file.CopyToAsync(stream);         //异步流写入到临时目录
+                    await file.CopyToAsync(stream);         //异步流写入到临时目录
 
                 FileInfo of = new FileInfo(filePath);
                 var uploadResult = new UploadFileInfo
@@ -70,10 +70,10 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
         [NonAction]
         private void CheckFileFormat(FormFileCollection files)
         {
-            if (files.Count > 5)         
+            if (files.Count > 5)
                 throw new BLException(Resources.Message.FileNotMoreThan + " 5");
-            
-            if (files.Any(x=>!x.ContentType.Contains("image")))
+
+            if (files.Any(x => !x.ContentType.Contains("image")))
                 throw new BLException(Resources.Message.OnlyUploadImage);
         }
 
@@ -82,7 +82,7 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
         {
             string thumbnaliName = string.Empty;
 
-            string path = PathUtil.GetPhysicalPath(Configuration["UploadPath"], Guid.Parse(CurrentUser.UserId), FileFolderEnum.TempPath);
+            string path = PathUtil.GetPhysicalPath(Configuration["UploadPath"], CurrentUser.UserId, FileFolderEnum.TempPath);
             thumbnaliName = Path.GetFileNameWithoutExtension(originalImageName) + "_s" + Path.GetExtension(originalImageName);
 
             ImageUtil.CreateImg(Path.Combine(path, originalImageName), path, thumbnaliName, 100, 100);//生成100*100的缩略图

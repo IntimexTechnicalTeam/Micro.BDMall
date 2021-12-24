@@ -23,6 +23,8 @@ namespace Domain
             ConfigMap<MerchantView, Merchant>();
             ConfigMap<MerchantECShipInfo, MerchantECShipInfoDto>();
             ConfigMap<MerchantActiveShipMethod, MerchantActiveShipMethodDto>();
+            ConfigMap<CodeMasterDto, CodeMaster>();
+            
         }
         void ConfigMap<TSource, TDestination>()
         {

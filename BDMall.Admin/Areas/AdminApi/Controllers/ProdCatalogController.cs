@@ -23,10 +23,10 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
     public class ProdCatalogController : BaseApiController
     {
         IProductCatalogBLL productCatalogBLL;
-        
+
         public ProdCatalogController(IComponentContext services) : base(services)
         {
-            productCatalogBLL = Services.Resolve<IProductCatalogBLL>();          
+            productCatalogBLL = Services.Resolve<IProductCatalogBLL>();
         }
 
         [HttpGet]
@@ -86,7 +86,7 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<SystemResult> UpdateSeq([FromBody]List<ProductCatalogEditModel> tree)
+        public async Task<SystemResult> UpdateSeq([FromBody] List<ProductCatalogEditModel> tree)
         {
             SystemResult result = new SystemResult();
             var list = TreeToList(tree);
@@ -133,7 +133,7 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
 
             GenImagePath(catalog);
             result = await productCatalogBLL.SaveCatalog(catalog);
-        
+
             CreateImage(catalog.Id, tempName, null);
             CreateImage(catalog.Id, tempNameM, "_m");
 
@@ -184,8 +184,8 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
         {
             List<string> data = new List<string>();
 
-            string tempFolder = PathUtil.GetPhysicalPath(Globals.Configuration["UploadPath"], Guid.Parse(CurrentUser.UserId), FileFolderEnum.TempPath);
-            
+            string tempFolder = PathUtil.GetPhysicalPath(Globals.Configuration["UploadPath"], CurrentUser.UserId, FileFolderEnum.TempPath);
+
             if (!string.IsNullOrEmpty(tempFileName))
             {
                 string imageName = Path.GetFileName(tempFileName);
@@ -198,8 +198,8 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
                     string smallImg = catId + nameSign + "_s" + fileExtension;
                     string bigImg = catId + nameSign + "_b" + fileExtension;
 
-                    string relativePath = PathUtil.GetRelativePath(Guid.Parse(CurrentUser.UserId), FileFolderEnum.Catalog);
-                    string localPath = PathUtil.GetPhysicalPath(Globals.Configuration["UploadPath"], Guid.Parse(CurrentUser.UserId), FileFolderEnum.Catalog);
+                    string relativePath = PathUtil.GetRelativePath(CurrentUser.UserId, FileFolderEnum.Catalog);
+                    string localPath = PathUtil.GetPhysicalPath(Globals.Configuration["UploadPath"], CurrentUser.UserId, FileFolderEnum.Catalog);
 
                     //var smallImageSize = _settingBLL.GetSmallCatalogImageSize();
                     //var bigImageSize = _settingBLL.GetBigCatalogImageSize();
@@ -230,8 +230,8 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
         private void GenImagePath(ProductCatalogEditModel catalog)
         {
             var tempFileName = catalog.SmallIcon;
-            string tempFolder = PathUtil.GetPhysicalPath(Globals.Configuration["UploadPath"], Guid.Parse(CurrentUser.UserId), FileFolderEnum.TempPath);
-            
+            string tempFolder = PathUtil.GetPhysicalPath(Globals.Configuration["UploadPath"], CurrentUser.UserId, FileFolderEnum.TempPath);
+
             if (!string.IsNullOrEmpty(tempFileName))
             {
                 string imageName = Path.GetFileName(tempFileName);
@@ -244,7 +244,7 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
                     string smallImg = catalog.Id + "_s" + fileExtension;
                     string bigImg = catalog.Id + "_b" + fileExtension;
 
-                    string relativePath = PathUtil.GetRelativePath(Guid.Parse(CurrentUser.UserId), FileFolderEnum.Catalog);
+                    string relativePath = PathUtil.GetRelativePath(CurrentUser.UserId, FileFolderEnum.Catalog);
 
                     var smallIcon = relativePath + "/" + smallImg;
                     var bigIcon = relativePath + "/" + bigImg;
@@ -260,7 +260,7 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
                 }
             }
 
-            var tempFileNameM = catalog.MSmallIcon;           
+            var tempFileNameM = catalog.MSmallIcon;
             if (!string.IsNullOrEmpty(tempFileNameM))
             {
                 string imageNameM = Path.GetFileName(tempFileNameM);
@@ -273,7 +273,7 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
                     string smallImg = catalog.Id + "_m_s" + fileExtension;
                     string bigImg = catalog.Id + "_m_b" + fileExtension;
 
-                    string relativePath = PathUtil.GetRelativePath(Guid.Parse(CurrentUser.UserId), FileFolderEnum.Catalog);
+                    string relativePath = PathUtil.GetRelativePath(CurrentUser.UserId, FileFolderEnum.Catalog);
 
                     var smallIcon = relativePath + "/" + smallImg;
                     var bigIcon = relativePath + "/" + bigImg;
