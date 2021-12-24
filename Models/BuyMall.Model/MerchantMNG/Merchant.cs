@@ -80,6 +80,9 @@ namespace BDMall.Model
         [Column(Order = 15)]
         public bool IsExternal { get; set; }
 
+        [Column(Order = 16)]
+        public MerchantType MerchantType { get; set; }
+
         [MaxLength(20)]
         [Column(TypeName = "varchar", Order = 17)]
         public string GCP { get; set; }

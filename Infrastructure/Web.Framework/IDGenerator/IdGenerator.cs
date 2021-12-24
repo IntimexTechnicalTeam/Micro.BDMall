@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Yitter.IdGenerator;
 
-namespace Web.Framework.IDGenerator
+namespace Web.Framework
 {
     public class IdGenerator
     {

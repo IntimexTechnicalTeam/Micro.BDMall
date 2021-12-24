@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\BusinessLayer\BDMall.BLL\BDMall.BLL.csproj" />
     <ProjectReference Include="..\..\BusinessLayer\BDMall.Repository\BDMall.Repository.csproj" />
     <ProjectReference Include="..\Web.Framework\Web.Framework.csproj" />
   </ItemGroup>

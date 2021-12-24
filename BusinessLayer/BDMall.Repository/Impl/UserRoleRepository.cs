@@ -39,7 +39,7 @@ namespace BDMall.Repository
 
             paramList.Add(new SqlParameter("@MerchantId", merchantId));
 
-            var result = baseRepository.ExecuteSqlCommand(sql, paramList);
+            var result = baseRepository.IntFromSql(sql, paramList.ToArray());
             return result >0 ? true : false;
         }
     }

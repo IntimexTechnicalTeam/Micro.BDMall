@@ -22,6 +22,7 @@ namespace BDMall.Repository
             var cmd = conn.CreateCommand();
             if (facade.IsSqlServer())
             {
+                cmd.Parameters.Clear();
                 cmd.CommandText = sql;
                 cmd.Parameters.AddRange(parameters);
             }
@@ -39,23 +40,6 @@ namespace BDMall.Repository
             return dt;
         }
 
-        static List<T> ToList<T>(this DataTable dt) where T : class, new()
-        {
-            var propertyInfos = typeof(T).GetProperties();
-            var list = new List<T>();
-            foreach (DataRow row in dt.Rows)
-            {
-                var t = new T();
-                foreach (PropertyInfo p in propertyInfos)
-                {
-                    if (dt.Columns.IndexOf(p.Name) != -1 && row[p.Name] != DBNull.Value)
-                        p.SetValue(t, row[p.Name], null);
-                }
-                list.Add(t);
-            }
-            return list;
-        }
-
         /// <summary>
         /// 自定义Sql查询，并返回集合
         /// </summary>
@@ -64,10 +48,21 @@ namespace BDMall.Repository
         /// <param name="sql"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
-        public static List<T> SqlQuery<T>(this DatabaseFacade facade, string sql, params object[] parameters) where T : class, new()
+        public static List<T> SqlQuery<T>(this DatabaseFacade facade, string sql, params object[] parameters) where T : class,new()
         {
             var dt = SqlQuery(facade, sql, parameters);
-            return dt.ToList<T>();
+            return dt.DataTableToList<T>().ToList();
         }
+
+        public static int IntFromSql(this DatabaseFacade facade, string sql, params object[] parameters)
+        {
+            int count = 0;
+            var command = CreateCommand(facade, sql, out DbConnection conn, parameters);
+            var result = command.ExecuteScalar();
+            if (result != null) count = int.Parse(result.ToString());
+            conn.Close();
+            return count;
+        }
+
     }
 }

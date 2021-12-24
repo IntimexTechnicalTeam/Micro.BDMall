@@ -66,14 +66,14 @@ namespace BDMall.Repository
         {
             var result = new ProductCatalogDto();
 
-            var query = (from c in baseRepository.GetList<ProductCatalog>()
-                         join t in baseRepository.GetList <Translation>() on c.NameTransId equals t.TransId into tc
+            var query = (from c in baseRepository.GetList<ProductCatalog>().ToList()
+                         join t in baseRepository.GetList <Translation>().ToList() on c.NameTransId equals t.TransId into tc
                          from tt in tc.DefaultIfEmpty()
                          where c.IsActive && !c.IsDeleted && c.Id == id
                          select new { catalog = c, name = tt }
                          );
 
-            var groupInfo = query.ToList().GroupBy(g => g.catalog).Select(d => new
+            var groupInfo = query.GroupBy(g => g.catalog).Select(d => new
             {
                 Catalog = d.Key,
                 Names = d.Select(a => a.name).ToList()

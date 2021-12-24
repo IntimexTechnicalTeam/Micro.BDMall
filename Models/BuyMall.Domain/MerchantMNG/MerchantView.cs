@@ -2,13 +2,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Web.Framework;
 
 namespace BDMall.Domain
 {
+
     public class MerchantView
-    {
+    {      
         /// <summary>
         /// 商家主檔記錄ID
         /// </summary>
@@ -125,7 +129,7 @@ namespace BDMall.Domain
         /// </summary>
         public List<ProductSummary> ProductList { get; set; } = new List<ProductSummary>();
 
-       
+        public MerchantType MerchantType { get; set; }
 
         public ApproveType ApproveStatus { get; set; }
 
@@ -144,7 +148,7 @@ namespace BDMall.Domain
         /// <summary>
         /// 自定义Url
         /// </summary>
-        public List<string> CustomUrls { get; set; }
+        public List<string> CustomUrls { get; set; } = new List<string>();
 
         /// <summary>
         /// 是否香港品牌
@@ -181,14 +185,58 @@ namespace BDMall.Domain
 
         public decimal CommissionRate { get; set; }
 
-        public Language Lang { get; set; }
+        public Language Language { get; set; }
         public DateTime UpdateDate { get; set; }
         public decimal Score { get; set; }
 
-        public MerchantShipView ECShipInfo { get; set; }
+        public MerchantECShipInfoDto ECShipInfo { get; set; } = new MerchantECShipInfoDto ();
 
         public int TranSinId { get; set; }
 
-       
+        public Language Lang { get; set; }
+
+
+        public virtual void Validate()
+        {
+            var pattern = @"^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,5})+$";
+
+            if (NameList==null || !NameList.Any())
+                throw new InvalidInputException($"[{Resources.Label.MerchantName}]: { Resources.Message.RequiredField}");
+
+            if (!ContactEmail.IsEmpty())
+            {
+                var emailRegx = new Regex(pattern);
+                if (!emailRegx.IsMatch(ContactEmail))
+                    throw new InvalidInputException($"[{Resources.Label.MerchantContactEmail}]: { Resources.Message.EmailAddrFormatIncorrect}");
+            }
+
+            if (OrderEmail.IsEmpty())           
+                throw new InvalidInputException($"[{Resources.Label.MerchantOrderEmail}]: { Resources.Message.RequiredField}");
+
+            if (ToolUtil.CheckHasHTMLTag(this))
+                throw new InvalidInputException($"{ Resources.Message.ExistHTMLLabel}");
+
+            //检查多语言值中是否有HTML标签
+            if (ToolUtil.CheckMultLangListHasHTMLTag(NameList.Select(s=>s.Desc).ToList()))
+                throw new InvalidInputException($"{ Resources.Message.ExistHTMLLabel}");
+
+            if (ToolUtil.CheckMultLangListHasHTMLTag(ContactList.Select(s => s.Desc).ToList()))
+                throw new InvalidInputException($"{ Resources.Message.ExistHTMLLabel}");
+
+            if (ToolUtil.CheckMultLangListHasHTMLTag(ContactAddrList.Select(s => s.Desc).ToList()))
+                throw new InvalidInputException($"{ Resources.Message.ExistHTMLLabel}");
+
+            if (ToolUtil.CheckMultLangListHasHTMLTag(ContactAddr2List.Select(s => s.Desc).ToList()))
+                throw new InvalidInputException($"{ Resources.Message.ExistHTMLLabel}");
+
+            if (ToolUtil.CheckMultLangListHasHTMLTag(ContactAddr3List.Select(s => s.Desc).ToList()))
+                throw new InvalidInputException($"{ Resources.Message.ExistHTMLLabel}");
+
+            if (ToolUtil.CheckMultLangListHasHTMLTag(ContactAddr4List.Select(s => s.Desc).ToList()))
+                throw new InvalidInputException($"{ Resources.Message.ExistHTMLLabel}");
+
+            if (ToolUtil.CheckMultLangListHasHTMLTag(RemarksList.Select(s => s.Desc).ToList()))
+                throw new InvalidInputException($"{ Resources.Message.ExistHTMLLabel}");
+        }
     }
 }

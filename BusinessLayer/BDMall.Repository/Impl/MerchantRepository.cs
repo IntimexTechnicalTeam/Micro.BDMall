@@ -17,15 +17,10 @@ namespace BDMall.Repository
         public PageData<MerchantView> SearchMerchByCond(MerchantPageInfo condition)
         {
             PageData<MerchantView> data = new PageData<MerchantView>();
-
-            var baseQuery = GenBaseQuery(condition);
-            var cond = condition.Condition;
-            List<SqlParameter> paramList = new List<SqlParameter>();
-
-            var fromIndex = ((condition.Page - 1) * condition.PageSize) + 1;
-            var toIndex = condition.Page * condition.PageSize;
-
             StringBuilder sb = new StringBuilder();
+
+            var baseQuery = GenBaseQuery(condition);               
+            data.TotalRecord = GetMerchantCount(baseQuery);
 
             sb.AppendLine("select Id ,ClientId  ,MerchNo  ,Name  ,NameTransId  ,Contact  ,ContactTransId  ,ContactPhoneNum  ,FaxNum ");
             sb.AppendLine(",ContactAddress  ,ContactAddrTransId  ,ContactEmail  ,OrderEmail  ,Remarks  ,RemarksTransId  ,IsActive  ");
@@ -40,32 +35,71 @@ namespace BDMall.Repository
             }
             sb.AppendLine(" ,*from(");
 
-            sb.AppendLine($"{ baseQuery.sb }");
+            sb.AppendLine($"{ baseQuery.strSql }");
 
             sb.AppendLine(") a");
             sb.AppendLine(")b where rowNum between @StartIndex and @EndIndex");
+
+            List<SqlParameter> paramList = new List<SqlParameter>();
+
+            var fromIndex = ((condition.Page - 1) * condition.PageSize) + 1;
+            var toIndex = condition.Page * condition.PageSize;
+
+            foreach (var item in baseQuery.ParamList)
+            {
+                SqlParameter p = (SqlParameter)item;
+                paramList.Add(new SqlParameter { ParameterName = p.ParameterName, Value = p.Value });
+            }
+
             paramList.Add(new SqlParameter("@StartIndex", fromIndex));
             paramList.Add(new SqlParameter("@EndIndex", toIndex));
-
-            //var result = baseRepository.SqlQuery<MerchantView>(sb.ToString(), paramList.ToArray());
-            var result = baseRepository.GetList<MerchantView>(sb.ToString(),paramList.ToArray()).ToList();
-
-            data.TotalRecord = GetMerchantCount(baseQuery);
+            var result = baseRepository.SqlQuery<MerchantView>(sb.ToString(), paramList.ToArray());
+            
             data.Data = result;
             return data;
         }
 
-        private int GetMerchantCount(QueryModelParam  queryModelParam)
-        {           
-            List<SqlParameter> paramList = new List<SqlParameter>();
-            StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine($"select count(id) from ({ queryModelParam.sb} as b");
-            var result = baseRepository.ExecuteSqlCommand(sb.ToString(), paramList.ToArray());
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        /// <summary>
+        /// 读取总数
+        /// </summary>
+        /// <param name="baseQuery"></param>
+        /// <returns></returns>
+        private int GetMerchantCount(QueryParam baseQuery)
+        {
+            StringBuilder sb = new StringBuilder();
+            List<SqlParameter> paramList = new List<SqlParameter>();         
+            
+            sb.AppendLine($"select count(1) from ({ baseQuery.strSql } ) as b");
+            var result = baseRepository.IntFromSql(sb.ToString(), baseQuery.ParamList.ToArray());
+
             return result;
         }
 
-        private QueryModelParam GenBaseQuery(MerchantPageInfo condition)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="condition"></param>
+        /// <returns></returns>
+        private QueryParam GenBaseQuery(MerchantPageInfo condition)
         {
             StringBuilder sb = new StringBuilder();
             var cond = condition.Condition;
@@ -80,7 +114,8 @@ namespace BDMall.Repository
             sb.AppendLine("left join Translations dt on m.ContactAddrTransId = dt.TransId and dt.Lang = @lang");
             sb.AppendLine("left join Translations ct on m.ContactTransId = ct.TransId and ct.Lang = @lang");
             sb.AppendLine("left join Translations rt on m.RemarksTransId = rt.TransId and rt.Lang = @lang");
-            if (!string.IsNullOrEmpty(cond.Name))
+
+            if (!cond.Name.IsEmpty())
             {
                 sb.AppendLine(" inner join(");
                 sb.AppendLine(" select tm.NameTransId from Merchants tm");
@@ -179,10 +214,8 @@ namespace BDMall.Repository
             }
 
             paramList.Add(new SqlParameter("@lang", CurrentUser.Lang.ToInt()));
-
-            //QueryModelParam queryModelParam = new QueryModelParam { sb = sb, paramList = paramList };
-
-            return null;
+            var result = new QueryParam { strSql = sb, ParamList = paramList.ToArray() };
+            return result;     
         }
     }
 }

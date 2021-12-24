@@ -662,7 +662,7 @@
         });
 
         function GetProductCondition() {
-            InitNormalSelect("cboMerchant", "/adminapi/Merchant/GetMerchantOptions", true, null, false);
+            InitNormalSelect("cboMerchant", "/adminapi/Dict/GetMerchantOptions", true, null, false);
 
             WS.AjaxP("get", "/AdminAPI/Product/GetProductCondition", null, function (response) {
                 vm.ProductCondtionCache = response.ReturnValue;

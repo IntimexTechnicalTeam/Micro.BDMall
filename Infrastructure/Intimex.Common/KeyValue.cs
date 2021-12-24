@@ -8,15 +8,10 @@ namespace Intimex.Common
 {
     public class KeyValue
     {
-        private string _id;
-        public string Id {
+       
+        public string Id { get; set; }
 
-            get
-            {
-                return _id.ToLower();
-            }
-            set { _id = value; }
-        }
+        
         public string Text { get; set; }
     }
 }

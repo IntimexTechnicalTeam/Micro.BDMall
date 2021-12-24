@@ -81,11 +81,17 @@ namespace BDMall.Repository
 
         public string GetDescForLang(Guid transId, Language lang)
         {
-            var data = "";
-            data = baseRepository.GetModel<Translation>(d => d.TransId == transId && d.Lang == lang && d.IsActive && !d.IsDeleted)?.Value ?? "";
-            return data;
-
+            string key = $"{CacheKey.Translations}_{lang}";
+            var trans =  RedisHelper.HGet<Translation>(key, transId.ToString());
+            if (trans == null)
+            {             
+                trans =  baseRepository.GetModel<Translation>(d => d.TransId == transId && d.Lang == lang && d.IsActive && !d.IsDeleted);
+                if (trans != null)
+                     RedisHelper.HSet(key, trans.TransId.ToString(), trans);
+            }         
+            return trans?.Value ?? "";
         }
+
         public List<Translation> GetTranslation(Guid transId)
         {
             var trans = GetTranslationFromCache(transId);
@@ -162,20 +168,38 @@ namespace BDMall.Repository
             return Guid.Empty;
         }
 
-        public List<Translation> GenTranslations(List<MutiLanguage> items, TranslationType type, Guid transId)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="items"></param>
+        /// <param name="type"></param>
+        /// <param name="transId"></param>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        public List<Translation> GenTranslations(List<MutiLanguage> items, TranslationType type, Guid transId,ActionTypeEnum actionTypeEnum = ActionTypeEnum.Add)
         {
             var list = new List<Translation>();
 
             foreach (var item in items)
             {
                 Translation trans = new Translation();
-                trans.Id = Guid.NewGuid();
-                trans.TransId = transId;
-                trans.Lang = item.Language;
-                trans.Value = item.Desc ?? string.Empty;
-                trans.Module = type.ToString();
+                if (actionTypeEnum == ActionTypeEnum.Add)
+                {
+                    trans.Id = Guid.NewGuid();
+                    trans.TransId = transId;
+                    trans.Lang = item.Language;
+                    trans.Value = item.Desc ?? string.Empty;
+                    trans.Module = type.ToString();                                   
+                }
+                else if (actionTypeEnum == ActionTypeEnum.Modify)
+                {
+                    trans  = baseRepository.GetModel<Translation>(x => x.TransId == transId && x.Lang == item.Language);
+                    trans.Value = item.Desc ?? string.Empty;
+                    trans.UpdateDate = DateTime.Now;
+                }
+
                 list.Add(trans);
-                string key = $"{CacheKey.Translations}_{trans.Lang}";
+                string key = $"{CacheKey.Translations}_{item.Lang}";
                 RedisHelper.HSet(key, trans.TransId.ToString(), trans);
             }
             return list;

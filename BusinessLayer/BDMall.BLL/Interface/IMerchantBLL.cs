@@ -15,5 +15,19 @@ namespace BDMall.BLL
         List<KeyValue> GetMerchantCboSrcByCond(bool containMall);
 
         PageData<MerchantView> GetMerchLstByCond(MerchantPageInfo condition);
+
+        MerchantView GetMerchById(Guid Id);
+
+        Task<SystemResult> Save(MerchantView merchVw);
+
+        Task<SystemResult> ActiveMerchantAsync(Guid merchID);
+
+        Task<SystemResult> DeactiveMerchantAsync(Guid merchID);
+
+        Task<SystemResult> LogicalDelMerchRec(string recIDsList);
+
+        MerchantShipMethodMappingView GetMerchantShipMethods(Guid merchantId);
+
+        void SaveShipMethodMapping(MerchantShipMethodMappingView mappingShipMethod);
     }
 }

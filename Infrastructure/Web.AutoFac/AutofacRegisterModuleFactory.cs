@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using Autofac.Extras.DynamicProxy;
+using BDMall.BLL;
 using BDMall.Repository;
 using MediatR;
 using System.Linq;
@@ -39,6 +40,15 @@ namespace Web.AutoFac
                       .AsClosedTypesOf(typeof(INotificationHandler<>)).AsImplementedInterfaces()
                       .PropertiesAutowired().InstancePerLifetimeScope();
 
+            var preHeatList = RuntimeHelper.Discovery().FirstOrDefault(type => type.GetName().Name == "BDMall.BLL")?
+                    .GetTypes()?.Where(type => type.Name.StartsWith("PreHeat"))?.ToArray();
+
+            foreach (var item in preHeatList)
+            {
+                //builder.RegisterType(item).Named<IBasePreHeatService>(item.Name).EnableInterfaceInterceptors().AsImplementedInterfaces().InstancePerLifetimeScope();
+                builder.RegisterType(item).InstancePerLifetimeScope();
+            }
+            builder.RegisterType(typeof(IdGenerator)).As(typeof(IdGenerator)).SingleInstance();   //注入雪花算法的的唯一序列号
         }
     }
 }

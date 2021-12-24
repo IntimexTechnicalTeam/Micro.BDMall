@@ -23,7 +23,7 @@ namespace BDMall.BLL
                          where e.IsActive && !e.IsDeleted && e.IsInvAttribute
                          select new KeyValue
                          {
-                             Id = e.Id.ToString(),
+                             Id = e.Id.ToString().ToLower(),
                              Text = tt.Value
                          }).ToList();
 
@@ -38,7 +38,7 @@ namespace BDMall.BLL
                                      where e.IsActive && !e.IsDeleted && !e.IsInvAttribute
                                      select new KeyValue
                                      {
-                                         Id = e.Id.ToString(),
+                                         Id = e.Id.ToString().ToLower(),
                                          Text = tt.Value
                                      }).ToList();
 

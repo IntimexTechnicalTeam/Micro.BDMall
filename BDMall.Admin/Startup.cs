@@ -1,4 +1,5 @@
 using Autofac;
+using BDMall.BLL;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -71,7 +72,9 @@ namespace BDMall.Admin
             Web.Mvc.ServiceCollectionExtensions.AddServiceProvider(services);
             Web.MediatR.ServiceCollectionExtensions.AddServices(services, typeof(Startup));
 
-            Web.Mvc.ServiceCollectionExtensions.AddFileProviderServices(services, Globals.Configuration);          
+            Web.Mvc.ServiceCollectionExtensions.AddFileProviderServices(services, Globals.Configuration);
+
+            //AddScopedIServiceProvider(services);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -156,6 +159,18 @@ namespace BDMall.Admin
                     return new OkObjectResult(result);
                 };
             });
+        }
+
+        void AddScopedIServiceProvider(IServiceCollection services)
+        {
+            var preHeatList = RuntimeHelper.Discovery().FirstOrDefault(type => type.GetName().Name == "BDMall.BLL")?
+                    .GetTypes()?.Where(type => type.Name.StartsWith("PreHeat"))?.ToArray();
+
+            foreach (var item in preHeatList)
+            {
+                services.AddScoped(item);
+            }
+            //return services;
         }
     }
 }

@@ -9,7 +9,11 @@ namespace BDMall.BLL
 {
     public interface IBasePreHeatService : IDependency
     {
-
+        /// <summary>
+        /// 更新缓存
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
         Task<SystemResult> CreatePreHeat(Guid Id);
 
         Task UpdatePreHeat(string key, string field, object value);

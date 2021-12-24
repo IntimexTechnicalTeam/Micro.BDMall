@@ -56,6 +56,6 @@ namespace BDMall.Repository
 
         Task<Translation> GetTranslationAsync(Guid transId, Language lang);
 
-        List<Translation> GenTranslations(List<MutiLanguage> items, TranslationType type, Guid transId);
+        List<Translation> GenTranslations(List<MutiLanguage> items, TranslationType type, Guid transId, ActionTypeEnum actionTypeEnum = ActionTypeEnum.Add);
     }
 }

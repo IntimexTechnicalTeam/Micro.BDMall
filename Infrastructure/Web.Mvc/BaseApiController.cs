@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Web.Framework;
 using Web.Jwt;
 
 namespace Web.Mvc
@@ -181,6 +182,11 @@ namespace Web.Mvc
 
                 return _currentUser;
             }
+        }
+
+        public string AutoGenerateNumber(string perfix = "BD")
+        {
+            return $"{perfix}{IdGenerator.NewId}";
         }
     }
 }

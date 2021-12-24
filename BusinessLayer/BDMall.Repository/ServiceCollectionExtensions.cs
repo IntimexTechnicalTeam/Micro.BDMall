@@ -24,6 +24,7 @@ namespace BDMall.Repository
                     option.UseSqlServer(config["ConnectionStrings:sqlcon"])
                     .UseLoggerFactory(logger)
                     .EnableSensitiveDataLogging()
+                    .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
              );
             return services;
         }

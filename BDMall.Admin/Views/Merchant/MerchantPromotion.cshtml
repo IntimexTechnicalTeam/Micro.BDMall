@@ -1,0 +1,1016 @@
+﻿@{
+    ViewBag.Title = "MerchantPromotion";
+    Layout = "~/Views/Shared/_LayoutEditor.cshtml";
+    //Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+
+}
+
+<div id="divMain" v-cloak>
+
+    <div id="divMerchantPromotionInfo" class="form-group col-sm-12" v-show="merchId!='00000000-0000-0000-0000-000000000000'">
+
+        <div style="margin:0 0 0 10px;">
+            <div>
+                <span style="color:red;font-size:large;">@BDMall.Resources.Label.ApproveStatus:{{promotion.ApproveStatusString}}</span>
+            </div>
+            <ul id="myPromotionTab" class="nav nav-tabs ">
+                <li class="active">
+                    <a href="#divImage" data-toggle="tab">@BDMall.Resources.Label.Banner</a>
+                </li>
+                <li>
+                    <a href="#divIntroduction" data-toggle="tab">@BDMall.Resources.Label.Introduction</a>
+                </li>
+                <li>
+                    <a href="#divProductList" data-toggle="tab">@BDMall.Resources.Label.Promotion</a>
+                </li>
+                <li>
+                    <a href="#divLogo" data-toggle="tab">@BDMall.Resources.Label.Logo</a>
+                </li>
+                <li>
+                    <a href="#divTAndC" data-toggle="tab">@BDMall.Resources.Label.TAndC</a>
+                </li>
+                <li>
+                    <a href="#divOrder" data-toggle="tab">@BDMall.Resources.Label.OrderConfigure</a>
+                </li>
+            </ul>
+            <div id="divPromotion" class="tab-content">
+                <div id="divImage" class="tab-pane fade in active">
+                    <table class="table">
+                        <tr>
+                            <td>@BDMall.Resources.Label.Language</td>
+                            <td>
+                                <select class="form-control" name="Language" id="cboLanguage" v-model="language" style="width:300px;"></select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@BDMall.Resources.Label.Image</td>
+                            <td>
+                                <div v-show="isMerchant==true">
+                                    <input name="BannerImg" id="BannerImg" type="file" class="file" multiple />
+                                    <span>@string.Format(BDMall.Resources.Label.UploadPhotoSize, 1200, 500)</span>
+                                </div>
+
+                            </td>
+                        </tr>
+                    </table>
+                    <table id="tblPromotionImg" class="table table-hover">
+                        <tr>
+                            <th>
+
+                            </th>
+                            <th>
+                                @BDMall.Resources.Label.Image
+                            </th>
+                            <th>
+                                @BDMall.Resources.Label.Seq
+                            </th>
+                            <th>
+                                @BDMall.Resources.Label.Link
+                            </th>
+                            <th>
+                                @BDMall.Resources.Label.IsOpenNewWindow
+                            </th>
+                            <th>
+                                @BDMall.Resources.Label.Language
+                            </th>
+                            <th>
+                                @BDMall.Resources.Label.Action
+                            </th>
+                        </tr>
+                        <tr v-for="item,index in promotion.Banners" v-if="item.IsDelete==false">
+                            <td>
+                                {{index+1}}
+                            </td>
+                            <td>
+                                <img v-bind:src="item.Image" width="50" style="cursor:pointer;" v-on:click="dialog($event)" />
+                            </td>
+                            <td>
+                                <input type="number" v-model="item.Seq" class="form-control" style="width:100px;" />
+                            </td>
+
+                            <td>
+                                <input type="text" v-model="item.BannerLink" class="form-control" />
+                            </td>
+                            <td>
+                                <input type="checkbox" v-model="item.IsOpenWindow" />
+                            </td>
+                            <td>
+                                <span v-show="item.Language=='E'">@BDMall.Resources.Value.LangEnglish</span>
+                                <span v-show="item.Language=='C'">@BDMall.Resources.Value.LangTraditionalChinese</span>
+                                <span v-show="item.Language=='S'">@BDMall.Resources.Value.LangSimplifiedChinese</span>
+                            </td>
+                            <td>
+                                <input type="button" value="@BDMall.Resources.Action.Delete" class="btn btn-default" v-on:click="deleteBanner(item.Image)" v-show="isMerchant==true" />
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div id="divIntroduction" class="tab-pane fade">
+                    <table class="table">
+
+                        <tr>
+                            <td></td>
+                            <td>
+                                <multilang-bar v-bind:data="promotion.Descriptions" ref="langbar4" v-bind:selectlanguage="selectIntroductionLanguage"></multilang-bar>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@BDMall.Resources.Label.Introduction</td>
+                            <td>
+                                <div v-for="item in promotion.Descriptions">
+                                    <div v-show="item.Lang.Code==introductionlanguageType" v-bind:id="'editor_'+item.Lang.Code" type="text/plain">
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div style="display:none;">
+                    <input name="txt_file" id="CoverImg" type="file" class="file" />
+                </div>
+                <div style="display:none;">
+                    <input name="txt_file" id="MobileCoverImg" type="file" class="file" />
+                </div>
+                <div id="divProductList" class="tab-pane fade">
+                    <table class="table">
+                        <tr>
+                            <td></td>
+                            <td>
+                                <multilang-bar v-bind:data="promotion.PromotionIntroductions" ref="langbar2" v-bind:selectlanguage="selectProLanguage"></multilang-bar>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@BDMall.Resources.Label.Cover</td>
+                            <td>
+                                <div v-for="item in promotion.Covers" v-show="item.Lang.Code==promoLanguageType">
+                                    <img class="img-rounded" v-bind:src="item.Desc" v-bind:id="'covers_' + item.Lang.Code" width="100" v-on:click="dialog($event)" />
+                                    <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.UploadImage" v-on:click="uploadCover(item.Lang.Code)" v-show="isMerchant==true" />
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@BDMall.Resources.Label.MobileImage</td>
+                            <td>
+                                <div v-for="item in promotion.MobileCovers" v-show="item.Lang.Code==promoLanguageType">
+                                    <img class="img-rounded" v-bind:src="item.Desc" v-bind:id="'mobileCovers_' + item.Lang.Code" width="100" v-on:click="dialog($event)" />
+                                    <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.UploadImage" v-on:click="uploadMobileCover(item.Lang.Code)" v-show="isMerchant==true" />
+
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@BDMall.Resources.Label.Name</td>
+                            <td>
+                                <div v-for="item in promotion.PromotionNames">
+                                    <input type="text" class="form-control" v-bind:id="'promotionNames_' + item.Lang.Code" v-model="item.Desc" v-show="item.Lang.Code==promoLanguageType" />
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@BDMall.Resources.Label.Desc</td>
+                            <td>
+                                <div v-for="item in promotion.PromotionIntroductions">
+                                    <textarea rows="3" class="form-control" v-bind:id="'promotionIntroductions_' + item.Lang.Code" v-model="item.Desc" v-show="item.Lang.Code==promoLanguageType"></textarea>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@BDMall.Resources.Label.Notice</td>
+                            <td>
+                                <div v-for="item in promotion.Notices">
+                                    <textarea rows="3" class="form-control" v-bind:id="'notices_' + item.Lang.Code" v-model="item.Desc" v-show="item.Lang.Code==promoLanguageType"></textarea>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                    <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.AddProduct" v-on:click="addProduct" v-show="isMerchant==true" />
+                    <table class="table" id="tblPromoteProduct">
+                        <tr>
+                            <td>@BDMall.Resources.Label.ProductCode</td>
+                            <td>@BDMall.Resources.Label.ProductName</td>
+                            <td>@BDMall.Resources.Label.Img</td>
+                            <td>@BDMall.Resources.Label.Action</td>
+                        </tr>
+                        <tr v-for="item in promotion.ProductList" v-if="item.IsDelete==false">
+                            <td>
+                                {{item.Code}}
+                            </td>
+                            <td>
+                                {{item.Name}}
+                            </td>
+                            <td>
+                                <img v-bind:src="item.Imgs[0]" width="64" v-on:click="getBigImage($event)" v-on:dblclick="openBigImage($event)" />
+                            </td>
+                            <td>
+                                <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Delete" v-on:click="deleteProduct(item.Code)" />
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div style="display:none;">
+                    <input name="txt_file" id="LogoImg" type="file" class="file" />
+                </div>
+                <div id="divLogo" class="tab-pane fade">
+                    <table class="table">
+                        @*<tr>
+                    <td colspan="2">
+                        <input name="txt_file" id="LogoImg" type="file" class="file" />
+                    </td>
+                </tr>*@
+                        <tr>
+                            <td></td>
+                            <td>
+                                <multilang-bar v-bind:data="promotion.Logos" ref="langbar3" v-bind:selectlanguage="selectLogoLanguage"></multilang-bar>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@BDMall.Resources.Label.Logo</td>
+                            <td>
+                                <div v-for="item in promotion.Logos" v-show="item.Lang.Code==logoLanguageType">
+                                    <img class="img-rounded" v-bind:src="item.Desc" v-bind:id="'logos_' + item.Lang.Code" width="100" v-on:click="dialog($event)" />
+                                    <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.UploadImage" v-on:click="uploadLogo(item.Lang.Code)" v-show="isMerchant==true" />
+                                    <span>@string.Format(BDMall.Resources.Label.UploadPhotoSize, 350, 350)</span>
+                                </div>
+                            </td>
+                        </tr>
+                        @*<tr>
+                    <td>@BDMall.Resources.Label.Logo</td>
+                    <td>
+                        <img class="img-rounded" v-bind:src="promotion.Logos" width="100" />
+                    </td>
+                </tr>*@
+                    </table>
+                </div>
+                <div id="divTAndC" class="tab-pane fade">
+                    <table class="table">
+                        <tr>
+                            <td></td>
+                            <td>
+                                <multilang-bar v-bind:data="promotion.TAndCs" ref="langbar5" v-bind:selectlanguage="selectTAndCsLanguage"></multilang-bar>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@BDMall.Resources.Label.MerchantTerms</td>
+                            <td>
+                                <div v-for="item in promotion.TAndCs">
+                                    <div v-show="item.Lang.Code==tAndCslanguageType" v-bind:id="'editorMTC_'+item.Lang.Code" type="text/plain">
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@BDMall.Resources.Label.ReturnTerms</td>
+                            <td>
+                                <div v-for="item in promotion.ReturnTermses">
+                                    <div v-show="item.Lang.Code==tAndCslanguageType" v-bind:id="'editorRTC_'+item.Lang.Code" type="text/plain">
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div id="divOrder" class="tab-pane fade">
+                    <table class="table">
+                        <tr>
+                            <td width="10%"></td>
+                            <td>
+                                <multilang-bar v-bind:data="promotion.ExpCompleteDays" ref="langbar" v-bind:selectlanguage="selectOrderLanguage"></multilang-bar>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@BDMall.Resources.Label.OrderExpCompleteDays</td>
+                            <td>
+                                <div v-for="item in promotion.ExpCompleteDays" v-show="item.Lang.Code==orderlanguageType">
+                                    <input class="form-control" v-bind:id="'expCompleteDays_' + item.Lang.Code" v-model="item.Desc" />
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@BDMall.Resources.Label.LocalOrderCoolDownDay</td>
+                            <td>
+                                <input class="form-control" v-model="promotion.LocalCoolDownDay" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@BDMall.Resources.Label.OverSeaCoolDownDay</td>
+                            <td>
+                                <input class="form-control" v-model="promotion.OverSeaCoolDownDay" />
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="modal-footer">
+
+
+                    <input type="button" v-show="editType!='Approve'" class="btn btn-default btn-action-default" value="@BDMall.Resources.Action.Close" v-on:click="closeTab" />
+
+                    <input id="btnCopyToOtherLang" v-show="editType!='Approve' && isMerchant==true" type="button" class="btn btn-primary btn-action-default" value="@BDMall.Resources.Action.CopyToOtherLanguage" v-on:click="copyToOtherLang" />
+                    <input id="btnModiy" v-show="editType!='Approve' && isMerchant==true" type="button" class="btn btn-primary btn-action-default" value="@BDMall.Resources.Action.Save" v-on:click="savePromotion" />
+                    <input id="btnApply" type="button" v-show="isMerchant==true" v-on:click="saveAndApply" class="btn btn-primary btn-action-default" value="@BDMall.Resources.Action.SaveAndApply" />
+
+                    <input type="button" v-show="isMerchant==false && editType=='Approve'" class="btn btn-primary btn-action-large" value="@BDMall.Resources.Action.Pass" v-on:click="approve" />
+                    <input type="button" v-show="isMerchant==false && editType=='Approve'" class="btn btn-warning btn-action-large" value="@BDMall.Resources.Action.Reject" v-on:click="setTurndown" />
+                </div>
+            </div>
+        </div>
+        <div id="myModal2" style="display:none; padding:5px;">
+            <form id="attributeValueForm">
+                <div class="modal-header">
+                    <span>@BDMall.Resources.Label.Reject</span>
+                </div>
+                <div>
+                    <div id="frmInput" class="form-horizontal">
+                        <div class="form-group">
+                            <label for="txtTurnReason" class="col-md-3 text-left">@BDMall.Resources.Label.RejectReson</label>
+                            <div class="col-md-9">
+                                <textarea name="turnReason" rows="5" class="form-control" id="txtTurnReason" v-model="turndownReason"></textarea>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <input type="submit" class="btn btn-primary btn-action-large" value="@BDMall.Resources.Action.Confirm" />
+                    <input type="button" class="btn btn-action-large" value="@BDMall.Resources.Action.Cancel" v-on:click="cancelTurndown" />
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="outerdiv" style="position:fixed;top:0;left:0;background:rgba(0,0,0,0.7);z-index:1200;width:100%;height:100%;display:none;">
+        <div id="innerdiv" style="position:absolute;">
+            <img id="bigimg" style="border:5px solid #fff;" src="" />
+        </div>
+    </div>
+</div>
+
+@section scripts{
+   
+    <script src="~/Scripts/admin/vue-component/multilangbar.js"></script>
+
+    <script type="text/javascript">
+        var timer = null;
+        var mEmptyId = "00000000-0000-0000-0000-000000000000";
+        //var mBMode_IDP = 0;//獨立模式
+        //var mBMode_INS = 1;//鑲嵌模式
+        var ue_E;
+        var ue_C;
+        var ue_S;
+        var ue_J;
+
+
+        var vm = new Vue({
+            el: "#divMain",
+            data: {
+                isMerchant: false,
+                language: "E",
+                languageType: "E",
+                promoLanguageType: "E",
+                logoLanguageType: "E",
+                orderlanguageType: "E",
+                introductionlanguageType: "E",
+                tAndCslanguageType: "E",
+                //browseMode: @ViewBag.BrowseMode,//瀏覽模式（獨立模式(0)時，顯示下拉選擇框，供管理員切換需要編輯的商家推廣信息，鑲嵌模式(1)時，則不顯示）
+                merchId: mEmptyId,
+                editType: '@ViewBag.EditType',
+                IsReadonly: false,
+                promotion: {
+                    LogoId: WS.GuidEmpty,
+                    Logos: [{ Lang: { Code: "", Text: "" }, Desc: "" }],
+                    Id: WS.GuidEmpty,
+                    MerchantId: WS.GuidEmpty,
+                    CoverId: WS.GuidEmpty,
+                    Covers: [{ Lang: { Code: "", Text: "" }, Desc: "" }],
+                    MobileCovers: [{ Lang: { Code: "", Text: "" }, Desc: "" }],
+                    Banners: [],
+                    PromotionIntroductions: [],
+                    PromotionNames: [],
+                    Descriptions:[],
+                    ProductList: [],
+                    TAndCs: [{ Lang: { Code: "", Text: "" }, Desc: "" }],
+                    Notices: [{ Lang: { Code: "", Text: "" }, Desc: "" }],
+                    ReturnTermses: [{ Lang: { Code: "", Text: "" }, Desc: "" }]
+                },
+                //tmpCover: "",
+                //tmpLogo: "",
+                coverLang: "E",
+                logoLang:"E",
+                turndownReason:""
+            },
+            methods: {
+
+                getMerchantPromotion: function () {
+                    var data = new Object();
+                    data.merchID = vm.merchId;
+
+                    WS.AjaxP("get", "/adminapi/Merchant/GetMerchPromotionInfo", data, function (response) {
+                        vm.promotion = response;
+                        vm.promotion.MerchantId = vm.merchId;
+
+                        vm.$nextTick(function () {
+                            vm.setDefaultLanguage(vm.promotion.Descriptions);
+                            vm.setProDefaultLanguage(vm.promotion.PromotionIntroductions)
+                            vm.setLogoDefaultLanguage(vm.promotion.Logos);
+                            vm.setIntroductionDefaultLanguage(vm.promotion.PromotionIntroductions);
+                            vm.setTAndCsDefaultLanguage(vm.promotion.TAndCs);
+                            var config={
+                                wordCount: true
+                                    , maximumWords: 10000
+                                    , wordCountMsg: "@BDMall.Resources.Message.EditorWordCountMsg"
+                                    , wordOverFlowMsg:"@BDMall.Resources.Message.EditorWordOverFlowMsg"
+                            };
+
+                            vm.promotion.Descriptions.forEach(function (val, item) {
+                                var el = "ue_" + val.Lang.Code + "= UE.getEditor('editor_" + val.Lang.Code + "', config);";
+                                eval(el);
+                            });
+                            vm.promotion.Descriptions.forEach(function (val, item) {
+                                var el1 = "ue_" + val.Lang.Code + ".addListener('ready',function(){ue_" + val.Lang.Code + ".setContent(val.Desc);});";
+                                eval(el1);
+                            });
+
+                            vm.promotion.TAndCs.forEach(function (val, item) {
+                                var el = "ueMTC_" + val.Lang.Code + "= UE.getEditor('editorMTC_" + val.Lang.Code + "', config);";
+                                eval(el);
+                            });
+                            vm.promotion.TAndCs.forEach(function (val, item) {
+                                var el1 = "ueMTC_" + val.Lang.Code + ".addListener('ready',function(){ueMTC_" + val.Lang.Code + ".setContent(val.Desc);});";
+                                eval(el1);
+                            });
+
+                            vm.promotion.ReturnTermses.forEach(function (val, item) {
+                                var el = "ueRTC_" + val.Lang.Code + "= UE.getEditor('editorRTC_" + val.Lang.Code + "', config);";
+                                eval(el);
+                            });
+                            vm.promotion.ReturnTermses.forEach(function (val, item) {
+                                var el1 = "ueRTC_" + val.Lang.Code + ".addListener('ready',function(){ueRTC_" + val.Lang.Code + ".setContent(val.Desc);});";
+                                eval(el1);
+                            });
+                        });
+                    }, function () { })
+                },
+                uploadCover: function (lang) {
+                    vm.coverLang = lang;
+                    $("#CoverImg").click();
+
+                },
+                uploadMobileCover: function (lang) {
+                    vm.coverLang = lang;
+                    $("#MobileCoverImg").click();
+
+                },
+                uploadLogo: function (lang) {
+                    vm.logoLang = lang;
+                    $("#LogoImg").click();
+
+                },
+                selectOrderLanguage: function (obj) {
+                    vm.$refs.langbar.setCurrentLanguage(obj.Lang.Code);
+                    vm.orderlanguageType = obj.Lang.Code;
+
+
+                },
+                selectIntroductionLanguage: function (obj) {
+                    vm.$refs.langbar2.setCurrentLanguage(obj.Lang.Code);
+                    vm.introductionlanguageType = obj.Lang.Code;
+
+                },
+                setIntroductionDefaultLanguage: function (data) {
+                    if (data.length > 0) {
+                        var defaultLang = data[0].Lang.Code;
+                        vm.$refs.langbar4.setCurrentLanguage(defaultLang);
+                        vm.introductionlanguageType = data[0].Lang.Code;
+                    }
+                },
+                selectLanguage: function (obj) {
+                    vm.$refs.langbar.setCurrentLanguage(obj.Lang.Code);
+                    //vm.language = obj.Lang.Text;
+                    vm.languageType = obj.Lang.Code;
+                    //vm.languageTypeValue = obj.Lang.Desc;
+                },
+
+                selectTAndCsLanguage: function (obj) {
+                    vm.$refs.langbar5.setCurrentLanguage(obj.Lang.Code);
+                    vm.tAndCslanguageType = obj.Lang.Code;
+
+                },
+                setTAndCsDefaultLanguage: function (data) {
+                    if (data.length > 0) {
+                        var defaultLang = data[0].Lang.Code;
+                        vm.$refs.langbar5.setCurrentLanguage(defaultLang);
+                        vm.tAndCslanguageType = data[0].Lang.Code;
+                    }
+                },
+                setDefaultLanguage: function (data) {
+                    if (data.length > 0) {
+                        var defaultLang = data[0].Lang.Code;
+                        vm.$refs.langbar.setCurrentLanguage(defaultLang);
+                        //vm.language = data[0].Lang.Text;
+                        //vm.languageTypeValue = data[0].Lang.Desc;
+                    }
+                },
+                selectProLanguage: function (obj) {
+                    vm.$refs.langbar2.setCurrentLanguage(obj.Lang.Code);
+                    //vm.language = obj.Lang.Text;
+                    vm.promoLanguageType = obj.Lang.Code;
+
+
+                },
+                setProDefaultLanguage: function (data) {
+                    if (data.length > 0) {
+                        var defaultLang = data[0].Lang.Code;
+                        vm.$refs.langbar2.setCurrentLanguage(defaultLang);
+                        //vm.language = data[0].Lang.Text;
+                        vm.promoLanguageType = data[0].Lang.Code;
+                    }
+                },
+                selectLogoLanguage: function (obj) {
+                    vm.$refs.langbar3.setCurrentLanguage(obj.Lang.Code);
+                    //vm.language = obj.Lang.Text;
+                    vm.logoLanguageType = obj.Lang.Code;
+
+
+                },
+                setLogoDefaultLanguage: function (data) {
+                    if (data.length > 0) {
+                        var defaultLang = data[0].Lang.Code;
+                        vm.$refs.langbar3.setCurrentLanguage(defaultLang);
+                        //vm.language = data[0].Lang.Text;
+                        vm.logoLanguageType = data[0].Lang.Code;
+                    }
+                },
+
+                savePromotion: function () {
+                    GetIntorduction();
+                    GetTAncC();
+                    GetRtnTerms();                   
+                    WS.AjaxP("post", "/adminapi/Merchant/SaveMerchantPromotion", vm.promotion, function (response) {
+                        if (response.Succeeded == true) {
+                            showInfo('@BDMall.Resources.Message.SaveSuccess');
+                            vm.getMerchantPromotion();
+                        }
+                        else {
+                            showWarn(response.Message);
+                        }
+                    }, function () { })
+                },
+                saveAndApply: function ()
+                {
+                    GetIntorduction();
+                    GetTAncC();
+                    GetRtnTerms();                  
+                    WS.AjaxP("post", "/adminapi/Merchant/SaveMerchantPromotion", vm.promotion, function (response) {
+                        if (response.Succeeded == true) {
+                            showInfo('@BDMall.Resources.Message.SaveSuccess');
+                            vm.getMerchantPromotion();
+                            vm.applyApprove();
+                        }
+                        else {
+                            showWarn(response.Message);
+                        }
+                    }, function () { })
+                },
+                addProduct: function () {
+
+                    OpenDialog("@BDMall.Resources.Label.SelectProduct", 1000, 700, "/Product/SelectProduct/0/" + vm.promotion.MerchantId+"/2" , null, function (data) {
+                        if(data && data.results && data.results.length>0)
+                        {
+                            var flag = true;
+                            data.results.forEach(function (val) {
+                                for (var i = 0; i < vm.promotion.ProductList.length; i++)
+                                {
+                                    if (vm.promotion.ProductList[i].Code == val.Code) {
+                                        flag = false;
+                                        break;
+                                    } else {
+                                        flag = true;
+                                    }
+                                }
+                                if(flag==true)
+                                {
+                                    var product = {};
+                                    product.Id = WS.GuidEmpty;
+                                    product.PromotionId = vm.promotion.Id;
+                                    product.Code = val.Code;
+                                    product.ProductId = val.ProductId;
+                                    product.Name=val.Name;
+                                    product.Category = val.BrandPathName;
+                                    product.Imgs = val.Imgs;
+                                    product.IsDelete = false;
+                                    product.ListPrice = val.ListPrice;
+                                    product.SalesPrice = val.SalePrice;
+
+                                    vm.promotion.ProductList.push(product);
+                                }
+                            });
+                        }
+
+                    });
+                },
+                deleteProduct:function(code)
+                {
+                    for (var i = vm.promotion.ProductList.length-1;i>=0;i--)
+                    {
+                        var product = vm.promotion.ProductList[i];
+                        if (product.Code == code)
+                        {
+                            if (product.Id == WS.GuidEmpty) {
+                                vm.promotion.ProductList.splice(i, 1);
+                            }
+                            else {
+                                product.IsDelete = true;
+                            }
+
+                        }
+                    }
+                },
+                deleteBanner: function (image) {
+                    for (var i = vm.promotion.Banners.length - 1; i >= 0; i--) {
+                        var banner = vm.promotion.Banners[i];
+                        if (banner.Image == image) {
+                            if (banner.Id == WS.GuidEmpty) {
+                                vm.promotion.Banners.splice(i, 1);
+                            }
+                            else {
+                                banner.IsDelete = true;
+                            }
+
+                        }
+                    }
+                },
+                closeTab: function () {
+                    parent.window.clowWin();
+                },
+                applyApprove: function () {
+                    WS.Get("/adminapi/Merchant/ApplyApprove", { id: vm.promotion.MerchantId },
+                        function (response) {
+                            if (response.Succeeded == true) {
+                                vm.getMerchantPromotion();
+                            }
+                            else {
+                                showWarn(response.Message);
+                            }
+                        },
+                        function () { });
+                },
+                approve: function ()
+                {
+                    WS.Get("/adminapi/Merchant/ApproveMerchant", { ids: vm.merchId }, function (response) {
+                        if (response.Succeeded == true) {
+                            //showCloseInfo('@BDMall.Resources.Message.ApproveSucceeded');
+                            parent.window.clowWin();
+                        }
+                        else {
+                            showWarn(response.Message);
+                        }
+                    }, function () { });
+                },
+                setTurndown: function ()
+                {
+                    show2Modal();
+                },
+                cancelTurndown: function () {
+                    vm.turndownReason = "";
+                    $('#divMain').unblock();
+                },
+                turndown: function () {
+                    WS.Get("/adminapi/Merchant/RejectMerchant", { merchId: vm.merchId, reason: vm.turndownReason }, function (response) {
+                        if (response.Succeeded == true) {
+                            parent.window.clowWin();
+                        }
+                        else {
+                            showWarn(response.Message);
+                        }
+                    }, function () { });
+                },
+                dialog: function (e) {
+                    //var _this = $(this);//将当前的pimg元素作为_this传入函数
+                    var el = e.target;
+                    imgShow("#outerdiv", "#innerdiv", "#bigimg", $(el));
+                },
+                getBigImage: function (e) {
+                    var el = e.target;
+                    var src = $(el).attr("src");
+                    WS.Get("/adminapi/ProdImage/GetBigImgPath", { src: src },
+                        function (response) {
+                            imgShowBySrc("#outerdiv", "#innerdiv", "#bigimg", response);
+                        },
+                        function () { });
+                },
+                openBigImage: function (e) {
+                    var el = e.target;
+                    var src = _this.attr("src");
+                    WS.Get("/adminapi/ProdImage/GetBigImgPath", { src: src },
+                        function (response) {
+                            window.open(response);
+                        },
+                        function () { });
+                },
+                copyToOtherLang: function () {
+
+                    var CoversDesc = $("#covers_" + vm.promoLanguageType)[0].src;
+                    if (CoversDesc.length > 0) {
+                        vm.promotion.Covers.forEach(function (val) {
+
+                            val.Desc = CoversDesc;
+                        });
+                    }
+
+                    var MobileCoversDesc = $("#mobileCovers_" + vm.promoLanguageType)[0].src;
+                    if (MobileCoversDesc.length > 0) {
+                        vm.promotion.MobileCovers.forEach(function (val) {
+
+                            val.Desc = MobileCoversDesc;
+                        });
+                    }
+
+                    var PromotionNamesDesc = $("#promotionNames_" + vm.promoLanguageType).val();
+                    if (PromotionNamesDesc.length > 0) {
+                        vm.promotion.PromotionNames.forEach(function (val) {
+
+                            val.Desc = PromotionNamesDesc;
+                        });
+                    }
+
+                    var PromotionIntroductionsDesc = $("#promotionIntroductions_" + vm.promoLanguageType).val();
+                    if (PromotionIntroductionsDesc.length > 0) {
+                        vm.promotion.PromotionIntroductions.forEach(function (val) {
+
+                            val.Desc = PromotionIntroductionsDesc;
+                        });
+                    }
+
+                    var NoticesDesc = $("#notices_" + vm.promoLanguageType).val();
+                    if (NoticesDesc.length > 0) {
+                        vm.promotion.Notices.forEach(function (val) {
+
+                            val.Desc = NoticesDesc;
+                        });
+                    }
+
+                    var LogosDesc = $("#logos_" + vm.logoLanguageType)[0].src;
+                    if (LogosDesc.length > 0) {
+                        vm.promotion.Logos.forEach(function (val) {
+
+                            val.Desc = LogosDesc;
+                        });
+                    }
+
+                    var ExpCompleteDaysDesc = $("#expCompleteDays_" + vm.orderlanguageType).val();
+
+                    if (ExpCompleteDaysDesc.length > 0) {
+                        vm.promotion.ExpCompleteDays.forEach(function (val) {
+
+                            val.Desc = ExpCompleteDaysDesc;
+                        });
+                    }
+
+                    var Descriptionsdesc = UE.getEditor('editor_' + vm.introductionlanguageType).getContent(); //获取Ueditor内容
+                    if (Descriptionsdesc.length > 0) {
+                        vm.promotion.Descriptions.forEach(function (val) {
+
+
+                            var ue = UE.getEditor('editor_' + val.Lang.Code);
+                            ue.ready(function () {//编辑器初始化完成再赋值  
+                                ue.setContent(Descriptionsdesc);  //赋值给UEditor  
+                            });
+                        });
+                    }
+
+
+                    var TAndCsdesc = UE.getEditor('editorMTC_' + vm.tAndCslanguageType).getContent();//获取Ueditor内容
+                    if (TAndCsdesc.length > 0) {
+                        vm.promotion.TAndCs.forEach(function (val) {
+                            var ue = UE.getEditor('editorMTC_' + val.Lang.Code);
+                            ue.ready(function () {//编辑器初始化完成再赋值  
+                                ue.setContent(TAndCsdesc);  //赋值给UEditor  
+                            });
+                        });
+                    }
+
+                    var ReturnTermsesdesc = UE.getEditor('editorRTC_' + vm.tAndCslanguageType).getContent();
+                    if (ReturnTermsesdesc.length > 0) {
+                        vm.promotion.ReturnTermses.forEach(function (val) {
+                            var ue = UE.getEditor('editorRTC_' + val.Lang.Code);
+                            ue.ready(function () {//编辑器初始化完成再赋值  
+                                ue.setContent(ReturnTermsesdesc);  //赋值给UEditor  
+                            });
+                        });
+                    }
+
+                }
+            }
+        });
+
+
+        function show2Modal() {
+            $("#divMain").block({
+                message: $('#myModal2'),
+                css: {
+                    'width': '600px',
+                    'border': '1px',
+                    'border-radius': '6px',
+                    'box-shadow': '0 5px 15px rgba(0,0,0,.5)',
+                    'cursor': 'default'
+                },
+                overlayCSS: { backgroundColor: '#000', opacity: '0.6', cursor: 'defalut' }
+            });
+        }
+
+        var CoverImgOption = new FileInputOption();
+        CoverImgOption.CtrlName = "CoverImg";
+        CoverImgOption.UploadUrl = "/adminapi/FileUpload/UploadFile";
+        CoverImgOption.MaxFile = 1;
+        CoverImgOption.ShowRemove = false;
+        CoverImgOption.SuccessCallback = function (data) {
+            //Vue.set(vm.promotion, 'Cover', data.response.Path);
+            //vm.tmpCover = data.response[0].Path;
+            vm.promotion.Covers.forEach(function (val) {
+                if (val.Lang.Code == vm.coverLang) {
+                    val.Desc = data.response.ReturnValue[0].Path;
+                    vm.tmpCover = "";
+                    //clearPerview("CoverImg");
+                }
+            });
+
+        };
+        CoverImgOption.ErrorCallback = function (data) {
+
+        };
+        FileInputInit(CoverImgOption);
+
+        var MobileCoverImgOption = new FileInputOption();
+        MobileCoverImgOption.CtrlName = "MobileCoverImg";
+        MobileCoverImgOption.UploadUrl = "/adminapi/FileUpload/UploadFile";
+        MobileCoverImgOption.MaxFile = 1;
+        MobileCoverImgOption.ShowRemove = false;
+        MobileCoverImgOption.SuccessCallback = function (data) {
+            //Vue.set(vm.promotion, 'Cover', data.response.Path);
+            //vm.tmpCover = data.response[0].Path;
+            vm.promotion.MobileCovers.forEach(function (val) {
+                if (val.Lang.Code == vm.coverLang) {
+                    val.Desc = data.response.ReturnValue[0].Path;
+                    vm.tmpCover = "";
+                    //clearPerview("CoverImg");
+                }
+            });
+
+        };
+        MobileCoverImgOption.ErrorCallback = function (data) {
+
+        };
+        FileInputInit(MobileCoverImgOption);
+
+        var LogoImgOption = new FileInputOption();
+        LogoImgOption.CtrlName = "LogoImg";
+        LogoImgOption.UploadUrl = "/adminapi/FileUpload/UploadFile";
+        LogoImgOption.MaxFile = 1;
+        LogoImgOption.ShowRemove = false;
+        LogoImgOption.SuccessCallback = function (data) {
+
+            vm.promotion.Logos.forEach(function (val) {
+                if (val.Lang.Code == vm.logoLang) {
+                    val.Desc = data.response.ReturnValue[0].Path;
+                    //clearPerview("LogoImg");
+                }
+            });
+
+        };
+        LogoImgOption.ErrorCallback = function (data) {
+
+        };
+        FileInputInit(LogoImgOption);
+
+        var mutiFileOptions = new FileInputOption();
+        mutiFileOptions.CtrlName = "BannerImg";
+        mutiFileOptions.UploadUrl = "/adminapi/FileUpload/UploadFile";
+        mutiFileOptions.MaxFile = 5;
+        //mutiFileOptions.FileSize = limitSize;
+        mutiFileOptions.SuccessCallback=function(data)
+        {
+            if (data.response.ReturnValue.length > 0) {
+                data.response.ReturnValue.forEach(function (val) {
+                    var banner = {};
+                    banner.Id = WS.GuidEmpty;
+                    banner.PromotionId = vm.promotion.Id;
+                    banner.Image = val.Path;
+                    banner.Language = vm.language;
+                    banner.Seq = 0;
+                    banner.IsOpenWindow = true;
+                    banner.IsDelete = false;
+                    vm.promotion.Banners.push(banner);
+                })
+
+            }
+            $("#BannerImg").fileinput("clear");
+        };
+        mutiFileOptions.ErrorCallback=function()
+        {
+
+        };
+        mutiFileOptions.SelectedCallback=function(files)
+        {
+            var langImageCount = 0;
+
+            vm.promotion.Banners.forEach(function (val) {
+                if (val.Language == vm.language) {
+                    langImageCount += 1;
+                }
+            });
+
+            if (files.length + langImageCount>5)
+            {
+                $("#BannerImg").fileinput("clear");
+                showWarn('@BDMall.Resources.Message.EveryLanguageAllowedUploadFiveImage');
+            }
+
+        };
+
+        FileInputInit(mutiFileOptions);
+
+        function initValidate() {
+            myValidate = $("#frmInput").validate({
+                ignore: "",
+                submitHandler: function () {
+                    vm.save();
+                },
+                rules: {
+                },
+                messages: {
+                },
+                success: function (label) {
+                    $(label).parent().removeClass('has-error');
+                },
+                showErrors: function (errorMap, errorList) {
+                    // 遍历错误列表
+                    focusWrongPlace(errorMap, function (lang) {
+                        vm.$refs.langbar.setCurrentLanguage(lang);
+                        vm.languageType = lang;
+                    });
+                    // 此处注意，一定要调用默认方法，这样保证提示消息的默认效果
+                    this.defaultShowErrors();
+                }
+            });
+        }
+
+        function GetIntorduction() {
+            vm.promotion.Descriptions.forEach(function (val, item) {
+                var el = "if(ue_" + val.Lang.Code + ".queryCommandState('source')==1){ue_" + val.Lang.Code +".execCommand('source')};val.Desc =ue_" + val.Lang.Code + ".getContent();";
+                eval(el);
+            });
+        }
+
+        function GetTAncC() {
+            vm.promotion.TAndCs.forEach(function (val, item) {
+                var el = "if(ueMTC_" + val.Lang.Code + ".queryCommandState('source')==1){ueMTC_" + val.Lang.Code + ".execCommand('source')};val.Desc =ueMTC_" + val.Lang.Code + ".getContent();";
+                eval(el);
+            });
+        }
+
+        function GetRtnTerms() {
+            vm.promotion.ReturnTermses.forEach(function (val, item) {
+                var el = "if(ueRTC_" + val.Lang.Code + ".queryCommandState('source')==1){ueRTC_" + val.Lang.Code + ".execCommand('source')};val.Desc =ueRTC_" + val.Lang.Code + ".getContent();";
+                eval(el);
+            });
+        }
+
+        $(document).ready(function () {
+            vm.merchId = '@ViewBag.MerchantID';
+            vm.editType = '@ViewBag.EditType';
+            vm.isMerchant = Boolean(@ViewBag.IsMerchant);
+
+            $("#attributeValueForm").validate({
+                submitHandler: function () {
+                    vm.turndown();
+                },
+                rules: {
+                    turnReason: "required",
+                },
+                messages:
+                {
+                    turnReason: "@BDMall.Resources.Message.RequiredField",
+                }
+            });
+
+
+            InitNormalSelect("cboLanguage", "/adminapi/Dict/GetSupportLanguage",false, null, false);
+
+            if (vm.editType == "Modify" || vm.editType == "Approve") {
+                vm.getMerchantPromotion();
+            }
+            else if (vm.editType == "Add") {
+                vm.getEmptyMerchantPromotion();
+            }
+
+            initValidate();
+        });
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+    </script>
+}

@@ -1,0 +1,651 @@
+﻿
+@{
+    ViewBag.Title = "MerchantEdit";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="divMain" v-cloak>
+    <br />
+    <ul id="myTab" class="nav nav-tabs ">
+        <li class="active" v-on:click="tabClick(0)">
+            <a id="baseInfo" name="divMerchantBaseInfo" href="#divMerchantBaseInfo">@BDMall.Resources.Label.MerchantInfo</a>
+        </li>
+        @*onclick="SetMerchantPromotionInfoFrameSrc();"*@
+        <li v-show="(editType=='Approve' || editType=='Modify') &&!isMerchant" v-on:click="tabClick(1)">
+            <a id="promotionInfo" name="divMerchantPromotionInfo" href="#divMerchantPromotionInfo">@BDMall.Resources.Label.MerchantPromotionInfo</a>
+        </li>
+    </ul>
+    <div id="divContent" class="tab-content">
+        <div id="divMerchantBaseInfo" class="tab-pane fade  in active">
+            <br />
+            <input type="hidden" id="hidAttributeID" v-model="items.Id" />
+            <form id="frmInput" class="form-horizontal">
+                <table class="table col-md-12">
+                    <tr>
+                        <td class="col-md-1">
+                            <label for="txtContactPhoneNum" class="control-label text-danger">*@BDMall.Resources.Label.MerchantContactPhoneNum</label>
+                        </td>
+                        <td class="col-md-5">
+                            <input type="text" name="ContactPhone" class="form-control" id="txtContactPhoneNum" placeholder="@BDMall.Resources.Label.MerchantContactPhoneNum" v-model="items.ContactPhoneNum"
+                                   v-bind:readonly="MerchantID!='00000000-0000-0000-0000-000000000000'&&editType=='Readonly'">
+                        </td>
+                        <td class="col-md-1">
+                            <label for="txtFax" class="control-label">@BDMall.Resources.Label.Fax</label>
+                        </td>
+                        <td class="col-md-5">
+                            <input type="text" class="form-control" id="txtFax" placeholder="@BDMall.Resources.Label.Fax" v-model="items.FaxNum"
+                                   v-bind:readonly="MerchantID!='00000000-0000-0000-0000-000000000000'&&editType=='Readonly'">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-md-1">
+                            <label for="txtContactEmail" class="control-label text-danger">*@BDMall.Resources.Label.MerchantContactEmail</label>
+                        </td>
+                        <td class="col-md-5">
+                            <input type="email" class="form-control" id="txtContactEmail" name="ContactEmail" placeholder="@BDMall.Resources.Label.MerchantContactEmail" v-model="items.ContactEmail"
+                                   v-bind:readonly="MerchantID!='00000000-0000-0000-0000-000000000000'&& editType=='Readonly'" required>
+                        </td>
+                        <td class="col-md-1">
+                            <label for="txtOrderEmail" class="control-label text-danger">*@BDMall.Resources.Label.MerchantOrderEmail</label>
+                        </td>
+                        <td class="col-md-5">
+                            <input class="form-control" id="txtOrderEmail" name="OrderEmail" placeholder="@BDMall.Resources.Label.MerchantOrderEmail" v-model="items.OrderEmail"
+                                   v-bind:readonly="MerchantID!='00000000-0000-0000-0000-000000000000'&&editType=='Readonly'" maxlength="150" required>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-md-1">
+                            <label for="txtCommissionRate" class="control-label">@BDMall.Resources.Label.CommissionRate</label>
+                        </td>
+                        <td class="col-md-5">
+                            <input type="number" class="form-control" id="txtCommissionRate" placeholder="@BDMall.Resources.Label.CommissionRate" v-model="items.CommissionRate"
+                                   v-bind:readonly="MerchantID!='00000000-0000-0000-0000-000000000000'&&editType=='Readonly'">
+                        </td>
+                        <td class="col-md-1">
+                            <label class="control-label text-danger">*@BDMall.Resources.Label.Language</label>
+                        </td>
+                        <td class="col-md-5">
+                            <select id="cboLang"></select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-md-1">
+                            <label class="control-label">@BDMall.Resources.Label.IsExternalMerchant</label>
+                        </td>
+                        <td class="col-md-5">
+                            <input id="chkIsExternal" type="checkbox" name="IsExternalMerchant" value="true" v-model="items.IsExternal" />
+                        </td>
+                        <td class="col-md-1">
+                            <label class="control-label">@BDMall.Resources.Label.MerchantType</label>
+                        </td>
+                        <td class="col-md-5">
+                            <label for="chkGS1">@BDMall.Resources.Value.GS1</label>
+                            <input id="chkGS1" type="checkbox" name="merchantType" value="1" v-model="merchantTypes" />
+                        </td>
+                    </tr>
+                  @*  <tr>
+                        <td class="col-md-1">
+                            <label class="control-label">@BDMall.Resources.Label.GCP</label>
+                        </td>
+                        <td class="col-md-5">
+                            <input type="text" class="form-control" v-model="items.GCP" v-bind:readonly="MerchantID!='00000000-0000-0000-0000-000000000000'&&editType=='Readonly'" maxlength="20" />
+                        </td>
+                        <td class="col-md-1">
+                            <label class="control-label">@BDMall.Resources.Label.IsHongKong</label>
+                        </td>
+                        <td class="col-md-5">
+                            <input id="chkIsHongKong" type="checkbox" name="isHongKongMerchant" value="true" v-model="items.IsHongKong" />
+                        </td>
+
+                    </tr>*@
+                    @*<tr>
+                        <td class="col-md-1">
+                            <label>@BDMall.Resources.Label.IsTransinMerchant</label>
+                        </td>
+                        <td class="col-md-5">
+                            <input id="chkIsTransin" type="checkbox" name="isTransinMerchant" value="true" v-model="items.IsTransin" />
+                        </td>
+                        <td class="col-md-1" v-show="items.IsTransin==true">
+                            <label>@BDMall.Resources.Label.TransinMerchant</label>
+                        </td>
+                        <td class="col-md-5" v-show="items.IsTransin==true">
+                            <select id="cboTranSin"></select>
+                        </td>
+                    </tr>*@
+                    
+                    <tr>
+                        <td class="col-md-1">
+                            <label class="control-label text-danger">*@BDMall.Resources.Label.BankAccount</label>
+                        </td>
+                        <td class="col-md-5" >
+                            <input type="number" name="BankAccount" class="form-control" id="txtBankAccount" placeholder="@BDMall.Resources.Label.BankAccount" v-model="items.BankAccount"
+                                   v-bind:readonly="MerchantID!='00000000-0000-0000-0000-000000000000'&&editType=='Readonly'">
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr v-show="items.IsExternal==false">
+                        <td class="col-md-1">
+                            <label class="control-label">AppId</label>
+                        </td>
+                        <td class="col-md-5">
+                            <input type="text" name="AppId" class="form-control" id="txtAppId" placeholder="AppId" v-model="items.AppId">
+                        </td>
+                        <td>
+                            <label class="control-label">AppSecret</label>
+                        </td>
+                        <td>
+                            <input type="text" name="AppSecret" class="form-control" id="txtAppSecret" placeholder="AppSecret" v-model="items.AppSecret">
+                        </td>
+                    </tr>
+                    @*<tr>
+                            <td class="col-md-1">
+                                <label class="control-label text-danger">@BDMall.Resources.Label.ECShipUserName</label>
+                            </td>
+                            <td class="col-md-5">
+                                <input type="text" class="form-control" name="ECShipUserName" v-model="items.ECShipInfo.ECShipName" v-bind:readonly="MerchantID!='00000000-0000-0000-0000-000000000000'&&editType=='Readonly'" maxlength="20" />
+                            </td>
+                            <td class="col-md-1">
+                                <label class="control-label text-danger">@BDMall.Resources.Label.SpeedPostUserName</label>
+                            </td>
+                            <td class="col-md-5">
+                                <input type="text" class="form-control" name="SPName" v-model="items.ECShipInfo.SPName" v-bind:readonly="MerchantID!='00000000-0000-0000-0000-000000000000'&&editType=='Readonly'" maxlength="20" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="col-md-1">
+                                <label class="control-label text-danger">@BDMall.Resources.Label.ECShipIntegraterName</label>
+                            </td>
+                            <td class="col-md-5">
+                                <input type="text" class="form-control" name="ECShipIntegraterName" v-model="items.ECShipInfo.ECShipIntegraterName" v-bind:readonly="MerchantID!='00000000-0000-0000-0000-000000000000'&&editType=='Readonly'" maxlength="20" />
+                            </td>
+                            <td class="col-md-1">
+                                <label class="control-label text-danger">@BDMall.Resources.Label.SpeedPostIntegraterName</label>
+                            </td>
+                            <td class="col-md-5">
+                                <input type="text" class="form-control" name="SPIntegraterName" v-model="items.ECShipInfo.SPIntegraterName" v-bind:readonly="MerchantID!='00000000-0000-0000-0000-000000000000'&&editType=='Readonly'" maxlength="20" />
+                            </td>
+
+                        </tr>
+                        <tr>
+                            <td class="col-md-1">
+                                <label class="control-label text-danger">@BDMall.Resources.Label.ECShipPassword</label>
+                            </td>
+                            <td class="col-md-5">
+                                <input type="text" class="form-control" name="ECShipPassword" v-model="items.ECShipInfo.ECShipPassword" v-bind:readonly="MerchantID!='00000000-0000-0000-0000-000000000000'&&editType=='Readonly'" maxlength="100" />
+                            </td>
+                            <td class="col-md-1">
+                                <label class="control-label text-danger">@BDMall.Resources.Label.SpeedPostPassword</label>
+                            </td>
+                            <td class="col-md-5">
+                                <input type="text" class="form-control" name="SPPassword" v-model="items.ECShipInfo.SPPassword" v-bind:readonly="MerchantID!='00000000-0000-0000-0000-000000000000'&&editType=='Readonly'" maxlength="100" />
+                            </td>
+                        </tr>*@
+                    <tr>
+                        <td class="col-md-12" colspan="4">
+                            <div class="col-sm-offset-2">
+                                <multilang-bar v-bind:data="items.NameList" ref="langbar" v-bind:selectlanguage="selectLanguage"></multilang-bar>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-md-2">
+                            <label class=" control-label text-danger">*@BDMall.Resources.Label.MerchantName</label>
+                        </td>
+                        <td class="col-md-10" colspan="3">
+                            <div v-for="nItem in items.NameList" v-show="nItem.Lang.Code==languageType">
+                                <div>
+                                    <input type="text" v-bind:name="'name_'+nItem.Lang.Code" v-bind:id="'name_'+nItem.Lang.Code" class="form-control" v-model="nItem.Desc" v-bind:readonly="MerchantID!='00000000-0000-0000-0000-000000000000'&&editType=='Readonly'" />
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-md-2">
+                            <label class="control-label text-danger">*@BDMall.Resources.Label.MerchantContact</label>
+                        </td>
+                        <td class="col-md-10" colspan="3">
+                            <div v-for="cItem in items.ContactList" v-show="cItem.Lang.Code==languageType">
+                                <div>
+                                    <input type="text" v-bind:name="'contact_'+cItem.Lang.Code" v-bind:id="'contact_'+cItem.Lang.Code" class="form-control" v-model="cItem.Desc" v-bind:readonly="MerchantID!='00000000-0000-0000-0000-000000000000'&&editType=='Readonly'" />
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-md-2">
+                            <label class="control-label text-danger">*@BDMall.Resources.Label.MerchantContactAddress</label>
+                        </td>
+                        <td class="col-md-10" colspan="3">
+                            <div v-for="cItem in items.ContactAddrList" v-show="cItem.Lang.Code==languageType">
+                                <div>
+                                    <input type="text" v-bind:name="'contactAddr_'+cItem.Lang.Code" v-bind:id="'contactAddr_'+cItem.Lang.Code" class="form-control" v-model="cItem.Desc" v-bind:readonly="MerchantID!='00000000-0000-0000-0000-000000000000'&&editType=='Readonly'" />
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-md-2">
+                            <label class="control-label"></label>
+                        </td>
+                        <td class="col-md-10" colspan="3">
+                            <div v-for="cItem in items.ContactAddr2List" v-show="cItem.Lang.Code==languageType">
+                                <div>
+                                    <input type="text" v-bind:name="'contactAddr2_'+cItem.Lang.Code" v-bind:id="'contactAddr2_'+cItem.Lang.Code" class="form-control" v-model="cItem.Desc" v-bind:readonly="MerchantID!='00000000-0000-0000-0000-000000000000'&&editType=='Readonly'" />
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-md-2">
+                            <label class="control-label"></label>
+                        </td>
+                        <td class="col-md-10" colspan="3">
+                            <div v-for="cItem in items.ContactAddr3List" v-show="cItem.Lang.Code==languageType">
+                                <div>
+                                    <input type="text" v-bind:name="'contactAddr3_'+cItem.Lang.Code" v-bind:id="'contactAddr3_'+cItem.Lang.Code" class="form-control" v-model="cItem.Desc" v-bind:readonly="MerchantID!='00000000-0000-0000-0000-000000000000'&&editType=='Readonly'" />
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-md-2">
+                            <label class="control-label"></label>
+                        </td>
+                        <td class="col-md-10" colspan="3">
+                            <div v-for="cItem in items.ContactAddr4List" v-show="cItem.Lang.Code==languageType">
+                                <div>
+                                    <input type="text" v-bind:name="'contactAddr4_'+cItem.Lang.Code" v-bind:id="'contactAddr4_'+cItem.Lang.Code" class="form-control" v-model="cItem.Desc" v-bind:readonly="MerchantID!='00000000-0000-0000-0000-000000000000'&&editType=='Readonly'" />
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-md-2">
+                            <label class="control-label">@BDMall.Resources.Label.Remarks</label>
+                        </td>
+                        <td class="col-md-10" colspan="3">
+                            <div v-for="rItem in items.RemarksList" v-show="rItem.Lang.Code==languageType">
+                                <div>
+                                    <textarea rows="3" v-bind:name="'remark_'+rItem.Lang.Code" v-bind:id="'remark_'+rItem.Lang.Code" class="form-control" v-model="rItem.Desc" v-bind:readonly="MerchantID!='00000000-0000-0000-0000-000000000000'&&editType=='Readonly'"></textarea>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-md-2">
+                            <label class="control-label text-danger">*@BDMall.Resources.Label.CustomUrl</label>
+                        </td>
+                        <td class="col-md-10" colspan="3">
+                            <div>
+                                <input type="text" name="txtCustomUrl" id="txtCustomUrl" class="form-control" v-model="items.CustomUrls[0]" v-bind:readonly="MerchantID!='00000000-0000-0000-0000-000000000000'&&editType=='Readonly'" maxlength="200" />
+                            </div>
+                        </td>
+                    </tr>
+
+                </table>
+                <div class="modal-footer">
+                    <input v-show="editType == 'Modify'||editType == 'Add'" type="button" class="btn btn-default btn-action-default" value="@BDMall.Resources.Action.Close" v-on:click="closeTab" />
+                    <input v-show="editType == 'Modify'||editType == 'Add'" id="btnModiy" type="submit" class="btn btn-primary btn-action-default" value="@BDMall.Resources.Action.Save" />
+                </div>
+            </form>
+        </div>
+        <div id="divMerchantPromotionInfo" class="tab-pane fade">
+            <br />
+            <div class="form-group col-sm-12">
+                <iframe id="MerchantPromotionInfo" src="" width="100%" height="900" frameborder="0"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts
+{
+    @*@Styles.Render("~/Content/bootstrapfile")
+        @Scripts.Render("~/bundles/bootstrapfile")*@
+    <script src="~/Scripts/admin/vue-component/multilangbar.js"></script>
+
+    <script type="text/javascript">
+
+        var vm = new Vue({
+            el: "#divMain",
+            data: {
+                isMerchant: '@ViewBag.IsMerchant ',
+                languageType: "",
+                language: "",
+                MerchantID: "00000000-0000-0000-0000-000000000000",
+                editType: "",
+                IsReadonly: false,
+                merchantTypes:[],
+                items: {
+                    Id: "00000000-0000-0000-0000-000000000000",
+                    MerchNo: "",
+                    NameList: [{ Lang: { Code: "", Text: "" }, Desc: "" }],
+                    ContactList: [{ Lang: { Code: "", Text: "" }, Desc: "" }],
+                    ContactPhoneNum: "",
+                    FaxNum: "",
+                    ContactAddrList: [{ Lang: { Code: "", Text: "" }, Desc: "" }],
+                    ContactEmail: "",
+                    OrderEmail: "",
+                    RemarksList: [{ Lang: { Code: "", Text: "" }, Desc: "" }],
+                    CustomUrls: [""],
+                    MerchantType: 0,
+                    IsExternal: false,
+                    GCP:"",
+                    RecStatus: 0,
+                    ApproveStatus: 3,
+                    Lang: 0,
+                    CommissionRate: 0,
+                    ECShipInfo: {},
+                    IsTransin: false,
+                    IsHongKong: false,
+                    TranSinId: 0,
+                    BankAccount: "",
+                }
+            },
+            methods: {
+                checkIsMerchant: function () {
+                    WS.AjaxP("get", "/adminapi/Merchant/CheckIsMerchant", null, function (response) {
+                        vm.isMerchant = response;
+                    }, function () { })
+                },
+                getMerchantItem: function () {
+                    var data = new Object();
+                    data.merchID = vm.MerchantID;
+
+                    WS.AjaxP("get", "/adminapi/Merchant/GetMerchInfo", data, function (response) {
+                        vm.items = response;
+                        if (vm.items.MerchantType > 0) {
+                            vm.merchantTypes.push(vm.items.MerchantType);
+                        }
+                        vm.$nextTick(function () {
+                            vm.setDefaultLanguage(vm.items.NameList);
+                            vm.items.NameList.forEach(function (val) {
+                                $("#name_" + val.Lang.Code).rules('add', { required: true, messages: { required: '@BDMall.Resources.Message.RequiredField' } });
+                            });
+                            vm.items.NameList.forEach(function (val) {
+                                $("#contact_" + val.Lang.Code).rules('add', { required: true, messages: { required: '@BDMall.Resources.Message.RequiredField' } });
+
+                            });
+                            vm.items.NameList.forEach(function (val) {
+                                $("#contactAddr_" + val.Lang.Code).rules('add', { required: true, messages: { required: '@BDMall.Resources.Message.RequiredField' } });
+                                if (val.Lang.Code == "E") {
+                                    $("#contactAddr_" + val.Lang.Code).rules('add', { eAddressLengthLimit: true });
+                                    $("#contactAddr2_" + val.Lang.Code).rules('add', { eAddressLengthLimit: true });
+                                    $("#contactAddr3_" + val.Lang.Code).rules('add', { eAddressLengthLimit: true });
+                                    $("#contactAddr4_" + val.Lang.Code).rules('add', { eAddressLengthLimit: true });
+
+                                }
+                                else {
+                                    $("#contactAddr_" + val.Lang.Code).rules('add', { cAddressLengthLimit: true });
+                                    $("#contactAddr2_" + val.Lang.Code).rules('add', { cAddressLengthLimit: true });
+                                    $("#contactAddr3_" + val.Lang.Code).rules('add', { cAddressLengthLimit: true });
+                                    $("#contactAddr4_" + val.Lang.Code).rules('add', { cAddressLengthLimit: true });
+                                }
+                            });
+
+
+                            InitBootstrapSelect("cboLang", "/adminapi/Dict/GetSupportLanguage", 1, false, false, null, function () {
+                                $('#cboLang').selectpicker('val', vm.items.Lang);
+                            });
+
+                            //InitBootstrapSelect("cboTranSin", "/adminapi/Merchant/GetTranSinMerchantKeyValue", 1, false, false, null, function () {
+                            //    $('#cboTranSin').selectpicker('val', vm.items.TranSinId);
+                            //});
+
+                        });
+                    }, function () { })
+                },
+                save: function () {
+                    if (vm.items != undefined) {
+                        if (vm.editType == "Add") {
+                            vm.items.RecStatus = 0;
+                        }
+                        else {
+                            vm.items.RecStatus = 1;
+                        }
+                    }
+                    if (vm.merchantTypes.length > 0) {
+                        vm.items.MerchantType = 1;
+                    }
+                    else {
+                        vm.items.MerchantType =0;
+                    }
+
+                    vm.items.Lang = $("#cboLang").val();
+                    vm.items.TranSinId = $("#cboTranSin").val();
+
+
+                    WS.AjaxP("post", "/adminapi/Merchant/SaveMerchInfoOnly", vm.items, function (response) {
+                        if (response.Succeeded == true) {
+                            //if (vm.editType == "Add") {
+                            //若當前編輯模式是新增，則更新當前緩存中的記錄ID
+                            vm.MerchantID = response.ReturnValue;
+                            vm.items.Id = response.ReturnValue;
+                            vm.getMerchantItem();
+                        //}
+                            setModifyState();
+                            showCloseInfo('@BDMall.Resources.Message.SaveSuccess', true);
+                            @*clowWin();*@
+                        }
+                        else {
+                            showWarn('@BDMall.Resources.Message.SaveFail' + "\n\n" + response.Message);
+                        }
+                    }, function () { })
+                },
+                closeTab: function () {
+                    clowWin();
+                },
+                @*cancelSave: function () {
+                    SystemConfirm('@BDMall.Resources.Message.ConfirmCancel', function () {
+                        setReadonlyState();
+                    });
+                },*@
+                selectLanguage: function (obj) {
+                    vm.$refs.langbar.setCurrentLanguage(obj.Lang.Code);
+                    vm.language = obj.Lang.Text;
+                    vm.languageType = obj.Lang.Code;
+                },
+                setDefaultLanguage: function (data) {
+                    if (data.length > 0) {
+                        var defaultLang = data[0].Lang.Code;
+                        vm.$refs.langbar.setCurrentLanguage(defaultLang);
+                        vm.language = data[0].Lang.Text;
+                        vm.languageType = data[0].Lang.Code;
+                    }
+                },
+                tabClick: function (index)
+                {
+                    if (index == 1)
+                    {
+                        SetMerchantPromotionInfoFrameSrc();
+                    }
+                }
+
+            }
+        });
+
+        function SetMerchantPromotionInfoFrameSrc() {
+            //var url = "/Merchant/MerchantPromotion/" + vm.MerchantID + "/" + vm.editType + "/1";
+            var url = "/Merchant/MerchantPromotion/" + vm.MerchantID + "/" + vm.editType;
+            $("#MerchantPromotionInfo").attr("src", url);
+        }
+
+        //獲取電郵地址正則表達式
+        function getEmailFormatRegex() {
+            var objRegex = /^([a-zA-Z0-9_\.\-])+\@@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,5})+$/;
+            return objRegex;
+        }
+
+        //獲取手提電話號碼正則表達式
+        function getPhoneNumFormatRegex() {
+            var objRegex = /^((\+86)|(86))?((13[0-9])|(14[5|7])|(15([0-3]|[5 - 9]))|(18[0,5 -9]))\d{8}$/;
+            return objRegex;
+        }
+
+        //獲取固定電話號碼正則表達式
+        function getTelPhoneNumFormatRegex() {
+            var objRegex = /^(\d{3,4}-)?\d{7,8}(-\d{3,4})?$/;
+            return objRegex;
+        }
+
+        //自定義檢查--電話號碼
+        $.validator.addMethod(
+            "phonenumformat",
+            function (value, element) {
+                var objRegex1 = getPhoneNumFormatRegex();
+                var objRegex2 = getTelPhoneNumFormatRegex();
+                return this.optional(element) || (objRegex1.test(value) || objRegex2.test(value));
+            },
+            $.validator.format("@BDMall.Resources.Message.PhoneNumFormatIncorrect")
+        );
+        $.validator.addMethod("eAddressLengthLimit", function (value, element, param) {
+                if (element.value.length > 35) {
+                    return false;
+                }
+                else {
+                    return true;
+                }
+
+        }, '@string.Format(BDMall.Resources.Message.ValueLengthLessThan, 35)');
+        $.validator.addMethod("cAddressLengthLimit", function (value, element, param) {
+                if (element.value.length > 11) {
+                    return false;
+                }
+                else {
+                    return true;
+                }
+
+        }, '@string.Format(BDMall.Resources.Message.ValueLengthLessThan, 11)');
+        //校驗成功後提交
+        $.validator.setDefaults({
+            submitHandler: function () {
+                if (vm.editType == "Modify" || vm.editType == "Add") {
+                    vm.save();
+                }
+                else if (vm.editType == "Readonly") {
+                    setModifyState();
+                }
+            }
+        });
+
+        //設置窗體內容為只讀狀態
+        function setApproveState() {
+            vm.IsReadonly = true;
+            vm.editType = "Approve";
+            vm.getMerchantItem();
+        }
+        //設置窗體內容為修改狀態
+        function setModifyState() {
+            vm.IsReadonly = false;
+            vm.RecStatus = 1;
+            vm.editType = "Modify";
+        }
+        //設置窗體內容為新增狀態
+        function setAddState() {
+            vm.IsReadonly = false;
+            vm.RecStatus = 0;
+            vm.editType = "Add";
+        }
+
+
+        function initValidate() {
+
+            spValidate = $("#frmInput").validate({
+                ignore: "",
+                submitHandler: function () {
+                    vm.save();
+                },
+                rules: {
+                    MerchNo: "required",
+                    ContactEmail: "email",
+                    OrderEmail: "required",
+                    ContactPhoneNum: "phonenumformat",
+                    FaxNum: "phonenumformat",
+                    ECShipEmail: "required",
+                    ECShipUserName: "required",
+                    ECShipIntegraterName: "required",
+                    ECShipPassword: "required",
+                    SPName: "required",
+                    SPIntegraterName: "required",
+                    SPPassword: "required",
+                    ContactPhone: "required",
+                    BankAccount: "required",
+                    txtCustomUrl: "required"
+                },
+                messages: {
+                    MerchNo: "@BDMall.Resources.Message.RequiredField",
+                    ContactEmail: "@BDMall.Resources.Message.EmailAddrFormatIncorrect",
+                    OrderEmail: "@BDMall.Resources.Message.RequiredField",
+                    ContactPhoneNum: "@BDMall.Resources.Message.PhoneNumFormatIncorrect",
+                    FaxNum: "@BDMall.Resources.Message.PhoneNumFormatIncorrect",
+                    ECShipEmail: "@BDMall.Resources.Message.RequiredField",
+                    ECShipUserName: "@BDMall.Resources.Message.RequiredField",
+                    ECShipIntegraterName: "@BDMall.Resources.Message.RequiredField",
+                    ECShipPassword: "@BDMall.Resources.Message.RequiredField",
+                    SPName: "@BDMall.Resources.Message.RequiredField",
+                    SPIntegraterName: "@BDMall.Resources.Message.RequiredField",
+                    SPPassword: "@BDMall.Resources.Message.RequiredField",
+                    ContactPhone: "@BDMall.Resources.Message.RequiredField",
+                    BankAccount: "@BDMall.Resources.Message.RequiredField",
+                    txtCustomUrl: "@BDMall.Resources.Message.RequiredField",
+                },
+                success: function (label) {
+                    $(label).parent().removeClass('has-error');
+                },
+                showErrors: function (errorMap, errorList) {
+                     //遍历错误列表
+                    focusWrongMultiLanguageTab(errorMap, function (lang) {
+                        vm.$refs.langbar.setCurrentLanguage(lang);
+                        vm.languageType = lang;
+                    });
+                     //此处注意，一定要调用默认方法，这样保证提示消息的默认效果
+                    this.defaultShowErrors();
+                },
+                errorPlacement: function (error, element) {
+                    if (error.length > 0) {
+                        if (error[0].innerHTML != '') {
+                            error.insertAfter(element);
+                        }
+                    }
+                }
+            });
+        }
+
+
+
+        $(document).ready(function () {
+            vm.MerchantID = '@ViewBag.MerchantID';
+            vm.editType = '@ViewBag.editType';
+
+            $("#myTab a").click(function (e) {
+                $(this).tab('show');
+            });
+
+            //vm.checkIsMerchant();
+            if (vm.editType == "Modify") {
+                setModifyState();
+                vm.getMerchantItem();//填充欄位資料
+            }
+            else if (vm.editType == "Add") {
+                setAddState();
+                vm.getMerchantItem();//填充欄位資料
+            }
+            else {
+                setApproveState();
+                $("#promotionInfo").click();
+                vm.tabClick(1);
+            }
+
+            initValidate();
+        });
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+    </script>
+}

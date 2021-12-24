@@ -289,6 +289,44 @@ namespace Web.Framework
             return false;
         }
 
+        public static bool CheckHasHTMLTag<T>(T entity)
+        {
+            var flag = false;
+            var pattern = "<\\s*(img|br|p|b|/p|a|div|iframe|button|script|i|td|html|form|input|frameset|body|table|br|label|link|li|style).*?>";
+            var htmlRegx = new Regex(pattern);
+            var props = entity.GetType().GetProperties().Where(x=> x.GetValue(entity)!=null && x.GetValue(entity).GetType().Name == "String").ToList();
+            foreach (var prop in props)
+            {               
+                var value = prop.GetValue(entity);
+                if (htmlRegx.IsMatch(value.ToString()))
+                {
+                    flag = true;
+                    break;
+                }
+            }
+            return flag;
+        }
+
+        public static bool CheckHasHTMLTag(string value)
+        {
+            var flag = false;
+            var pattern = "<\\s*(img|br|p|b|/p|a|div|iframe|button|script|i|html|form|input|frameset|body|table|br|label|link|li|style).*?>";
+            var htmlRegx = new Regex(pattern);
+
+            if (htmlRegx.IsMatch(value)) flag = true;
+            return flag;
+        }
+
+        public static bool CheckMultLangListHasHTMLTag(List<string> multList)
+        {          
+            foreach (var item in multList)
+            {
+                if (item.IsEmpty()) return false;
+                if (CheckHasHTMLTag(item)) return true;
+            }
+            return false;
+        }
+
         #endregion
 
         /// <summary>

@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Web.Framework;
 using Web.Jwt;
 using Web.MQ;
 
@@ -267,6 +268,10 @@ namespace BDMall.BLL
             return langs;
         }
 
+        public string AutoGenerateNumber(string perfix="BD")
+        {
+            return $"{perfix}{IdGenerator.NewId}";
+        }
     }
 
     public class ServiceBase<TDal> : BaseBLL

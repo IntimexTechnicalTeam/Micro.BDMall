@@ -5,6 +5,7 @@ using BDMall.Enums;
 using Intimex.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Web.Framework;
@@ -23,38 +24,107 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
         public MerchantController(IComponentContext services) : base(services)
         {
             merchantBLL = Services.Resolve<IMerchantBLL>();
-            settingBLL = services.Resolve<ISettingBLL>();
+            settingBLL = services.Resolve<ISettingBLL>();           
         }
 
-        /// <summary>
-        /// 獲取商家列表的下拉框資源
-        /// </summary>
+        
+        [HttpPost]
+        [AdminApiAuthorize(Module = ModuleConst.MerchantModule)]
+        public PageData<MerchantView> SearchMercLst([FromBody] MerchantPageInfo pageInfo)
+        {
+            PageData<MerchantView> merchVwLst = merchantBLL.GetMerchLstByCond(pageInfo);
+            return merchVwLst;
+        }
+
         [HttpGet]
         [AdminApiAuthorize(Module = ModuleConst.MerchantModule)]
-        public List<KeyValue> GetMerchantOptions()
+        public async Task<MerchantView> GetMerchInfo(string merchID)
         {
-            List<KeyValue> keyValLIst = merchantBLL.GetMerchantCboSrcByCond(true);
-            return keyValLIst;
-        }
-
-        [HttpGet]
-        //[AdminApiAuthorize(Module = ModuleConst.MerchantModule)]
-        public List<KeyValue> GetApproveStatusList()
-        {
-            var statusList = new List<KeyValue>();
-            statusList = settingBLL.GetApproveStatuses();       
-            return statusList;
+            MerchantView merchVw = new MerchantView();
+            if (!merchID.IsEmpty())
+            {
+                Guid mId = new Guid(merchID);
+                merchVw = merchantBLL.GetMerchById(mId);              
+            }
+            return merchVw;
         }
 
         [HttpPost]
         [AdminApiAuthorize(Module = ModuleConst.MerchantModule)]
-        public PageData<MerchantView> SearchMercLst([FromForm] MerchantPageInfo pageInfo)
+        public async Task<SystemResult> SaveMerchInfoOnly([FromForm]MerchantView merchVw)
         {
-            PageData<MerchantView> merchVwLst = new PageData<MerchantView>();
+            merchVw.Validate();
+            var  result = await merchantBLL.Save(merchVw);          
+            return result;
+        }
 
-            merchVwLst = merchantBLL.GetMerchLstByCond(pageInfo);
+        /// <summary>
+        /// 啟用商家用戶
+        /// </summary>
+        /// <param name="merchID">商家ID</param>
+        [HttpGet]
+        [AdminApiAuthorize(Module = ModuleConst.MerchantModule)]
+        public async Task<SystemResult> ActiveMerchant(Guid merchID)
+        {
+            var result =  await merchantBLL.ActiveMerchantAsync(merchID);
+            return result;
+        }
 
-            return merchVwLst;
+        /// <summary>
+        /// 停用商家用戶
+        /// </summary>
+        /// <param name="merchID">商家ID</param>
+        [HttpGet]
+        [AdminApiAuthorize(Module = ModuleConst.MerchantModule)]
+        public async Task<SystemResult> DeactiveMerchant(Guid merchID)
+        {
+            var result = await merchantBLL.DeactiveMerchantAsync(merchID);
+            return result;
+        }
+
+        /// <summary>
+        /// 删除商家
+        /// </summary>
+        /// <param name="recIDList"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [AdminApiAuthorize(Module = ModuleConst.MerchantModule)]
+        public async Task<SystemResult> LogicalDelMerchRec(string recIDList)
+        {
+            var result = await merchantBLL.LogicalDelMerchRec(recIDList);
+            return result;
+        }
+
+        /// <summary>
+        /// 獲取商家的付運方法
+        /// </summary>
+        /// <param name="merchantId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [AdminApiAuthorize(Module = ModuleConst.MerchantModule, Function = new string[] { FunctionConst.Merch_Delivery_Method })]
+        public SystemResult GetShipMethodMapping(Guid merchantId)
+        {
+            SystemResult result = new SystemResult();
+            result.ReturnValue = merchantBLL.GetMerchantShipMethods(merchantId);
+            result.Succeeded = true;
+            return result;
+        }
+
+        /// <summary>
+        /// 保存商家配對的付運方法
+        /// </summary>
+        /// <param name="mapping"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [AdminApiAuthorize(Module = ModuleConst.MerchantModule, Function = new string[] { FunctionConst.Merch_Delivery_Method })]
+        public SystemResult SaveShipMethodMapping([FromForm]MerchantShipMethodMappingView mapping)
+        {
+            SystemResult result = new SystemResult();
+            merchantBLL.SaveShipMethodMapping(mapping);
+            result.Succeeded = true;
+            return result;
+
+
         }
     }
 }

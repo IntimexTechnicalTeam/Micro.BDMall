@@ -15,5 +15,9 @@ namespace BDMall.BLL
         Task<SystemResult> ChangeLang(CurrentUser currentUser, Language Lang);
 
         bool CheckMerchantAccountExist(Guid merchantId);
+
+        SystemResult CreateAccountForMerchant(string Ids);
+
+        SystemResult Save(UserDto model);
     }
 }

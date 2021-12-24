@@ -9,6 +9,7 @@ using BDMall.Domain;
 using BDMall.Enums;
 using System.Threading;
 using System.Globalization;
+using BDMall.BLL;
 
 namespace BDMall.Admin.Areas.AdminAPI.Controllers
 {
@@ -19,13 +20,15 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
     [AdminApiAuthorize(Module = ModuleConst.PersonalSetting)]
     public class DictController : BaseApiController
     {
+        //public ICodeMasterBLL CodeMasterBLL { get; set; }
+        public ISettingBLL settingBLL;
+        public IMerchantBLL merchantBLL;
+
         public DictController(IComponentContext services) : base(services)
         {
+            settingBLL = Services.Resolve<ISettingBLL>();
+            merchantBLL = Services.Resolve<IMerchantBLL>();   
         }
-
-        //public ICodeMasterBLL CodeMasterBLL { get; set; }
-        //public ISettingBLL SettingBLL { get; set; }
-        //public IDictBLL DictBLL { get; set; }
 
         /// <summary>
         /// 獲取郵件類型
@@ -144,8 +147,8 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
         [HttpGet]
         public async Task<List<KeyValue>> GetSupportLanguage()
         {
-            
-            return new List<KeyValue>();
+            var langs = settingBLL.GetSupportLanguages();
+            return langs;
         }
 
         /// <summary>
@@ -208,5 +211,26 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
         {
             return new List<KeyValue>();
         }
+
+        /// <summary>
+        /// 獲取商家列表的下拉框資源
+        /// </summary>
+        [HttpGet]
+        [AdminApiAuthorize(Module = ModuleConst.MerchantModule)]
+        public List<KeyValue> GetMerchantOptions()
+        {
+            List<KeyValue> keyValLIst = merchantBLL.GetMerchantCboSrcByCond(true);
+            return keyValLIst;
+        }
+
+        [HttpGet]
+        //[AdminApiAuthorize(Module = ModuleConst.MerchantModule)]
+        public List<KeyValue> GetApproveStatusList()
+        {
+            var statusList = new List<KeyValue>();
+            statusList = settingBLL.GetApproveStatuses();
+            return statusList;
+        }
+
     }
 }

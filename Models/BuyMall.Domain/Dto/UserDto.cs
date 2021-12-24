@@ -45,7 +45,7 @@ namespace BDMall.Domain
         public bool OptOut { get; set; }
 
 
-        public List<RoleDto> Roles { get; set; }
+        public List<RoleDto> Roles { get; set; } = new List<RoleDto>();
 
       
         public Language Language { get; set; }

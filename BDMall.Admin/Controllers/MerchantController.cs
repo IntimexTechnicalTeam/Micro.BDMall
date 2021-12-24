@@ -16,6 +16,7 @@ namespace BDMall.Admin.Controllers
     {
         public MerchantController(IComponentContext service) : base(service)
         {
+            
         }
 
         /// <summary>
@@ -59,6 +60,11 @@ namespace BDMall.Admin.Controllers
         {
             ViewBag.MerchantID = id;
             ViewBag.EditType = para2;
+            if (CurrentUser == null)
+                ViewBag.IsMerchant = 0;
+            else if (CurrentUser.LoginType <= LoginType.ThirdMerchantLink)
+                ViewBag.IsMerchant = 1;
+
             return View();
         }
 
@@ -80,6 +86,7 @@ namespace BDMall.Admin.Controllers
        // [ActionAuthorize(Module = ModuleConst.MerchantModule, Function = new string[] { FunctionConst.Merch_Promt })]
         public ActionResult MerchantPromotionHeadPage()
         {
+           
             return View();
         }
         /// <summary>
@@ -107,6 +114,8 @@ namespace BDMall.Admin.Controllers
                 ViewBag.IsMerchant = 0;
             else if (CurrentUser.LoginType <= LoginType.ThirdMerchantLink)
                 ViewBag.IsMerchant = 1;
+
+            ViewBag.Lang = CurrentUser.Lang;
 
             return View();
         }

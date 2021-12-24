@@ -1,0 +1,43 @@
+﻿
+@{
+    ViewBag.Title = "MerchantPromotionHeadPage";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";  
+}
+
+<div id="app" v-cloak>
+    <div id="divSearch" class="form-group col-sm-12 form-horizontal">
+        <label for="cboMerchant" class="control-label col-sm-2">@BDMall.Resources.Label.MerchantName</label>
+        <div class="col-sm-4">
+            <select id="cboMerchant" class="form-control" v-on:change="selectMerchPromotion"></select>
+        </div>
+    </div>
+    <div class="form-group col-md-12"><iframe id="MerchantPromotionInfo" src="" width="100%" height="900" frameborder="0"></iframe></div>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        var vm = new Vue({
+            el: "#app",
+            data: {
+
+            },
+            methods: {
+                selectMerchPromotion: function () {
+                    var merId = $("#cboMerchant").val();
+                    SetMerchantPromotionInfoFrameSrc(merId);
+                },
+            }
+        });
+
+        function SetMerchantPromotionInfoFrameSrc(merchantID) {
+            var url = "/Merchant/MerchantPromotion/" + merchantID + "/Modify";
+            $("#MerchantPromotionInfo").attr("src", url);
+        }
+
+        $(document).ready(function () {
+            
+            InitNormalSelect("cboMerchant", "/adminapi/Dict/GetMerchantOptionsNoMall", false, null, false);
+            vm.selectMerchPromotion();
+        })
+    </script>
+}

@@ -96,6 +96,10 @@ namespace BDMall.Repository
 
         public abstract IQueryable<T> GetList<T>(string sql, List<SqlParameter> parameters) where T : class;
 
+        public abstract List<T> SqlQuery<T>(string sql, params object[] parameters) where T : class, new();
+
+        public abstract int IntFromSql(string sql, params object[] parameters);
+
         #endregion
 
         #region 异步
@@ -222,6 +226,10 @@ namespace BDMall.Repository
         IQueryable<T> GetList<T>(string sql, params object[] parameters) where T : class;
 
         IQueryable<T> GetList<T>(string sql, List<SqlParameter> parameters) where T : class;
+
+        List<T> SqlQuery<T>(string sql, params object[] parameters) where T : class,new();
+
+        int IntFromSql(string sql, params object[] parameters);
 
         #endregion
 

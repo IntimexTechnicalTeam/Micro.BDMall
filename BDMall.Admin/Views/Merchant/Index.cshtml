@@ -381,7 +381,8 @@
                         valign: 'middle',
                         sortable: true,
                         title: '@BDMall.Resources.Label.AccountCode'*@
-                    },  {
+                    }, 
+                    {
                         field: 'ApproveStatusString',
                         title: '@BDMall.Resources.Label.ApproveStatus',
                         formatter: function (value, row, index) {
@@ -389,7 +390,8 @@
                             name = name.ReplaceAll("\"", "<quot>");
                             return '<a href="#" onClick="showApproveDetail(\'' + row.Id + '\' ,\'' + name + '\');">' + value + '</a>';
                         }
-                    },{
+                    },
+                    {
                         field: 'IsActive',
                         title: '@BDMall.Resources.Label.IsActive',
                         valign: 'middle',
@@ -463,7 +465,7 @@
             var objDataTable = merchantListTableInit();
             objDataTable.Init();
 
-            InitBootstrapSelect("cboApproveStatus", "/adminapi/Merchant/GetApproveStatusList", 1, false, true, null, function () {
+            InitBootstrapSelect("cboApproveStatus", "/adminapi/Dict/GetApproveStatusList", 1, false, true, null, function () {
                 $('#cboApproveStatus').selectpicker('val', mApproveStatus);
             }, false);
 

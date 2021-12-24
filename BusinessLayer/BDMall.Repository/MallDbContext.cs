@@ -76,5 +76,17 @@ namespace BDMall.Repository
         public DbSet<ProductCatalogParent> ProductCatalogParents { get; set; }
 
         public DbSet<ProductAttr> ProductAttrs { get; set; }
+
+        public DbSet<MerchantPromotion> MerchantPromotions { get; set; }
+
+        public DbSet<MerchantStatistic> MerchantStatistics { get; set; }    
+
+        public DbSet<CustomUrl> CustomUrls { get; set; }
+
+        public DbSet<MerchantECShipInfo> MerchantECShipInfos { get; set; }
+
+        public DbSet<ExpressCompany> ExpressCompanies { get; set; }
+
+        public DbSet<MerchantActiveShipMethod> MerchantActiveShipMethods { get; set; }
     }
 }

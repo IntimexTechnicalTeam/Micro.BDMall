@@ -20,6 +20,9 @@ namespace Domain
             ConfigMap<ProductAttributeValue, ProductAttributeValueDto>();
             ConfigMap<ProductCatalogSummaryView, ProductCatalogDto>();
             ConfigMap<ProductCatalogDto, ProductCatalogEditModel>();
+            ConfigMap<MerchantView, Merchant>();
+            ConfigMap<MerchantECShipInfo, MerchantECShipInfoDto>();
+            ConfigMap<MerchantActiveShipMethod, MerchantActiveShipMethodDto>();
         }
         void ConfigMap<TSource, TDestination>()
         {

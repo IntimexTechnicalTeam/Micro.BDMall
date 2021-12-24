@@ -11,5 +11,7 @@ namespace BDMall.BLL
     public interface ISettingBLL:IDependency
     {
         List<KeyValue> GetApproveStatuses();
+
+        List<KeyValue> GetSupportLanguages();
     }
 }

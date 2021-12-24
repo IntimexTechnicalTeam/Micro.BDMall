@@ -9,6 +9,7 @@ using BDMall.Model;
 using Intimex.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Web.Framework;
 using Web.Jwt;
 
 namespace BDMall.Repository
@@ -177,6 +178,11 @@ namespace BDMall.Repository
                 }
             }
             return langs;
+        }
+
+        public string AutoGenerateNumber(string perfix = "BD")
+        {
+            return $"{perfix}{IdGenerator.NewId}";
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using BDMall.Enums;
+﻿using BDMall.Domain;
+using BDMall.Enums;
 using Intimex.Common;
 using System;
 using System.Collections.Generic;
@@ -45,6 +46,18 @@ namespace BDMall.BLL
                 statusList.Add(status);
             }
             return statusList;
+        }
+
+        public List<KeyValue> GetSupportLanguages()
+        {
+            var langs = GetSupportLanguage();
+            var list = langs.Select(s => new KeyValue
+            {
+                Text = s.Text,
+                Id = ((Language)Enum.Parse(typeof(Language),s.Code)).ToInt().ToString(),
+            });
+
+            return list.ToList();
         }
     }
 }

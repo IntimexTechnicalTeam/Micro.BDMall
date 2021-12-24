@@ -25,25 +25,6 @@ namespace BDMall.Model
         public string Name { get; set; }
 
 
-        [NotMapped]
-        public string DisplayName { get; set; }
-
-        //[NotMapped]
-        //public string Remark { get; set; }
-
-        ///// <summary>
-        ///// 名字
-        ///// </summary>
-        //[NotMapped]
-        //public List<MutiLanguage> FullNames { get; set; }
-
-
-        ///// <summary>
-        ///// 名字
-        ///// </summary>
-        //[NotMapped]
-        //public List<MutiLanguage> Remarks { get; set; }
-
         /// <summary>
         /// 名字多语言Id
         /// </summary>
@@ -55,9 +36,6 @@ namespace BDMall.Model
         /// </summary>
         [Column(Order = 10)]
         public Guid RemarkTransId { get; set; }
-
-
-  
 
         /// <summary>
         /// 是否系統默認角色
@@ -71,8 +49,8 @@ namespace BDMall.Model
         /// </summary>
         [NotMapped]
         public List<Permission> PermissionList { get; set; }
-        //virtual 增加此标记会使用延迟加载
-        public virtual ICollection<RolePermission> RolePermissions { get; set; }
+        ////virtual 增加此标记会使用延迟加载
+        //public virtual ICollection<RolePermission> RolePermissions { get; set; }
 
     }
 }
