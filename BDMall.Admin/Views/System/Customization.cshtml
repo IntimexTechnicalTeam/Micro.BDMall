@@ -1,0 +1,405 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_LayoutSimple.cshtml";
+}
+
+
+<div id="divMain" v-cloak>
+    <form id="frmInput">
+        <div class="row">
+            <div class="col-md-5" style="height:300px">
+                <div id="divGracePeriod" class="panel panel-default" style="height:250px">
+                    <div class="panel-heading">
+                        <div class="form-group form-inline">
+                            @*<h3 class="panel-title col-sm-4">@BDMall.Resources.Label.GracePeriod</h3>*@
+                            <h3 class="panel-title col-sm-4">@BDMall.Resources.Label.OrderSetting</h3>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        @*<div class="form-group col-sm-12 form-inline">
+                            <label for="txtGracePeriod" class="control-label">{{items.GracePeroidSetting.Desc}}</label>
+                            <input type="number" class="form-control" style="width:100px;" id="txtGracePeriod" v-bind:id="items.GracePeroidSetting.Id" v-model="items.GracePeroidSetting.Value" />
+                            <label for="txtGracePeriod" class="control-label">@BDMall.Resources.Label.Day</label>
+                        </div>*@
+                        <div class="col-sm-12 form-inline">
+                            <table>
+                                <tr>
+                                    <td><label for="txtGracePeriod" class="control-label">{{items.GracePeroidSetting.Desc}}</label></td>
+                                    <td>
+                                        <input type="number" class="form-control" style="width:100px;" id="txtGracePeriod" v-bind:id="items.GracePeroidSetting.Id" v-model="items.GracePeroidSetting.Value" />
+                                        <label for="txtGracePeriod" class="control-label">@BDMall.Resources.Label.Day</label>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label for="txtPayTimeOut" class="control-label">{{items.PayTimeOutSetting.Desc}}</label></td>
+                                    <td>
+                                        <input type="number" class="form-control" style="width:100px;" id="txtPayTimeOut" v-bind:id="items.PayTimeOutSetting.Id" v-model="items.PayTimeOutSetting.Value" />
+                                        <label for="txtPayTimeOut" class="control-label">@BDMall.Resources.Label.Minutes</label>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label for="txtShopCartTimeOut" class="control-label">{{items.ShopCartTimeOutSetting.Desc}}</label></td>
+                                    <td>
+                                        <input type="number" class="form-control" style="width:100px;" id="txtShopCartTimeOut" v-bind:id="items.ShopCartTimeOutSetting.Id" v-model="items.ShopCartTimeOutSetting.Value" />
+                                        <label for="txtShopCartTimeOut" class="control-label">@BDMall.Resources.Label.Minutes</label>
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4" style="height:300px">
+                <div id="divLanguageSetting" class="panel panel-default " style="height:250px">
+                    <div class="panel-heading">
+                        <div class="form-group form-inline">
+                            <h3 class="panel-title col-sm-4">@BDMall.Resources.Label.Language</h3>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-group col-sm-12">
+                            <label for="txtDefaultLang" class="col-sm-4">@BDMall.Resources.Label.DefaultLanguage</label>
+                            <div class="col-sm-3">
+                                @*<input type="text" id="txtDefaultLang" class="form-control" v-model="items.DefaultLanguage" />*@
+                                <select id="cboLang" data-width="150"></select>
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-12">
+                            <label class="col-sm-4">@BDMall.Resources.Label.SupportLanguage</label>
+                            <div v-for="sItem in items.SupportLanguageSettings" class="form-inline col-md-3">
+                                <div>
+                                    <input type="checkbox" v-bind:name="'lang_'+sItem.Id" v-bind:id="sItem.Id" v-model="sItem.BooleanVal" />
+                                    <label v-bind:for="sItem.Id" class="control-label">{{sItem.Desc}}</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3" style="height:300px">
+                <div id="divGS1" class="panel panel-default " style="height:250px">
+                    <div class="panel-heading">
+                        <div class="form-group form-inline">
+                            @*<h3 class="panel-title col-sm-4">@BDMall.Resources.Label.GracePeriod</h3>*@
+                            <h3 class="panel-title col-sm-12">@BDMall.Resources.Label.GS1Setting</h3>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-group col-md-12 form-inline">
+                            <label for="txtGS1RunHour" class="control-label">{{items.GS1RunHourSetting.Desc}}</label>
+                            <input type="number" class="form-control" style="width:100px;" id="txtGS1RunHour" v-bind:id="items.GS1RunHourSetting.Id" v-model="items.GS1RunHourSetting.Value" />
+                            <label for="txtGS1RunHour" class="control-label">@BDMall.Resources.Label.Hour</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+        @*<div id="divOrderNoSetting" class="panel panel-default">
+            <div class="panel-heading">
+                <div class="form-group form-inline">
+                    <h3 class="panel-title col-sm-4">@BDMall.Resources.Label.AutoGenOrderNo</h3>
+                    <div class="col-sm-2">
+                        <input type="checkbox" id="ckbOrderNoAutoGenSwitch" v-bind:value="items.OrderNoAutoGenSwitch" v-model="items.OrderNoAutoGenSwitch" />
+                        <label for="ckbOrderNoAutoGenSwitch" class="control-label">@BDMall.Resources.Label.Active</label>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-body" v-show="items.OrderNoAutoGenSwitch">
+                <div class="form-group col-sm-12">
+                    <div v-for="oItem in items.OrderNoAutoGenSettings">
+                        <label v-bind:for="oItem.Id" class="col-sm-2 control-label">{{oItem.Desc}}</label>
+                        <div class="col-sm-4">
+                            <input type="text" v-bind:id="oItem.Id" class="form-control" v-model="oItem.Value" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>*@
+        @*<div id="dviShipMethodSetting" class="panel panel-default">
+            <div class="panel-heading">
+                <div class="form-group form-inline">
+                    <h3 class="panel-title col-sm-4">@BDMall.Resources.Label.ShipMethod</h3>
+                </div>
+            </div>
+            <div class="panel-body">
+                <div class="form-group col-md-12">
+                    <div class="col-md-12">
+                        <ul class="list-inline">
+                            <li v-for="item,index in items.MerchantShipMethods">
+                                <label V-bind:for="'shipMethod'+index">{{item.Desc}}</label>
+                                <input type="checkbox" v-model="item.BooleanVal" v-bind:id="'shipMethod'+index" />
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>*@
+        @*<div class="row">
+            <div class=" col-md-6" style="height:300px">
+                <div id="divReportSetting" class="panel panel-default" style="height:250px">
+                    <div class="panel-heading">
+                        <div class="form-group form-inline">
+                            <h3 class="panel-title col-sm-4">@BDMall.Resources.Label.ReportServiceSetting</h3>
+                        </div>
+                    </div>
+                    <div class="panel-body form-inline">
+                        <div class="form-group col-sm-12">
+                            <label for="txtCR2" class="control-label col-sm-2">CR2 Report</label>
+                            <div class="form-group col-sm-6 form-inline">
+                                <label for="txtCR2" class="control-label">@BDMall.Resources.Label.Daily</label>
+                                <input type="number" class="form-control" style="width:100px;" id="txtCR2" v-bind:id="items.CR2ReportSetting.Id" v-model="items.CR2ReportSetting.Value" />
+                                <label for="txtCR2" class="control-label">@BDMall.Resources.Label.Hour</label>
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-12">
+                            <label for="txtCR3Day" class="control-label col-sm-2">CR3 Report</label>
+                            <div class="form-group col-sm-10 form-inline">
+                                <label class="control-label">@BDMall.Resources.Label.Monthly</label>
+                                <div class="form-group" v-for="cItem in items.CR3ReportSettings">
+                                    <div class="form-group">
+                                        <input type="number" style="width:100px;" v-bind:id="cItem.Id" class="form-control" v-model="cItem.Value" />
+                                        <label for="cItem.Id" class="control-label">{{cItem.Unit}}</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-12">
+                            <label for="txtDCA" class="control-label col-sm-2">DCA Report</label>
+                            <div class="form-group col-sm-6 form-inline">
+                                <label for="txtDCA" class="control-label">@BDMall.Resources.Label.Daily</label>
+                                <input type="number" style="width:100px;" class="form-control" id="txtDCA" v-bind:id="items.DCAReportSetting.Id" v-model="items.DCAReportSetting.Value" />
+                                <label for="txtDCA" class="control-label">@BDMall.Resources.Label.Hour</label>
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-12">
+                            <label for="txtISU" class="control-label col-sm-2">ISU Report</label>
+                            <div class="form-group col-sm-6 form-inline">
+                                <label for="txtISU" class="control-label">@BDMall.Resources.Label.Daily</label>
+                                <input type="number" style="width:100px;" class="form-control" id="txtISU" v-bind:id="items.ISUReportSetting.Id" v-model="items.ISUReportSetting.Value" />
+                                <label for="txtISU" class="control-label">@BDMall.Resources.Label.Hour</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>*@
+        <div class="row">
+            <div class=" col-md-12" style="height:300px">
+                <div id="divEmailSetting" class="panel panel-default " style="height:250px">
+                    <div class="panel-heading">
+                        <div class="form-group form-inline">
+                            <h3 class="panel-title col-sm-4">@BDMall.Resources.Label.Email</h3>
+                        </div>
+                    </div>
+                    <div class="panel-body" v-show="items.EmailSettings!=undefined">
+                        <div class="form-group col-sm-12">
+                            <label class="control-label col-sm-2">@BDMall.Resources.Label.MailServerSSL</label>
+                            <div class="col-sm-2">
+                                <input type="checkbox" id="ckbSSLSwitch" v-bind:value="items.MailServerSSLSwitch" v-model="items.MailServerSSLSwitch" />
+                                <label for="ckbSSLSwitch" class="control-label">@BDMall.Resources.Label.Active</label>
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-12">
+                            <div v-for="eItem in items.EmailSettings">
+                                <label v-bind:for="eItem.Id" class="col-sm-2 control-label">{{eItem.Desc}}</label>
+                                <div class="col-sm-4">
+                                    <input type="text" v-bind:id="eItem.Id" class="form-control" v-model="eItem.Value" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class=" col-md-6">
+                <div id="divSysSettings" class="panel panel-default ">
+                    <div class="panel-heading">
+                        <div class="form-group form-inline">
+                            <h3 class="panel-title col-sm-4">@BDMall.Resources.Label.System</h3>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-group col-sm-12">
+                            <label class="control-label col-sm-2">@BDMall.Resources.Label.MaintainModeSwitch</label>
+                            <div class="col-sm-2">
+                                <input type="checkbox" id="ckbMaintain" v-bind:value="items.MaintainModeSwitch" v-model="items.MaintainModeSwitch" />
+                                <label for="ckbMaintain" class="control-label">@BDMall.Resources.Label.Active</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class=" col-md-6" style="height:300px">
+                <div id="divSessionControlSettings" class="panel panel-default" style="height:250px">
+                    <div class="panel-heading">
+                        <div class="form-group form-inline">
+                            <h3 class="panel-title col-sm-4">@BDMall.Resources.Label.SessionControl</h3>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-group col-sm-12">
+                            <table class="col-md-12">
+                                <tr v-for="xItem in items.SessionControlSettings">
+                                    <td>
+                                        <label v-bind:for="xItem.Id" class=" control-label">{{xItem.Desc}}</label>
+                                    </td>
+                                    <td>
+                                        <div class="form-inline">
+                                            <input type="number" v-bind:id="xItem.Id" style="width:100px;" class="form-control" v-model="xItem.Value" />
+                                            <label for="xItem.Id" class="control-label">{{xItem.Unit}}</label>
+                                        </div>
+
+                                    </td>
+                                </tr>
+                            </table>
+                            @*<div v-for="xItem in items.SessionControlSettings">
+                            <label v-bind:for="xItem.Id" class="col-sm-2 control-label">{{xItem.Desc}}</label>
+                            <div class="col-sm-4 form-inline">
+                                <input type="number" v-bind:id="xItem.Id" style="width:100px;" class="form-control" v-model="xItem.Value" />
+                                <label for="xItem.Id" class="control-label">{{xItem.Unit}}</label>
+                            </div>
+                        </div>*@
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer col-md-12">
+            <input type="button" class="btn btn-default btn-action-default" value="@BDMall.Resources.Action.Close" v-on:click="closeTab" />
+            <input id="btnModiy" type="button" class="btn btn-primary btn-action-default" value="@BDMall.Resources.Action.Save" v-on:click="saveCheck" />
+        </div>
+    </form>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        var vm = new Vue({
+            el: "#divMain",
+            data: {
+                items: {
+                    CouponSwitch: false,
+                    MailServerSSLSwitch:false,
+                    EmailSettings: [{ Id: "", Value: "", Desc: "" }],
+                    DefaultLanguage: "",
+                    OrderNoAutoGenSwitch: false,
+                    OrderNoAutoGenSettings: [{ Id: "", Value: "", Desc: "" }],
+                    ProdCodeAutoGenSwitch: false,
+                    ProdCodeAutoGenSettings: [{ Id: "", Value: "", Desc: "" }],
+                    SupportLanguageSettings: [{ Id: "", Value: "", Desc: "" }],
+                    MerchantShipMethods: [],
+                    CR2ReportSetting: { Id: "", Value: "", Desc: "" },
+                    CR3ReportSettings: [{ Id: "", Value: "", Desc: "" }],
+                    DCAReportSetting: { Id: "", Value: "", Desc: "" },
+                    ISUReportSetting: { Id: "", Value: "", Desc: "" },
+                    SessionControlSettings: [{ Id: "", Value: "", Desc: "" }],
+                    GracePeroidSetting: { Id: "", Value: "", Desc: "" },
+                    ShopCartTimeOutSetting: { Id: "", Value: "", Desc: "" },
+                    PayTimeOutSetting: { Id: "", Value: "", Desc: "" },
+                    GS1RunHourSetting: { Id: "", Value: "", Desc: "" },
+
+                }
+            },
+            methods: {
+                //加載全部數據
+                loadAllDatas: function () {
+                    WS.AjaxP("get", "/adminapi/SysCustomization/GetSysCustomization", null, function (response) {
+                        vm.items = response;
+
+                        InitBootstrapSelect("cboLang", "/adminapi/Dict/GetSupportLanguage", 1, false, false, null, function () {
+                            $('#cboLang').selectpicker('val', vm.items.DefaultLanguage);
+                        });
+
+                        vm.$nextTick(function () {
+                            vm.items.SupportLanguageSettings.forEach(function (val) {
+                                $("#lang_" + val.Id).rules('add', { supportLangChk: true, messages: { supportLangChk: '@BDMall.Resources.Message.EnableSysLangRequire' } });
+                            });
+                        })
+                    }, function () { });
+                },
+                //保存前檢查
+                saveCheck: function () {
+                    if (myValidate.form()) {
+                        $("#frmInput").submit();
+                    }
+                },
+                //保存記錄
+                save: function () {
+                    vm.items.DefaultLanguage = $("#cboLang").val();
+
+                    WS.AjaxP("post", "/adminapi/SysCustomization/UpdateSysCustomization", vm.items, function (response) {
+                        if (response.Succeeded == true) {
+                            showInfo('@BDMall.Resources.Message.SaveSuccess', true);
+                        }
+                        else {
+                            showWarn('@BDMall.Resources.Message.SaveFail' + "\n\n" + response.Message);
+                        }
+                    }, function () { })
+                },
+                closeTab: function () {
+                    clowWin();
+                }
+            }
+        });
+
+        function initMyValidate() {
+
+            myValidate = $("#frmInput").validate({
+                ignore: "",
+                submitHandler: function () {
+                    vm.save();
+                },
+                rules: {
+                },
+                messages: {
+                },
+                success: function (label) {
+                    $(label).parent().removeClass('has-error');
+                },
+                showErrors: function (errorMap, errorList) {
+                    focusWrongPlace(errorMap, function (lang) {
+                        vm.$refs.langbar.setCurrentLanguage(lang);
+                        vm.languageType = lang;
+                    });
+                    this.defaultShowErrors();
+                }
+            });
+        }
+
+        $.validator.addMethod(
+            "supportLangChk",
+            function (value, element) {
+                if (vm.items.SupportLanguageSettings != undefined) {
+                    var langChk = false;
+                    for (var i = 0; i < vm.items.SupportLanguageSettings.length; i++) {
+                        var activeDesc = vm.items.SupportLanguageSettings[i].Text;
+                        if (activeDesc == "1" || activeDesc == true) {
+                            langChk = true;
+                        }
+                    }
+                    return langChk;
+                }
+                else {
+                    return false;
+                }
+            }
+        );
+
+        $(document).ready(function () {
+            initMyValidate();
+            vm.loadAllDatas();
+        });
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+    </script>
+}
