@@ -1,11 +1,11 @@
 ﻿using Autofac;
 using BDMall.BLL;
 using BDMall.Domain;
-using Microsoft.AspNetCore.Http;
+using Intimex.Common;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Threading.Tasks;
 using Web.Framework;
 using Web.Mvc;
@@ -18,6 +18,7 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
     public class SysCustomizationController : BaseApiController
     {
         ICodeMasterBLL codeMasterBLL;
+        ISettingBLL settingBLL;
         public SysCustomizationController(IComponentContext services) : base(services)
         {
             codeMasterBLL = Services.Resolve<ICodeMasterBLL>();
@@ -32,8 +33,6 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
             SysCustomization sysCustomization = new SysCustomization();
             sysCustomization = codeMasterBLL.GetSysCustomization();
             return sysCustomization;
-
-            //return await ApiGet<SysCustomization>("/SysCustomization/GetSysCustomization", null, null);
         }
 
         /// <summary>
@@ -41,97 +40,73 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
         /// </summary>
         /// <param name="funcCustom">系統定制功能清單</param>
         [HttpPost]
-        public async Task<SystemResult> UpdateSysCustomization(SysCustomization funcCustom)
+        public async Task<SystemResult> UpdateSysCustomization([FromForm] SysCustomization funcCustom)
         {
-            //SystemResult sysRslt = new SystemResult();
-            //try
-            //{
-            //    sysRslt = CodeMasterBLL.UpdateSysCustomization(funcCustom);
-            //}
-            //catch (Exception ex)
-            //{
-            //    sysRslt.Message = ex.Message;
-            //    sysRslt.Succeeded = false;
-            //}
-            //return sysRslt;
-
-            return await ApiPost<SysCustomization, SystemResult>("/SysCustomization/UpdateSysCustomization", funcCustom);
+            SystemResult sysRslt = new SystemResult();
+            sysRslt = codeMasterBLL.UpdateSysCustomization(funcCustom);
+            return sysRslt;
         }
         [HttpPost]
-        public async Task<SystemResult> SaveSystemLogo(SystemLogo logo)
+        public async Task<SystemResult> SaveSystemLogo([FromForm] SystemLogo logo)
         {
-            //SystemResult sysRslt = new SystemResult();
-            //try
-            //{
-            //    CodeMasterBLL.SaveSystemLogo(logo);
-            //    sysRslt.Succeeded = true;
-            //}
-            //catch (Exception ex)
-            //{
-            //    sysRslt.Succeeded = false;
-            //    sysRslt.Message = Resources.Message.SaveFail;
-            //}
-            //return sysRslt;
+
 
 
             List<Action> actionList = new List<Action>();
             List<string> files = new List<string>();
-            string tempPath = PathUtil.GetTempFileDirectory(CurrentUser.ClientId);
-            string destPath = PathUtil.GetStoreLogoImageFilePath(CurrentUser.ClientId);
+            string tempPath = PathUtil.GetPhysicalPath(Globals.Configuration["UploadPath"], CurrentUser.UserId, Enums.FileFolderEnum.TempPath);
+            string destPath = PathUtil.GetPhysicalPath(Globals.Configuration["UploadPath"], CurrentUser.UserId, Enums.FileFolderEnum.StoreLogo);
             if (!string.IsNullOrEmpty(logo.StoreLogo.ImageName))
             {
                 string temp1 = Path.Combine(tempPath, logo.StoreLogo.ImageName);
-                if (File.Exists(temp1))
+                var file = new FileInfo(temp1);
+                if (file.Exists)
                 {
                     string extension = Path.GetExtension(logo.StoreLogo.ImageName);
                     string fileName = "storelogo" + extension;
-                    logo.StoreLogo.ImageName = PathUtil.GetStoreLogoImagePath(CurrentUser.ComeFrom, CurrentUser.ClientId, "/ClientResources/" + CurrentUser.ClientId + "/logo/" + fileName);
-                    files.Add(logo.StoreLogo.ImageName);
-                    Action a1 = new Action(() => { Intimex.Utility.FileUtil.MoveFile(temp1, destPath, fileName); });
+                    logo.StoreLogo.ImageName = PathUtil.GetRelativePath(CurrentUser.UserId, Enums.FileFolderEnum.StoreLogo) + fileName;
+                    Action a1 = new Action(() => { FileUtil.MoveFile(temp1, destPath, fileName); });
                     actionList.Add(a1);
                 }
                 string temp2 = Path.Combine(tempPath, logo.EmailLogo.ImageName);
-                if (File.Exists(temp2))
+                var file2 = new FileInfo(temp2);
+                if (file2.Exists)
                 {
                     string extension = Path.GetExtension(logo.EmailLogo.ImageName);
                     string fileName = "emaillogo" + extension;
-                    logo.EmailLogo.ImageName = PathUtil.GetStoreLogoImagePath(CurrentUser.ComeFrom, CurrentUser.ClientId, "/ClientResources/" + CurrentUser.ClientId + "/logo/" + fileName);
-                    files.Add(logo.EmailLogo.ImageName);
-                    Action a2 = new Action(() => { Intimex.Utility.FileUtil.MoveFile(temp2, destPath, fileName); });
+                    logo.EmailLogo.ImageName = PathUtil.GetRelativePath(CurrentUser.UserId, Enums.FileFolderEnum.StoreLogo) + fileName;
+                    Action a2 = new Action(() => { FileUtil.MoveFile(temp2, destPath, fileName); });
                     actionList.Add(a2);
                 }
                 string temp3 = Path.Combine(tempPath, logo.ReportLogo.ImageName);
-                if (File.Exists(temp3))
+                var file3 = new FileInfo(temp3);
+                if (file3.Exists)
                 {
                     string extension = Path.GetExtension(logo.ReportLogo.ImageName);
                     string fileName = "reportlogo" + extension;
-                    logo.ReportLogo.ImageName = PathUtil.GetStoreLogoImagePath(CurrentUser.ComeFrom, CurrentUser.ClientId, "/ClientResources/" + CurrentUser.ClientId + "/logo/" + fileName);
-                    files.Add(logo.ReportLogo.ImageName);
-                    Action a3 = new Action(() => { Intimex.Utility.FileUtil.MoveFile(temp3, destPath, fileName); });
+                    logo.ReportLogo.ImageName = PathUtil.GetRelativePath(CurrentUser.UserId, Enums.FileFolderEnum.StoreLogo) + fileName;
+                    Action a3 = new Action(() => { FileUtil.MoveFile(temp3, destPath, fileName); });
                     actionList.Add(a3);
                 }
             }
+            SystemResult sysRslt = new SystemResult();
+            sysRslt = codeMasterBLL.SaveSystemLogo(logo);
 
-
-            SystemResult result = await ApiPost<SystemLogo, SystemResult>("/SysCustomization/SaveSystemLogo", logo);
-            if (result.Succeeded)
+            if (sysRslt.Succeeded)
             {
                 try
                 {
                     foreach (var item in actionList)
                     {
-                        item.BeginInvoke(null, null);
+                        item();
                     }
-
-                    ResourceDistribute.Distribute(files);
                 }
                 catch (Exception ex)
                 {
-                    _loger.Error(ex);
                     //throw;
                 }
             }
-            return result;
+            return sysRslt;
         }
 
         [HttpGet]
@@ -149,7 +124,7 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
             //return sysRslt;
 
 
-            var data = await ApiGet<SystemLogo>("/SysCustomization/GetSystemLogos", null, null);
+            var data = codeMasterBLL.GetSystemLogos();
             data.StoreLogo.ImagePath += "?t=" + DateTime.Now.Ticks.ToString();
             data.ReportLogo.ImagePath += "?t=" + DateTime.Now.Ticks.ToString();
             data.EmailLogo.ImagePath += "?t=" + DateTime.Now.Ticks.ToString();
@@ -162,7 +137,10 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
 
         public async Task<SystemResult> GetProductImageLimtSize()
         {
-            return await ApiGet<SystemResult>("/SysCustomization/GetProductImageLimtSize", null, null);
+            SystemResult result = new SystemResult();
+            result.ReturnValue = settingBLL.GetProductImageLimtSize();
+            result.Succeeded = true;
+            return result;
         }
 
     }

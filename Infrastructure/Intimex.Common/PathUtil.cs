@@ -17,10 +17,10 @@ namespace Intimex.Common
         /// <param name="merchantId"></param>
         /// <param name="module"></param>
         /// <returns></returns>
-        public static string GetPhysicalPath(string RootPath, Guid merchantId, FileFolderEnum module)
+        public static string GetPhysicalPath(string RootPath, string merchantId, FileFolderEnum module)
         {
             string folder = string.Empty;
-          
+
             string baseFolder = $"/{merchantId}";
             switch (module)
             {
@@ -84,13 +84,16 @@ namespace Intimex.Common
                 case FileFolderEnum.Video:
                     folder = "/video/";
                     break;
+                case FileFolderEnum.StoreLogo:
+                    folder = $"{baseFolder}/" + FileFolderEnum.StoreLogo.ToString()+"/";
+                    break;
                 default:
                     break;
             }
-     
+
             folder = $"/ClientResources{folder}";
             folder = folder.Replace('/', '\\');
-            folder = $"{RootPath}{folder}";           
+            folder = $"{RootPath}{folder}";
             return folder;
         }
 
@@ -101,7 +104,7 @@ namespace Intimex.Common
         /// <param name="merchantId"></param>
         /// <param name="module"></param>
         /// <returns></returns>
-        public static string GetRelativePath(Guid merchantId, FileFolderEnum module)
+        public static string GetRelativePath(string merchantId, FileFolderEnum module)
         {
             string folder = string.Empty;
             string baseFolder = $"/ClientResources/{ merchantId}";
@@ -144,7 +147,7 @@ namespace Intimex.Common
                     folder = $"/ClientResources/system/menu";
                     break;
                 case FileFolderEnum.Cms:
-                    folder = $"{baseFolder}/cms"; 
+                    folder = $"{baseFolder}/cms";
                     break;
                 case FileFolderEnum.ProductComment:
                     folder = $"{baseFolder}/productcomment";
@@ -160,6 +163,9 @@ namespace Intimex.Common
                     break;
                 case FileFolderEnum.CustomMenu:
                     folder = $"{baseFolder }/Menu";
+                    break;
+                case FileFolderEnum.StoreLogo:
+                    folder = $"{baseFolder}/" + FileFolderEnum.StoreLogo.ToString() + "/";
                     break;
                 default:
                     break;

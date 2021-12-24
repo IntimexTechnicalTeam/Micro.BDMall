@@ -30,6 +30,7 @@ namespace BDMall.Enums
         DefaultImage,
         MassUploadFilePath,
         CustomMenu,
-        Video
+        Video,
+        StoreLogo
     }
 }

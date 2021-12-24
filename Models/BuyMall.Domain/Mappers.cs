@@ -20,6 +20,8 @@ namespace Domain
             ConfigMap<ProductAttributeValue, ProductAttributeValueDto>();
             ConfigMap<ProductCatalogSummaryView, ProductCatalogDto>();
             ConfigMap<ProductCatalogDto, ProductCatalogEditModel>();
+            ConfigMap<CodeMasterDto, CodeMaster>();
+            
         }
         void ConfigMap<TSource, TDestination>()
         {

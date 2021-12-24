@@ -42,7 +42,10 @@ namespace BDMall.Admin.Controllers
             return View();
         }
 
-
+        public ActionResult SystemEmails()
+        {
+            return View();
+        }
         public ActionResult IPostSetting()
         {
             return View();

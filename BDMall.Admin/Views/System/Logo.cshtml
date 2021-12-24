@@ -1,0 +1,147 @@
+﻿
+@{
+    ViewBag.Title = "Logo";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+<link href="~/Scripts/bootstrap-fileinput/css/fileinput.min.css" rel="stylesheet"/>
+<div id="app" v-cloak>
+
+    <div id="myModal">
+        <table>
+            <tr>
+                <td class="col-lg-2">
+                    @BDMall.Resources.Label.StoreLogo
+                </td>
+                <td class="col-lg-10">
+                    <img class="img-rounded" v-bind:src="logos.StoreLogo.ImagePath" width="100" />
+                    <input type="hidden" v-model="logos.StoreLogo.ImageName" />
+                    <input name="txt_file" id="adminLogo" type="file" class="file" />
+
+                </td>
+            </tr>
+            <tr>
+                <td class="col-lg-2">
+                    @BDMall.Resources.Label.EmailLogo
+                </td>
+                <td class="col-lg-10">
+                    <img class="img-rounded" v-bind:src="logos.EmailLogo.ImagePath" width="100" />
+                    <input type="hidden" v-model="logos.EmailLogo.ImageName" />
+                    <input name="txt_file" id="emailLogo" type="file" class="file" />
+                </td>
+            </tr>
+            <tr>
+                <td class="col-lg-2">
+                    @BDMall.Resources.Label.ReportLogo
+                </td>
+                <td class="col-lg-10">
+                    <img class="img-rounded" v-bind:src="logos.ReportLogo.ImagePath" width="100" />
+                    <input type="hidden" v-model="logos.ReportLogo.ImageName" />
+                    <input name="txt_file" id="reportLogo" type="file" class="file" />
+
+                </td>
+            </tr>
+        </table>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-primary" v-on:click="saveLogo">@BDMall.Resources.Action.Save</button>
+        </div>
+    </div>
+</div>
+@section scripts {
+    <script src="~/Scripts/bootstrap-fileinput/js/fileinput.min.js"></script>
+    <script type="text/javascript">
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                logos: {
+                    StoreLogo: { ImageName: "", ImagePath: "" },
+                    EmailLogo: { ImageName: "", ImagePath: "" },
+                    ReportLogo: { ImageName: "", ImagePath: "" }
+                }
+            },
+            methods: {
+                getLogo: function () {
+                    WS.AjaxP("get", "/adminapi/SysCustomization/GetSystemLogos", null, function (response) {
+                        vm.logos = response;
+                    }, function () { });
+                },
+                saveLogo: function () {
+                    WS.AjaxP("post", "/adminapi/SysCustomization/SaveSystemLogo", vm.logos, function (response) {
+                        if (response.Succeeded == true) {
+                            vm.getLogo();
+                            showInfo("@BDMall.Resources.Message.SaveSuccess");
+                        }
+                        else {
+                            showWarn(response.Message);
+                        }
+                    }, function () { });
+                }
+
+            }
+        });
+
+
+
+        var storeLogoOption = new FileInputOption();
+        storeLogoOption.CtrlName = "adminLogo";
+        storeLogoOption.UploadUrl = "/adminapi/FileUpload/UploadFile";
+        storeLogoOption.MaxFile = 1;
+        storeLogoOption.ShowRemove = false;
+        storeLogoOption.SuccessCallback = function (data) {
+            Vue.set(vm.logos.StoreLogo, 'ImageName', data.response.ReturnValue[0].Name);
+            Vue.set(vm.logos.StoreLogo, 'ImagePath', data.response.ReturnValue[0].ThumbnailPath);
+            clearPerview("adminLogo");
+            //$("#adminLogo").fileinput("refreshContainer");
+        };
+        storeLogoOption.ErrorCallback = function (data) {
+            vm.logos.StoreLogo.ImageName = "";
+            vm.logos.StoreLogo.ImagePath = "";
+        };
+        FileInputInit(storeLogoOption);
+
+        var emailLogoOption = new FileInputOption();
+        emailLogoOption.CtrlName = "emailLogo";
+        emailLogoOption.UploadUrl = "/adminapi/FileUpload/UploadFile";
+        emailLogoOption.MaxFile = 1;
+        emailLogoOption.ShowRemove = false;
+        emailLogoOption.SuccessCallback = function (data) {
+            Vue.set(vm.logos.EmailLogo, 'ImageName', data.response.ReturnValue[0].Name);
+            Vue.set(vm.logos.EmailLogo, 'ImagePath', data.response.ReturnValue[0].ThumbnailPath);
+            clearPerview("emailLogo");
+        };
+        emailLogoOption.ErrorCallback = function (data) {
+            vm.logos.EmailLogo.ImageName = "";
+            vm.logos.EmailLogo.ImagePath = "";
+        };
+        FileInputInit(emailLogoOption);
+
+        var reportLogoOption = new FileInputOption();
+        reportLogoOption.CtrlName = "reportLogo";
+        reportLogoOption.UploadUrl = "/adminapi/FileUpload/UploadFile";
+        reportLogoOption.MaxFile = 1;
+        reportLogoOption.ShowRemove = false;
+        reportLogoOption.SuccessCallback = function (data) {
+            Vue.set(vm.logos.ReportLogo, 'ImageName', data.response.ReturnValue[0].Name);
+            Vue.set(vm.logos.ReportLogo, 'ImagePath', data.response.ReturnValue[0].ThumbnailPath);
+            clearPerview("reportLogo");
+        };
+        reportLogoOption.ErrorCallback = function (data) {
+            vm.logos.ReportLogo.ImageName = "";
+            vm.logos.ReportLogo.ImagePath = "";
+        };
+        FileInputInit(reportLogoOption);
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+
+        $(document).ready(function () {
+            vm.getLogo();
+        });
+    </script>
+}
+
+
+
