@@ -22,7 +22,7 @@ namespace BDMall.BLL
         }
 
         public List<KeyValue> GetApproveStatuses()
-            {
+        {
             var statusList = new List<KeyValue>();
             foreach (ApproveType statusItm in Enum.GetValues(typeof(ApproveType)))
             {
@@ -54,43 +54,64 @@ namespace BDMall.BLL
             return statusList;
         }
 
-        public List<KeyValue> GetSupportLanguages()
+        //public List<KeyValue> GetSupportLanguages()
+        //{
+        //    var langs = GetSupportLanguage();
+        //    var list = langs.Select(s => new KeyValue
+        //    {
+        //        Text = s.Text,
+        //        Id = ((Language)Enum.Parse(typeof(Language), s.Code)).ToInt().ToString(),
+        //    });
+
+        //    return list.ToList();
+        //}
+
+
+
+        public double GetProductImageLimtSize()
         {
+            double result = GetImgDefaultLimitSize();//默認為2MB
+            var master = _codeMasterRepo.GetCodeMaster(CodeMasterModule.Setting.ToString(), CodeMasterFunction.ImageLimitSize.ToString(), "ProductLimitSize");
+
+            if (master != null)
+            {
+                result = double.Parse(master.Value) * 1024;
+            }
+            return result;
+        }
+
+        private double GetImgDefaultLimitSize()
+        {
+            return 2048;
+        }
+
+        /// <summary>
+        /// 獲取店家支持的語言
+        /// </summary>
+        public List<SystemLang> GetSupportLanguages(Language rtnLang)
+        {
+            var langs = GetSupportLanguage(rtnLang);
+            return langs;
+        }
+
+        /// <summary>
+        /// 獲取店家支持的語言
+        /// </summary>
+        public List<SystemLang> GetSupportLanguages()
+        {
+
+            //注意，此缓存在repo内实现
+            //string cacheKey = "SupportLanguages";
+            //List<SystemLang> langs = CacheHelper.Get<List<SystemLang>>(cacheKey);
+            //if (langs == null)
+            //{
+            //    langs = _codeMasterRepo.GetSupportLanguage();
+            //    CacheHelper.AddFTClear(cacheKey, langs);
+            //}
+
             var langs = GetSupportLanguage();
-            var list = langs.Select(s => new KeyValue
-        {
-                Text = s.Text,
-                Id = ((Language)Enum.Parse(typeof(Language),s.Code)).ToInt().ToString(),
-            });
+            return langs;
 
-            return list.ToList();
         }
-
-    }
-
-    public double GetProductImageLimtSize()
-    {
-        double result = GetImgDefaultLimitSize();//默認為2MB
-        var master = _codeMasterRepo.GetCodeMaster(CodeMasterModule.Setting.ToString(), CodeMasterFunction.ImageLimitSize.ToString(), "ProductLimitSize");
-
-        if (master != null)
-        {
-            result = double.Parse(master.Value) * 1024;
-        }
-        return result;
-    }
-
-    private double GetImgDefaultLimitSize()
-    {
-        return 2048;
-    }
-
-    /// <summary>
-    /// 獲取店家支持的語言
-    /// </summary>
-    public List<SystemLang> GetSupportLanguages(Language rtnLang)
-    {
-        var langs = GetSupportLanguage(rtnLang);
-        return langs;
     }
 }

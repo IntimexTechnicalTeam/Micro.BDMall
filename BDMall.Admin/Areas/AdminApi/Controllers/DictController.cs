@@ -26,7 +26,7 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
     [AdminApiAuthorize(Module = ModuleConst.PersonalSetting)]
     public class DictController : BaseApiController
     {
-        //public ICodeMasterBLL CodeMasterBLL { get; set; }
+        public ICodeMasterBLL codeMasterBLL;
         public ISettingBLL settingBLL;
         public IMerchantBLL merchantBLL;
 
@@ -147,17 +147,7 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
             return new List<MutiLanguage>();
         }
 
-        /// <summary>
-        /// 獲取系統支持的語言種類
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet]
-        public async Task<List<KeyValue>> GetSupportLanguage()
-        {
-                var langs = settingBLL.GetSupportLanguages();
-            return langs;
-        }
-
+     
         /// <summary>
         /// 送貨方式
         /// </summary>
