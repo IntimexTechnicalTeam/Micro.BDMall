@@ -64,6 +64,8 @@ namespace BDMall.Repository
 
         public DbSet<ProductSku> ProductSkus { get; set; }
 
+        public DbSet<ProductStatistics> ProductStatistics { get; set; }
+
         public DbSet<Merchant> Merchants { get; set; }
 
         public DbSet<ProductAttribute> ProductAttributes { get; set; }
@@ -88,5 +90,11 @@ namespace BDMall.Repository
         public DbSet<ExpressCompany> ExpressCompanies { get; set; }
 
         public DbSet<MerchantActiveShipMethod> MerchantActiveShipMethods { get; set; }
+
+        public DbSet<MerchantPromotionBanner> MerchantPromotionBanners { get; set; }
+
+        public DbSet<MerchantPromotionProduct> MerchantPromotionProducts { get; set; }
+
+        public DbSet<ApproveHistory> ApproveHistories { get; set;}
     }
 }

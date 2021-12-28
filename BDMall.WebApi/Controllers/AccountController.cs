@@ -49,7 +49,7 @@ namespace BDMall.WebApi.Controllers
                 claimList.Add(new Claim("CurrencyCode",userInfo.CurrencyCode));
                 claimList.Add(new Claim("Account", userInfo.Account));
                 claimList.Add(new Claim("IsLogin", "true"));
-                claimList.Add(new Claim("LoginType", $"{ LoginType.Member.ToInt() }"));
+                claimList.Add(new Claim("LoginType", $"{ LoginType.Member }"));
                 string ticket = jwtToken.CreateToken(claimList);
 
                 result.Succeeded = true;

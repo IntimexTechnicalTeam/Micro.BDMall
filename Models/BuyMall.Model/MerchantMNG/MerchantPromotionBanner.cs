@@ -35,8 +35,8 @@ namespace BDMall.Model
         [Column(Order = 9)]
         public bool IsOpenWindow { get; set; }
 
-        //[ForeignKey("PromotionId")]
-        //public virtual MerchantPromotion MerchantPromotion { get; set; }
+        [ForeignKey("PromotionId")]
+        public virtual MerchantPromotion MerchantPromotion { get; set; }
 
 
     }

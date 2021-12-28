@@ -6,7 +6,6 @@
 }
 
 <div id="divMain" v-cloak>
-
     <div id="divMerchantPromotionInfo" class="form-group col-sm-12" v-show="merchId!='00000000-0000-0000-0000-000000000000'">
 
         <div style="margin:0 0 0 10px;">
@@ -45,7 +44,7 @@
                         <tr>
                             <td>@BDMall.Resources.Label.Image</td>
                             <td>
-                                <div v-show="isMerchant==true">
+                                <div v-show="isMerchant">
                                     <input name="BannerImg" id="BannerImg" type="file" class="file" multiple />
                                     <span>@string.Format(BDMall.Resources.Label.UploadPhotoSize, 1200, 500)</span>
                                 </div>
@@ -100,7 +99,7 @@
                                 <span v-show="item.Language=='S'">@BDMall.Resources.Value.LangSimplifiedChinese</span>
                             </td>
                             <td>
-                                <input type="button" value="@BDMall.Resources.Action.Delete" class="btn btn-default" v-on:click="deleteBanner(item.Image)" v-show="isMerchant==true" />
+                                <input type="button" value="@BDMall.Resources.Action.Delete" class="btn btn-default" v-on:click="deleteBanner(item.Image)" v-show="isMerchant" />
                             </td>
                         </tr>
                     </table>
@@ -144,7 +143,7 @@
                             <td>
                                 <div v-for="item in promotion.Covers" v-show="item.Lang.Code==promoLanguageType">
                                     <img class="img-rounded" v-bind:src="item.Desc" v-bind:id="'covers_' + item.Lang.Code" width="100" v-on:click="dialog($event)" />
-                                    <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.UploadImage" v-on:click="uploadCover(item.Lang.Code)" v-show="isMerchant==true" />
+                                    <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.UploadImage" v-on:click="uploadCover(item.Lang.Code)" v-show="isMerchant" />
                                 </div>
                             </td>
                         </tr>
@@ -153,7 +152,7 @@
                             <td>
                                 <div v-for="item in promotion.MobileCovers" v-show="item.Lang.Code==promoLanguageType">
                                     <img class="img-rounded" v-bind:src="item.Desc" v-bind:id="'mobileCovers_' + item.Lang.Code" width="100" v-on:click="dialog($event)" />
-                                    <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.UploadImage" v-on:click="uploadMobileCover(item.Lang.Code)" v-show="isMerchant==true" />
+                                    <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.UploadImage" v-on:click="uploadMobileCover(item.Lang.Code)" v-show="isMerchant" />
 
                                 </div>
                             </td>
@@ -183,7 +182,7 @@
                             </td>
                         </tr>
                     </table>
-                    <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.AddProduct" v-on:click="addProduct" v-show="isMerchant==true" />
+                    <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.AddProduct" v-on:click="addProduct" v-show="isMerchant" />
                     <table class="table" id="tblPromoteProduct">
                         <tr>
                             <td>@BDMall.Resources.Label.ProductCode</td>
@@ -228,7 +227,7 @@
                             <td>
                                 <div v-for="item in promotion.Logos" v-show="item.Lang.Code==logoLanguageType">
                                     <img class="img-rounded" v-bind:src="item.Desc" v-bind:id="'logos_' + item.Lang.Code" width="100" v-on:click="dialog($event)" />
-                                    <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.UploadImage" v-on:click="uploadLogo(item.Lang.Code)" v-show="isMerchant==true" />
+                                    <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.UploadImage" v-on:click="uploadLogo(item.Lang.Code)" v-show="isMerchant" />
                                     <span>@string.Format(BDMall.Resources.Label.UploadPhotoSize, 350, 350)</span>
                                 </div>
                             </td>
@@ -305,12 +304,12 @@
 
                     <input type="button" v-show="editType!='Approve'" class="btn btn-default btn-action-default" value="@BDMall.Resources.Action.Close" v-on:click="closeTab" />
 
-                    <input id="btnCopyToOtherLang" v-show="editType!='Approve' && isMerchant==true" type="button" class="btn btn-primary btn-action-default" value="@BDMall.Resources.Action.CopyToOtherLanguage" v-on:click="copyToOtherLang" />
-                    <input id="btnModiy" v-show="editType!='Approve' && isMerchant==true" type="button" class="btn btn-primary btn-action-default" value="@BDMall.Resources.Action.Save" v-on:click="savePromotion" />
-                    <input id="btnApply" type="button" v-show="isMerchant==true" v-on:click="saveAndApply" class="btn btn-primary btn-action-default" value="@BDMall.Resources.Action.SaveAndApply" />
+                    <input id="btnCopyToOtherLang" v-show="editType!='Approve' && isMerchant" type="button" class="btn btn-primary btn-action-default" value="@BDMall.Resources.Action.CopyToOtherLanguage" v-on:click="copyToOtherLang" />
+                    <input id="btnModiy" v-show="editType!='Approve' && isMerchant" type="button" class="btn btn-primary btn-action-default" value="@BDMall.Resources.Action.Save" v-on:click="savePromotion" />
+                    <input id="btnApply" type="button" v-show="isMerchant" v-on:click="saveAndApply" class="btn btn-primary btn-action-default" value="@BDMall.Resources.Action.SaveAndApply" />
 
-                    <input type="button" v-show="isMerchant==false && editType=='Approve'" class="btn btn-primary btn-action-large" value="@BDMall.Resources.Action.Pass" v-on:click="approve" />
-                    <input type="button" v-show="isMerchant==false && editType=='Approve'" class="btn btn-warning btn-action-large" value="@BDMall.Resources.Action.Reject" v-on:click="setTurndown" />
+                    <input type="button" v-show="!isMerchant && editType=='Approve'" class="btn btn-primary btn-action-large" value="@BDMall.Resources.Action.Pass" v-on:click="approve" />
+                    <input type="button" v-show="!isMerchant && editType=='Approve'" class="btn btn-warning btn-action-large" value="@BDMall.Resources.Action.Reject" v-on:click="setTurndown" />
                 </div>
             </div>
         </div>
@@ -345,7 +344,9 @@
 </div>
 
 @section scripts{
-   
+
+    <script src="~/Scripts/bootstrap-fileinput/js/fileinput.min.js"></script>
+    <script src="~/Scripts/admin/Common-v100.js"></script>    
     <script src="~/Scripts/admin/vue-component/multilangbar.js"></script>
 
     <script type="text/javascript">
@@ -977,7 +978,7 @@
         $(document).ready(function () {
             vm.merchId = '@ViewBag.MerchantID';
             vm.editType = '@ViewBag.EditType';
-            vm.isMerchant = Boolean(@ViewBag.IsMerchant);
+            vm.isMerchant = '@ViewBag.IsMerchant';
 
             $("#attributeValueForm").validate({
                 submitHandler: function () {

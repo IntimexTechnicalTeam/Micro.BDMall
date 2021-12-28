@@ -77,7 +77,7 @@ namespace Web.Mvc
             }
 
             var payload = jwtToken.DecodeJwt(token);
-            if (int.Parse(payload["LoginType"]) == LoginType.TempUser.ToInt())      //临时用户也是匿名处理
+            if (payload["LoginType"].ToString() == LoginType.TempUser.ToString())      //临时用户也是匿名处理
             {
                 await next();
                 flag = false;

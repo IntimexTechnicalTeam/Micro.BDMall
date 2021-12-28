@@ -15,9 +15,11 @@ namespace BDMall.BLL
     public class MerchantBLL : BaseBLL, IMerchantBLL
     {
         IMerchantRepository merchantRepository;
+        IMerchantPromotionRepository merchantPromotionRepository;
         ITranslationRepository translationRepository;
         IMerchantShipMethodMappingRepository merchantShipMethodMappingRepository;
         IUserBLL userBLL;
+        ICurrencyBLL currencyBLL;
 
         PreHeatMerchantService mchHeatService;
 
@@ -27,7 +29,8 @@ namespace BDMall.BLL
             translationRepository = Services.Resolve<ITranslationRepository>();
             merchantShipMethodMappingRepository = Services.Resolve<IMerchantShipMethodMappingRepository>();
             userBLL = Services.Resolve<IUserBLL>();
-
+            currencyBLL = Services.Resolve<ICurrencyBLL>();
+            merchantPromotionRepository = Services.Resolve<IMerchantPromotionRepository>();
             mchHeatService = (PreHeatMerchantService)Services.GetService(typeof(PreHeatMerchantService));
         }
 
@@ -42,7 +45,7 @@ namespace BDMall.BLL
             var query = (from d in baseRepository.GetList<Merchant>()
                          join t in baseRepository.GetList<Translation>() on new { a1 = d.NameTransId, a2 = CurrentUser.Lang } equals new { a1 = t.TransId, a2 = t.Lang } into TransTemp
                          from tt in TransTemp.DefaultIfEmpty()
-                         where (!isMerchant || (isMerchant && d.Id == Guid.Parse(CurrentUser.UserId))) && d.IsDeleted == false
+                         where (!isMerchant || (isMerchant && d.Id == CurrentUser.MechantId)) && d.IsDeleted == false
                          select new KeyValue
                          {
                              Id = d.Id.ToString().ToLower(),
@@ -233,7 +236,8 @@ namespace BDMall.BLL
             {
                 view.MerchantId = merchantId;
 
-                view.MerchantShipMethods = defaultShipMethods.Select(s => new MerchantShipMethodView {
+                view.MerchantShipMethods = defaultShipMethods.Select(s => new MerchantShipMethodView
+                {
                     ShipMethodCode = s.ShipCode,
                     IsEffect = false,
                     ShipMethodName = s.ShipMethodName,
@@ -264,11 +268,11 @@ namespace BDMall.BLL
                 {
                     var shipMethod = dbShipmethods.FirstOrDefault(p => p.ShipCode == item.ShipMethodCode);
                     if (shipMethod != null)
-                    {                        
+                    {
                         if (isMerchant && item.IsEffect == false)//当STPAdmin取消一种付运方式时，其它商家的该种付运方式都设为失效
-                        {                           
-                            var otherShipMethods = baseRepository.GetList<MerchantActiveShipMethod>(x=>x.ShipCode == item.ShipMethodCode && x.IsEffect).ToList();
-                            foreach (var a in otherShipMethods)  a.IsEffect = false;                          
+                        {
+                            var otherShipMethods = baseRepository.GetList<MerchantActiveShipMethod>(x => x.ShipCode == item.ShipMethodCode && x.IsEffect).ToList();
+                            foreach (var a in otherShipMethods) a.IsEffect = false;
                             disActiveShipMethods.AddRange(otherShipMethods);
                         }
                         shipMethod.IsEffect = item.IsEffect;
@@ -279,7 +283,7 @@ namespace BDMall.BLL
                     else
                     {
                         MerchantActiveShipMethod a = new MerchantActiveShipMethod();
-                        a.Id = Guid.NewGuid();                   
+                        a.Id = Guid.NewGuid();
                         a.MerchantId = mappingShipMethod.MerchantId;
                         a.ShipCode = item.ShipMethodCode;
                         a.IsEffect = item.IsEffect;
@@ -295,11 +299,416 @@ namespace BDMall.BLL
             }
         }
 
+        public MerchantPromotionView GetMerchPromotionInfo(Guid merchID)
+        {
+            MerchantPromotionView view = new MerchantPromotionView();
+
+            MerchantPromotion promotion = new MerchantPromotion();
+
+            var editingPromotion = merchantPromotionRepository.GetNotApprovePromotion(merchID);
+
+            if (editingPromotion != null)
+            {
+                promotion = editingPromotion;
+            }
+            else
+            {
+                promotion = merchantPromotionRepository.GetApprovePromotion(merchID);
+            }
+
+            if (promotion == null) return null;
+
+            var fileServer = string.Empty;
+            view.Id = promotion.Id;
+            view.MerchantId = promotion.MerchantId;
+            view.CoverId = promotion.CoverId; //fileServer + promotion.Cover + "?tid=" + (promotion.UpdateDate ?? DateTime.Now).ToString("ddmmss");
+            view.LogoId = promotion.SmallLogoId; //fileServer + promotion.SmallLogo + "?tid=" + (promotion.UpdateDate ?? DateTime.Now).ToString("ddmmss");
+            view.BigLogoId = promotion.BigLogoId;
+            view.IntorductionTranId = promotion.IntorductionTranId;
+            view.OrderTranId = promotion.OrderTransId;
+            view.Covers = translationRepository.GetMutiLanguage(promotion.CoverId);
+            view.Logos = translationRepository.GetMutiLanguage(promotion.SmallLogoId);
+            view.BigLogos = translationRepository.GetMutiLanguage(promotion.BigLogoId);
+            view.ExpCompleteDays = translationRepository.GetMutiLanguage(promotion.OrderTransId);
+
+            view.ApproveStatus = promotion.ApproveStatus;
+            view.Banners = baseRepository.GetList<MerchantPromotionBanner>(x => x.IsActive && !x.IsDeleted && x.Language == CurrentUser.Lang && x.PromotionId == view.Id)
+                            .Select(b => new MerchantPromotionBannerView
+                            {
+                                Id = b.Id,
+                                Image = b.Image,
+                                IsDelete = false,
+                                PromotionId = b.PromotionId,
+                                Lang = b.Language,
+                                Language = b.Language.ToString(),
+                                Seq = b.Seq,
+                                IsOpenWindow = b.IsOpenWindow,
+                                BannerLink = b.BannerLink
+                            }).OrderBy(o => o.Lang).ThenBy(t => t.Seq).ToList();
+
+
+            view.ProductList = (from b in baseRepository.GetList<MerchantPromotionProduct>()
+                                join c in baseRepository.GetList<Product>() on b.ProductCode equals c.Code
+                                join s in baseRepository.GetList<ProductStatistics>() on b.ProductCode equals s.Code into cs
+                                from ss in cs.DefaultIfEmpty()
+                                where b.PromotionId == promotion.Id && !b.IsDeleted && b.IsActive && c.Status == ProductStatus.OnSale && !c.IsDeleted
+                                select new MerchantPromotionProductView
+                                {
+                                    Id = b.Id,
+                                    IsDelete = false,
+                                    PromotionId = b.PromotionId,
+                                    Code = b.ProductCode,
+                                    ProductId = c.Id,
+                                    NameTransId = ss == null ? Guid.NewGuid() : ss.InternalNameTransId,//c.NameTransId,
+                                    Name = "",
+                                    ListPrice = c.OriginalPrice,
+                                    SalesPrice = c.SalePrice,
+                                    CurrencyCode = c.CurrencyCode,
+                                    MerchantId = c.MerchantId
+                                }).ToList();
+
+            foreach (var banner in view.Banners)
+            {
+                banner.Image = fileServer + banner.Image;
+            }
+
+            if (view.ProductList != null)
+            {
+                foreach (var item in view.ProductList)
+                {
+                    item.Imgs = GetProductImages(item.ProductId);
+                    item.Name = translationRepository.GetTranslation(item.NameTransId, CurrentUser.Lang)?.Value ?? "";
+                    item.Currency = currencyBLL.GetSimpleCurrency(item.CurrencyCode);
+                }
+            }
+            var introductions = translationRepository.GetMutiLanguage(promotion.IntorductionTranId);
+            var descs = translationRepository.GetMutiLanguage(promotion.DescTransId);
+            var names = translationRepository.GetMutiLanguage(promotion.NameTranId);
+            var tandcs = translationRepository.GetMutiLanguage(promotion.TAndCTranId);
+            var notices = translationRepository.GetMutiLanguage(promotion.NoticeTranId);
+            var rtnTermses = translationRepository.GetMutiLanguage(promotion.ReturnTermsTranId);
+
+            view.PromotionNames = names;
+            view.NameTranId = promotion.NameTranId;
+            view.Descriptions = descs;
+            view.DescTransId = promotion.DescTransId;
+            view.PromotionIntroductions = introductions;
+            view.TAndCTranId = promotion.TAndCTranId;
+            view.TAndCs = tandcs;
+            view.NoticeTranId = promotion.NoticeTranId;
+            view.Notices = notices;
+            view.ReturnTermsTranId = promotion.ReturnTermsTranId;
+            view.ReturnTermses = rtnTermses;
+
+            view.PromotionIntroduction = introductions.Where(p => p.Language == CurrentUser.Lang).FirstOrDefault()?.Desc ?? "";
+            view.PromotionName = names.Where(p => p.Language == CurrentUser.Lang).FirstOrDefault()?.Desc ?? "";
+            view.Description = descs.Where(p => p.Language == CurrentUser.Lang).FirstOrDefault()?.Desc ?? "";
+            view.TAndC = tandcs.Where(p => p.Language == CurrentUser.Lang).FirstOrDefault()?.Desc ?? "";
+            view.Notice = notices.Where(p => p.Language == CurrentUser.Lang).FirstOrDefault()?.Desc ?? "";
+            view.ReturnTerms = rtnTermses.Where(p => p.Language == CurrentUser.Lang).FirstOrDefault()?.Desc ?? "";
+            view.ExpCompleteDay = view.ExpCompleteDays.FirstOrDefault(x => x.Language == CurrentUser.Lang)?.Desc ?? "";
+            view.LocalCoolDownDay = promotion.LocalCoolDownDay;
+            view.OverSeaCoolDownDay = promotion.OverSeaCoolDownDay;
+
+            view.ExpCompleteDay = string.IsNullOrEmpty(view.ExpCompleteDay) ? "2~4" : view.ExpCompleteDay;
+            return view;
+        }
+
+
+        public List<string> GetProductImages(Guid prodID)
+        {
+            var productImages = new List<string>();
+
+            var product = baseRepository.GetModelById<Product>(prodID);
+            if (product != null)
+            {
+                var dbproductImage = baseRepository.GetModelById<ProductImage>(product.DefaultImage);
+                if (dbproductImage != null)
+                {
+                    var imageItems = dbproductImage.ImageItems.OrderBy(o => o.Type).ToList();
+                    if (imageItems != null)
+                    {
+                        var fileServer = string.Empty;
+                        foreach (var item in imageItems)
+                        {
+                            productImages.Add(fileServer + item.Path);
+                        }
+                    }
+                }
+            }
+            return productImages;
+        }
+
+        public Guid SaveMerchantPromotion(MerchantPromotionView promotion)
+        {
+            promotion.Validate();
+
+            var edittingPromotion = GetEditingMerchPromotionInfo(promotion.MerchantId);
+            promotion.Id = edittingPromotion != null ? edittingPromotion.Id : Guid.Empty;
+
+            if (promotion.Id == Guid.Empty)
+            {
+                InsertMerchantPromotion(promotion);
+            }
+            else
+            {
+                UpdateMerchantPromotion(promotion);
+            }
+            return promotion.Id;
+        }
+
+        public MerchantPromotionView GetEditingMerchPromotionInfo(Guid merchID)
+        {
+            MerchantPromotionView view = new MerchantPromotionView();
+
+            MerchantPromotion promotion = new MerchantPromotion();
+
+            promotion = merchantPromotionRepository.GetNotApprovePromotion(merchID);
+
+            if (promotion == null) return null;
+
+            var fileServer = string.Empty;
+            view.Id = promotion.Id;
+            view.MerchantId = promotion.MerchantId;
+            view.CoverId = promotion.CoverId; //fileServer + promotion.Cover + "?tid=" + (promotion.UpdateDate ?? DateTime.Now).ToString("ddmmss");
+            view.MobileCoverId = promotion.MobileCoverId;
+            view.LogoId = promotion.SmallLogoId; //fileServer + promotion.SmallLogo + "?tid=" + (promotion.UpdateDate ?? DateTime.Now).ToString("ddmmss");
+
+            view.Covers = translationRepository.GetMutiLanguage(promotion.CoverId);
+            view.MobileCovers = translationRepository.GetMutiLanguage(promotion.MobileCoverId);
+            view.Logos = translationRepository.GetMutiLanguage(promotion.SmallLogoId);
+            view.BigLogos = translationRepository.GetMutiLanguage(promotion.BigLogoId);
+
+            view.Banners =baseRepository.GetList<MerchantPromotionBanner>(b=> !b.IsDeleted && b.IsActive)
+                                    .Select(b => new MerchantPromotionBannerView
+                                    {
+                                        Id = b.Id,
+                                        Image = fileServer + b.Image,
+                                        IsDelete = false,
+                                        PromotionId = b.PromotionId,
+                                        Lang = b.Language,
+                                        Language = b.Language.ToString(),
+                                        Seq = b.Seq,
+                                        IsOpenWindow = b.IsOpenWindow,
+                                        BannerLink = b.BannerLink
+                                    }).OrderBy(o => o.Lang).ThenBy(t => t.Seq).ToList();
+
+            view.ProductList = (from b in baseRepository.GetList< MerchantPromotionProduct>()
+                                join c in baseRepository.GetList<Product>() on b.ProductCode equals c.Code 
+                                where !b.IsDeleted && b.IsActive && c.Status == ProductStatus.OnSale && !c.IsDeleted
+                                select new MerchantPromotionProductView
+                                {
+                                    Id = b.Id,
+                                    IsDelete = false,
+                                    PromotionId = b.PromotionId,
+                                    Code = b.ProductCode,
+                                    ProductId = c.Id,
+                                    NameTransId = c.NameTransId,
+                                    Name = "",
+                                    ListPrice = c.OriginalPrice,
+                                    SalesPrice = c.SalePrice,
+                                    CurrencyCode = c.CurrencyCode,
+                                    MerchantId = c.MerchantId
+                                }).ToList();
+
+            if (view.ProductList != null)
+            {
+                foreach (var item in view.ProductList)
+                {
+                    item.Imgs = GetProductImages(item.ProductId);
+                    item.Name = translationRepository.GetTranslation(item.NameTransId, CurrentUser.Lang).Value;
+                    item.Currency = currencyBLL.GetSimpleCurrency(item.CurrencyCode);
+                }
+            }
+            var introductions = translationRepository.GetMutiLanguage(promotion.IntorductionTranId);
+            var descs = translationRepository.GetMutiLanguage(promotion.DescTransId);
+            var names = translationRepository.GetMutiLanguage(promotion.NameTranId);
+            var tandcs = translationRepository.GetMutiLanguage(promotion.TAndCTranId);
+            var notices = translationRepository.GetMutiLanguage(promotion.NoticeTranId);
+            var rtnTermses = translationRepository.GetMutiLanguage(promotion.ReturnTermsTranId);
+
+            view.PromotionNames = names;
+            view.Descriptions = descs;
+            view.PromotionIntroductions = introductions;
+            view.TAndCs = tandcs;
+            view.Notices = notices;
+            view.ReturnTermses = rtnTermses;
+
+            view.PromotionIntroduction = introductions.Where(p => p.Language == CurrentUser.Lang).FirstOrDefault()?.Desc ?? "";
+            view.PromotionName = names.Where(p => p.Language == CurrentUser.Lang).FirstOrDefault()?.Desc ?? "";
+            view.Description = descs.Where(p => p.Language == CurrentUser.Lang).FirstOrDefault()?.Desc ?? "";
+            view.TAndC = tandcs.Where(p => p.Language == CurrentUser.Lang).FirstOrDefault()?.Desc ?? "";
+            view.Notice = notices.Where(p => p.Language == CurrentUser.Lang).FirstOrDefault()?.Desc ?? "";
+            view.ReturnTerms = rtnTermses.Where(p => p.Language == CurrentUser.Lang).FirstOrDefault()?.Desc ?? "";
+            view.OverSeaCoolDownDay = promotion.OverSeaCoolDownDay;
+            view.LocalCoolDownDay = promotion.LocalCoolDownDay;
+
+            return view;
+        }
+
+        public void InsertMerchantPromotion(MerchantPromotionView promotion)
+        {         
+            if (promotion != null)
+            {
+                foreach (var item in promotion.Descriptions)
+                {
+                    item.Desc = StringUtil.FilterHTMLFunction(item.Desc);
+                }
+            }
+            Guid introId = Guid.NewGuid(); 
+            var introList  = translationRepository.GenTranslations(promotion.PromotionIntroductions, TranslationType.MerchantPromotion, introId);
+            Guid descId = Guid.NewGuid();
+            var descList = translationRepository.GenTranslations(promotion.Descriptions, TranslationType.MerchantPromotion, descId);
+            Guid nameId = Guid.NewGuid();
+            var nameList = translationRepository.GenTranslations(promotion.PromotionNames, TranslationType.MerchantPromotion, nameId);
+            Guid tandcId = Guid.NewGuid();
+            var tandcList = translationRepository.GenTranslations(promotion.TAndCs, TranslationType.MerchantPromotion, tandcId);
+            Guid noticeId = Guid.NewGuid();
+            var noticeList = translationRepository.GenTranslations(promotion.Notices, TranslationType.MerchantPromotion, noticeId);
+            Guid rtnTermsId = Guid.NewGuid();
+            var rntTermList = translationRepository.GenTranslations(promotion.ReturnTermses, TranslationType.MerchantPromotion, rtnTermsId);
+            Guid orderTranId = Guid.NewGuid();
+            var orderTranList  = translationRepository.GenTranslations(promotion.ExpCompleteDays, TranslationType.MerchantPromotion, orderTranId);
+
+            MerchantPromotion promo = new MerchantPromotion();
+            promo.Id = Guid.NewGuid();
+
+            promo.CoverId = Guid.NewGuid();
+            var coverList  = translationRepository.GenTranslations(promotion.Covers, TranslationType.MerchantPromotion,promo.CoverId);// relativePath + "/" + coverName;
+            promo.MobileCoverId = Guid.NewGuid();
+            var mobCoverList = translationRepository.GenTranslations(promotion.MobileCovers, TranslationType.MerchantPromotion, promo.MobileCoverId);
+            promo.SmallLogoId = Guid.NewGuid();
+            var smallLogoList = translationRepository.GenTranslations(promotion.Logos, TranslationType.MerchantPromotion, promo.SmallLogoId); //relativePath + "/" + smallLogo;
+            promo.BigLogoId = Guid.NewGuid();
+            var bigLogoList= translationRepository.GenTranslations(promotion.BigLogos, TranslationType.MerchantPromotion, promo.BigLogoId); //relativePath + "/" + bigLogo;
+
+            promo.MerchantId = promotion.MerchantId;
+            promo.NameTranId = nameId;
+            promo.DescTransId = descId;
+            promo.TAndCTranId = tandcId;
+            promo.NoticeTranId = noticeId;
+            promo.ReturnTermsTranId = rtnTermsId;
+            promo.IntorductionTranId = introId;
+            promo.ApproveStatus = ApproveType.Editing;
+            promo.OrderTransId = orderTranId;
+            promo.OverSeaCoolDownDay = promotion.OverSeaCoolDownDay;
+            promo.LocalCoolDownDay = promotion.LocalCoolDownDay;
+            //promo.IsActive = false;
+
+            promotion.Id = promo.Id;
+
+            var bannerCollection = InsertAndDeletePromotionBanner(promotion);
+            var productCollection = InsertAndDeletePromotionProduct(promotion);
+
+            using var tran = baseRepository.CreateTransation();
+            baseRepository.Insert(promo);
+
+            baseRepository.Insert(introList);
+            baseRepository.Insert(descList);
+            baseRepository.Insert(nameList);
+            baseRepository.Insert(tandcList);
+            baseRepository.Insert(noticeList);
+            baseRepository.Insert(rntTermList);
+            baseRepository.Insert(orderTranList);
+            baseRepository.Insert(coverList);
+            baseRepository.Insert(mobCoverList);
+            baseRepository.Insert(smallLogoList);
+            baseRepository.Insert(bigLogoList);
+
+            baseRepository.Delete(bannerCollection.Item1);
+            baseRepository.Insert(bannerCollection.Item2);
+            baseRepository.Update(bannerCollection.Item3);
+
+            baseRepository.Delete(productCollection.Item1);
+            baseRepository.Insert(productCollection.Item2);
+
+            tran.Commit();            
+        }
+
+        public void UpdateMerchantPromotion(MerchantPromotionView promotion)
+        {         
+            var promo = merchantPromotionRepository.GetNotApprovePromotion(promotion.MerchantId);
+            if (promo != null)
+            {
+                var smallLogoList = translationRepository.GenTranslations(promotion.Logos, TranslationType.MerchantPromotion, promo.SmallLogoId, ActionTypeEnum.Modify); 
+                var bigLogoList = translationRepository.GenTranslations(promotion.BigLogos, TranslationType.MerchantPromotion, promo.BigLogoId, ActionTypeEnum.Modify);
+                var coverList = translationRepository.GenTranslations( promotion.Covers, TranslationType.MerchantPromotion, promo.CoverId, ActionTypeEnum.Modify);
+                var mobCoverList = translationRepository.GenTranslations(promotion.MobileCovers, TranslationType.MerchantPromotion, promo.MobileCoverId, ActionTypeEnum.Modify);
+                var introList = translationRepository.GenTranslations(promotion.PromotionIntroductions, TranslationType.MerchantPromotion, promo.IntorductionTranId,ActionTypeEnum.Modify);
+                var descList  = translationRepository.GenTranslations(promotion.Descriptions, TranslationType.MerchantPromotion, promo.DescTransId, ActionTypeEnum.Modify);
+                var nameList = translationRepository.GenTranslations( promotion.PromotionNames, TranslationType.MerchantPromotion, promo.NameTranId, ActionTypeEnum.Modify);
+                var tandcList = translationRepository.GenTranslations( promotion.TAndCs, TranslationType.MerchantPromotion, promo.TAndCTranId,ActionTypeEnum.Modify);
+                var noticeList = translationRepository.GenTranslations(promotion.Notices, TranslationType.MerchantPromotion, promo.NoticeTranId, ActionTypeEnum.Modify);
+                var rntTermList = translationRepository.GenTranslations(promotion.ReturnTermses, TranslationType.MerchantPromotion, promo.ReturnTermsTranId, ActionTypeEnum.Modify);
+                var orderTranList = translationRepository.GenTranslations(promotion.ExpCompleteDays, TranslationType.MerchantPromotion, promo.OrderTransId, ActionTypeEnum.Modify);
+
+                promo.LocalCoolDownDay = promotion.LocalCoolDownDay;
+                promo.OverSeaCoolDownDay = promotion.OverSeaCoolDownDay;
+
+                promo.ApproveStatus = ApproveType.Editing;
+                promotion.Id = promo.Id;
+
+               var bannerCollection= InsertAndDeletePromotionBanner(promotion);
+               var productCollection = InsertAndDeletePromotionProduct(promotion);
+
+                using var tran = baseRepository.CreateTransation();
+                baseRepository.Update(promo);
+
+                baseRepository.Update(introList);
+                baseRepository.Update(descList);
+                baseRepository.Update(nameList);
+                baseRepository.Update(tandcList);
+                baseRepository.Update(noticeList);
+                baseRepository.Update(rntTermList);
+                baseRepository.Update(orderTranList);
+                baseRepository.Update(coverList);
+                baseRepository.Update(mobCoverList);
+                baseRepository.Update(smallLogoList);
+                baseRepository.Update(bigLogoList);
+
+                baseRepository.Delete(bannerCollection.Item1);
+                baseRepository.Insert(bannerCollection.Item2);
+                baseRepository.Update(bannerCollection.Item3);
+
+                baseRepository.Delete(productCollection.Item1);
+                baseRepository.Insert(productCollection.Item2);
+
+                tran.Commit();
+            }
+            else
+            {
+                InsertMerchantPromotion(promotion);
+            }
+
+        }
+
+        public SystemResult ApplyApprove(Guid id)
+        {
+            SystemResult result = new SystemResult();
+            var merchPromotion = merchantPromotionRepository.GetNotApprovePromotion(id);
+
+            if (merchPromotion != null)
+            {
+                merchPromotion.ApproveStatus = ApproveType.WaitingApprove;               
+                var appHistory = InsertMerchantApproveHistory(id, ApproveResult.WaitingApprove, "");
+
+                using var tran = baseRepository.CreateTransation();
+                baseRepository.Insert(merchPromotion);
+                baseRepository.Insert(appHistory);
+
+                tran.Commit();
+            }
+
+            result.Succeeded = true;
+
+            return result;
+        }
+
         private MerchantShipMethodMappingView GenMerchantShipMethodView(List<MerchantActiveShipMethodDto> defaultShipMethod, List<MerchantActiveShipMethodDto> shipMethods)
         {
             MerchantShipMethodMappingView view = new MerchantShipMethodMappingView();
-            if (shipMethods !=null && shipMethods.Any())
-            {               
+            if (shipMethods != null && shipMethods.Any())
+            {
                 view.MerchantShipMethods = defaultShipMethod.Select(s =>
                                         new MerchantShipMethodView
                                         {
@@ -308,9 +717,9 @@ namespace BDMall.BLL
                                             ShipMethodName = s.ShipMethodName,
                                         }).ToList();
 
-                if (CurrentUser.LoginType <= LoginType.ThirdMerchantLink)            
+                if (CurrentUser.LoginType <= LoginType.ThirdMerchantLink)
                     view.MerchantShipMethods = view.MerchantShipMethods.Where(p => p.IsEffect).ToList();
-                              
+
                 view.MerchantId = shipMethods[0].MerchantId;
             }
             return view;
@@ -323,7 +732,7 @@ namespace BDMall.BLL
 
             recInsert.MerchNo = AutoGenerateNumber();
             recInsert.IsActive = false;
-            recInsert.UpdateDate = DateTime.Now;    
+            recInsert.UpdateDate = DateTime.Now;
             if (recInsert.IsExternal)
             {
                 recInsert.AppId = "";
@@ -371,7 +780,7 @@ namespace BDMall.BLL
 
             #endregion
 
-            var ECShipInfo = new  MerchantECShipInfo
+            var ECShipInfo = new MerchantECShipInfo
             {
                 Id = recInsert.Id,
                 //ClientId = UnitOfWork.Operator.ClientId,
@@ -385,13 +794,13 @@ namespace BDMall.BLL
                 SPName = merchVw.ECShipInfo.SPName,
                 SPPassword = merchVw.ECShipInfo.SPPassword,
             };
-            
+
             var shipMethodCMLst = merchantShipMethodMappingRepository.GetShipMethidByMerchantId(Guid.Empty).Where(p => p.IsEffect == true).ToList();
             var shipMethordLst = AutoMapperExt.MapTo<List<MerchantActiveShipMethod>>(shipMethodCMLst);
             foreach (var item in shipMethordLst)
             {
                 item.Id = Guid.NewGuid();
-                item.MerchantId = recInsert.Id;                                           
+                item.MerchantId = recInsert.Id;
             }
 
             using var tran = baseRepository.CreateTransation();
@@ -426,15 +835,15 @@ namespace BDMall.BLL
 
             #region 处理主表
 
-            merchOld.FaxNum = recUpdate.FaxNum;          
+            merchOld.FaxNum = recUpdate.FaxNum;
             merchOld.ContactEmail = recUpdate.ContactEmail;
             merchOld.OrderEmail = recUpdate.OrderEmail;
 
-            merchOld.IsActive = recUpdate.IsActive;         
+            merchOld.IsActive = recUpdate.IsActive;
             merchOld.ContactPhoneNum = recUpdate.ContactPhoneNum;
-            merchOld.GCP = recUpdate.GCP;           
+            merchOld.GCP = recUpdate.GCP;
             merchOld.IsExternal = recUpdate.IsExternal;
-            merchOld.Language = recUpdate.Lang;           
+            merchOld.Language = recUpdate.Lang;
             merchOld.CommissionRate = recUpdate.CommissionRate;
             merchOld.IsTransin = recUpdate.IsTransin;
             merchOld.IsHongKong = recUpdate.IsHongKong;
@@ -465,7 +874,7 @@ namespace BDMall.BLL
 
             #endregion
 
-            var NameList = translationRepository.GenTranslations(recUpdate.NameList, TranslationType.Merchant, recUpdate.NameTransId,ActionTypeEnum.Modify);
+            var NameList = translationRepository.GenTranslations(recUpdate.NameList, TranslationType.Merchant, recUpdate.NameTransId, ActionTypeEnum.Modify);
             var ContactTransList = translationRepository.GenTranslations(recUpdate.ContactList, TranslationType.Merchant, recUpdate.ContactTransId, ActionTypeEnum.Modify);
             var ContactAddrList = translationRepository.GenTranslations(recUpdate.ContactAddrList, TranslationType.Merchant, recUpdate.ContactAddrTransId, ActionTypeEnum.Modify);
             var ContactAddr2List = translationRepository.GenTranslations(recUpdate.ContactAddr2List, TranslationType.Merchant, recUpdate.ContactAddr2TransId, ActionTypeEnum.Modify);
@@ -559,8 +968,8 @@ namespace BDMall.BLL
 
             userRole.Id = Guid.NewGuid();
             userRole.UserId = user.Id;
-            var insertRole = new  List<UserRole>();
-            insertRole.Add(userRole); 
+            var insertRole = new List<UserRole>();
+            insertRole.Add(userRole);
             var deleteRole = new List<UserRole>();
             foreach (var item in userRoles)
             {
@@ -568,7 +977,7 @@ namespace BDMall.BLL
                     deleteRole.Add(item);
             }
 
-            var result = new Tuple<List<UserRole>, List<UserRole>> (deleteRole, insertRole);
+            var result = new Tuple<List<UserRole>, List<UserRole>>(deleteRole, insertRole);
             return result;
         }
 
@@ -689,6 +1098,88 @@ namespace BDMall.BLL
                 key = $"{PreHotType.Hot_Merchants}_S";
                 await mchHeatService.DeletePreHeat(key, MchId.ToString());
             }
+        }
+
+        /// <summary>
+        /// Item1是delbanners，Item2是insertBanners，Item3是updateBanners
+        /// </summary>
+        /// <param name="promotion"></param>
+        /// <returns></returns>
+        private Tuple<List<MerchantPromotionBanner>, List<MerchantPromotionBanner>, List<MerchantPromotionBanner>> InsertAndDeletePromotionBanner(MerchantPromotionView promotion)
+        {
+            var delIds = promotion.Banners.Where(d => d.IsDelete && d.Id != Guid.Empty).Select(s => s.Id).ToList();
+            var delbanners = baseRepository.GetList<MerchantPromotionBanner>(x => delIds.Contains(x.Id)).ToList();
+
+            var insertBanners = (from d in promotion.Banners
+                                 where d.IsDelete == false
+                                 && d.Id == Guid.Empty
+                                 select new MerchantPromotionBanner
+                                 {
+                                     Id = Guid.NewGuid(),
+                                     Image = d.Image,
+                                     PromotionId = promotion.Id,
+                                     Language = d.Lang,
+                                     Seq = d.Seq,
+                                     BannerLink = d.BannerLink,
+                                     IsOpenWindow = d.IsOpenWindow
+                                 }).ToList();
+
+            var updateBanners = (from d in promotion.Banners
+                                 where d.IsDelete == false
+                                 && d.Id != Guid.Empty
+                                 select new MerchantPromotionBanner
+                                 {
+                                     Id = d.Id,
+                                     Image = d.Image,
+                                     PromotionId = promotion.Id,
+                                     Language = d.Lang,
+                                     Seq = d.Seq,
+                                     BannerLink = d.BannerLink,
+                                     IsOpenWindow = d.IsOpenWindow
+                                 }).ToList();
+
+            var result = new Tuple<List<MerchantPromotionBanner>, List<MerchantPromotionBanner>, List<MerchantPromotionBanner>>(delbanners, insertBanners, updateBanners);
+            return result;
+
+        }
+
+        /// <summary>
+        /// Item1是delProducts，Item2是insertProducts
+        /// </summary>
+        /// <param name="promotion"></param>
+        /// <returns></returns>
+        private Tuple<List<MerchantPromotionProduct>, List<MerchantPromotionProduct>> InsertAndDeletePromotionProduct(MerchantPromotionView promotion)
+        {
+            var delIds = promotion.ProductList.Where(x => x.IsDelete).Select(s => s.Id).ToList();
+            var delProducts = baseRepository.GetList<MerchantPromotionProduct>(x => delIds.Contains(x.Id)).ToList();
+
+            var insertProducts = (from d in promotion.ProductList where !d.IsDelete && d.Id == Guid.Empty
+                                  select new MerchantPromotionProduct
+                                  {
+                                      Id = Guid.NewGuid(),
+                                      ProductCode = d.Code,
+                                      PromotionId = promotion.Id,
+                                      ProductId = d.ProductId
+                                  }).ToList();
+
+            var result = new Tuple<List<MerchantPromotionProduct>, List<MerchantPromotionProduct>>(delProducts, insertProducts);
+            return result;
+        }
+
+        public ApproveHistory InsertMerchantApproveHistory(Guid merchId, ApproveResult type, string remark)
+        {
+            ApproveHistory obj = new ApproveHistory();
+
+            obj.Id = Guid.NewGuid();
+            obj.ApproveType = type;
+            obj.MerchantId = CurrentUser.MechantId;
+            obj.OperateDate = DateTime.Now;
+            obj.OperateId = Guid.Parse(CurrentUser.UserId);
+            obj.ModuleId = merchId;
+            obj.ApproveModule = ApproveModule.MerchantPromotion;
+            obj.Remark = remark;
+
+            return obj;
         }
 
     }

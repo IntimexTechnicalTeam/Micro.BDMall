@@ -19,12 +19,11 @@ namespace BDMall.Admin.Controllers
         // GET: Desktop
         public async Task<ActionResult> Index()
         {
-            ViewBag.IsMerchant = false;
-            if (CurrentUser == null ) 
+            if (CurrentUser == null)
                 ViewBag.IsMerchant = false;
-            else if (CurrentUser.LoginType <= LoginType.ThirdMerchantLink) 
-                ViewBag.IsMerchant = true;
-            
+            else
+                ViewBag.IsMerchant = CurrentUser.IsMerchant;
+
             return View();
         }
     }

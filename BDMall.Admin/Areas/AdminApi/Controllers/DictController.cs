@@ -258,5 +258,13 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
 
             return list;
         }
+
+        [HttpGet]
+        [AdminApiAuthorize(Module = ModuleConst.MerchantModule)]
+        public List<KeyValue> GetMerchantOptionsNoMall()
+        {
+            List<KeyValue> keyValLIst = merchantBLL.GetMerchantCboSrcByCond(false);
+            return keyValLIst;
+        }
     }
 }

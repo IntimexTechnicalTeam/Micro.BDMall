@@ -35,7 +35,7 @@ namespace Web.Jwt
             claimList.Add(new Claim("CurrencyCode", "HKD"));
             claimList.Add(new Claim("Account", "AnonymousUser"));
             claimList.Add(new Claim("IsLogin", "false"));
-            claimList.Add(new Claim("LoginType", $"{ LoginType.TempUser.ToInt() }"));
+            claimList.Add(new Claim("LoginType", $"{ LoginType.TempUser}"));
             string ticket = CreateToken(claimList);
             return ticket;
         }

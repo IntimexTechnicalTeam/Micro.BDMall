@@ -28,8 +28,8 @@ namespace BDMall.Domain
         public bool IsDelete { get; set; }
 
         public string CurrencyCode { get; set; }
-        //public SimpleCurrency Currency { get; set; }
-        //public SimpleCurrency Currency2 { get; set; }
+        public SimpleCurrency Currency { get; set; }
+        public SimpleCurrency Currency2 { get; set; }
 
         public decimal ListPrice { get; set; }
         public decimal ListPrice2 { get; set; }

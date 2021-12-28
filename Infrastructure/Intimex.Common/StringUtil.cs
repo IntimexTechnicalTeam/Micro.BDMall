@@ -4,31 +4,32 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace Intimex.Common
 {
     public class StringUtil
     {
 
-        //public static string FilterHTMLFunction(string val)
-        //{
-        //    if (!string.IsNullOrEmpty(val))
-        //    {
-        //        var replaceON = Regex.Replace(val, @"on\w+=""[^""]+""", " ", RegexOptions.IgnoreCase);//替換on開頭=""的方法
+        public static string FilterHTMLFunction(string val)
+        {
+            if (!string.IsNullOrEmpty(val))
+            {
+                var replaceON = Regex.Replace(val, @"on\w+=""[^""]+""", " ", RegexOptions.IgnoreCase);//替換on開頭=""的方法
 
-        //        replaceON = Regex.Replace(val, @"on\w+='[^""]+'", " ", RegexOptions.IgnoreCase);//替換on開頭=''的方法
+                replaceON = Regex.Replace(val, @"on\w+='[^""]+'", " ", RegexOptions.IgnoreCase);//替換on開頭=''的方法
 
-        //        replaceON = Regex.Replace(replaceON, @"<script>", HttpUtility.UrlEncode("<script>"), RegexOptions.IgnoreCase);
+                replaceON = Regex.Replace(replaceON, @"<script>", HttpUtility.UrlEncode("<script>"), RegexOptions.IgnoreCase);
 
-        //        replaceON = Regex.Replace(replaceON, @"</script>", HttpUtility.UrlEncode("</script>"), RegexOptions.IgnoreCase);
+                replaceON = Regex.Replace(replaceON, @"</script>", HttpUtility.UrlEncode("</script>"), RegexOptions.IgnoreCase);
 
-        //        return replaceON;
-        //    }
-        //    else
-        //    {
-        //        return "";
-        //    }
-        //}
+                return replaceON;
+            }
+            else
+            {
+                return "";
+            }
+        }
 
         /// <summary>
         /// 将计算机符号转换为HTML符号

@@ -107,6 +107,15 @@ namespace BDMall.Repository
                 _currentUser.Lang = (Language)Enum.Parse(typeof(Language), payload["Lang"]);
                 _currentUser.LoginType = (LoginType)Enum.Parse(typeof(LoginType), payload["LoginType"]);
 
+                //admin,商家和第三方商家
+                if (_currentUser.LoginType <= LoginType.Admin)
+                {
+                    //加载用户角色，先从缓存读
+                    string key = $"{CacheKey.CurrentUser}";
+                    var cacheUser = RedisHelper.HGet<UserDto>(key, _currentUser.UserId);                  
+                    _currentUser.MechantId = cacheUser?.MerchantId ?? Guid.Empty;
+                }
+
                 return _currentUser;
             }
         }

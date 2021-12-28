@@ -16,6 +16,7 @@ using System.Linq;
 using Web.AutoFac;
 using Web.Framework;
 using Web.Mvc;
+using UEditorNetCore;
 
 namespace BDMall.Admin
 {
@@ -73,6 +74,7 @@ namespace BDMall.Admin
             Web.MediatR.ServiceCollectionExtensions.AddServices(services, typeof(Startup));
 
             Web.Mvc.ServiceCollectionExtensions.AddFileProviderServices(services, Globals.Configuration);
+            services.AddUEditorService("Config/config.json");
 
             //AddScopedIServiceProvider(services);
         }

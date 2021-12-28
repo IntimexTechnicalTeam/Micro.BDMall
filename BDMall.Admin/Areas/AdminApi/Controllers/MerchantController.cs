@@ -123,8 +123,85 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
             merchantBLL.SaveShipMethodMapping(mapping);
             result.Succeeded = true;
             return result;
+        }
+
+        [HttpGet]
+        [AdminApiAuthorize(Module = ModuleConst.MerchantModule, Function = new string[] { FunctionConst.Merch_Promt })]
+        public MerchantPromotionView GetMerchPromotionInfo(Guid merchID)
+        {
+            MerchantPromotionView promotion  = merchantBLL.GetMerchPromotionInfo(merchID);     
+            if (promotion ==null) promotion = GetEmptyMerchPromotionInfo();
+            return promotion;
+        }
+
+        [HttpGet]
+        [AdminApiAuthorize(Module = ModuleConst.MerchantModule, Function = new string[] { FunctionConst.Merch_Promt })]
+        public MerchantPromotionView GetEmptyMerchPromotionInfo()
+        {
+            var langs = settingBLL.GetSupportLanguages();
+            MerchantPromotionView promotion = new MerchantPromotionView();
+            List<MutiLanguage> multiLanguages = new List<MutiLanguage>();
+            List<MutiLanguage> covers = new List<MutiLanguage>();
+            List<MutiLanguage> smallLogos = new List<MutiLanguage>();
+            List<MutiLanguage> bigLogos = new List<MutiLanguage>();
+            List<MutiLanguage> expdays = new List<MutiLanguage>();
+            List<MutiLanguage> cooldowndays = new List<MutiLanguage>();
+            promotion.CoverId = Guid.Empty;
+            promotion.LogoId = Guid.Empty;
+            promotion.BigLogoId = Guid.Empty;
+            promotion.TAndCTranId = Guid.Empty;
+            promotion.NoticeTranId = Guid.Empty;
+            promotion.ReturnTermsTranId = Guid.Empty;
+            promotion.OrderTranId = Guid.Empty;
+
+            foreach (var item in langs)
+            {
+                multiLanguages.Add(new MutiLanguage { Desc = "", Lang = new SystemLang { Code = item.Code, Text = item.Text } });
+                covers.Add(new MutiLanguage { Desc = "", Lang = new SystemLang { Code = item.Code, Text = item.Text } });
+                smallLogos.Add(new MutiLanguage { Desc = "", Lang = new SystemLang { Code = item.Code, Text = item.Text } });
+                bigLogos.Add(new MutiLanguage { Desc = "", Lang = new SystemLang { Code = item.Code, Text = item.Text } });
+                expdays.Add(new MutiLanguage { Desc = "", Lang = new SystemLang { Code = item.Code, Text = item.Text } });
+                cooldowndays.Add(new MutiLanguage { Desc = "", Lang = new SystemLang { Code = item.Code, Text = item.Text } });
+            }
+
+            promotion.Covers = covers;
+            promotion.Logos = smallLogos;
+            promotion.BigLogos = bigLogos;
+            promotion.ExpCompleteDays = expdays;
+
+            promotion.PromotionIntroductions = multiLanguages;
+
+            promotion.Descriptions = multiLanguages;
+            promotion.PromotionNames = multiLanguages;
+            promotion.TAndCs = multiLanguages;
+            promotion.Notices = multiLanguages;
+            promotion.ReturnTermses = multiLanguages;
+            promotion.ProductList = new List<MerchantPromotionProductView>();
+            promotion.Banners = new List<MerchantPromotionBannerView>();
+            promotion.ApproveStatus = ApproveType.Editing;
+            promotion.LocalCoolDownDay = 7;
+            promotion.OverSeaCoolDownDay = 7;
+            return promotion;
+
+        }
 
 
+        [HttpPost]
+        [AdminApiAuthorize(Module = ModuleConst.MerchantModule, Function = new string[] { FunctionConst.Merch_Promt })]
+        public SystemResult SaveMerchantPromotion([FromForm]MerchantPromotionView promotion)
+        {
+            SystemResult result = new SystemResult();
+            var promotionId = merchantBLL.SaveMerchantPromotion(promotion);
+            result.Succeeded = true;
+            result.ReturnValue = promotionId;
+            return result;
+        }
+
+        [HttpGet]
+        public SystemResult ApplyApprove(Guid id)
+        {
+            SystemResult result = merchantBLL.ApplyApprove(id);
+            return result;
         }
     }
 }

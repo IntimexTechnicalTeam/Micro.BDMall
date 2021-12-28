@@ -194,6 +194,7 @@ namespace BDMall.BLL
                         cacheUser.Roles = userInfo.Roles;
                     }
                     _currentUser.Roles = cacheUser?.Roles;
+                    _currentUser.MechantId = cacheUser?.MerchantId ?? Guid.Empty;
                 }
 
                 return _currentUser;

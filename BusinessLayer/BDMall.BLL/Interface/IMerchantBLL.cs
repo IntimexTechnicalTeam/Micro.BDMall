@@ -29,5 +29,17 @@ namespace BDMall.BLL
         MerchantShipMethodMappingView GetMerchantShipMethods(Guid merchantId);
 
         void SaveShipMethodMapping(MerchantShipMethodMappingView mappingShipMethod);
+
+        MerchantPromotionView GetMerchPromotionInfo(Guid merchID);
+
+        Guid SaveMerchantPromotion(MerchantPromotionView promotion);
+
+        MerchantPromotionView GetEditingMerchPromotionInfo(Guid merchID);
+
+        void InsertMerchantPromotion(MerchantPromotionView promotion);
+
+        void UpdateMerchantPromotion(MerchantPromotionView promotion);
+
+        SystemResult ApplyApprove(Guid id);
     }
 }
