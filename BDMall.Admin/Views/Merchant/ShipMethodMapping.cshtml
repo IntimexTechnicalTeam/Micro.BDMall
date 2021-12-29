@@ -24,7 +24,7 @@
 
 @section scripts{
     <script type="text/javascript">
-        var isMerch = '@ViewBag.IsMerchant';
+        var isMerch = Boolean(@ViewBag.IsMerchant);
         var vm = new Vue({
             el: "#app",
             data: {

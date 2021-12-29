@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Web.Framework;
 using Web.Mvc;
@@ -191,9 +192,7 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
         public SystemResult SaveMerchantPromotion([FromForm]MerchantPromotionView promotion)
         {
             SystemResult result = new SystemResult();
-            var promotionId = merchantBLL.SaveMerchantPromotion(promotion);
-            result.Succeeded = true;
-            result.ReturnValue = promotionId;
+            result.Succeeded = merchantBLL.SaveMerchantPromotion(promotion);          
             return result;
         }
 
@@ -202,6 +201,29 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
         {
             SystemResult result = merchantBLL.ApplyApprove(id);
             return result;
+        }
+
+        /// <summary>
+        /// 审批通过
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [AdminApiAuthorize(Module = ModuleConst.SystemModule)]
+        public async Task<SystemResult> ApproveMerchant(string ids)
+        {
+            SystemResult sysRslt = new SystemResult();
+            List<string> idList = ids.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+            sysRslt = await merchantBLL.ApproveMerchantAsync(idList);
+            return sysRslt;
+        }
+
+        [HttpGet]
+        [AdminApiAuthorize(Module = ModuleConst.SystemModule)]
+        public async Task<SystemResult> RejectMerchant(Guid merchId, string reason)
+        {
+            SystemResult sysRslt = await merchantBLL.RejectMerchant(merchId, reason);
+            return sysRslt;
         }
     }
 }

@@ -61,7 +61,7 @@ namespace BDMall.Domain
 
         public List<MerchantPromotionProductView> ProductList { get; set; } = new List<MerchantPromotionProductView>();
 
-        public List<MutiLanguage> PromotionIntroductions { get; set; }
+        public List<MutiLanguage> PromotionIntroductions { get; set; } = new List<MutiLanguage>();
 
         public string PromotionIntroduction { get; set; }
 

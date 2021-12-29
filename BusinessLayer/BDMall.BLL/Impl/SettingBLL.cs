@@ -19,6 +19,7 @@ namespace BDMall.BLL
 
         public SettingBLL(IServiceProvider services) : base(services)
         {
+            _codeMasterRepo = Services.Resolve<ICodeMasterRepository>();
         }
 
         public List<KeyValue> GetApproveStatuses()
@@ -112,6 +113,26 @@ namespace BDMall.BLL
             var langs = GetSupportLanguage();
             return langs;
 
+        }
+
+        public List<ImageSize> GetProductImageSize()
+        {
+            List<ImageSize> list = new List<ImageSize>();
+     
+            var vals = _codeMasterRepo.GetCodeMasters(CodeMasterModule.Setting.ToString(), CodeMasterFunction.ProductImgSize.ToString())
+                                    .OrderBy(o => o.Key).ThenBy(o => int.Parse(o.Value)).ToList();
+            
+            if (vals == null || !vals.Any())
+            {
+                for (var i = 1; i <= 8; i++)
+                {
+                    list.Add(new ImageSize { Width = i * 100, Length = i * 100 });
+                }
+                return list;
+            }
+
+            list = vals.Select(s => new ImageSize { Width = int.Parse(s.Value), Length = int.Parse(s.Value) }).ToList();
+            return list;
         }
     }
 }

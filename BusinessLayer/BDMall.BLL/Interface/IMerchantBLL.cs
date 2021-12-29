@@ -32,14 +32,18 @@ namespace BDMall.BLL
 
         MerchantPromotionView GetMerchPromotionInfo(Guid merchID);
 
-        Guid SaveMerchantPromotion(MerchantPromotionView promotion);
+        bool SaveMerchantPromotion(MerchantPromotionView promotion);
 
         MerchantPromotionView GetEditingMerchPromotionInfo(Guid merchID);
 
-        void InsertMerchantPromotion(MerchantPromotionView promotion);
+        bool InsertMerchantPromotion(MerchantPromotionView promotion);
 
-        void UpdateMerchantPromotion(MerchantPromotionView promotion);
+        bool UpdateMerchantPromotion(MerchantPromotionView promotion);
 
         SystemResult ApplyApprove(Guid id);
+
+        Task<SystemResult> ApproveMerchantAsync(List<string> ids);
+
+        Task<SystemResult> RejectMerchant(Guid merchId, string reason);
     }
 }

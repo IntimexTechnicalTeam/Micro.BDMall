@@ -20,9 +20,9 @@ namespace BDMall.Admin.Controllers
         public async Task<ActionResult> Index()
         {
             if (CurrentUser == null)
-                ViewBag.IsMerchant = false;
+                ViewBag.IsMerchant = 0;
             else
-                ViewBag.IsMerchant = CurrentUser.IsMerchant;
+                ViewBag.IsMerchant = CurrentUser.IsMerchant.ToInt();
 
             return View();
         }

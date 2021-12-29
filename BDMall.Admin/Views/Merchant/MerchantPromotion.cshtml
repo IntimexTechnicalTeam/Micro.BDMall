@@ -544,7 +544,8 @@
                 savePromotion: function () {
                     GetIntorduction();
                     GetTAncC();
-                    GetRtnTerms();                   
+                    GetRtnTerms();             
+                   
                     WS.AjaxP("post", "/adminapi/Merchant/SaveMerchantPromotion", vm.promotion, function (response) {
                         if (response.Succeeded == true) {
                             showInfo('@BDMall.Resources.Message.SaveSuccess');
@@ -643,6 +644,7 @@
                     parent.window.clowWin();
                 },
                 applyApprove: function () {
+                    debugger;
                     WS.Get("/adminapi/Merchant/ApplyApprove", { id: vm.promotion.MerchantId },
                         function (response) {
                             if (response.Succeeded == true) {
@@ -656,6 +658,7 @@
                 },
                 approve: function ()
                 {
+                    //通过
                     WS.Get("/adminapi/Merchant/ApproveMerchant", { ids: vm.merchId }, function (response) {
                         if (response.Succeeded == true) {
                             //showCloseInfo('@BDMall.Resources.Message.ApproveSucceeded');
@@ -675,6 +678,7 @@
                     $('#divMain').unblock();
                 },
                 turndown: function () {
+                    //拒绝
                     WS.Get("/adminapi/Merchant/RejectMerchant", { merchId: vm.merchId, reason: vm.turndownReason }, function (response) {
                         if (response.Succeeded == true) {
                             parent.window.clowWin();
@@ -978,7 +982,7 @@
         $(document).ready(function () {
             vm.merchId = '@ViewBag.MerchantID';
             vm.editType = '@ViewBag.EditType';
-            vm.isMerchant = '@ViewBag.IsMerchant';
+            vm.isMerchant = Boolean(@ViewBag.IsMerchant);
 
             $("#attributeValueForm").validate({
                 submitHandler: function () {

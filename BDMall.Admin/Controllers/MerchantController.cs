@@ -29,9 +29,9 @@ namespace BDMall.Admin.Controllers
         {
             ViewBag.Status = -1;
             if (CurrentUser == null)
-                ViewBag.IsMerchant = false;
+                ViewBag.IsMerchant = 0;
             else
-                ViewBag.IsMerchant = CurrentUser.IsMerchant;
+                ViewBag.IsMerchant = CurrentUser.IsMerchant.ToInt();
             return View();
         }
 
@@ -44,9 +44,9 @@ namespace BDMall.Admin.Controllers
         {
             ViewBag.Status = ApproveType.WaitingApprove.ToInt();
             if (CurrentUser == null)
-                ViewBag.IsMerchant = false;
+                ViewBag.IsMerchant = 0;
             else
-                ViewBag.IsMerchant = CurrentUser.IsMerchant;
+                ViewBag.IsMerchant = CurrentUser.IsMerchant.ToInt();
             return View("Index");
         }
 
@@ -61,9 +61,9 @@ namespace BDMall.Admin.Controllers
             ViewBag.MerchantID = id;
             ViewBag.EditType = para2;
             if (CurrentUser == null)
-                ViewBag.IsMerchant = false;
+                ViewBag.IsMerchant = 0;
             else
-                ViewBag.IsMerchant = CurrentUser.IsMerchant;
+                ViewBag.IsMerchant = CurrentUser.IsMerchant.ToInt();
 
             return View();
         }
@@ -111,9 +111,9 @@ namespace BDMall.Admin.Controllers
             ViewBag.MerchantID = id;
             ViewBag.EditType = para2;
             if (CurrentUser == null)
-                ViewBag.IsMerchant = false;
+                ViewBag.IsMerchant = 0;
             else
-                ViewBag.IsMerchant = CurrentUser.IsMerchant;
+                ViewBag.IsMerchant = CurrentUser.IsMerchant.ToInt();
 
             ViewBag.Lang = CurrentUser.Lang;
 
@@ -124,9 +124,9 @@ namespace BDMall.Admin.Controllers
         public ActionResult ShipMethodMapping()
         {
             if (CurrentUser == null)
-                ViewBag.IsMerchant = false;
+                ViewBag.IsMerchant = 0;
             else
-                ViewBag.IsMerchant = CurrentUser.IsMerchant;
+                ViewBag.IsMerchant = CurrentUser.IsMerchant.ToInt();
             return View();
         }
 
@@ -160,9 +160,9 @@ namespace BDMall.Admin.Controllers
         public ActionResult PromotionBannerClickRate()
         {
             if (CurrentUser == null)
-                ViewBag.IsMerchant = false;
-            else 
-                ViewBag.IsMerchant = CurrentUser.IsMerchant;
+                ViewBag.IsMerchant = 0;
+            else
+                ViewBag.IsMerchant = CurrentUser.IsMerchant.ToInt();
             return View();
         }
 
@@ -170,9 +170,9 @@ namespace BDMall.Admin.Controllers
         public ActionResult MerchantCounterCollection()
         {
             if (CurrentUser == null)
-                ViewBag.IsMerchant = false;
+                ViewBag.IsMerchant = 0;
             else
-                ViewBag.IsMerchant = CurrentUser.IsMerchant;
+                ViewBag.IsMerchant = CurrentUser.IsMerchant.ToInt();
             return View();
         }
 

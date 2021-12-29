@@ -35,9 +35,9 @@ namespace BDMall.Admin.Controllers
             ViewBag.StatusList = JsonUtil.ToJson(statusList);
 
             if (CurrentUser == null)
-                ViewBag.IsMerchant = false;
+                ViewBag.IsMerchant = 0;
             else
-                ViewBag.IsMerchant = CurrentUser.IsMerchant;
+                ViewBag.IsMerchant = CurrentUser.IsMerchant.ToInt();
 
             ViewBag.CanEdit = 0;
             foreach (var role in CurrentUser.Roles)

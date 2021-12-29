@@ -5,6 +5,7 @@ using BDMall.Repository;
 using Intimex.Common;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,6 +20,7 @@ namespace BDMall.BLL
         ITranslationRepository translationRepository;
         IMerchantShipMethodMappingRepository merchantShipMethodMappingRepository;
         IUserBLL userBLL;
+        ISettingBLL settingBLL;
         ICurrencyBLL currencyBLL;
 
         PreHeatMerchantService mchHeatService;
@@ -30,6 +32,7 @@ namespace BDMall.BLL
             merchantShipMethodMappingRepository = Services.Resolve<IMerchantShipMethodMappingRepository>();
             userBLL = Services.Resolve<IUserBLL>();
             currencyBLL = Services.Resolve<ICurrencyBLL>();
+            settingBLL = Services.Resolve<ISettingBLL>();
             merchantPromotionRepository = Services.Resolve<IMerchantPromotionRepository>();
             mchHeatService = (PreHeatMerchantService)Services.GetService(typeof(PreHeatMerchantService));
         }
@@ -64,7 +67,7 @@ namespace BDMall.BLL
             merchLst = merchantRepository.SearchMerchByCond(condition);
             foreach (var item in merchLst.Data)
             {
-                var promotion = baseRepository.GetList<MerchantPromotion>(x => x.MerchantId == item.Id && x.IsActive && x.IsDeleted).OrderByDescending(o => o.CreateDate).FirstOrDefault();
+                var promotion = baseRepository.GetList<MerchantPromotion>(x => x.MerchantId == item.Id && x.IsActive && !x.IsDeleted).OrderByDescending(o => o.CreateDate).FirstOrDefault();
                 if (promotion != null)
                     item.ApproveStatus = promotion.ApproveStatus;
                 else
@@ -332,7 +335,7 @@ namespace BDMall.BLL
             view.ExpCompleteDays = translationRepository.GetMutiLanguage(promotion.OrderTransId);
 
             view.ApproveStatus = promotion.ApproveStatus;
-            view.Banners = baseRepository.GetList<MerchantPromotionBanner>(x => x.IsActive && !x.IsDeleted && x.Language == CurrentUser.Lang && x.PromotionId == view.Id)
+            view.Banners = baseRepository.GetList<MerchantPromotionBanner>(x => x.IsActive && !x.IsDeleted && x.PromotionId == view.Id)
                             .Select(b => new MerchantPromotionBannerView
                             {
                                 Id = b.Id,
@@ -439,22 +442,54 @@ namespace BDMall.BLL
             return productImages;
         }
 
-        public Guid SaveMerchantPromotion(MerchantPromotionView promotion)
+        public bool SaveMerchantPromotion(MerchantPromotionView promotion)
         {
             promotion.Validate();
 
             var edittingPromotion = GetEditingMerchPromotionInfo(promotion.MerchantId);
             promotion.Id = edittingPromotion != null ? edittingPromotion.Id : Guid.Empty;
+            MerchantPromotionView dbPromotion = edittingPromotion != null ? edittingPromotion : null;
 
-            if (promotion.Id == Guid.Empty)
+            var sourceCovers = promotion.Covers.Select(item => new MutiLanguage
             {
-                InsertMerchantPromotion(promotion);
+                Desc = item.Desc,
+                Lang = new SystemLang { Id = item.Lang.Id, Code = item.Lang.Code, Text = item.Lang.Text }
+            }).ToList();
+            var sourceLogos = promotion.Logos.Select(item => new MutiLanguage
+            {
+                Desc = item.Desc,
+                Lang = new SystemLang { Id = item.Lang.Id, Code = item.Lang.Code, Text = item.Lang.Text }
+            }).ToList();
+            var sourceBanners = promotion.Banners.Select(item => new MerchantPromotionBannerView
+            {
+                Id = item.Id,
+                Image = item.Image,
+                IsDelete = item.IsDelete,
+                Lang = item.Lang,
+                Language = item.Language,
+                PromotionId = item.PromotionId,
+                Seq = item.Seq
+            }).ToList();
+
+            //生成相关图片的相对路径或绝对路径
+            GenPromotionImage(promotion, dbPromotion);
+
+            if (dbPromotion == null)//如果不存在Editing的Promotion则将推广的产品复制一份
+            {
+                if (promotion.ProductList != null && promotion.ProductList.Any())                
+                    foreach (var item in promotion.ProductList) item.Id = Guid.Empty;                                
             }
+            bool flag = false;
+            if (promotion.Id == Guid.Empty)           
+                flag= InsertMerchantPromotion(promotion);           
             else
-            {
-                UpdateMerchantPromotion(promotion);
-            }
-            return promotion.Id;
+                flag = UpdateMerchantPromotion(promotion);
+
+            //把相关图片从Temp目录移动到真实目录下
+            if (flag)
+               flag = CreatePromotionImage(sourceCovers, sourceLogos, sourceBanners, dbPromotion, promotion);
+
+            return flag;
         }
 
         public MerchantPromotionView GetEditingMerchPromotionInfo(Guid merchID)
@@ -479,7 +514,7 @@ namespace BDMall.BLL
             view.Logos = translationRepository.GetMutiLanguage(promotion.SmallLogoId);
             view.BigLogos = translationRepository.GetMutiLanguage(promotion.BigLogoId);
 
-            view.Banners =baseRepository.GetList<MerchantPromotionBanner>(b=> !b.IsDeleted && b.IsActive)
+            view.Banners =baseRepository.GetList<MerchantPromotionBanner>(b=> !b.IsDeleted && b.IsActive && b.PromotionId== promotion.Id)
                                     .Select(b => new MerchantPromotionBannerView
                                     {
                                         Id = b.Id,
@@ -493,7 +528,7 @@ namespace BDMall.BLL
                                         BannerLink = b.BannerLink
                                     }).OrderBy(o => o.Lang).ThenBy(t => t.Seq).ToList();
 
-            view.ProductList = (from b in baseRepository.GetList< MerchantPromotionProduct>()
+            view.ProductList = (from b in baseRepository.GetList< MerchantPromotionProduct>(x=>x.PromotionId== promotion.Id)
                                 join c in baseRepository.GetList<Product>() on b.ProductCode equals c.Code 
                                 where !b.IsDeleted && b.IsActive && c.Status == ProductStatus.OnSale && !c.IsDeleted
                                 select new MerchantPromotionProductView
@@ -546,7 +581,7 @@ namespace BDMall.BLL
             return view;
         }
 
-        public void InsertMerchantPromotion(MerchantPromotionView promotion)
+        public bool InsertMerchantPromotion(MerchantPromotionView promotion)
         {         
             if (promotion != null)
             {
@@ -599,7 +634,7 @@ namespace BDMall.BLL
 
             var bannerCollection = InsertAndDeletePromotionBanner(promotion);
             var productCollection = InsertAndDeletePromotionProduct(promotion);
-
+            bool flag = false;
             using var tran = baseRepository.CreateTransation();
             baseRepository.Insert(promo);
 
@@ -622,11 +657,14 @@ namespace BDMall.BLL
             baseRepository.Delete(productCollection.Item1);
             baseRepository.Insert(productCollection.Item2);
 
-            tran.Commit();            
+            tran.Commit();         
+            flag = true;
+            return flag;
         }
 
-        public void UpdateMerchantPromotion(MerchantPromotionView promotion)
-        {         
+        public bool UpdateMerchantPromotion(MerchantPromotionView promotion)
+        {
+            bool flag = false;
             var promo = merchantPromotionRepository.GetNotApprovePromotion(promotion.MerchantId);
             if (promo != null)
             {
@@ -644,13 +682,13 @@ namespace BDMall.BLL
 
                 promo.LocalCoolDownDay = promotion.LocalCoolDownDay;
                 promo.OverSeaCoolDownDay = promotion.OverSeaCoolDownDay;
-
+                promo.UpdateDate = DateTime.Now;
                 promo.ApproveStatus = ApproveType.Editing;
                 promotion.Id = promo.Id;
 
                var bannerCollection= InsertAndDeletePromotionBanner(promotion);
                var productCollection = InsertAndDeletePromotionProduct(promotion);
-
+               
                 using var tran = baseRepository.CreateTransation();
                 baseRepository.Update(promo);
 
@@ -674,12 +712,13 @@ namespace BDMall.BLL
                 baseRepository.Insert(productCollection.Item2);
 
                 tran.Commit();
+                flag = true;
             }
             else
             {
-                InsertMerchantPromotion(promotion);
+                flag =InsertMerchantPromotion(promotion);
             }
-
+            return flag;
         }
 
         public SystemResult ApplyApprove(Guid id)
@@ -689,11 +728,12 @@ namespace BDMall.BLL
 
             if (merchPromotion != null)
             {
-                merchPromotion.ApproveStatus = ApproveType.WaitingApprove;               
+                merchPromotion.ApproveStatus = ApproveType.WaitingApprove;
+                merchPromotion.UpdateDate = DateTime.Now;
                 var appHistory = InsertMerchantApproveHistory(id, ApproveResult.WaitingApprove, "");
 
                 using var tran = baseRepository.CreateTransation();
-                baseRepository.Insert(merchPromotion);
+                baseRepository.Update(merchPromotion);
                 baseRepository.Insert(appHistory);
 
                 tran.Commit();
@@ -702,6 +742,83 @@ namespace BDMall.BLL
             result.Succeeded = true;
 
             return result;
+        }
+
+        public async Task<SystemResult> ApproveMerchantAsync(List<string> ids)
+        {
+            SystemResult sysRslt = await ApproveMerchant(ids);
+            if (sysRslt.Succeeded)
+            {               
+                foreach (var idStr in ids)
+                {                  
+                    await UpdateCache(Guid.Parse(idStr));
+                }
+            }
+            return sysRslt;
+        }
+
+        public async Task<SystemResult> RejectMerchant(Guid merchId, string reason)
+        {
+            SystemResult result = new SystemResult();
+
+            var notApproveMerchantPromotion = merchantPromotionRepository.GetNotApprovePromotion(merchId);
+            if (notApproveMerchantPromotion != null)
+            {
+                notApproveMerchantPromotion.ApproveStatus = ApproveType.Reject;
+                notApproveMerchantPromotion.UpdateDate = DateTime.Now;
+                notApproveMerchantPromotion.UpdateBy = Guid.Parse(CurrentUser.UserId);
+
+                var merchInfo = baseRepository.GetModelById<Merchant>(notApproveMerchantPromotion.MerchantId);
+                if (merchInfo != null)
+                {
+                    //RecipientInfo info = new RecipientInfo();
+                    //info.Id = merchInfo.Id;
+                    //info.Code = merchInfo.MerchNo;
+                    //info.Email = merchInfo.ContactEmail;
+                    //info.Lang = merchInfo.Language;
+                    //info.Mobile = merchInfo?.ContactPhoneNum;
+                    //info.Name = TranslationRepo.Entities.FirstOrDefault(d => d.TransId == merchInfo.NameTransId && d.Lang == info.Lang)?.Value ?? "";
+                    //ContentAppr model = new ContentAppr();
+                    //model.CreateDate = notApproveMerchantPromotion.UpdateDate ?? notApproveMerchantPromotion.CreateDate;
+                    //model.StatusName = Resources.Value.Reject;
+                    //model.Reason = reason;
+                    //MessageBLL.SendMerchPromApproveToMerch(info, model);
+
+                    //生成商家消息，待完成
+                }
+               
+                var appHistory= InsertMerchantApproveHistory(merchId, ApproveResult.Reject, reason);
+                using var tran = baseRepository.CreateTransation();
+
+                baseRepository.Update(notApproveMerchantPromotion);
+                baseRepository.Insert(appHistory);
+                tran.Commit();
+                result.Succeeded = true;
+
+                if (result.Succeeded)
+                { 
+                    //发送消息通过商家，待完成
+                }
+            }
+
+            result.Succeeded = true;
+            return result;
+        }
+
+        public ApproveHistory InsertMerchantApproveHistory(Guid merchId, ApproveResult type, string remark)
+        {
+            ApproveHistory obj = new ApproveHistory();
+
+            obj.Id = Guid.NewGuid();
+            obj.ApproveType = type;
+            obj.MerchantId = merchId;
+            obj.OperateDate = DateTime.Now;
+            obj.OperateId = Guid.Parse(CurrentUser.UserId);
+            obj.ModuleId = merchId;
+            obj.ApproveModule = ApproveModule.MerchantPromotion;
+            obj.Remark = remark;
+
+            return obj;
         }
 
         private MerchantShipMethodMappingView GenMerchantShipMethodView(List<MerchantActiveShipMethodDto> defaultShipMethod, List<MerchantActiveShipMethodDto> shipMethods)
@@ -1118,7 +1235,8 @@ namespace BDMall.BLL
                                      Id = Guid.NewGuid(),
                                      Image = d.Image,
                                      PromotionId = promotion.Id,
-                                     Language = d.Lang,
+                                     //Language = (Language)Enum.Parse(typeof(Language), d.Language),
+                                     Language = d.Language.ToEnum<Language>(),
                                      Seq = d.Seq,
                                      BannerLink = d.BannerLink,
                                      IsOpenWindow = d.IsOpenWindow
@@ -1132,7 +1250,7 @@ namespace BDMall.BLL
                                      Id = d.Id,
                                      Image = d.Image,
                                      PromotionId = promotion.Id,
-                                     Language = d.Lang,
+                                     Language = d.Language.ToEnum<Language>(),
                                      Seq = d.Seq,
                                      BannerLink = d.BannerLink,
                                      IsOpenWindow = d.IsOpenWindow
@@ -1166,22 +1284,545 @@ namespace BDMall.BLL
             return result;
         }
 
-        public ApproveHistory InsertMerchantApproveHistory(Guid merchId, ApproveResult type, string remark)
+        /// <summary>
+        /// 生成图片目录路径
+        /// </summary>
+        /// <param name="promotion"></param>
+        /// <param name="dbPromotion"></param>
+        private void GenPromotionImage(MerchantPromotionView promotion, MerchantPromotionView dbPromotion)
         {
-            ApproveHistory obj = new ApproveHistory();
+            var physicalPath = PathUtil.GetPhysicalPath(Configuration["UploadPath"], promotion.MerchantId.ToString(), FileFolderEnum.MerchantPromotion);
+            var relativePath = PathUtil.GetRelativePath(promotion.MerchantId.ToString(), FileFolderEnum.MerchantPromotion);
+            string tempPath = PathUtil.GetPhysicalPath(Configuration["UploadPath"], promotion.MerchantId.ToString(),FileFolderEnum.TempPath);
 
-            obj.Id = Guid.NewGuid();
-            obj.ApproveType = type;
-            obj.MerchantId = CurrentUser.MechantId;
-            obj.OperateDate = DateTime.Now;
-            obj.OperateId = Guid.Parse(CurrentUser.UserId);
-            obj.ModuleId = merchId;
-            obj.ApproveModule = ApproveModule.MerchantPromotion;
-            obj.Remark = remark;
+            if (dbPromotion != null)//存在編輯中、待審批的Promotion進行圖片更新
+            {
+                #region 
+                //foreach (var cover in promotion.Covers)
+                //{
+                //    if (File.Exists(Path.Combine(tempPath, Path.GetFileName(cover.Desc ?? ""))))
+                //    {
+                //        var extension = Path.GetExtension(cover.Desc);
+                //        cover.Desc = relativePath + "/" + Guid.NewGuid() + extension;
+                //    }
+                //}
 
-            return obj;
+                //foreach (var mobilecovers in promotion.MobileCovers)
+                //{
+                //    if (File.Exists(Path.Combine(tempPath, Path.GetFileName(mobilecovers.Desc ?? ""))))
+                //    {
+                //        var extension = Path.GetExtension(mobilecovers.Desc);
+                //        mobilecovers.Desc = relativePath + "/" + Guid.NewGuid() + extension;
+                //    }
+                //}
+
+                //foreach (var banner in promotion.Banners)
+                //{
+                //    if (File.Exists(Path.Combine(tempPath, Path.GetFileName(banner.Image ?? ""))))
+                //    {
+                //        //var extension = Path.GetExtension(banner.Image);
+                //        banner.Image = relativePath + "/" + Path.GetFileName(banner.Image);
+                //    }
+                //}
+
+                //foreach (var logo in promotion.Logos)
+                //{
+                //    if (File.Exists(Path.Combine(tempPath, Path.GetFileName(logo.Desc ?? ""))))
+                //    {
+                //        var extension = Path.GetExtension(logo.Desc);
+                //        logo.Desc = relativePath + "/" + Guid.NewGuid() + extension;
+
+                //        foreach (var bigLogo in promotion.BigLogos)
+                //        {
+                //            if (bigLogo.Language == logo.Language)
+                //            {
+                //                bigLogo.Desc = relativePath + "/" + Guid.NewGuid() + extension;
+                //            }
+                //        }
+                //    }
+                //}
+                #endregion
+
+                Action<MutiLanguage> CoversAction = (m) => {
+                    if (File.Exists(Path.Combine(tempPath, Path.GetFileName(m.Desc ?? ""))))
+                    {
+                        var extension = Path.GetExtension(m.Desc);
+                        m.Desc = relativePath + "/" + Guid.NewGuid() + extension;
+                    }                  
+                };
+                SetPath(promotion, promotion.Covers,CoversAction);
+
+                Action<MutiLanguage> MobileCoversAction = (m) => {
+                    if (File.Exists(Path.Combine(tempPath, Path.GetFileName(m.Desc ?? ""))))
+                    {
+                        var extension = Path.GetExtension(m.Desc);
+                        m.Desc = relativePath + "/" + Guid.NewGuid() + extension;
+                    }
+                };
+                SetPath(promotion, promotion.MobileCovers, MobileCoversAction);
+
+                Action<MerchantPromotionBannerView> BannersAction = (m) =>
+                {
+                    if (File.Exists(Path.Combine(tempPath, Path.GetFileName(m.Image ?? ""))))
+                    {
+                        m.Image = relativePath + "/" + Path.GetFileName(m.Image);
+                    }
+                };
+                SetPath(promotion, promotion.Banners, BannersAction);
+
+                Action<MutiLanguage> LogoAction = (m) => {                  
+                    if (File.Exists(Path.Combine(tempPath, Path.GetFileName(m.Desc ?? ""))))
+                    {
+                        var extension = Path.GetExtension(m.Desc);
+                        m.Desc = relativePath + "/" + Guid.NewGuid() + extension;
+                        SetLogoPath(promotion.BigLogos, m.Language, relativePath, extension);
+                    }
+                };
+                SetPath(promotion, promotion.Logos, LogoAction);
+            }
+            else//沒有存在編輯中、待審批的Promotion，需要將原promotion的圖片複製，并保存新添加的圖片
+            {
+                #region 
+
+                //foreach (var cover in promotion.Covers)
+                //{
+                //    if (File.Exists(Path.Combine(tempPath, Path.GetFileName(cover.Desc ?? ""))))
+                //    {
+                //        var extension = Path.GetExtension(cover.Desc);
+                //        cover.Desc = relativePath + "/" + Guid.NewGuid() + extension;
+                //    }
+                //    else//複製原promotion的圖片
+                //    {
+                //        var oldPath = physicalPath + "\\" + Path.GetFileName(cover.Desc ?? "");
+                //        if (File.Exists(oldPath))
+                //        {
+                //            var extension = Path.GetExtension(oldPath);
+                //            cover.Desc = relativePath + "/" + Guid.NewGuid() + extension;
+                //        }
+                //    }
+                //}
+
+                //foreach (var mobilecovers in promotion.MobileCovers)
+                //{
+                //    if (File.Exists(Path.Combine(tempPath, Path.GetFileName(mobilecovers.Desc ?? ""))))
+                //    {
+                //        var extension = Path.GetExtension(mobilecovers.Desc);
+                //        mobilecovers.Desc = relativePath + "/" + Guid.NewGuid() + extension;
+                //    }
+                //    else//複製原promotion的圖片
+                //    {
+                //        var oldPath = physicalPath + "\\" + Path.GetFileName(mobilecovers.Desc ?? "");
+                //        if (File.Exists(oldPath))
+                //        {
+                //            var extension = Path.GetExtension(oldPath);
+                //            mobilecovers.Desc = relativePath + "/" + Guid.NewGuid() + extension;
+                //        }
+                //    }
+                //}
+
+                //foreach (var logo in promotion.Logos)
+                //{
+                //    if (File.Exists(Path.Combine(tempPath, Path.GetFileName(logo.Desc ?? ""))))
+                //    {
+                //        var extension = Path.GetExtension(logo.Desc);
+                //        logo.Desc = relativePath + "/" + Guid.NewGuid() + extension;
+
+                //        foreach (var bigLogo in promotion.BigLogos)
+                //        {
+                //            if (bigLogo.Language == logo.Language)
+                //            {
+                //                bigLogo.Desc = relativePath + "/" + Guid.NewGuid() + extension;
+                //            }
+                //        }
+                //    }
+                //    else//複製原promotion的圖片
+                //    {
+                //        var oldPath = physicalPath + "\\" + Path.GetFileName(logo.Desc ?? "");
+                //        if (File.Exists(oldPath))
+                //        {
+                //            var extension = Path.GetExtension(oldPath);
+                //            logo.Desc = relativePath + "/" + Guid.NewGuid() + extension;
+                //            foreach (var bigLogo in promotion.BigLogos)
+                //            {
+                //                if (bigLogo.Language == logo.Language)
+                //                {
+                //                    bigLogo.Desc = relativePath + "/" + Guid.NewGuid() + extension;
+                //                }
+                //            }
+                //        }
+                //    }
+                //}
+
+                //foreach (var banner in promotion.Banners)
+                //{
+                //    if (File.Exists(Path.Combine(tempPath, Path.GetFileName(banner.Image ?? ""))))
+                //    {
+                //        //var extension = Path.GetExtension(banner.Image);
+                //        banner.Image = relativePath + "/" + Guid.NewGuid() + Path.GetExtension(banner.Image);
+                //    }
+                //    else//複製原promotion的圖片
+                //    {
+                //        banner.Id = Guid.Empty;
+                //        var oldPath = physicalPath + "\\" + Path.GetFileName(banner.Image ?? "");
+                //        if (File.Exists(oldPath))
+                //        {
+                //            banner.Image = relativePath + "/" + Guid.NewGuid() + Path.GetExtension(banner.Image);
+
+                //        }
+                //    }
+                //}
+                #endregion
+
+                Action<MutiLanguage> CoversAction = (m) => {
+                    if (File.Exists(Path.Combine(tempPath, Path.GetFileName(m.Desc ?? ""))))
+                    {
+                        var extension = Path.GetExtension(m.Desc);
+                        m.Desc = relativePath + "/" + Guid.NewGuid() + extension;
+                    }
+                    else {
+                        var oldPath = physicalPath + "\\" + Path.GetFileName(m.Desc ?? "");
+                        if (File.Exists(oldPath))
+                        {
+                            var extension = Path.GetExtension(oldPath);
+                            m.Desc = relativePath + "/" + Guid.NewGuid() + extension;
+                        }
+                    }
+                };
+                SetPath(promotion, promotion.Covers, CoversAction);
+
+                Action<MutiLanguage> MobileCoversAction = (m) => {
+                    if (File.Exists(Path.Combine(tempPath, Path.GetFileName(m.Desc ?? ""))))
+                    {
+                        var extension = Path.GetExtension(m.Desc);
+                        m.Desc = relativePath + "/" + Guid.NewGuid() + extension;
+                    }
+                    else
+                    {
+                        var oldPath = physicalPath + "\\" + Path.GetFileName(m.Desc ?? "");
+                        if (File.Exists(oldPath))
+                        {
+                            var extension = Path.GetExtension(oldPath);
+                            m.Desc = relativePath + "/" + Guid.NewGuid() + extension;
+                        }
+                    }
+                };
+                SetPath(promotion, promotion.MobileCovers, MobileCoversAction);
+
+                Action<MerchantPromotionBannerView> BannersAction = (m) =>
+                {
+                    if (File.Exists(Path.Combine(tempPath, Path.GetFileName(m.Image ?? ""))))
+                    {
+                        m.Image = relativePath + "/" + Path.GetFileName(m.Image);
+                    }
+                    else
+                    {
+                        m.Id = Guid.Empty;
+                        var oldPath = physicalPath + "\\" + Path.GetFileName(m.Image ?? "");
+                        if (File.Exists(oldPath))
+                        {
+                            m.Image = relativePath + "/" + Guid.NewGuid() + Path.GetExtension(m.Image);
+                        }
+                    }
+                };
+                SetPath(promotion, promotion.Banners, BannersAction);
+
+                Action<MutiLanguage> LogoAction = (m) => {
+                    if (File.Exists(Path.Combine(tempPath, Path.GetFileName(m.Desc ?? ""))))
+                    {
+                        var extension = Path.GetExtension(m.Desc);
+                        m.Desc = relativePath + "/" + Guid.NewGuid() + extension;
+                        SetLogoPath(promotion.BigLogos, m.Language, relativePath, extension);
+                    }
+                    else
+                    {
+                        var oldPath = physicalPath + "\\" + Path.GetFileName(m.Desc ?? "");
+                        if (File.Exists(oldPath))
+                        {
+                            var extension = Path.GetExtension(oldPath);
+                            m.Desc = relativePath + "/" + Guid.NewGuid() + extension;                         
+                            SetLogoPath(promotion.BigLogos, m.Language, relativePath, extension);
+                        }
+                    }
+                };
+                SetPath(promotion, promotion.Logos, LogoAction);
+            }
         }
 
+        /// <summary>
+        /// 创建图片到对应路径
+        /// </summary>
+        /// <param name="sourceCovers"></param>
+        /// <param name="sourceLogos"></param>
+        /// <param name="sourceBanners"></param>
+        /// <param name="dbPromotion"></param>
+        /// <param name="promotion"></param>
+        /// <returns></returns>
+        private bool CreatePromotionImage(List<MutiLanguage> sourceCovers, List<MutiLanguage> sourceLogos, List<MerchantPromotionBannerView> sourceBanners, MerchantPromotionView dbPromotion, MerchantPromotionView promotion)
+        {
+            string tempPath = PathUtil.GetPhysicalPath(Configuration["UploadPath"], promotion.MerchantId.ToString(), FileFolderEnum.TempPath);
+            string targerPath = PathUtil.GetPhysicalPath(Configuration["UploadPath"], promotion.MerchantId.ToString(), FileFolderEnum.MerchantPromotion);
+            var relativePath = PathUtil.GetRelativePath( promotion.MerchantId.ToString(), FileFolderEnum.MerchantPromotion);
+
+            var insertList = new List<string>();
+            var deleteList = new List<string>();
+
+            var imageSizes = settingBLL.GetProductImageSize();
+
+            if (dbPromotion == null)
+            {
+                foreach (var cover in sourceCovers)
+                {
+                    if (!string.IsNullOrEmpty(cover?.Desc))
+                    {
+                        var tempFlie = Path.Combine(tempPath, Path.GetFileName(cover.Desc));
+                        if (File.Exists(tempFlie))
+                        {
+                            var targetFile = Path.GetFileName(promotion.Covers.FirstOrDefault(p => p.Language == cover.Language)?.Desc);
+                            FileUtil.MoveFile(tempFlie, targerPath, targetFile);
+                            insertList.Add(relativePath + "/" + targetFile);
+                        }
+                        else
+                        {
+                            var oldPath = targerPath + "\\" + Path.GetFileName(cover.Desc);
+                            if (File.Exists(oldPath))
+                            {
+                                var targetFile = Path.GetFileName(promotion.Covers.FirstOrDefault(p => p.Language == cover.Language)?.Desc);
+                                FileUtil.CopyFile(oldPath, targerPath, targetFile);
+                                insertList.Add(relativePath + "/" + targetFile);
+                            }
+                        }
+                    }
+                }
+
+                foreach (var logo in sourceLogos)
+                {
+                    if (!string.IsNullOrEmpty(logo?.Desc))
+                    {
+                        var tempFlie = Path.Combine(tempPath, Path.GetFileName(logo.Desc));
+                        if (File.Exists(tempFlie))
+                        {
+                            var smallImageFile = Path.GetFileName(promotion.Logos.FirstOrDefault(p => p.Language == logo.Language)?.Desc);
+                            var bigImageFile = Path.GetFileName(promotion.BigLogos.FirstOrDefault(p => p.Language == logo.Language)?.Desc);
+                            ImageUtil.CreateImg(tempFlie, targerPath, smallImageFile, imageSizes[1].Width, imageSizes[1].Length);//200*200
+                            FileUtil.MoveFile(tempFlie, targerPath, bigImageFile);
+                            insertList.Add(relativePath + "/" + smallImageFile);
+                            insertList.Add(relativePath + "/" + bigImageFile);
+                        }
+                        else
+                        {
+                            var oldPath = targerPath + "\\" + Path.GetFileName(logo.Desc);
+                            if (File.Exists(oldPath))
+                            {
+                                var smallImageFile = Path.GetFileName(promotion.Logos.FirstOrDefault(p => p.Language == logo.Language)?.Desc);
+                                var bigImageFile = Path.GetFileName(promotion.BigLogos.FirstOrDefault(p => p.Language == logo.Language)?.Desc);
+
+                                FileUtil.CopyFile(oldPath, targerPath, smallImageFile);
+                                FileUtil.CopyFile(oldPath, targerPath, bigImageFile);
+                                insertList.Add(relativePath + "/" + smallImageFile);
+                                insertList.Add(relativePath + "/" + bigImageFile);
+                            }
+                        }
+                    }
+
+                }
+
+                if (promotion.Banners != null)
+                {
+                    for (int i = 0; i < sourceBanners.Count; i++)
+                    {
+                        var sourceBanner = sourceBanners[i];
+                        var tempFlie = Path.Combine(tempPath, Path.GetFileName(sourceBanner.Image));
+                        var dbBanner = promotion.Banners[i];
+                        if (File.Exists(tempFlie))
+                        {
+                            var targetFile = Path.GetFileName(dbBanner.Image);
+                            FileUtil.MoveFile(tempFlie, targerPath, targetFile);
+                            insertList.Add(relativePath + "/" + targetFile);
+                        }
+                        else
+                        {
+                            var oldPath = targerPath + "\\" + Path.GetFileName(sourceBanner.Image);
+                            if (File.Exists(oldPath))
+                            {
+                                if (sourceBanner.IsDelete == false)
+                                {
+
+                                    var targetFile = Path.GetFileName(dbBanner.Image);
+                                    FileUtil.CopyFile(oldPath, targerPath, targetFile);
+                                    insertList.Add(relativePath + "/" + targetFile);
+                                }
+
+                            }
+                        }
+                    }
+                }
+
+            }
+            else
+            {
+                foreach (var cover in sourceCovers)
+                {
+                    var tempFlie = Path.Combine(tempPath, Path.GetFileName(cover.Desc ?? ""));
+                    if (File.Exists(tempFlie))
+                    {
+                        var oldFile = Path.GetFileName(dbPromotion?.Covers.FirstOrDefault(p => p.Language == cover.Language)?.Desc);
+                        var targetFile = Path.GetFileName(promotion?.Covers.FirstOrDefault(p => p.Language == cover.Language)?.Desc);
+
+                        FileUtil.DeleteFile(Path.Combine(targerPath, oldFile));
+                        FileUtil.MoveFile(tempFlie, targerPath, targetFile);
+
+                        insertList.Add(relativePath + "/" + targetFile);
+                        deleteList.Add(relativePath + "/" + oldFile);
+                    }
+                }
+
+                foreach (var logo in sourceLogos)
+                {
+                    var tempFlie = Path.Combine(tempPath, Path.GetFileName(logo.Desc ?? ""));
+                    if (File.Exists(tempFlie))
+                    {
+                        var oldSmallFile = dbPromotion?.Logos == null ? "" : Path.GetFileName(dbPromotion?.Logos.FirstOrDefault(p => p.Language == logo.Language)?.Desc);
+                        var oldBigFile = dbPromotion?.BigLogos == null ? "" : Path.GetFileName(dbPromotion?.BigLogos.FirstOrDefault(p => p.Language == logo.Language)?.Desc);
+
+                        var smallImageFile = Path.GetFileName(promotion.Logos.FirstOrDefault(p => p.Language == logo.Language)?.Desc);
+                        var bigImageFile = Path.GetFileName(promotion.BigLogos.FirstOrDefault(p => p.Language == logo.Language)?.Desc);
+
+                        FileUtil.DeleteFile(Path.Combine(targerPath, oldSmallFile));
+                        FileUtil.DeleteFile(Path.Combine(targerPath, oldBigFile));
+
+                        ImageUtil.CreateImg(tempFlie, targerPath, smallImageFile, imageSizes[1].Width, imageSizes[1].Length);//200*200
+                        //ImageUtil.CreateImg(tempFlie, targerPath, bigImageFile, imageSizes[7].Width, imageSizes[7].Length);//生成800*800的缩略图
+                        FileUtil.MoveFile(tempFlie, targerPath, bigImageFile);
+
+                        insertList.Add(relativePath + "/" + smallImageFile);
+                        insertList.Add(relativePath + "/" + bigImageFile);
+                        deleteList.Add(relativePath + "/" + oldSmallFile);
+                        deleteList.Add(relativePath + "/" + oldBigFile);
+                    }
+                }
+
+                if (promotion.Banners != null && promotion.Banners.Any())
+                {
+                    var insertImages = promotion.Banners.Where(p => p.Id == Guid.Empty).ToList();
+                    var delImages = promotion.Banners.Where(p => p.Id != Guid.Empty && p.IsDelete == true).ToList();
+                    foreach (var banner in insertImages)
+                    {
+                        var tempFlie = Path.Combine(tempPath, Path.GetFileName(banner.Image));
+                        if (File.Exists(tempFlie))
+                        {
+                            var targetFile = Path.GetFileName(banner.Image);
+                            FileUtil.MoveFile(tempFlie, targerPath, targetFile);
+                            insertList.Add(relativePath + "/" + targetFile);
+                        }
+                    }
+
+                    foreach (var dBanner in delImages)
+                    {
+                        var targetFile = Path.GetFileName(dBanner.Image);
+                        FileUtil.DeleteFile(Path.Combine(targerPath, targetFile));
+                        deleteList.Add(relativePath + "/" + targetFile);
+                    }
+                }
+            }
+      
+            return true;
+        }
+
+        void SetPath(MerchantPromotionView promotion, List<MutiLanguage> list, Action<MutiLanguage> action)
+        {            
+            list.ForEach(x =>
+            {                      
+                    action.Invoke(x);           
+            });
+        }
+
+        void SetPath(MerchantPromotionView promotion, List<MerchantPromotionBannerView> list, Action<MerchantPromotionBannerView> action)
+        {          
+            list.ForEach(x =>
+            {               
+                action.Invoke(x);                       
+            });
+        }
+
+        void SetLogoPath(List<MutiLanguage> list,Language lang,string relativePath,string extension)
+        {
+            foreach (var item in list)
+            {
+                if (item.Language == lang)
+                {
+                    item.Desc = relativePath + "/" + Guid.NewGuid() + extension;
+                }
+            }
+        }
+
+        private async Task<SystemResult> ApproveMerchant(List<string> ids)
+        {
+            SystemResult result = new SystemResult();
+
+            var notApproveList = new List<MerchantPromotion>(); 
+            var hisActiveMerchList = new List<MerchantPromotion>();
+            var appHistoryList  =new List<ApproveHistory>();
+            foreach (var item in ids)
+            {
+                var merchantId = Guid.Parse(item);
+                var notApproveMerchantPromotion = merchantPromotionRepository.GetNotApprovePromotion(merchantId);
+                var activeMerchPromotion = merchantPromotionRepository.GetApprovePromotion(merchantId);
+                if (notApproveMerchantPromotion != null)
+                {
+                    notApproveMerchantPromotion.ApproveStatus = ApproveType.Pass;           //审批为通过
+                    notApproveMerchantPromotion.UpdateDate = DateTime.Now;
+                    notApproveMerchantPromotion.UpdateBy = Guid.Parse(CurrentUser.UserId);
+                    notApproveList.Add(notApproveMerchantPromotion);
+
+                    var appHistory = InsertMerchantApproveHistory(Guid.Parse(item), ApproveResult.Pass, "");
+                    appHistoryList.Add(appHistory);
+
+                    var merchInfo = baseRepository.GetModelById<Merchant>(notApproveMerchantPromotion.MerchantId);
+                    if (merchInfo != null)
+                    {
+                        //RecipientInfo info = new RecipientInfo();
+                        //info.Id = merchInfo.Id;
+                        //info.Code = merchInfo.MerchNo;
+                        //info.Email = merchInfo.ContactEmail;
+                        //info.Lang = merchInfo.Language;
+                        //info.Mobile = merchInfo.ContactPhoneNum;
+                        //info.Name = TranslationRepo.Entities.FirstOrDefault(d => d.TransId == merchInfo.NameTransId && d.Lang == info.Lang)?.Value ?? "";
+                        //ContentAppr model = new ContentAppr();
+                        //model.CreateDate = notApproveMerchantPromotion.UpdateDate ?? notApproveMerchantPromotion.CreateDate;
+                        //model.StatusName = Resources.Value.Pass;
+                        //model.Reason = "";
+                        //MessageBLL.SendMerchPromApproveToMerch(info, model);
+
+                        //生成审批通过的消息,待完成
+
+                    }                     
+                }
+
+                if (activeMerchPromotion != null)
+                {
+                    //历史的isActive =false
+                    activeMerchPromotion.IsActive = false;
+                    activeMerchPromotion.UpdateDate = DateTime.Now;
+                    activeMerchPromotion.UpdateBy = Guid.Parse(CurrentUser.UserId);                  
+                    hisActiveMerchList.Add(activeMerchPromotion);
+                }
+            }
+          
+            using var tran = baseRepository.CreateTransation();
+            baseRepository.Insert(appHistoryList);
+            baseRepository.Update(notApproveList);
+            baseRepository.Update(hisActiveMerchList);
+            result.Succeeded = true;
+            tran.Commit();
+
+            if (result.Succeeded)
+            { 
+                //发送消息通知商家，审批通过
+            }
+
+            result.Succeeded = true;
+            return result;
+        }
     }
 }
 
