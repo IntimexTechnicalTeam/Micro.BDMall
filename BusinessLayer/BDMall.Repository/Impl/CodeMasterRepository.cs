@@ -66,50 +66,56 @@ namespace BDMall.Repository
             //}
 
             var query = from m in UnitOfWork.DataContext.CodeMasters
-                        join t in UnitOfWork.DataContext.Translations on m.DescTransId equals t.TransId into mts
+                        join t in UnitOfWork.DataContext.Translations on new { a1 = m.DescTransId, a2 = CurrentUser.Lang } equals new { a1 = t.TransId, a2 = t.Lang } into mts
                         from mt in mts.DefaultIfEmpty()
                         where m.IsActive && !m.IsDeleted
-                        select new
+                        select new CodeMasterDto
                         {
-                            m = m,
-                            t = mt
+                            Id = m.Id,
+                            Function = m.Function,
+                            Module = m.Module,
+                            Key = m.Key,
+                            Value = m.Value,
+                            DescTransId = m.DescTransId,
+                            Remark = m.Remark,
+                            Description = mt.Value,
+
                         };
 
             if (!string.IsNullOrEmpty(module))
             {
-                query = query.Where(d => d.m.Module == module);
+                query = query.Where(d => d.Module == module);
             }
             if (!string.IsNullOrEmpty(function))
             {
-                query = query.Where(d => d.m.Function == function);
+                query = query.Where(d => d.Function == function);
             }
             if (!string.IsNullOrEmpty(key))
             {
-                query = query.Where(d => d.m.Key == key);
+                query = query.Where(d => d.Key == key);
             }
             if (!string.IsNullOrEmpty(value))
             {
-                query = query.Where(d => d.m.Value == value);
+                query = query.Where(d => d.Value == value);
             }
 
-            var queryGroup = query.ToList().GroupBy(g => g.m).Select(d => new { m = d.Key, Trans = d.Select(a => a.t).ToList() });
+            //var queryGroup = query.Distinct().ToList().GroupBy(g => g.m).Select(d => new { m = d.Key, Trans = d.Select(a => a.t).ToList() });
 
 
-            var supportLang = GetSupportLanguage();
-            foreach (var item in queryGroup)
-            {
-                CodeMasterDto dto = new CodeMasterDto();
-                dto = AutoMapperExt.MapTo<CodeMasterDto>(item.m);
-                dto.Descriptions = LangUtil.GetMutiLangFromTranslation(item.Trans, supportLang);
-                dto.Description = dto.Descriptions.FirstOrDefault(d => d.Language == CurrentUser.Lang)?.Desc ?? "";
-                data.Add(dto);
-            }
-
+            //var supportLang = GetSupportLanguage();
+            //foreach (var item in queryGroup)
+            //{
+            //    CodeMasterDto dto = new CodeMasterDto();
+            //    dto = AutoMapperExt.MapTo<CodeMasterDto>(item.m);
+            //    //dto.Descriptions = LangUtil.GetMutiLangFromTranslation(item.Trans, supportLang);
+            //    dto.Description = dto.Descriptions.FirstOrDefault(d => d.Language == CurrentUser.Lang)?.Desc ?? "";
+            //    data.Add(dto);
+            //}
             //if (module == CodeMasterModule.System.ToString() || function == CodeMasterFunction.SupportLanguage.ToString())
             //{
             //    CacheManager.Insert(cacheKey, data);
             //}
-
+            data = query.ToList();
             return data;
         }
 

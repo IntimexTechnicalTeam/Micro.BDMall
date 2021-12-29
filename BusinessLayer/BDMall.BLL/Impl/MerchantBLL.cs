@@ -17,6 +17,9 @@ namespace BDMall.BLL
         IMerchantRepository merchantRepository;
         ITranslationRepository translationRepository;
         IMerchantShipMethodMappingRepository merchantShipMethodMappingRepository;
+        ICodeMasterRepository codeMasterRepository;
+        IExpressCompanyRepository expressCompanyRepository;
+
         IUserBLL userBLL;
 
         PreHeatMerchantService mchHeatService;
@@ -26,6 +29,8 @@ namespace BDMall.BLL
             merchantRepository = Services.Resolve<IMerchantRepository>();
             translationRepository = Services.Resolve<ITranslationRepository>();
             merchantShipMethodMappingRepository = Services.Resolve<IMerchantShipMethodMappingRepository>();
+            codeMasterRepository = Services.Resolve<ICodeMasterRepository>();
+            expressCompanyRepository = Services.Resolve<IExpressCompanyRepository>();
             userBLL = Services.Resolve<IUserBLL>();
 
             mchHeatService = (PreHeatMerchantService)Services.GetService(typeof(PreHeatMerchantService));
@@ -222,6 +227,43 @@ namespace BDMall.BLL
             result.Succeeded = true;
             return result;
         }
+        public MerchantShipMethodMappingView GetAdminShipMethod()
+        {
+
+            MerchantShipMethodMappingView view = new MerchantShipMethodMappingView();
+            view.MerchantId = Guid.Empty;
+            view.MerchantShipMethods = new List<MerchantShipMethodView>();
+
+            var activeShipMethods = merchantShipMethodMappingRepository.GetShipMethidByMerchantId(Guid.Empty);
+            var defaultShipMethods = codeMasterRepository.GetCodeMasters(CodeMasterModule.System, CodeMasterFunction.ShippingMethod).OrderBy(o => o.Key).ToList();
+            var selfDefineShipMethods = expressCompanyRepository.GetActiveExpress();
+
+            foreach (var item in defaultShipMethods)
+            {
+                var method = activeShipMethods.FirstOrDefault(p => p.ShipCode == item.Key.Trim());
+                view.MerchantShipMethods.Add(new MerchantShipMethodView
+                {
+                    ShipMethodCode = item.Key,
+                    ShipMethodName = item.Description,
+                    IsEffect = method == null ? false : method.IsEffect
+
+                });
+            }
+            foreach (var item in selfDefineShipMethods)
+            {
+                var method = activeShipMethods.FirstOrDefault(p => p.ShipCode == item.Code.Trim());
+                view.MerchantShipMethods.Add(new MerchantShipMethodView
+                {
+                    ShipMethodCode = item.Code,
+                    ShipMethodName = item.Name ?? "",
+                    IsEffect = method == null ? false : method.IsEffect
+
+                });
+            }
+
+            return view;
+
+        }
 
         public MerchantShipMethodMappingView GetMerchantShipMethods(Guid merchantId)
         {
@@ -233,7 +275,8 @@ namespace BDMall.BLL
             {
                 view.MerchantId = merchantId;
 
-                view.MerchantShipMethods = defaultShipMethods.Select(s => new MerchantShipMethodView {
+                view.MerchantShipMethods = defaultShipMethods.Select(s => new MerchantShipMethodView
+                {
                     ShipMethodCode = s.ShipCode,
                     IsEffect = false,
                     ShipMethodName = s.ShipMethodName,
@@ -264,11 +307,11 @@ namespace BDMall.BLL
                 {
                     var shipMethod = dbShipmethods.FirstOrDefault(p => p.ShipCode == item.ShipMethodCode);
                     if (shipMethod != null)
-                    {                        
+                    {
                         if (isMerchant && item.IsEffect == false)//当STPAdmin取消一种付运方式时，其它商家的该种付运方式都设为失效
-                        {                           
-                            var otherShipMethods = baseRepository.GetList<MerchantActiveShipMethod>(x=>x.ShipCode == item.ShipMethodCode && x.IsEffect).ToList();
-                            foreach (var a in otherShipMethods)  a.IsEffect = false;                          
+                        {
+                            var otherShipMethods = baseRepository.GetList<MerchantActiveShipMethod>(x => x.ShipCode == item.ShipMethodCode && x.IsEffect && x.MerchantId != Guid.Empty).ToList();
+                            foreach (var a in otherShipMethods) a.IsEffect = false;
                             disActiveShipMethods.AddRange(otherShipMethods);
                         }
                         shipMethod.IsEffect = item.IsEffect;
@@ -279,7 +322,7 @@ namespace BDMall.BLL
                     else
                     {
                         MerchantActiveShipMethod a = new MerchantActiveShipMethod();
-                        a.Id = Guid.NewGuid();                   
+                        a.Id = Guid.NewGuid();
                         a.MerchantId = mappingShipMethod.MerchantId;
                         a.ShipCode = item.ShipMethodCode;
                         a.IsEffect = item.IsEffect;
@@ -298,8 +341,8 @@ namespace BDMall.BLL
         private MerchantShipMethodMappingView GenMerchantShipMethodView(List<MerchantActiveShipMethodDto> defaultShipMethod, List<MerchantActiveShipMethodDto> shipMethods)
         {
             MerchantShipMethodMappingView view = new MerchantShipMethodMappingView();
-            if (shipMethods !=null && shipMethods.Any())
-            {               
+            if (shipMethods != null && shipMethods.Any())
+            {
                 view.MerchantShipMethods = defaultShipMethod.Select(s =>
                                         new MerchantShipMethodView
                                         {
@@ -308,9 +351,9 @@ namespace BDMall.BLL
                                             ShipMethodName = s.ShipMethodName,
                                         }).ToList();
 
-                if (CurrentUser.LoginType <= LoginType.ThirdMerchantLink)            
+                if (CurrentUser.LoginType <= LoginType.ThirdMerchantLink)
                     view.MerchantShipMethods = view.MerchantShipMethods.Where(p => p.IsEffect).ToList();
-                              
+
                 view.MerchantId = shipMethods[0].MerchantId;
             }
             return view;
@@ -323,7 +366,7 @@ namespace BDMall.BLL
 
             recInsert.MerchNo = AutoGenerateNumber();
             recInsert.IsActive = false;
-            recInsert.UpdateDate = DateTime.Now;    
+            recInsert.UpdateDate = DateTime.Now;
             if (recInsert.IsExternal)
             {
                 recInsert.AppId = "";
@@ -371,7 +414,7 @@ namespace BDMall.BLL
 
             #endregion
 
-            var ECShipInfo = new  MerchantECShipInfo
+            var ECShipInfo = new MerchantECShipInfo
             {
                 Id = recInsert.Id,
                 //ClientId = UnitOfWork.Operator.ClientId,
@@ -385,13 +428,13 @@ namespace BDMall.BLL
                 SPName = merchVw.ECShipInfo.SPName,
                 SPPassword = merchVw.ECShipInfo.SPPassword,
             };
-            
+
             var shipMethodCMLst = merchantShipMethodMappingRepository.GetShipMethidByMerchantId(Guid.Empty).Where(p => p.IsEffect == true).ToList();
             var shipMethordLst = AutoMapperExt.MapTo<List<MerchantActiveShipMethod>>(shipMethodCMLst);
             foreach (var item in shipMethordLst)
             {
                 item.Id = Guid.NewGuid();
-                item.MerchantId = recInsert.Id;                                           
+                item.MerchantId = recInsert.Id;
             }
 
             using var tran = baseRepository.CreateTransation();
@@ -426,15 +469,15 @@ namespace BDMall.BLL
 
             #region 处理主表
 
-            merchOld.FaxNum = recUpdate.FaxNum;          
+            merchOld.FaxNum = recUpdate.FaxNum;
             merchOld.ContactEmail = recUpdate.ContactEmail;
             merchOld.OrderEmail = recUpdate.OrderEmail;
 
-            merchOld.IsActive = recUpdate.IsActive;         
+            merchOld.IsActive = recUpdate.IsActive;
             merchOld.ContactPhoneNum = recUpdate.ContactPhoneNum;
-            merchOld.GCP = recUpdate.GCP;           
+            merchOld.GCP = recUpdate.GCP;
             merchOld.IsExternal = recUpdate.IsExternal;
-            merchOld.Language = recUpdate.Lang;           
+            merchOld.Language = recUpdate.Lang;
             merchOld.CommissionRate = recUpdate.CommissionRate;
             merchOld.IsTransin = recUpdate.IsTransin;
             merchOld.IsHongKong = recUpdate.IsHongKong;
@@ -465,7 +508,7 @@ namespace BDMall.BLL
 
             #endregion
 
-            var NameList = translationRepository.GenTranslations(recUpdate.NameList, TranslationType.Merchant, recUpdate.NameTransId,ActionTypeEnum.Modify);
+            var NameList = translationRepository.GenTranslations(recUpdate.NameList, TranslationType.Merchant, recUpdate.NameTransId, ActionTypeEnum.Modify);
             var ContactTransList = translationRepository.GenTranslations(recUpdate.ContactList, TranslationType.Merchant, recUpdate.ContactTransId, ActionTypeEnum.Modify);
             var ContactAddrList = translationRepository.GenTranslations(recUpdate.ContactAddrList, TranslationType.Merchant, recUpdate.ContactAddrTransId, ActionTypeEnum.Modify);
             var ContactAddr2List = translationRepository.GenTranslations(recUpdate.ContactAddr2List, TranslationType.Merchant, recUpdate.ContactAddr2TransId, ActionTypeEnum.Modify);
@@ -559,8 +602,8 @@ namespace BDMall.BLL
 
             userRole.Id = Guid.NewGuid();
             userRole.UserId = user.Id;
-            var insertRole = new  List<UserRole>();
-            insertRole.Add(userRole); 
+            var insertRole = new List<UserRole>();
+            insertRole.Add(userRole);
             var deleteRole = new List<UserRole>();
             foreach (var item in userRoles)
             {
@@ -568,7 +611,7 @@ namespace BDMall.BLL
                     deleteRole.Add(item);
             }
 
-            var result = new Tuple<List<UserRole>, List<UserRole>> (deleteRole, insertRole);
+            var result = new Tuple<List<UserRole>, List<UserRole>>(deleteRole, insertRole);
             return result;
         }
 

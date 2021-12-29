@@ -96,6 +96,30 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
         }
 
         /// <summary>
+        /// 获取系统的ShipMethod
+        /// </summary>
+        /// <param name="mapping"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [AdminApiAuthorize(Module = ModuleConst.SystemModule)]
+        public SystemResult GetAdminShipMethod()
+        {
+            SystemResult result = new SystemResult();
+            try
+            {
+                result.ReturnValue = merchantBLL.GetAdminShipMethod();
+                result.Succeeded = true;
+            }
+            catch (Exception ex)
+            {
+
+                result.Succeeded = false;
+                result.Message = ex.Message;
+            }
+            return result;
+        }
+
+        /// <summary>
         /// 獲取商家的付運方法
         /// </summary>
         /// <param name="merchantId"></param>

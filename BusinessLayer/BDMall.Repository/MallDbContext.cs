@@ -37,6 +37,7 @@ namespace BDMall.Repository
 
         public DbSet<RolePermission> RolePermissions { get; set; }
         public DbSet<SystemMenu> SystemMenus { get; set; }
+        public DbSet<SystemEmail> SystemEmails { get; set; }
 
         public DbSet<Translation> Translations { get; set; }
 
@@ -88,5 +89,11 @@ namespace BDMall.Repository
         public DbSet<ExpressCompany> ExpressCompanies { get; set; }
 
         public DbSet<MerchantActiveShipMethod> MerchantActiveShipMethods { get; set; }
+
+        public DbSet<ScheduleJob> ScheduleJobs { get; set; }
+
+        public DbSet<MemberLoginRecord> MemberLoginRecords { get; set; }
+        
+
     }
 }
