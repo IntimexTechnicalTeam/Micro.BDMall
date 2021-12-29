@@ -30,8 +30,8 @@ namespace BDMall.Admin.Controllers
             ViewBag.Status = -1;
             if (CurrentUser == null)
                 ViewBag.IsMerchant = 0;
-            else if (CurrentUser.LoginType <= LoginType.ThirdMerchantLink)
-                ViewBag.IsMerchant = 1;
+            else
+                ViewBag.IsMerchant = CurrentUser.IsMerchant.ToInt();
             return View();
         }
 
@@ -45,8 +45,8 @@ namespace BDMall.Admin.Controllers
             ViewBag.Status = ApproveType.WaitingApprove.ToInt();
             if (CurrentUser == null)
                 ViewBag.IsMerchant = 0;
-            else if (CurrentUser.LoginType <= LoginType.ThirdMerchantLink)
-                ViewBag.IsMerchant = 1;
+            else
+                ViewBag.IsMerchant = CurrentUser.IsMerchant.ToInt();
             return View("Index");
         }
 
@@ -62,8 +62,8 @@ namespace BDMall.Admin.Controllers
             ViewBag.EditType = para2;
             if (CurrentUser == null)
                 ViewBag.IsMerchant = 0;
-            else if (CurrentUser.LoginType <= LoginType.ThirdMerchantLink)
-                ViewBag.IsMerchant = 1;
+            else
+                ViewBag.IsMerchant = CurrentUser.IsMerchant.ToInt();
 
             return View();
         }
@@ -112,8 +112,8 @@ namespace BDMall.Admin.Controllers
             ViewBag.EditType = para2;
             if (CurrentUser == null)
                 ViewBag.IsMerchant = 0;
-            else if (CurrentUser.LoginType <= LoginType.ThirdMerchantLink)
-                ViewBag.IsMerchant = 1;
+            else
+                ViewBag.IsMerchant = CurrentUser.IsMerchant.ToInt();
 
             ViewBag.Lang = CurrentUser.Lang;
 
@@ -125,8 +125,8 @@ namespace BDMall.Admin.Controllers
         {
             if (CurrentUser == null)
                 ViewBag.IsMerchant = 0;
-            else if (CurrentUser.LoginType <= LoginType.ThirdMerchantLink)
-                ViewBag.IsMerchant = 1;
+            else
+                ViewBag.IsMerchant = CurrentUser.IsMerchant.ToInt();
             return View();
         }
 
@@ -161,8 +161,8 @@ namespace BDMall.Admin.Controllers
         {
             if (CurrentUser == null)
                 ViewBag.IsMerchant = 0;
-            else if (CurrentUser.LoginType <= LoginType.ThirdMerchantLink)
-                ViewBag.IsMerchant = 1;
+            else
+                ViewBag.IsMerchant = CurrentUser.IsMerchant.ToInt();
             return View();
         }
 
@@ -171,8 +171,8 @@ namespace BDMall.Admin.Controllers
         {
             if (CurrentUser == null)
                 ViewBag.IsMerchant = 0;
-            else if (CurrentUser.LoginType <= LoginType.ThirdMerchantLink)
-                ViewBag.IsMerchant = 1;
+            else
+                ViewBag.IsMerchant = CurrentUser.IsMerchant.ToInt();
             return View();
         }
 

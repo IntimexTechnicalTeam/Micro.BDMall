@@ -31,7 +31,7 @@ namespace BDMall.BLL
         public async Task<SystemResult> AdminLogin(UserDto user)
         { 
             var result = new SystemResult() ;
-
+          
             var roles = this.userRoleRepository.GetUserRoles(user.Id);
             user.Roles = AutoMapperExt.MapTo<List<RoleDto>>(roles);
 
@@ -62,6 +62,16 @@ namespace BDMall.BLL
                 throw new ServiceException("错误的账号或密码");
 
             var user = AutoMapperExt.MapTo<UserDto>(accounts);
+
+            if (user.MerchantId != Guid.Empty)
+            {
+                user.LoginType = LoginType.Merchant;
+            }
+            else
+            {
+                user.LoginType = LoginType.Admin;
+            }
+
             return user;
         }
 

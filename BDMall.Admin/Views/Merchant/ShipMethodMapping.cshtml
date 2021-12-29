@@ -18,7 +18,7 @@
                 <input type="checkbox" v-model="item.IsEffect" v-bind:id="'shipMethod'+index" />
             </li>
         </ul>
-        <input v-if="isMerchant==false" type="button" class="btn btn-primary" value="@BDMall.Resources.Action.Save" v-on:click="saveMapping" />
+        <input v-if="!isMerchant" type="button" class="btn btn-primary" value="@BDMall.Resources.Action.Save" v-on:click="saveMapping" />
     </div>
 </div>
 
@@ -81,7 +81,7 @@
         });
 
         $(document).ready(function () {
-            InitNormalSelect("cboMerchant", "/adminapi/Merchant/GetMerchantOptions", false, null, false);
+            InitNormalSelect("cboMerchant", "/adminapi/Dict/GetMerchantOptions", false, null, false);
             //vm.selectMerchPromotion();
             vm.getMapping();
         })

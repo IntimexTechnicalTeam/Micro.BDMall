@@ -69,5 +69,16 @@ namespace BDMall.Model
         /// </summary>
         [Column(Order = 16)]
         public int OverSeaCoolDownDay { get; set; } = 7;
+
+        /// <summary>
+        /// 手機封面
+        /// </summary>
+        [Column(Order = 17)]
+        public Guid MobileCoverId { get; set; }
+
+        public virtual ICollection<MerchantPromotionBanner> Banners { get; set; }
+
+        public virtual ICollection<MerchantPromotionProduct> Products { get; set; }
+
     }
 }

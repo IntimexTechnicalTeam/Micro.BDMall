@@ -36,8 +36,8 @@ namespace BDMall.Admin.Controllers
 
             if (CurrentUser == null)
                 ViewBag.IsMerchant = 0;
-            else if (CurrentUser.LoginType <= LoginType.ThirdMerchantLink)
-                ViewBag.IsMerchant = 1;
+            else
+                ViewBag.IsMerchant = CurrentUser.IsMerchant.ToInt();
 
             ViewBag.CanEdit = 0;
             foreach (var role in CurrentUser.Roles)

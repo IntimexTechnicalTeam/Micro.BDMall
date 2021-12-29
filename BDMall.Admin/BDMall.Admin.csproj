@@ -46,6 +46,7 @@
     <ProjectReference Include="..\BusinessLayer\BDMall.BLL\BDMall.BLL.csproj" />
     <ProjectReference Include="..\Infrastructure\BDMall.Utility\BDMall.Utility.csproj" />
     <ProjectReference Include="..\Infrastructure\Intimex.Common\Intimex.Common.csproj" />
+    <ProjectReference Include="..\Infrastructure\UEditorNetCore\UEditorNetCore.csproj" />
     <ProjectReference Include="..\Infrastructure\Web.AutoFac\Web.AutoFac.csproj" />
     <ProjectReference Include="..\Infrastructure\Web.Framework\Web.Framework.csproj" />
     <ProjectReference Include="..\Infrastructure\Web.Jwt\Web.Jwt.csproj" />

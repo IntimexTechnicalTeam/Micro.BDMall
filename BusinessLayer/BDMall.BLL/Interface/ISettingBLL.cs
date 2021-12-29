@@ -66,7 +66,7 @@ namespace BDMall.BLL
         ///// 获取系统设置的图片的各个尺寸
         ///// </summary>
         ///// <returns></returns>
-        //List<ImageSize> GetProductImageSize();
+        List<ImageSize> GetProductImageSize();
         //List<ImageSize> GetProductAdditionalImageSize();
         //ImageSize GetSmallProductImageSize();
         //ImageSize GetMiddleProductImageSize();

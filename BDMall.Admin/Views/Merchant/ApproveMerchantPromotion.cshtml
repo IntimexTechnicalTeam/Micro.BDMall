@@ -1,0 +1,228 @@
+﻿
+@{
+    ViewBag.Title = "ApproveMerchantPromotion";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="app" v-cloak>
+
+    <div>
+        <div class="panel-body">
+            <div id="toolbar" class="btn-group">
+                <button id="btn_add" type="button" class="btn btn-default" v-on:click="approveMerchant" v-bind:disabled="isApprove==false">
+                    <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>@BDMall.Resources.Action.BatchApprove
+                </button>
+            </div>
+            <table id="tblMerchantList"></table>
+        </div>
+    </div>
+</div>
+
+
+@section scripts{
+    <script type="text/javascript">
+        layui.use(['miniTab'], function () {
+            var layer = layui.layer,
+                miniTab = layui.miniTab;
+        });
+        var tabId = self.frameElement.parentElement.id;
+        var mEditM = "Modify";
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                isApprove: false,
+                Condition: {
+                    Id: WS.GuidEmpty,
+                    CompanyName: "",
+                    MerchNo: "",
+                    ApproveStauts:0
+                },
+            },
+            methods: {
+                approveMerchant: function () {
+                    var selectedProduct = $("#tblMerchantList").bootstrapTable("getSelections");
+                    var ids = "";
+                    selectedProduct.forEach(function (val) {
+                        if (ids == "") {
+                            ids = val.Id;
+                        }
+                        else {
+                            ids += "," + val.Id;
+                        }
+                    })
+                    WS.Get("/adminapi/Merchant/ApproveMerchant", { ids: ids }, function (response) {
+                        if (response.Succeeded == true) {
+                            $("#tblMerchantList").bootstrapTable("refresh", { url: "/adminapi/Merchant/SearchMercLst", pageNumber: 1 });
+                        }
+                        else {
+                            showWarn(response.Message);
+                        }
+                    }, function () { });
+                },
+                setToolbarBtnState: function () {
+                    var objSelections = $("#tblMerchantList").bootstrapTable("getSelections");
+
+                    if (objSelections.length >= 1) {
+                        vm.isApprove = true;
+                    }
+                    else {
+                        vm.isApprove = false;
+                    }
+                },
+            }
+        })
+
+
+         var merchantListTableInit = function () {
+            var objDataTable = new Object();
+
+            objDataTable.Init = function () {
+                $("#tblMerchantList").bootstrapTable({
+                    method: 'post',
+                    url: '/adminapi/Merchant/SearchMercLst',         //请求后台的URL（*）//请求方式（*）
+                    queryParams: objDataTable.queryParams,//传递参数（*）
+                    toolbar: '#toolbar',                //工具按钮用哪个容器
+                    striped: true,                      //是否显示行间隔色
+                    cache: true,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                    sortable: true,                     //是否启用排序
+                    sortOrder: "asc",                   //排序方式
+                    sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+                    pageNumber: 1,                       //初始化加载第一页，默认第一页
+                    pageSize: 10,                       //每页的记录行数（*）
+                    pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                    smartDisplay: false,
+                    showRefresh: true,                  //是否显示刷新按钮
+                    clickToSelect: false,                //是否启用点击选中行
+                    //height: 750,                        //行高，如果没有设置height属性，表格自动根据记录条数決定表格高度
+                    uniqueId: "Id",                     //每一行的唯一标识，一般为主键列
+                    cardView: false,                    //是否显示详细视图
+                    detailView: false,                   //是否显示父子表
+                    pagination: true,                   //是否显示分页（*）
+                    dataField: "Data",
+                    totalField: "TotalRecord",
+                    ajaxOptions: {
+                        beforeSend: function (request) {
+                            var access_token = $.cookie("access_token");
+                            request.setRequestHeader("Authorization", "Bearer " + access_token);
+                        }
+                    },
+                    onCheck: function (row) {
+                        vm.setToolbarBtnState();
+                    },
+                    onUncheck: function (row) {
+                        vm.setToolbarBtnState();
+                    },
+                    onCheckAll: function (rows) {
+                        vm.setToolbarBtnState();
+                    },
+                    onUncheckAll: function (rows) {
+                        vm.setToolbarBtnState();
+                    },
+                    columns: [{
+                        checkbox: true
+                    }, {
+                        field: 'Id',
+                        title: 'Id',
+                        visible: false
+                    }, {
+                        field: 'MerchNo',
+                        title: '@BDMall.Resources.Label.SupplierId',
+                        align: 'left',
+                        valign: 'middle',
+                        sortable: true,
+                        //events: operateEvents,
+                        //formatter: tbModifyFormatter
+                    }, {
+                        field: 'Name',
+                        valign: 'middle',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.MerchantName'
+                    },{
+                        field: 'ApproveStatusString',
+                        valign: 'middle',
+                        title: '@BDMall.Resources.Label.ApproveStatus'
+                    },{
+                        field: '',
+                        title: '@BDMall.Resources.Label.Action',
+                            formatter: function (value, row, index) {
+                                var name = row.Name.ReplaceAll("'", "<apos>");
+                                name = name.ReplaceAll("\"", "<quot>");
+                                return '<input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Approve" onClick="showApproveMerchPromotion(\'' + row.Id + '\',\'' + name + '\')"></input>'
+                        }
+                    }
+                    ],
+                    formatLoadingMessage: function () {
+                        return '';
+                    }
+                });
+            };
+
+            objDataTable.queryParams = function (params) {
+                var page = 1;
+                if (params.offset > 0) {
+                    page = parseInt(params.offset / params.limit) + 1;
+                }
+                var SortedBy = "MerchNo";
+                var Sorted = "asc";
+                vm.Condition.ApproveStatus = 0;
+                return {
+                    Condition: vm.Condition, Page: page, PageSize: params.limit, sortName: SortedBy, sortOrder: Sorted
+                };
+            }
+            return objDataTable;
+        }
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+
+
+
+        //function tbModifyFormatter(value, row, index) {
+        //    return '<a class="Readonly btn btn-link">' + value + '</a>';
+        //}
+
+        function showApproveMerchPromotion(id,merchName)
+        {
+            var strTabId = "MerchantApprove_" + id;
+            var tabId = self.frameElement.parentElement.id;
+            merchName = merchName.ReplaceAll("<apos>", "&apos;")
+            merchName = merchName.ReplaceAll("<quot>", "&quot;");
+            miniTab.openNewTabByIframe({
+                href:"/Merchant/MerchantEdit/" + id + "/Approve",
+                title: '@BDMall.Resources.Action.View' + "-" + merchName,
+                callback: refresh
+            });
+        }
+
+        $(document).ready(function () {
+            //InitNormalSelect("cboMerchant", "/adminapi/Merchant/GetMerchantCboSrc", true, null, false);
+            var oTable = merchantListTableInit();
+            oTable.Init();
+
+        });
+
+        function refresh()
+        {
+            $("#tblMerchantList").bootstrapTable("refresh", { url: "/adminapi/Merchant/SearchMercLst", pageNumber: 1 });
+        }
+
+         @*window.operateEvents = {
+            'click .Readonly': function (e, value, row, index) {
+                var objDatas = $("#tblMerchantList").bootstrapTable("getData");
+                var strId = objDatas[index].Id;
+                var merchName = objDatas[index].Name;
+
+                var strTabId = "MerchantModify_" + strId;
+                var tabId = self.frameElement.parentElement.id;
+                miniTab.openNewTabByIframe({
+                    href:"/Merchant/MerchantEdit/" + strId + "/" + mEditM,
+                    title:'@BDMall.Resources.Action.View' + "-" + merchName,
+                });
+            }
+        };*@
+    </script>
+}

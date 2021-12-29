@@ -19,8 +19,8 @@
      * 因此，UEditor提供了针对不同页面的编辑器可单独配置的根路径，具体来说，在需要实例化编辑器的页面最顶部写上如下代码即可。当然，需要令此处的URL等于对应的配置。
      * window.UEDITOR_HOME_URL = "/xxxx/xxxx/";
      */
-
     var URL = window.UEDITOR_HOME_URL || getUEBasePath();
+
     /**
      * 配置项主体。注意，此处所有涉及到路径的配置别遗漏URL变量。
      */
@@ -30,22 +30,9 @@
         UEDITOR_HOME_URL: URL
 
         // 服务器统一请求接口路径
-        , serverUrl: URL + "net/controller.ashx"
+        , serverUrl:"/AdminApi/UEditor"      //这里对应了后端的上传接口
 
         //工具栏上的所有的功能按钮和下拉框，可以在new编辑器的实例时选择自己需要的重新定义
-        //, toolbars: [[
-        //    'fullscreen', 'source', '|', 'undo', 'redo', '|',
-        //    'bold', 'italic', 'underline', 'fontborder', 'strikethrough', 'superscript', 'subscript', 'removeformat', 'formatmatch', 'autotypeset', 'blockquote', 'pasteplain', '|', 'forecolor', 'backcolor', 'insertorderedlist', 'insertunorderedlist', 'selectall', 'cleardoc', '|',
-        //    'rowspacingtop', 'rowspacingbottom', 'lineheight', '|',
-        //    'customstyle', 'paragraph', 'fontfamily', 'fontsize', '|',
-        //    'directionalityltr', 'directionalityrtl', 'indent', '|',
-        //    'justifyleft', 'justifycenter', 'justifyright', 'justifyjustify', '|', 'touppercase', 'tolowercase', '|',
-        //    'link', 'unlink', 'anchor', '|', 'imagenone', 'imageleft', 'imageright', 'imagecenter', '|',
-        //    'simpleupload', 'insertimage', 'emotion', 'scrawl', 'insertvideo', 'music', 'attachment', 'map', 'gmap', 'insertframe', 'insertcode', 'webapp', 'pagebreak', 'template', 'background', '|',
-        //    'horizontal', 'date', 'time', 'spechars', 'snapscreen', 'wordimage', '|',
-        //    'inserttable', 'deletetable', 'insertparagraphbeforetable', 'insertrow', 'deleterow', 'insertcol', 'deletecol', 'mergecells', 'mergeright', 'mergedown', 'splittocells', 'splittorows', 'splittocols', 'charts', '|',
-        //    'print', 'preview', 'searchreplace', 'drafts', 'help'
-        //]]
         , toolbars: [[
             'fullscreen', 'source', '|', 'undo', 'redo', '|',
             'bold', 'italic', 'underline', 'fontborder', 'strikethrough', 'superscript', 'subscript', 'removeformat', 'formatmatch', 'autotypeset', 'blockquote', 'pasteplain', '|', 'forecolor', 'backcolor', 'insertorderedlist', 'insertunorderedlist', 'selectall', 'cleardoc', '|',
@@ -54,10 +41,10 @@
             'directionalityltr', 'directionalityrtl', 'indent', '|',
             'justifyleft', 'justifycenter', 'justifyright', 'justifyjustify', '|', 'touppercase', 'tolowercase', '|',
             'link', 'unlink', 'anchor', '|', 'imagenone', 'imageleft', 'imageright', 'imagecenter', '|',
-            'simpleupload',  'emotion',  'map', 'gmap',  'pagebreak', 'template', 'background', '|',
-            'horizontal', 'date', 'time', 'spechars', '|',
+            'simpleupload', 'insertimage', 'emotion', 'scrawl', 'insertvideo', 'music', 'attachment', 'map', 'gmap', 'insertframe', 'insertcode', 'webapp', 'pagebreak', 'template', 'background', '|',
+            'horizontal', 'date', 'time', 'spechars', 'snapscreen', 'wordimage', '|',
             'inserttable', 'deletetable', 'insertparagraphbeforetable', 'insertrow', 'deleterow', 'insertcol', 'deletecol', 'mergecells', 'mergeright', 'mergedown', 'splittocells', 'splittorows', 'splittocols', 'charts', '|',
-            'print', 'preview', 'searchreplace',  'help'
+            'print', 'preview', 'searchreplace', 'drafts', 'help'
         ]]
         //当鼠标放在工具栏上时显示的tooltip提示,留空支持自动多语言配置，否则以配置值为准
         //,labelMap:{
@@ -364,83 +351,82 @@
         //, webAppKey: ""
 
         //默认过滤规则相关配置项目
-        ,disabledTableInTable:false  //禁止表格嵌套
+        //,disabledTableInTable:true  //禁止表格嵌套
         //,allowDivTransToP:true      //允许进入编辑器的div标签自动变成p标签
         //,rgb2Hex:true               //默认产出的数据中的color自动从rgb格式变成16进制格式
 
-        // xss 过滤是否开启,inserthtml等操作
-        , xssFilterRules: true
-        //input xss过滤
-        , inputXssFilter: true
-        //output xss过滤
-        , outputXssFilter: true
-        // xss过滤白名单 名单来源: https://raw.githubusercontent.com/leizongmin/js-xss/master/lib/default.js
-        , whitList: {
-            a: ['target', 'href', 'title', 'class', 'style'],
-            abbr: ['title', 'class', 'style'],
-            address: ['class', 'style'],
-            area: ['shape', 'coords', 'href', 'alt'],
-            article: [],
-            aside: [],
-            audio: ['autoplay', 'controls', 'loop', 'preload', 'src', 'class', 'style'],
-            b: ['class', 'style'],
-            bdi: ['dir'],
-            bdo: ['dir'],
-            big: [],
-            blockquote: ['cite', 'class', 'style'],
-            br: [],
-            caption: ['class', 'style'],
-            center: [],
-            cite: [],
-            code: ['class', 'style'],
-            col: ['align', 'valign', 'span', 'width', 'class', 'style'],
-            colgroup: ['align', 'valign', 'span', 'width', 'class', 'style'],
-            dd: ['class', 'style'],
-            del: ['datetime'],
-            details: ['open'],
-            div: ['class', 'style'],
-            dl: ['class', 'style'],
-            dt: ['class', 'style'],
-            em: ['class', 'style'],
-            font: ['color', 'size', 'face'],
-            footer: [],
-            h1: ['class', 'style'],
-            h2: ['class', 'style'],
-            h3: ['class', 'style'],
-            h4: ['class', 'style'],
-            h5: ['class', 'style'],
-            h6: ['class', 'style'],
-            header: [],
-            hr: [],
-            i: ['class', 'style'],
-            img: ['src', 'alt', 'title', 'width', 'height', 'id', '_src', 'loadingclass', 'class', 'data-latex'],
-            iframe: ['src', 'frameborder', 'width', 'height'],
-            ins: ['datetime'],
-            li: ['class', 'style'],
-            mark: [],
-            nav: [],
-            ol: ['class', 'style'],
-            p: ['class', 'style'],
-            pre: ['class', 'style'],
-            s: [],
-            section: [],
-            small: [],
-            span: ['class', 'style'],
-            sub: ['class', 'style'],
-            sup: ['class', 'style'],
-            strong: ['class', 'style'],
-            table: ['width', 'border', 'align', 'valign', 'class', 'style', 'cellspacing', 'cellpadding'],
-            tbody: ['align', 'valign', 'class', 'style'],
-            td: ['width', 'rowspan', 'colspan', 'align', 'valign', 'class', 'style', 'cellspacing', 'cellpadding'],
-            tfoot: ['align', 'valign', 'class', 'style'],
-            th: ['width', 'rowspan', 'colspan', 'align', 'valign', 'class', 'style', 'cellspacing', 'cellpadding'],
-            thead: ['align', 'valign', 'class', 'style'],
-            tr: ['rowspan', 'align', 'valign', 'class', 'style', 'cellspacing', 'cellpadding'],
-            tt: [],
-            u: [],
-            ul: ['class', 'style'],
-            //video: ['autoplay', 'controls', 'loop', 'preload', 'src', 'height', 'width', 'class', 'style']
-        }
+		// xss 过滤是否开启,inserthtml等操作
+		,xssFilterRules: true
+		//input xss过滤
+		,inputXssFilter: true
+		//output xss过滤
+		,outputXssFilter: true
+		// xss过滤白名单 名单来源: https://raw.githubusercontent.com/leizongmin/js-xss/master/lib/default.js
+		,whitList: {
+			a:      ['target', 'href', 'title', 'class', 'style'],
+			abbr:   ['title', 'class', 'style'],
+			address: ['class', 'style'],
+			area:   ['shape', 'coords', 'href', 'alt'],
+			article: [],
+			aside:  [],
+			audio:  ['autoplay', 'controls', 'loop', 'preload', 'src', 'class', 'style'],
+			b:      ['class', 'style'],
+			bdi:    ['dir'],
+			bdo:    ['dir'],
+			big:    [],
+			blockquote: ['cite', 'class', 'style'],
+			br:     [],
+			caption: ['class', 'style'],
+			center: [],
+			cite:   [],
+			code:   ['class', 'style'],
+			col:    ['align', 'valign', 'span', 'width', 'class', 'style'],
+			colgroup: ['align', 'valign', 'span', 'width', 'class', 'style'],
+			dd:     ['class', 'style'],
+			del:    ['datetime'],
+			details: ['open'],
+			div:    ['class', 'style'],
+			dl:     ['class', 'style'],
+			dt:     ['class', 'style'],
+			em:     ['class', 'style'],
+			font:   ['color', 'size', 'face'],
+			footer: [],
+			h1:     ['class', 'style'],
+			h2:     ['class', 'style'],
+			h3:     ['class', 'style'],
+			h4:     ['class', 'style'],
+			h5:     ['class', 'style'],
+			h6:     ['class', 'style'],
+			header: [],
+			hr:     [],
+			i:      ['class', 'style'],
+			img:    ['src', 'alt', 'title', 'width', 'height', 'id', '_src', 'loadingclass', 'class', 'data-latex'],
+			ins:    ['datetime'],
+			li:     ['class', 'style'],
+			mark:   [],
+			nav:    [],
+			ol:     ['class', 'style'],
+			p:      ['class', 'style'],
+			pre:    ['class', 'style'],
+			s:      [],
+			section:[],
+			small:  [],
+			span:   ['class', 'style'],
+			sub:    ['class', 'style'],
+			sup:    ['class', 'style'],
+			strong: ['class', 'style'],
+			table:  ['width', 'border', 'align', 'valign', 'class', 'style'],
+			tbody:  ['align', 'valign', 'class', 'style'],
+			td:     ['width', 'rowspan', 'colspan', 'align', 'valign', 'class', 'style'],
+			tfoot:  ['align', 'valign', 'class', 'style'],
+			th:     ['width', 'rowspan', 'colspan', 'align', 'valign', 'class', 'style'],
+			thead:  ['align', 'valign', 'class', 'style'],
+			tr:     ['rowspan', 'align', 'valign', 'class', 'style'],
+			tt:     [],
+			u:      [],
+			ul:     ['class', 'style'],
+			video:  ['autoplay', 'controls', 'loop', 'preload', 'src', 'height', 'width', 'class', 'style']
+		}
     };
 
     function getUEBasePath(docUrl, confUrl) {
@@ -453,7 +439,7 @@
 
         var configPath = document.getElementsByTagName('script');
 
-        return configPath[configPath.length - 1].src;
+        return configPath[ configPath.length - 1 ].src;
 
     }
 
@@ -480,7 +466,7 @@
 
     function optimizationPath(path) {
 
-        var protocol = /^[a-z]+:\/\//.exec(path)[0],
+        var protocol = /^[a-z]+:\/\//.exec(path)[ 0 ],
             tmp = null,
             res = [];
 
@@ -488,11 +474,11 @@
 
         path = path.replace(/\\/g, '/').split(/\//);
 
-        path[path.length - 1] = "";
+        path[ path.length - 1 ] = "";
 
         while (path.length) {
 
-            if ((tmp = path.shift()) === "..") {
+            if (( tmp = path.shift() ) === "..") {
                 res.pop();
             } else if (tmp !== ".") {
                 res.push(tmp);

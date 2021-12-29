@@ -11,7 +11,7 @@
             <a id="baseInfo" name="divMerchantBaseInfo" href="#divMerchantBaseInfo">@BDMall.Resources.Label.MerchantInfo</a>
         </li>
         @*onclick="SetMerchantPromotionInfoFrameSrc();"*@
-        <li v-show="(editType=='Approve' || editType=='Modify') &&!isMerchant" v-on:click="tabClick(1)">
+        <li v-show="(editType=='Approve' || editType=='Modify') && !isMerchant" v-on:click="tabClick(1)">
             <a id="promotionInfo" name="divMerchantPromotionInfo" href="#divMerchantPromotionInfo">@BDMall.Resources.Label.MerchantPromotionInfo</a>
         </li>
     </ul>
@@ -310,7 +310,7 @@
         var vm = new Vue({
             el: "#divMain",
             data: {
-                isMerchant: '@ViewBag.IsMerchant ',
+                isMerchant: Boolean(@ViewBag.IsMerchant),
                 languageType: "",
                 language: "",
                 MerchantID: "00000000-0000-0000-0000-000000000000",

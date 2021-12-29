@@ -162,7 +162,7 @@ namespace Web.Mvc
                 _currentUser.CurrencyCode = payload["CurrencyCode"];
                 _currentUser.Lang = (Language)Enum.Parse(typeof(Language), payload["Lang"]);
                 _currentUser.LoginType = (LoginType)Enum.Parse(typeof(LoginType), payload["LoginType"]);
-
+                
                 //admin,商家和第三方商家
                 if (_currentUser.LoginType <= LoginType.Admin)
                 {
@@ -178,6 +178,7 @@ namespace Web.Mvc
                         cacheUser.Roles = userInfo.Roles;
                     }
                     _currentUser.Roles = cacheUser?.Roles;
+                    _currentUser.MechantId = cacheUser?.MerchantId ??  Guid.Empty;
                 }
 
                 return _currentUser;

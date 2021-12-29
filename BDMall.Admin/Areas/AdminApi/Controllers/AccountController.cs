@@ -42,12 +42,12 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
                 var userInfo = result.ReturnValue as UserDto;
 
                 var claimList = new List<Claim>() { };
-                claimList.Add(new Claim("UserId", $"{userInfo.Id }"));
+                claimList.Add(new Claim("UserId", $"{userInfo.Id }"));                             
                 claimList.Add(new Claim("Lang", userInfo.Language.ToString()));
                 claimList.Add(new Claim("CurrencyCode", "HKD"));                     //为了兼容默认一个
                 claimList.Add(new Claim("Account", $"{userInfo.Account}"));
                 claimList.Add(new Claim("IsLogin", "true"));
-                claimList.Add(new Claim("LoginType", $"{ userInfo.LoginType.ToInt() }"));
+                claimList.Add(new Claim("LoginType", $"{ userInfo.LoginType }"));
 
                 userInfo.Token = jwtToken.CreateToken(claimList);
 

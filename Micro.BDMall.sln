@@ -55,7 +55,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BDMall.Resources", "BDMall.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Intimex.Common", "Infrastructure\Intimex.Common\Intimex.Common.csproj", "{CFB1C2C5-0D90-462E-B22D-A66252C24252}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BDMall.Utility", "Infrastructure\BDMall.Utility\BDMall.Utility.csproj", "{92BF8E49-9120-4B95-9AA7-6A3160B6EECB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BDMall.Utility", "Infrastructure\BDMall.Utility\BDMall.Utility.csproj", "{92BF8E49-9120-4B95-9AA7-6A3160B6EECB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UEditorNetCore", "Infrastructure\UEditorNetCore\UEditorNetCore.csproj", "{965A19A2-BF79-4199-A9F4-27DDBA54A9E0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -155,6 +157,10 @@ Global
 		{92BF8E49-9120-4B95-9AA7-6A3160B6EECB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{92BF8E49-9120-4B95-9AA7-6A3160B6EECB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{92BF8E49-9120-4B95-9AA7-6A3160B6EECB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{965A19A2-BF79-4199-A9F4-27DDBA54A9E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{965A19A2-BF79-4199-A9F4-27DDBA54A9E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{965A19A2-BF79-4199-A9F4-27DDBA54A9E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{965A19A2-BF79-4199-A9F4-27DDBA54A9E0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -179,6 +185,7 @@ Global
 		{9091F0BD-31D3-4BA2-B694-AB6404C2B6CB} = {081EB2B6-A0E9-49F7-A2E3-4C16C0E3C3AD}
 		{CFB1C2C5-0D90-462E-B22D-A66252C24252} = {D393D3E3-A961-46CE-8682-5766B2DCA0FC}
 		{92BF8E49-9120-4B95-9AA7-6A3160B6EECB} = {D393D3E3-A961-46CE-8682-5766B2DCA0FC}
+		{965A19A2-BF79-4199-A9F4-27DDBA54A9E0} = {D393D3E3-A961-46CE-8682-5766B2DCA0FC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E3C1B58-B172-4103-9DF2-CF3BC3D6748D}

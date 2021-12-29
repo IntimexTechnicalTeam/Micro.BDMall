@@ -23,5 +23,11 @@ namespace System
 
             return false;
         }
+
+        public static T ToEnum<T>(this object obj)
+        { 
+            var t = (T)Enum.Parse(typeof(T), obj.ToString());
+            return t;
+        }
     }
 }
