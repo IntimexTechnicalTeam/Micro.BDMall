@@ -17,6 +17,6 @@ namespace BDMall.BLL
 
     public interface IAuditTrailBLL : IDependency
     {
-        PageData<MemberLoginRecord> GetMemAuditTrail(MemLoginRecPager pageInfo);
+        PageData<MemberLoginRecordDto> GetMemAuditTrail(MemLoginRecPager pageInfo);
     }
 }

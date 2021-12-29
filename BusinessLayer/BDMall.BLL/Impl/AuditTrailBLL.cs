@@ -20,7 +20,7 @@ namespace BDMall.BLL
         public AuditTrailBLL(IServiceProvider services) : base(services)
         {
         }
-        public PageData<MemberLoginRecord> GetMemAuditTrail(MemLoginRecPager pageInfo)
+        public PageData<MemberLoginRecordDto> GetMemAuditTrail(MemLoginRecPager pageInfo)
         {
 
             PageData<MemberLoginRecordDto> result = new PageData<MemberLoginRecordDto>(pageInfo);
@@ -45,44 +45,44 @@ namespace BDMall.BLL
                 query = query.Where(d => d.Email == pageInfo.Email);
             }
             result.TotalRecord = query.Count();
-            if (!string.IsNullOrEmpty(pageInfo.SortName))
-            {
-                if (pageInfo.SortName == "LoginFromDisplay")
-                {
-                    pageInfo.SortName = "LoginFrom";
-                    query = query.SortBy("LoginFrom", SortType.ASC);
-                }
-                else
-                {
-                    query = query.OrderBy2(pageInfo.SortName,  pageInfo.SortOrder.ToUpper() == "DESC", date);
+            //if (!string.IsNullOrEmpty(pageInfo.SortName))
+            //{
+            //    if (pageInfo.SortName == "LoginFromDisplay")
+            //    {
+            //        pageInfo.SortName = "LoginFrom";
+            //        query = query.SortBy("LoginFrom", SortType.ASC);
+            //    }
+            //    else
+            //    {
+            //        query = query.OrderBy2(pageInfo.SortName,  pageInfo.SortOrder.ToUpper() == "DESC", date);
 
-                    if (pageInfo.SortName == "LogoutTypeDisplay")
-                    {
-                        pageInfo.SortName = "LogoutType";
-                        query = query.OrderBy2(pageInfo.SortName, pageInfo.SortOrder.ToUpper() == "DESC", LogoutType.UserLogout);
-                    }
-                    if (pageInfo.SortName == "LogoutTime")
-                    {
-                        pageInfo.SortName = "LogoutTime";
-                        DateTime? date = null;
+            //        if (pageInfo.SortName == "LogoutTypeDisplay")
+            //        {
+            //            pageInfo.SortName = "LogoutType";
+            //            query = query.OrderBy2(pageInfo.SortName, pageInfo.SortOrder.ToUpper() == "DESC", LogoutType.UserLogout);
+            //        }
+            //        if (pageInfo.SortName == "LogoutTime")
+            //        {
+            //            pageInfo.SortName = "LogoutTime";
+            //            DateTime? date = null;
                         
-                    }
-                    else if (pageInfo.SortName == "MemberName")
-                    {
-                        pageInfo.SortName = "Email";
-                        query = query.OrderBy(pageInfo.SortName, pageInfo.SortOrder.ToUpper() == "DESC");
-                    }
-                    else
-                    {
-                        query = query.OrderBy(pageInfo.SortName, pageInfo.SortOrder.ToUpper() == "DESC");
-                    }
-                }
-            }
-            else
-            {
+            //        }
+            //        else if (pageInfo.SortName == "MemberName")
+            //        {
+            //            pageInfo.SortName = "Email";
+            //            query = query.OrderBy(pageInfo.SortName, pageInfo.SortOrder.ToUpper() == "DESC");
+            //        }
+            //        else
+            //        {
+            //            query = query.OrderBy(pageInfo.SortName, pageInfo.SortOrder.ToUpper() == "DESC");
+            //        }
+            //    }
+            //}
+            //else
+            //{
 
-                query = query.OrderByDescending(d => d.CreateDate);
-            }
+            //    query = query.OrderByDescending(d => d.CreateDate);
+            //}
             var data = query.Skip(pageInfo.Offset).Take(pageInfo.PageSize).ToList();
             result.Data = new List<MemberLoginRecordDto>();
             foreach (var item in data)
