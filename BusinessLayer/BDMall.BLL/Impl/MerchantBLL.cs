@@ -19,6 +19,9 @@ namespace BDMall.BLL
         IMerchantPromotionRepository merchantPromotionRepository;
         ITranslationRepository translationRepository;
         IMerchantShipMethodMappingRepository merchantShipMethodMappingRepository;
+        ICodeMasterRepository codeMasterRepository;
+        IExpressCompanyRepository expressCompanyRepository;
+
         IUserBLL userBLL;
         ISettingBLL settingBLL;
         ICurrencyBLL currencyBLL;
@@ -30,6 +33,8 @@ namespace BDMall.BLL
             merchantRepository = Services.Resolve<IMerchantRepository>();
             translationRepository = Services.Resolve<ITranslationRepository>();
             merchantShipMethodMappingRepository = Services.Resolve<IMerchantShipMethodMappingRepository>();
+            codeMasterRepository = Services.Resolve<ICodeMasterRepository>();
+            expressCompanyRepository = Services.Resolve<IExpressCompanyRepository>();
             userBLL = Services.Resolve<IUserBLL>();
             currencyBLL = Services.Resolve<ICurrencyBLL>();
             settingBLL = Services.Resolve<ISettingBLL>();
@@ -228,6 +233,43 @@ namespace BDMall.BLL
             result.Succeeded = true;
             return result;
         }
+        public MerchantShipMethodMappingView GetAdminShipMethod()
+        {
+
+            MerchantShipMethodMappingView view = new MerchantShipMethodMappingView();
+            view.MerchantId = Guid.Empty;
+            view.MerchantShipMethods = new List<MerchantShipMethodView>();
+
+            var activeShipMethods = merchantShipMethodMappingRepository.GetShipMethidByMerchantId(Guid.Empty);
+            var defaultShipMethods = codeMasterRepository.GetCodeMasters(CodeMasterModule.System, CodeMasterFunction.ShippingMethod).OrderBy(o => o.Key).ToList();
+            var selfDefineShipMethods = expressCompanyRepository.GetActiveExpress();
+
+            foreach (var item in defaultShipMethods)
+            {
+                var method = activeShipMethods.FirstOrDefault(p => p.ShipCode == item.Key.Trim());
+                view.MerchantShipMethods.Add(new MerchantShipMethodView
+                {
+                    ShipMethodCode = item.Key,
+                    ShipMethodName = item.Description,
+                    IsEffect = method == null ? false : method.IsEffect
+
+                });
+            }
+            foreach (var item in selfDefineShipMethods)
+            {
+                var method = activeShipMethods.FirstOrDefault(p => p.ShipCode == item.Code.Trim());
+                view.MerchantShipMethods.Add(new MerchantShipMethodView
+                {
+                    ShipMethodCode = item.Code,
+                    ShipMethodName = item.Name ?? "",
+                    IsEffect = method == null ? false : method.IsEffect
+
+                });
+            }
+
+            return view;
+
+        }
 
         public MerchantShipMethodMappingView GetMerchantShipMethods(Guid merchantId)
         {
@@ -274,7 +316,7 @@ namespace BDMall.BLL
                     {
                         if (isMerchant && item.IsEffect == false)//当STPAdmin取消一种付运方式时，其它商家的该种付运方式都设为失效
                         {
-                            var otherShipMethods = baseRepository.GetList<MerchantActiveShipMethod>(x => x.ShipCode == item.ShipMethodCode && x.IsEffect).ToList();
+                            var otherShipMethods = baseRepository.GetList<MerchantActiveShipMethod>(x => x.ShipCode == item.ShipMethodCode && x.IsEffect && x.MerchantId != Guid.Empty).ToList();
                             foreach (var a in otherShipMethods) a.IsEffect = false;
                             disActiveShipMethods.AddRange(otherShipMethods);
                         }

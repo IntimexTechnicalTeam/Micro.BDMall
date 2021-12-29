@@ -1,0 +1,71 @@
+﻿
+@{
+    ViewBag.Title = "ActiveShipMethodSetting";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="app" v-cloak>
+
+    <div class="form-group col-sm-12 form-horizontal">
+        <ul class="list-group">
+            <li class="list-group-item" v-for="item,index in merchantShipMethodMapping.MerchantShipMethods">
+                <label V-bind:for="'shipMethod'+index">{{item.ShipMethodName}}</label>
+                <input type="checkbox" v-model="item.IsEffect" v-bind:id="'shipMethod'+index" />
+            </li>
+        </ul>
+        <input type="button" class="btn btn-primary" value="@BDMall.Resources.Action.Save" v-on:click="saveMapping" />
+    </div>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                merchId: "",
+                merchantShipMethodMapping: {
+                    MerchantId: WS.GuidEmpty,
+                    MerchantShipMethods: [],
+                }
+            },
+            methods: {
+
+                saveMapping: function () {
+                    WS.Post("/adminapi/Merchant/SaveShipMethodMapping", vm.merchantShipMethodMapping, function (response) {
+                        if (response.Succeeded == true) {
+                            showInfo('@BDMall.Resources.Message.SaveSuccess');
+                        } else
+                        {
+                            showWarn(response.Message);
+                        }
+                    }, function () { })
+                },
+                getShipMethod: function () {
+                    WS.Get("/adminapi/Merchant/GetAdminShipMethod", {}, function (response) {
+                        if (response.Succeeded == true) {
+                            vm.merchantShipMethodMapping = response.ReturnValue;
+                        } else {
+                            showWarn(response.Message);
+                        }
+
+                    }, function () { })
+                }
+            }
+        });
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+
+        $(document).ready(function () {
+            vm.getShipMethod();
+        })
+    </script>
+}
+
+
+
+

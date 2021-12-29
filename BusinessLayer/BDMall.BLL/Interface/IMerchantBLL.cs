@@ -25,6 +25,12 @@ namespace BDMall.BLL
         Task<SystemResult> DeactiveMerchantAsync(Guid merchID);
 
         Task<SystemResult> LogicalDelMerchRec(string recIDsList);
+        
+        /// <summary>
+        /// 获取系统所有ShipMethod
+        /// </summary>
+        /// <returns></returns>
+        MerchantShipMethodMappingView GetAdminShipMethod();
 
         MerchantShipMethodMappingView GetMerchantShipMethods(Guid merchantId);
 

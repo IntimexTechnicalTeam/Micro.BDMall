@@ -14,7 +14,7 @@ namespace BDMall.BLL
 {
     public class SettingBLL : BaseBLL, ISettingBLL
     {
-        private ICodeMasterRepository _codeMasterRepo;
+        ICodeMasterRepository _codeMasterRepo;
         //private ITranslationRepository _translationRepo;
 
         public SettingBLL(IServiceProvider services) : base(services)
@@ -55,18 +55,34 @@ namespace BDMall.BLL
             return statusList;
         }
 
-        //public List<KeyValue> GetSupportLanguages()
-        //{
-        //    var langs = GetSupportLanguage();
-        //    var list = langs.Select(s => new KeyValue
-        //    {
-        //        Text = s.Text,
-        //        Id = ((Language)Enum.Parse(typeof(Language), s.Code)).ToInt().ToString(),
-        //    });
 
-        //    return list.ToList();
-        //}
+        /// <summary>
+        /// 獲取計劃任務資料列表
+        /// </summary>
+        /// <returns></returns>
+        public List<CodeMasterDto> GetScheduleJobs()
+        {
+            var settingLst = _codeMasterRepo.GetCodeMasters(CodeMasterModule.System, CodeMasterFunction.Schedule);
+            if (settingLst != null)
+            {
+                return settingLst;
+            }
+            return new List<CodeMasterDto>();
+        }
 
+        /// <summary>
+        /// 獲取服務時間間隔單位列表
+        /// </summary>
+        /// <returns></returns>
+        public List<CodeMasterDto> GetServiceIntervalUnits()
+        {
+            var settingLst = _codeMasterRepo.GetCodeMasters(CodeMasterModule.System, CodeMasterFunction.ServiceIntervalUnit);
+            if (settingLst != null)
+            {
+                return settingLst;
+            }
+            return new List<CodeMasterDto>();
+        }
 
 
         public double GetProductImageLimtSize()

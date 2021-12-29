@@ -273,16 +273,16 @@ namespace BDMall.BLL
         ///// </summary>
         //string GetExtSysFileExcFolder();
 
-        ///// <summary>
-        ///// 獲取計劃任務資料列表
-        ///// </summary>
-        ///// <returns></returns>
-        //List<CodeMasterDto> GetScheduleJobs();
-        ///// <summary>
-        ///// 獲取計劃任務時間間隔單位列表
-        ///// </summary>
-        ///// <returns></returns>
-        //List<CodeMasterDto> GetServiceIntervalUnits();
+        /// <summary>
+        /// 獲取計劃任務資料列表
+        /// </summary>
+        /// <returns></returns>
+        List<CodeMasterDto> GetScheduleJobs();
+        /// <summary>
+        /// 獲取計劃任務時間間隔單位列表
+        /// </summary>
+        /// <returns></returns>
+        List<CodeMasterDto> GetServiceIntervalUnits();
 
         ///// <summary>
         ///// 獲取審批狀態值列表

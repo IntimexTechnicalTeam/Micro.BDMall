@@ -37,6 +37,7 @@ namespace BDMall.Repository
 
         public DbSet<RolePermission> RolePermissions { get; set; }
         public DbSet<SystemMenu> SystemMenus { get; set; }
+        public DbSet<SystemEmail> SystemEmails { get; set; }
 
         public DbSet<Translation> Translations { get; set; }
 
@@ -96,5 +97,11 @@ namespace BDMall.Repository
         public DbSet<MerchantPromotionProduct> MerchantPromotionProducts { get; set; }
 
         public DbSet<ApproveHistory> ApproveHistories { get; set;}
+
+        public DbSet<ScheduleJob> ScheduleJobs { get; set; }
+
+        public DbSet<MemberLoginRecord> MemberLoginRecords { get; set; }
+        
+
     }
 }

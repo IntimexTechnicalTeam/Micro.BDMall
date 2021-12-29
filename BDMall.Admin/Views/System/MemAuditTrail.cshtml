@@ -1,0 +1,178 @@
+﻿@{
+    ViewBag.Title = "Member Audit Trail";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+<div class="container" id="myApp">
+    <div class="row">
+        <div class="col-lg-12 col-md-12 col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading" v-on:click="showCondition">
+                    <i class="glyphicon glyphicon-search"></i>
+                    @BDMall.Resources.Label.Filters
+                    <span id="toggleSearch" class="pull-right glyphicon glyphicon-chevron-down"></span>
+                </div>
+                <div class="panel-body" style="display:none">
+                    <table class="table">
+                        <tr>
+                            <td>@BDMall.Resources.Label.Email</td>
+                            <td>
+                                <input type="text" id="email" v-model="condition.Email" />
+                            </td>
+                            <td> </td>
+                            <td></td>
+                        </tr>
+
+                        <tr>
+                            <td colspan="4" style="text-align:right">
+                                <input type="button" id="btnSearch" v-on:click="search" class="btn btn-default" value="@BDMall.Resources.Action.Search" />
+                                <input type="button" id="btnReset" v-on:click="reset" class="btn btn-default" value="@BDMall.Resources.Action.Reset" />
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+
+        <div id="myTabContent" class="tab-content">
+            <table id="tblLog" class="col-md-12"></table>
+        </div>
+    </div>
+    <div class="row text-right">
+        <div class="btn btn-info" onclick="clowWin();"><i class="glyphicon glyphicon glyphicon-remove"></i> @BDMall.Resources.Action.CloseTab</div>
+    </div>
+</div>
+
+@section scripts{
+
+    <script type="text/javascript">
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+        var app = new Vue({
+            el: "#myApp",
+            data: {
+                items: [],
+                status: "",
+                condition: { PageSize: 30, Page: 1 }
+            },
+            methods: {
+                showCondition: function () {
+                    $("#toggleSearch").toggleClass("glyphicon-chevron-down");
+                    $("#toggleSearch").toggleClass("glyphicon-chevron-up");
+
+                    $(".panel-body").toggle(500);
+                },
+                search: function () {
+                    //this.loadData();
+                    $("#tblLog").bootstrapTable("refresh", { url: "/AdminApi/AuditTrail/GetMemAuditTrail", pageNumber:1 });
+                },
+                reset: function () {
+                    this.condition.Email = ""; 
+                }
+            },
+            mounted: function () {
+                //this.loadData();
+                this.search();
+            }
+
+        });
+
+
+
+        var SelfAttrTableInit = function () {
+
+            var oTableInit = new Object();
+            oTableInit.Init = function () {
+
+                $("#tblLog").bootstrapTable({
+                    method: 'post',                      //请求方式（*）
+                    //url: '/adminapi/Attribute/GetSelfDefineAttribute',         //请求后台的URL（*）
+                    queryParams: oTableInit.queryParams,//传递参数（*）
+                    //queryParamsType:'limit',
+                    //toolbar: '#toolbar',                //工具按钮用哪个容器
+                    striped: true,                      //是否显示行间隔色
+                    cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                    sortable: true,                     //是否启用排序
+                    sortOrder: "desc",                   //排序方式
+                    sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+                    pageNumber: 1,                       //初始化加载第一页，默认第一页
+                    pageSize: 30,                       //每页的记录行数（*）
+                    pageList: [30, 40, 50, 100],        //可供选择的每页的行数（*）
+                    smartDisplay: false,
+                    showRefresh: true,                  //是否显示刷新按钮
+                    clickToSelect: true,                //是否启用点击选中行
+                    height: 700,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+                    uniqueId: "Id",                     //每一行的唯一标识，一般为主键列
+                    cardView: false,                    //是否显示详细视图
+                    detailView: false,                   //是否显示父子表
+                    pagination: true,                   //是否显示分页（*）
+                    dataField: "Data",
+                    totalField: "TotalRecord",
+                    columns: [{
+                        field: 'Id',
+                        title: 'id',
+                        visible: false
+                    },  {
+                            field: 'MemberName',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.Email'
+
+                    }, {
+                            field: 'LoginFromDisplay',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.LoginFrom'
+                    },{
+                            field: 'LoginTime',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.LoginTime'
+
+                        },
+                    {
+                        field: 'LogoutTime',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.LogoutTime'
+
+                    },{
+                        field: 'LogoutTypeDisplay',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.LogoutType'
+
+                    },    {
+                        field: 'Duration',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.Duration'
+                    } ]
+                });
+            };
+
+            oTableInit.queryParams = function (params) {
+                var page = 1;
+                if (params.offset > 0) {
+                    page = parseInt(params.offset / params.limit) + 1;
+                }
+
+                var sortedBy = params.sort;
+                var sorted = params.order;
+
+                app.condition.Page = page;
+                app.condition.SortName = sortedBy;
+                app.condition.SortOrder = sorted;
+
+                return app.condition;
+            };
+            return oTableInit;
+        };
+        $(document).ready(function () {
+
+            var oTable = new SelfAttrTableInit();
+            oTable.Init();
+            app.search();
+        });
+
+    </script>
+}

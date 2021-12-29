@@ -1,0 +1,114 @@
+﻿
+@{
+    ViewBag.Title = "ScheduleJob";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="divMain" v-cloak>
+    <div class="panel-group col-lg-6" v-bind:id="'job'+job.Service" v-for="job in items">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <a data-toggle="collapse" data-parent="#accordion" v-bind:href="'#cps'+job.Service">
+                        {{job.Name}}
+                    </a>
+                </h4>
+            </div>
+            <div v-bind:id="'cps'+job.Service" class="panel-collapse collapse in">
+                <div class="panel-body">
+                    <div class="form-group col-lg-12 form-horizontal">
+                        <label v-bind:for="'txt'+job.Service" class="control-label col-lg-2">@BDMall.Resources.Label.ScheduleInterval</label>
+                        <div class="col-lg-2">
+                            <input type="number" v-bind:id="'txt'+job.Service" class="form-control" v-model="job.Value" />
+                        </div>
+                        <div class="col-lg-2">
+                            <select v-bind:id="'cboUnit'+job.Service" data-width="80"></select>
+                        </div>
+                        <div class="col-lg-2">
+                            <button type="button" class="btn btn-primary" v-on:click="save(job)">@BDMall.Resources.Action.Confirm</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <label class="control-label col-lg-2">@BDMall.Resources.Label.Remarks</label>
+                    <label class="control-label">{{job.Remarks}}</label>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        var vm = new Vue({
+            el: "#divMain",
+            data: {
+                items: [{
+                    Service: "",
+                    Name: "",
+                    Remarks: "",
+                    Value: "",
+                    MonthValue: "",
+                    WeekValue: "",
+                    DayValue: "",
+                    HourValue: "",
+                    MinuteValue: ""
+                }]
+            },
+            methods: {
+                getScheduleJobList: function () {
+                    WS.AjaxP("get", "/adminapi/ScheduleJob/GetScheduleJobList", null, function (response) {
+                        vm.items = response;
+
+                        if (response) {
+                            vm.items.forEach(function (val) {
+                                InitBootstrapSelect("cboUnit" + val.Service, "/adminapi/ScheduleJob/GerServiceIntervalTypes", 1, false, false, null, function () {
+                                    $('#cboUnit' + val.Service).selectpicker('val', val.Type);
+                                });
+                            });
+                        }
+
+                        vm.$nextTick(function () {
+                        });
+                    }, function () { });
+                },
+                //保存前檢查
+                //saveCheck: function () {
+                //    if (myValidate.form()) {
+                //        $("#frmInput").submit();
+                //    }
+                //},
+                save: function (job) {
+                    if (job) {
+                        job.Type = $('#cboUnit' + job.Service).val();
+
+                        WS.AjaxP("post", "/adminapi/ScheduleJob/UpdateScheduleJob", job, function (response) {
+                            if (response.Succeeded == true) {
+                                showInfo('@BDMall.Resources.Message.SaveSuccess', true);
+                            }
+                            else {
+                                showWarn('@BDMall.Resources.Message.SaveFail' + "\n\n" + response.Message);
+                            }
+                        }, function () { });
+                    }
+                    else {
+                        showWarn('@BDMall.Resources.Message.SaveFail' + "\n\n" + response.Message);
+                    }
+                }
+            }
+        });
+
+        $(document).ready(function () {
+            vm.getScheduleJobList();
+        });
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+    </script>
+}
