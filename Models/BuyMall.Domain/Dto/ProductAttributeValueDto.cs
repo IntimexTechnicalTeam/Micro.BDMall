@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BDMall.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -38,5 +39,15 @@ namespace BDMall.Domain
         public Guid CreateBy { get; set; }
 
         public Guid? UpdateBy { get; set; }
+
+       
+        public string ImagePath { get; set; }
+        
+        public RecordStatus Status { get; set; }
+
+        public List<MutiLanguage> Descs { get; set; } = new List<MutiLanguage>();
+
+     
+        public decimal AddPrice { get; set; }
     }
 }

@@ -66,9 +66,12 @@ namespace BDMall.Repository
             if (CurrentUser.IsMerchant)
                 list = list.Where(x => x.MerchantId == CurrentUser.MechantId);
 
+            foreach (var item in data)
+            {
+                item.AttributeValues = AutoMapperExt.MapTo<List<ProductAttributeValueDto>>(list);
+            }
 
             result.Data = data;
-
             return result;
         }
 
