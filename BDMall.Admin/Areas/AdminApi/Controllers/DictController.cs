@@ -16,6 +16,7 @@ using BDMall.Enums;
 using System.Threading;
 using System.Globalization;
 using BDMall.BLL;
+using System.Linq;
 
 namespace BDMall.Admin.Areas.AdminAPI.Controllers
 {
@@ -240,16 +241,8 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
             string userLang = CurrentUser.Lang.ToString();
             try
             {
-
                 var langs = settingBLL.GetSupportLanguages();
-
-                foreach (var item in langs)
-                {
-                    KeyValue entity = new KeyValue();
-                    entity.Id = item.Code;
-                    entity.Text = item.Text;
-                    list.Add(entity);
-                }
+                list = langs.Select(item => new KeyValue { Id = item.Id.ToString(), Text = item.Text }).ToList();
             }
             catch (BLException blex)
             {

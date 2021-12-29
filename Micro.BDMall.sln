@@ -59,6 +59,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BDMall.Utility", "Infrastru
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UEditorNetCore", "Infrastructure\UEditorNetCore\UEditorNetCore.csproj", "{965A19A2-BF79-4199-A9F4-27DDBA54A9E0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BDMall.Runtime", "Infrastructure\BDMall.Runtime\BDMall.Runtime.csproj", "{4F9AAEF1-6D27-4128-BD15-89EC92178FC8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -161,6 +163,10 @@ Global
 		{965A19A2-BF79-4199-A9F4-27DDBA54A9E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{965A19A2-BF79-4199-A9F4-27DDBA54A9E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{965A19A2-BF79-4199-A9F4-27DDBA54A9E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F9AAEF1-6D27-4128-BD15-89EC92178FC8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F9AAEF1-6D27-4128-BD15-89EC92178FC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F9AAEF1-6D27-4128-BD15-89EC92178FC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F9AAEF1-6D27-4128-BD15-89EC92178FC8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -186,6 +192,7 @@ Global
 		{CFB1C2C5-0D90-462E-B22D-A66252C24252} = {D393D3E3-A961-46CE-8682-5766B2DCA0FC}
 		{92BF8E49-9120-4B95-9AA7-6A3160B6EECB} = {D393D3E3-A961-46CE-8682-5766B2DCA0FC}
 		{965A19A2-BF79-4199-A9F4-27DDBA54A9E0} = {D393D3E3-A961-46CE-8682-5766B2DCA0FC}
+		{4F9AAEF1-6D27-4128-BD15-89EC92178FC8} = {D393D3E3-A961-46CE-8682-5766B2DCA0FC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E3C1B58-B172-4103-9DF2-CF3BC3D6748D}

@@ -17,6 +17,7 @@ namespace BDMall.BLL
 
         public PreHeatMerchantService(IServiceProvider services) : base(services)
         {
+            translationRepository = Services.Resolve<ITranslationRepository>();
         }
 
 

@@ -1,4 +1,5 @@
 ﻿using BDMall.Domain;
+
 using Intimex.Common;
 using System;
 using System.Collections.Generic;
@@ -17,5 +18,7 @@ namespace BDMall.BLL
         List<KeyValue> GetNonInveAttribute();
 
         List<ProductAttributeValueDto> GetInveAttributeValueSummary();
+
+        PageData<ProductAttributeDto> SearchAttribute(ProductAttributeCond attrCond);
     }
 }
