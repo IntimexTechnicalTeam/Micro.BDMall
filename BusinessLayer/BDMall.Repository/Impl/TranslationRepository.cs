@@ -199,7 +199,7 @@ namespace BDMall.Repository
                 }
 
                 list.Add(trans);
-                string key = $"{CacheKey.Translations}_{item.Lang}";
+                string key = $"{CacheKey.Translations}_{item.Lang.Code}";
                 RedisHelper.HSet(key, trans.TransId.ToString(), trans);
             }
             return list;

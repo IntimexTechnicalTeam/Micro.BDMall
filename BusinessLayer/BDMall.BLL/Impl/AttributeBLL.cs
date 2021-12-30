@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Web.Framework;
 
 namespace BDMall.BLL
 {
@@ -69,6 +70,23 @@ namespace BDMall.BLL
             //    item.MerchantName = baseRepository.GetModelById<Merchant>(item.MerchantId).n;
             //}
             return attrValues;
+        }
+
+        public PageData<ProductAttributeDto> SearchAttribute(ProductAttributeCond attrCond)
+        {
+            var list = new PageData<ProductAttributeDto>();
+            List<ProductAttribute> prodAttributes = new List<ProductAttribute>();
+
+            //list = attributeRepository.SearchAttribute(attrCond);
+
+            //foreach (var item in list.Data)
+            //{
+            //    prodAttributes.Add(GenProductAttribute(item));
+            //}
+
+            //list.Data = prodAttributes;
+
+            return list;
         }
     }
 }

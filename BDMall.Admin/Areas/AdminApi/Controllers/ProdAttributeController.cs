@@ -1,9 +1,11 @@
 ﻿using Autofac;
 using BDMall.BLL;
+using BDMall.Domain;
 using Intimex.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using Web.Framework;
 using Web.Mvc;
 
 namespace BDMall.Admin.Areas.AdminApi.Controllers
@@ -37,6 +39,14 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
             List<KeyValue> list = new List<KeyValue>();
             list = attributeBLL.GetNonInveAttribute();
             return list;
+        }
+
+        [HttpPost]
+
+        public PageData<ProductAttributeDto> Search(ProductAttributeCond cond)
+        {
+            var result =attributeBLL.SearchAttribute(cond);
+            return result;       
         }
     }
 }

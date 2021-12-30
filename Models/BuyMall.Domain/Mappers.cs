@@ -29,6 +29,7 @@ namespace Domain
             
 
 
+            ConfigMap<ProductAttributeDto, ProductAttribute>();
         }
         void ConfigMap<TSource, TDestination>()
         {
