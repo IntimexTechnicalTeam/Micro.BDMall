@@ -1,6 +1,7 @@
 ﻿
 using System;
 using BDMall.Model;
+using BDMall.Model.SystemMNG;
 using Microsoft.EntityFrameworkCore;
 
 namespace BDMall.Repository
@@ -101,7 +102,10 @@ namespace BDMall.Repository
         public DbSet<ScheduleJob> ScheduleJobs { get; set; }
 
         public DbSet<MemberLoginRecord> MemberLoginRecords { get; set; }
-        
+
+        public virtual DbSet<CurrencyExchangeRate> CurrencyExchangeRates { get; set; }
+
+
 
     }
 }

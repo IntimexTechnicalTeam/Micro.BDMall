@@ -1,6 +1,7 @@
 ﻿using BDMall.Domain;
 using BDMall.Enums;
 using BDMall.Model;
+using BDMall.Model.SystemMNG;
 using BDMall.Repository;
 using Intimex.Common;
 using System;
@@ -16,15 +17,17 @@ namespace BDMall.BLL
     {
         private static IDictionary<string, List<SimpleCurrency>> AllCurrencies;
         private static SimpleCurrency DefaultCurrency;
-
+        ITranslationRepository translationRepository;
         //public ICurrExchangeRateRwpository CurrExchangeRateRwpository { get; set; }
-        public ISettingBLL settingBLL { get; set; }
+        ISettingBLL settingBLL;
 
         ICodeMasterRepository _codeMasterRepository;
 
         public CurrencyBLL(IServiceProvider services) : base(services)
         {
-
+            settingBLL = Services.Resolve<ISettingBLL>();
+            _codeMasterRepository = Services.Resolve<ICodeMasterRepository>();
+            translationRepository = Services.Resolve<ITranslationRepository>();
         }
 
         public SimpleCurrency GetSimpleCurrency(string code)
@@ -101,36 +104,38 @@ namespace BDMall.BLL
             return data;
         }
         //#endregion
-        //public List<CurrencyExchangeRate> GetCurrExchangeRate(string baseCode)
-        //{
-        //    var currency = new List<CurrencyExchangeRate>();
-        //    var list = GetCurrList();
-        //    foreach (var item in list)
-        //    {
-        //        CurrencyExchangeRate rate = CurrExchangeRateRwpository.Entities.FirstOrDefault(d => d.FromCurCode == baseCode && d.ToCurCode == item.Id && d.IsDeleted == false);
-        //        if (rate != null)
-        //        {
-        //            rate.ToName = GetName(rate.ToCurCode);
-        //            currency.Add(rate);
-        //        }
-        //        else
-        //        {
-        //            rate = new CurrencyExchangeRate();
-        //            rate.FromCurCode = baseCode;
-        //            rate.ToCurCode = item.Text;
-        //            rate.Rate = 1;
-        //            rate.ToName = GetName(rate.ToCurCode);
-        //            currency.Add(rate);
-        //        }
-        //    }
-        //    return currency;
-        //}
-        //public List<KeyValue> GetCurrList()
-        //{
-        //    var data = _codeMasterRepository.GetCodeMasters(CodeMasterModule.System, CodeMasterFunction.Currency).ToList();
-        //    List<KeyValue> list = data.Select(d => new KeyValue { Id = d.Key, Text = d.Key }).ToList();
-        //    return list;
-        //}
+        public List<CurrencyExchangeRateDto> GetCurrExchangeRate(string baseCode)
+        {
+            var currency = new List<CurrencyExchangeRateDto>();
+            var list = GetCurrList();
+            foreach (var item in list)
+            {
+                var rate = baseRepository.GetList<CurrencyExchangeRate>().FirstOrDefault(d => d.FromCurCode == baseCode && d.ToCurCode == item.Id && d.IsDeleted == false);
+                if (rate != null)
+                {
+                    var rateDto = AutoMapperExt.MapTo<CurrencyExchangeRateDto>(rate);
+
+                    rateDto.ToName = GetName(rate.ToCurCode);
+                    currency.Add(rateDto);
+                }
+                else
+                {
+                    var rateDto = new CurrencyExchangeRateDto();
+                    rateDto.FromCurCode = baseCode;
+                    rateDto.ToCurCode = item.Text;
+                    rateDto.Rate = 1;
+                    rateDto.ToName = GetName(rate.ToCurCode);
+                    currency.Add(rateDto);
+                }
+            }
+            return currency;
+        }
+        public List<KeyValue> GetCurrList()
+        {
+            var data = _codeMasterRepository.GetCodeMasters(CodeMasterModule.System, CodeMasterFunction.Currency).ToList();
+            List<KeyValue> list = data.Select(d => new KeyValue { Id = d.Key, Text = d.Key }).ToList();
+            return list;
+        }
 
         public string GetDefaultCurrencyCode()
         {
@@ -185,172 +190,171 @@ namespace BDMall.BLL
             return currency.Descriptions.FirstOrDefault(d => d.Language == CurrentUser.Lang).Desc ?? "";
         }
 
-        //public void UpdateRate(CurrencyListView items)
-        //{
-        //    UnitOfWork.IsUnitSubmit = true;
-        //    foreach (var item in items.list)
-        //    {
-        //        var ent = CurrExchangeRateRwpository.Find(item.Id);
-        //        if (ent != null)
-        //        {
-        //            ent.Rate = item.Rate;
-        //            CurrExchangeRateRwpository.Update(ent);
-        //        }
-        //        else
-        //        {
-        //            ent = new CurrencyExchangeRate();
-        //            ent.Id = Guid.NewGuid();
-        //            ent.ToCurCode = item.ToCurCode;
-        //            ent.FromCurCode = item.FromCurCode;
-        //            ent.Rate = item.Rate;
-        //            CurrExchangeRateRwpository.Insert(ent);
-        //        }
+        public void UpdateRate(CurrencyListView items)
+        {
+            UnitOfWork.IsUnitSubmit = true;
+            var cachList = new List<CurrencyExchangeRate>();
+            foreach (var item in items.list)
+            {
+                var ent = baseRepository.GetList<CurrencyExchangeRate>().FirstOrDefault(p => p.Id == item.Id);
+                if (ent != null)
+                {
+                    ent.Rate = item.Rate;
+                    baseRepository.Update(ent);
+                }
+                else
+                {
+                    ent = new CurrencyExchangeRate();
+                    ent.Id = Guid.NewGuid();
+                    ent.ToCurCode = item.ToCurCode;
+                    ent.FromCurCode = item.FromCurCode;
+                    ent.Rate = item.Rate;
+                    baseRepository.Insert(ent);
+                }
+                cachList.Add(ent);
+            }
 
-        //        UpdateCurrencyCache(ent);
+            UnitOfWork.Submit();
 
-        //    }
-            
-        //    UnitOfWork.Submit();
-        //}
+            foreach (var item in cachList)
+            {
+                UpdateCurrencyCache(item);
+            }
+        }
 
-        ///// <summary>
-        ///// 更新缓存中的CurrencyRate
-        ///// </summary>
-        ///// <param name="model"></param>
-        //private void UpdateCurrencyCache(CurrencyExchangeRate model)
-        //{
-        //    string key = CacheKey.System.ToString();
+        /// <summary>
+        /// 更新缓存中的CurrencyRate
+        /// </summary>
+        /// <param name="model"></param>
+        private void UpdateCurrencyCache(CurrencyExchangeRate model)
+        {
+            string key = CacheKey.System.ToString();
 
-        //    var fields = settingBLL.GetSupportLanguages().Select(s => $"{CacheField.Info.ToString()}_{s.Code}").ToArray();
-            
-        //    foreach (var item in fields)
-        //    {
-        //        var cacheData = CacheClient.RedisHelper.HGet<SystemInfoDto>(key, item);
-        //        if (cacheData != null )
-        //        {
-        //            if (cacheData.simpleCurrencies.Any(x => x.Code == model.ToCurCode && x.ExchangeRate != model.Rate))
-        //            {
-        //                cacheData.simpleCurrencies.FirstOrDefault(x => x.Code == model.ToCurCode).ExchangeRate = model.Rate;
-        //                CacheClient.RedisHelper.HSet(key, item, cacheData);                     
-        //            }
-        //        }                
-        //    }           
-        //}
+            var fields = settingBLL.GetSupportLanguages().Select(s => $"{CacheField.Info.ToString()}_{s.Code}").ToArray();
 
-        //public void SetDefault(string code)
-        //{
-        //    UnitOfWork.IsUnitSubmit = true;
-        //    var newDefault = _codeMasterRepository.GetCodeMaster(CodeMasterModule.Setting.ToString(), CodeMasterFunction.Currency.ToString(), "DefaultCurrency");
-        //    if (newDefault != null)
-        //    {
-        //        newDefault.Value = code;
-        //        _codeMasterRepository.Update(newDefault);
-        //    }
-        //    UnitOfWork.Submit();
-        //}
+            foreach (var item in fields)
+            {
+                var cacheData = RedisHelper.HGet<SystemInfoDto>(key, item);
+                if (cacheData != null)
+                {
+                    if (cacheData.simpleCurrencies.Any(x => x.Code == model.ToCurCode && x.ExchangeRate != model.Rate))
+                    {
+                        cacheData.simpleCurrencies.FirstOrDefault(x => x.Code == model.ToCurCode).ExchangeRate = model.Rate;
+                        RedisHelper.HSet(key, item, cacheData);
+                    }
+                }
+            }
+        }
 
-        ///// <summary>
-        ///// 獲取指定編號的貨幣信息
-        ///// </summary>
-        //public CurrencyView GetCurrencyByCode(string code)
-        //{
-        //    try
-        //    {
-        //        CurrencyView currencyView = new CurrencyView();
-        //        if (!string.IsNullOrEmpty(code))
-        //        {
-        //            var cmRec = _codeMasterRepository.Entities.FirstOrDefault(x => x.Module == CodeMasterModule.System.ToString() && x.Function == CodeMasterFunction.Currency.ToString() && x.Key == code.Trim() && x.IsActive && !x.IsDeleted);
-        //            if (cmRec != null)
-        //            {
-        //                string defaultCode = GetDefaultCurrencyCode();
-        //                var rateRec = CurrExchangeRateRwpository.Entities.FirstOrDefault(x => x.ToCurCode == cmRec.Key && x.FromCurCode == defaultCode && x.IsActive && !x.IsDeleted);
-        //                if (rateRec != null)
-        //                {
-        //                    var descList = TranslationRepository.GetMutiLanguage(cmRec.DescTransId);
+        public void SetDefault(string code)
+        {
+            UnitOfWork.IsUnitSubmit = true;
+            var newDefault = _codeMasterRepository.GetCodeMaster(CodeMasterModule.Setting.ToString(), CodeMasterFunction.Currency.ToString(), "DefaultCurrency");
+            if (newDefault != null)
+            {
+                newDefault.Value = code;
+                baseRepository.Update(newDefault);
+            }
+            UnitOfWork.Submit();
+        }
 
-        //                    currencyView = new CurrencyView()
-        //                    {
-        //                        Id = cmRec.Id,
-        //                        RateId = rateRec.Id,
-        //                        Rate = rateRec.Rate,
-        //                        Code = cmRec.Key,
-        //                        Description = descList.FirstOrDefault(x => x.Language == CurrentUser.Language)?.Desc ?? string.Empty,
-        //                        Remark = cmRec.Remark,
-        //                        FromCurCode = rateRec.FromCurCode,
-        //                        ToCurCode = rateRec.ToCurCode,
-        //                        Descriptions = descList,
-        //                    };
-        //                }
-        //            }
-        //        }
-        //        else
-        //        {
-        //            currencyView.Descriptions = TranslationRepository.GetMutiLanguage(Guid.Empty);
-        //        }
-        //        return currencyView;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw ex;
-        //    }
-        //}
-        ///// <summary>
-        ///// 搜尋貨幣信息列表
-        ///// </summary>
-        //public List<CurrencyView> SearchCurrencyList(CurrencyPageInfo pageInfo)
-        //{
-        //    try
-        //    {
-        //        var currencyList = new List<CurrencyView>();
-        //        if (pageInfo != null && pageInfo.Condition != null)
-        //        {
-        //            var cond = pageInfo.Condition;
+        /// <summary>
+        /// 獲取指定編號的貨幣信息
+        /// </summary>
+        public CurrencyView GetCurrencyByCode(string code)
+        {
 
-        //            var cmList = GetCodeMasterList(CodeMasterModule.System, CodeMasterFunction.Currency);
-        //            if (cmList?.Count > 0)
-        //            {
-        //                if (!string.IsNullOrEmpty(cond.Code))
-        //                {
-        //                    cmList = cmList.Where(x => x.Key.Contains(cond.Code)).ToList();
-        //                }
-        //                if (cmList?.Count > 0)
-        //                {
-        //                    string defaultCode = GetDefaultCurrencyCode();
+            CurrencyView currencyView = new CurrencyView();
+            if (!string.IsNullOrEmpty(code))
+            {
+                var cmRec = baseRepository.GetList<CodeMaster>().FirstOrDefault(x => x.Module == CodeMasterModule.System.ToString() && x.Function == CodeMasterFunction.Currency.ToString() && x.Key == code.Trim() && x.IsActive && !x.IsDeleted);
+                if (cmRec != null)
+                {
+                    string defaultCode = GetDefaultCurrencyCode();
+                    var rateRec = baseRepository.GetList<CurrencyExchangeRate>().FirstOrDefault(x => x.ToCurCode == cmRec.Key && x.FromCurCode == defaultCode && x.IsActive && !x.IsDeleted);
+                    if (rateRec != null)
+                    {
+                        var descList = translationRepository.GetMutiLanguage(cmRec.DescTransId);
 
-        //                    foreach (var cmRec in cmList)
-        //                    {
-        //                        var rateRec = CurrExchangeRateRwpository.Entities.FirstOrDefault(x => x.ToCurCode == cmRec.Key && x.FromCurCode == defaultCode && x.IsActive && !x.IsDeleted);
-        //                        if (rateRec != null)
-        //                        {
-        //                            var descList = TranslationRepository.GetMutiLanguage(cmRec.DescTransId);
+                        currencyView = new CurrencyView()
+                        {
+                            Id = cmRec.Id,
+                            RateId = rateRec.Id,
+                            Rate = rateRec.Rate,
+                            Code = cmRec.Key,
+                            Description = descList.FirstOrDefault(x => x.Language == CurrentUser.Lang)?.Desc ?? string.Empty,
+                            Remark = cmRec.Remark,
+                            FromCurCode = rateRec.FromCurCode,
+                            ToCurCode = rateRec.ToCurCode,
+                            Descriptions = descList,
+                        };
+                    }
+                }
+            }
+            else
+            {
+                currencyView.Descriptions = translationRepository.GetMutiLanguage(Guid.Empty);
+            }
+            return currencyView;
 
-        //                            var currencyVw = new CurrencyView()
-        //                            {
-        //                                Id = cmRec.Id,
-        //                                RateId = rateRec.Id,
-        //                                Rate = rateRec.Rate,
-        //                                Code = cmRec.Key,
-        //                                Description = descList.FirstOrDefault(x => x.Language == CurrentUser.Language)?.Desc ?? string.Empty,
-        //                                Remark = cmRec.Remark,
-        //                                FromCurCode = rateRec.FromCurCode,
-        //                                ToCurCode = rateRec.ToCurCode,
-        //                                Descriptions = descList,
-        //                                CreateDateStr = cmRec.CreateDate.ToString(BDMall.Runtime.Setting.DefaultDateTimeFormat),
-        //                                UpdateDateStr = cmRec.UpdateDate.Value.ToString(BDMall.Runtime.Setting.DefaultDateTimeFormat),
-        //                            };
-        //                            currencyList.Add(currencyVw);
-        //                        }
-        //                    }
-        //                }
-        //            }
-        //        }
-        //        return currencyList;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw ex;
-        //    }
-        //}
+        }
+        /// <summary>
+        /// 搜尋貨幣信息列表
+        /// </summary>
+        public List<CurrencyView> SearchCurrencyList(CurrencyPageInfo pageInfo)
+        {
+            try
+            {
+                var currencyList = new List<CurrencyView>();
+                if (pageInfo != null && pageInfo.Condition != null)
+                {
+                    var cond = pageInfo.Condition;
+
+                    var cmList = GetCodeMasterList(CodeMasterModule.System, CodeMasterFunction.Currency);
+                    if (cmList?.Count > 0)
+                    {
+                        if (!string.IsNullOrEmpty(cond.Code))
+                        {
+                            cmList = cmList.Where(x => x.Key.Contains(cond.Code)).ToList();
+                        }
+                        if (cmList?.Count > 0)
+                        {
+                            string defaultCode = GetDefaultCurrencyCode();
+
+                            foreach (var cmRec in cmList)
+                            {
+                                var rateRec = baseRepository.GetList<CurrencyExchangeRate>().FirstOrDefault(x => x.ToCurCode == cmRec.Key && x.FromCurCode == defaultCode && x.IsActive && !x.IsDeleted);
+                                if (rateRec != null)
+                                {
+                                    var descList = translationRepository.GetMutiLanguage(cmRec.DescTransId);
+
+                                    var currencyVw = new CurrencyView()
+                                    {
+                                        Id = cmRec.Id,
+                                        RateId = rateRec.Id,
+                                        Rate = rateRec.Rate,
+                                        Code = cmRec.Key,
+                                        Description = descList.FirstOrDefault(x => x.Language == CurrentUser.Lang)?.Desc ?? string.Empty,
+                                        Remark = cmRec.Remark,
+                                        FromCurCode = rateRec.FromCurCode,
+                                        ToCurCode = rateRec.ToCurCode,
+                                        Descriptions = descList,
+                                        //CreateDateStr = cmRec.CreateDate.ToString(BDMall.Runtime.Setting.DefaultDateTimeFormat),
+                                        //UpdateDateStr = cmRec.UpdateDate.Value.ToString(BDMall.Runtime.Setting.DefaultDateTimeFormat),
+                                    };
+                                    currencyList.Add(currencyVw);
+                                }
+                            }
+                        }
+                    }
+                }
+                return currencyList;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
         ///// <summary>
         ///// 新增貨幣
         ///// </summary>
@@ -609,21 +613,19 @@ namespace BDMall.BLL
         //    return sysRslt;
         //}
 
-        //private CodeMaster GetCodeMasterRecord(CodeMasterModule module, CodeMasterFunction function, string currencyCode)
-        //{
-        //    //var cmRec = _codeMasterRepository.Entities.FirstOrDefault(x => x.Module == module.ToString() && x.Function == function.ToString() && x.Key == currencyCode.Trim() && x.IsActive && !x.IsDeleted);
-        //    var cmRec = _codeMasterRepository.GetCodeMaster(module.ToString(), function.ToString(), currencyCode);
-        //    return cmRec;
-        //}
+        private CodeMasterDto GetCodeMasterRecord(CodeMasterModule module, CodeMasterFunction function, string currencyCode)
+        {
+            var cmRec = _codeMasterRepository.GetCodeMaster(module.ToString(), function.ToString(), currencyCode);
+            return cmRec;
+        }
 
-        //private List<CodeMaster> GetCodeMasterList(CodeMasterModule module, CodeMasterFunction function)
-        //{
-        //    //var cmList = _codeMasterRepository.Entities.Where(x => x.Module == CodeMasterModule.System.ToString() && x.Function == CodeMasterFunction.Currency.ToString() && x.IsActive && !x.IsDeleted).ToList();
-        //    var cmList = _codeMasterRepository.GetCodeMasters(module, function);
-        //    return cmList;
-        //}
+        private List<CodeMasterDto> GetCodeMasterList(CodeMasterModule module, CodeMasterFunction function)
+        {
+            var cmList = _codeMasterRepository.GetCodeMasters(module, function);
+            return cmList;
+        }
 
-        //private string GetCodeMasterCacheKey(CodeMaster codeMaster)
+        //private string GetCodeMasterCacheKey(CodeMasterDto codeMaster)
         //{
         //    string cacheKey = string.Format(CodeMasterRepository.CacheKeyFormat, codeMaster.ClientId, codeMaster.Module, codeMaster.Function, codeMaster.Key, CurrentUser.Lang);
         //    return cacheKey;

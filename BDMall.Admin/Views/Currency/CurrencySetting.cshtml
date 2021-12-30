@@ -1,0 +1,265 @@
+﻿
+@{
+    ViewBag.Title = "CurrencySetting";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="divMain" v-cloak>
+    <div id="divEmptyTop" class="form-group"></div>
+    <div id="divSearchBar" class="panel-group">
+        <div class="form-horizontal">
+            <div class="form-group col-sm-12">
+                <label for="txtCurrencyCode" class="control-label col-sm-2">@BDMall.Resources.Label.CurrencyCode</label>
+                <div class="col-sm-4">
+                    <input id="txtCurrencyCode" type="text" class="form-control" v-model="condition.Code">
+                </div>
+                <div class="col-sm-2">
+                    <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Search" v-on:click="searchCurrencyList" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="divDataArea" class="tab-content">
+        <div id="divSelfDefine" class="tab-pane fade in active">
+            <div class="panel-body">
+                <div id="divToolBar" class="btn-group">
+                    <button id="btn_add" type="button" class="btn btn-default" v-on:click="addCurrency">
+                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>@BDMall.Resources.Action.Add
+                    </button>
+                    <button id="btn_edit" type="button" class="btn btn-default" v-on:click="modifyCurrency" v-bind:disabled="isModify">
+                        <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>@BDMall.Resources.Action.Modify
+                    </button>
+                    <button id="btn_delete" type="button" class="btn btn-default" v-on:click="deleteCurrency" v-bind:disabled="isDelete">
+                        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>@BDMall.Resources.Action.Delete
+                    </button>
+                </div>
+                <table id="tblCurrencyList" class="table table-condensed"></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        layui.use(['miniTab'], function () {
+            var layer = layui.layer,
+                miniTab = layui.miniTab;
+        });
+        var vm = new Vue({
+            el: "#divMain",
+            data: {
+                id: "00000000-0000-0000-0000-000000000000",
+                condition: {
+                    Code: ""
+                },
+                isModify: true,
+                isDelete: true,
+            },
+            methods: {
+                //設置工具欄按鈕狀態
+                setToolBarBtnState: function () {
+                    var objSelections = $("#tblCurrencyList").bootstrapTable("getSelections");
+                    if (objSelections.length == 1) {
+                        vm.isModify = false;
+                    }
+                    else {
+                        vm.isModify = true;
+                    }
+
+                    if (objSelections.length >= 1) {
+                        vm.isDelete = false;
+                    }
+                    else {
+                        vm.isDelete = true;
+                    }
+                },
+                searchCurrencyList: function () {
+                    $("#tblCurrencyList").bootstrapTable("refresh", { url: "/adminapi/Currency/SearchCurrencyList", pageNumber: 1 });
+                },
+                addCurrency: function () {
+                    var tabId = self.frameElement.parentElement.id;
+                    miniTab.openNewTabByIframe({
+                        href:"/Currency/CurrencyEdit/Add",
+                        title: '@BDMall.Resources.Action.Add' + "-" + '@BDMall.Resources.Label.TabNameCurrency',
+                        callback: vm.searchCurrencyList
+                    });
+                },
+                modifyCurrency: function () {
+                    var objSelections = $("#tblCurrencyList").bootstrapTable("getSelections");
+                    var objCond = new Object();
+                    objCond.Code = objSelections[0].Code;
+                    objCond.EditType = "Modify";
+                    objCond.Name = objSelections[0].Description;
+                    var tabId = self.frameElement.parentElement.id;
+                    miniTab.openNewTabByIframe({
+                        href:"/Currency/CurrencyEdit/" + objCond.EditType + "/" + objCond.Code ,
+                        title: '@BDMall.Resources.Action.Modify' + "-" + objCond.Name,
+                        callback: vm.searchCurrencyList
+                   });
+                },
+                deleteCurrency: function () {
+                    var objSelections = $("#tblCurrencyList").bootstrapTable("getSelections");
+
+                    if (objSelections.length > 0) {
+                        SystemConfirm('@BDMall.Resources.Message.DeleteConfirm', function () {
+
+                            var strCodes = "";
+                            objSelections.forEach(function (val) {
+                                strCodes += val.Code + ",";
+                            });
+
+                            var data = new Object();
+                            data.recIdList = strCodes;
+
+                            WS.AjaxP("get", "/adminapi/Currency/DeleteCurrencyList", data, function (response) {
+                                if (response.Succeeded == true) {
+                                    showInfo('@BDMall.Resources.Message.DeleteSucceeded');
+                                    vm.searchCurrencyList();
+                                }
+                                else {
+                                    showWarn('@BDMall.Resources.Message.DeleteFailed' + "\n\n" + response.Message);
+                                }
+                            }, function () { });
+                        });
+                    }
+                }
+            }
+        });
+
+        var currencyListTableInit = function () {
+            var objDataTable = new Object();
+
+            objDataTable.Init = function () {
+                $("#tblCurrencyList").bootstrapTable({
+                    method: 'post',                      //请求方式（*）
+                    queryParams: objDataTable.queryParams,//传递参数（*）
+                    toolbar: '#divToolBar',                //工具按钮用哪个容器
+                    striped: true,                      //是否显示行间隔色
+                    cache: true,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                    sortable: true,                     //是否启用排序
+                    sortOrder: "asc",                   //排序方式
+                    sidePagination: "client",           //分页方式：client客户端分页，server服务端分页（*）
+                    pageNumber: 1,                       //初始化加载第一页，默认第一页
+                    pageSize: 10,                       //每页的记录行数（*）
+                    pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                    smartDisplay: false,
+                    showRefresh: true,                  //是否显示刷新按钮
+                    clickToSelect: true,                //是否启用点击选中行
+                    //height: 750,                        //行高，如果没有设置height属性，表格自动根据记录条数決定表格高度
+                    uniqueId: "Id",                     //每一行的唯一标识，一般为主键列
+                    cardView: false,                    //是否显示详细视图
+                    detailView: false,                   //是否显示父子表
+                    pagination: true,                   //是否显示分页（*）
+                    ajaxOptions: {
+                        beforeSend: function (request) {
+                            var access_token = $.cookie("access_token");
+                            request.setRequestHeader("Authorization", "Bearer " + access_token);
+                        }
+                    },
+                    onCheck: function (row) {
+                        vm.setToolBarBtnState();
+                    },
+                    onUncheck: function (row) {
+                        vm.setToolBarBtnState();
+                    },
+                    onCheckAll: function (rows) {
+                        vm.setToolBarBtnState();
+                    },
+                    onUncheckAll: function (rows) {
+                        vm.setToolBarBtnState();
+                    },
+                    columns: [{
+                        checkbox: true
+                    }, {
+                            field: 'Id',
+                            title: 'Id',
+                            visible: false,
+                    }, {
+                            field: 'Code',
+                            title: '@BDMall.Resources.Label.CurrencyCode',
+                            align: 'left',
+                            valign: 'middle',
+                            sortable: true,
+                            events: operateEvents,
+                            formatter: tbModifyFormatter,
+                    }, {
+                            field: 'Description',
+                            valign: 'middle',
+                            sortable: true,
+                            title: '@BDMall.Resources.Label.Name',
+                    }, {
+                            field: 'CreateDateStr',
+                            valign: 'middle',
+                            sortable: true,
+                            title: '@BDMall.Resources.Label.CreateDate',
+                    }, {
+                            field: 'UpdateDateStr',
+                            valign: 'middle',
+                            sortable: true,
+                            title: '@BDMall.Resources.Label.UpdateDate',
+                    }],
+                    formatLoadingMessage: function () {
+                        return '';
+                    }
+                });
+            };
+
+            objDataTable.queryParams = function (params) {
+                var page = 1;
+                if (params.offset > 0) {
+                    page = parseInt(params.offset / params.limit) + 1;
+                }
+                var SortedBy = "Description";
+                var Sorted = "asc";
+                return {
+                    Condition: vm.condition, Page: page, PageSize: params.limit, sortName: SortedBy, sortOrder: Sorted
+                };
+            }
+            return objDataTable;
+        };
+
+        function tbModifyFormatter(value, row, index) {
+            return '<a class="Readonly btn btn-link">' + value + '</a>';
+        }
+
+        /*初次進入頁面*/
+        $(document).ready(function () {
+            var objDataTable = currencyListTableInit();
+            objDataTable.Init();
+
+            vm.searchCurrencyList();
+
+            //鍵盤按下回車後進行搜尋操作
+            $("input").keyup(function (e) {
+                if (e.keyCode == 13) {
+                    vm.searchCurrencyList();
+                }
+            });
+        });
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+
+        window.operateEvents = {
+            'click .Readonly': function (e, value, row, index) {
+                var objDatas = $("#tblCurrencyList").bootstrapTable("getData");
+                var code = objDatas[index].Code;
+                var name = objDatas[index].Description;
+                var strEditType = "Readonly";
+                var strTabId = "CurrencyModify_" + code;
+                var tabId = self.frameElement.parentElement.id;
+                miniTab.openNewTabByIframe({
+                    href:"/Currency/CurrencyEdit/" + strEditType + "/" + code,
+                    title: '@BDMall.Resources.Action.View' + "-" + name,
+                    callback: vm.searchCurrencyList
+                }); 
+            }
+        };
+    </script>
+}
+
