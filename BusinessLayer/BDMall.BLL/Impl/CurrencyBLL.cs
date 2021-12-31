@@ -3,6 +3,7 @@ using BDMall.Enums;
 using BDMall.Model;
 using BDMall.Model.SystemMNG;
 using BDMall.Repository;
+using BDMall.Runtime;
 using Intimex.Common;
 using System;
 using System.Collections.Generic;
@@ -29,6 +30,11 @@ namespace BDMall.BLL
             _codeMasterRepository = Services.Resolve<ICodeMasterRepository>();
             translationRepository = Services.Resolve<ITranslationRepository>();
         }
+        //public Currency GetCurrency(Guid id)
+        //{
+        //    //
+        //    throw new NotImplementedException();
+        //}
 
         public SimpleCurrency GetSimpleCurrency(string code)
         {
@@ -339,8 +345,8 @@ namespace BDMall.BLL
                                         FromCurCode = rateRec.FromCurCode,
                                         ToCurCode = rateRec.ToCurCode,
                                         Descriptions = descList,
-                                        //CreateDateStr = cmRec.CreateDate.ToString(BDMall.Runtime.Setting.DefaultDateTimeFormat),
-                                        //UpdateDateStr = cmRec.UpdateDate.Value.ToString(BDMall.Runtime.Setting.DefaultDateTimeFormat),
+                                        CreateDateStr = cmRec.CreateDate.ToString(Setting.DefaultDateTimeFormat),
+                                        UpdateDateStr = cmRec.UpdateDate.Value.ToString(Setting.DefaultDateTimeFormat),
                                     };
                                     currencyList.Add(currencyVw);
                                 }
@@ -355,274 +361,199 @@ namespace BDMall.BLL
                 throw ex;
             }
         }
-        ///// <summary>
-        ///// 新增貨幣
-        ///// </summary>
-        //public SystemResult InsertCurrency(CurrencyView currency)
-        //{
-        //    var sysRslt = new SystemResult();
-        //    try
-        //    {
-        //        if (currency != null && !string.IsNullOrEmpty(currency.Code))
-        //        {
-        //            string currencyCode = currency.Code.ToUpper();
-        //            var cmRec = GetCodeMasterRecord(CodeMasterModule.System, CodeMasterFunction.Currency, currencyCode);
-        //            if (cmRec == null)
-        //            {
-        //                UnitOfWork.IsUnitSubmit = true;
-
-        //                cmRec = new CodeMaster();
-        //                cmRec.Key = currencyCode;
-        //                cmRec.Value = currencyCode;
-        //                cmRec.DescTransId = TranslationRepository.InsertMutiLanguage(currency.Descriptions, TranslationType.Currency);
-        //                cmRec.Module = CodeMasterModule.System.ToString();
-        //                cmRec.Function = CodeMasterFunction.Currency.ToString();
-        //                cmRec.Remark = currency.Remark;
-        //                _codeMasterRepository.Insert(cmRec);
-
-        //                var rateRec = CurrExchangeRateRwpository.Entities.FirstOrDefault(x => x.ToCurCode == currencyCode && x.IsActive && !x.IsDeleted);
-        //                if (rateRec == null)
-        //                {
-        //                    string defaultCurrencyCode = GetDefaultCurrencyCode();
-        //                    rateRec = new CurrencyExchangeRate()
-        //                    {
-        //                        Id = Guid.NewGuid(),
-        //                        FromCurCode = defaultCurrencyCode,
-        //                        ToCurCode = currencyCode,
-        //                        Rate = 0,
-        //                    };
-        //                    CurrExchangeRateRwpository.Insert(rateRec);
-
-        //                    UnitOfWork.Submit();
-
-        //                    #region CodeMaster 緩存更新
-
-        //                    string cacheKey = GetCodeMasterCacheKey(cmRec);
-        //                    CacheManager.Insert(cacheKey, cmRec);
-
-        //                    cmRec.Key = "";
-        //                    cacheKey = GetCodeMasterCacheKey(cmRec);
-        //                    CacheManager.NoticUpdate(cacheKey);
-
-        //                    #endregion
-
-        //                    sysRslt.Succeeded = true;
-        //                }
-        //            }
-        //            else
-        //            {
-        //                sysRslt.Message = BDMall.Resources.Label.CurrencyCode + BDMall.Resources.Message.HasExist;
-        //                sysRslt.Succeeded = false;
-        //            }
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        sysRslt.Succeeded = false;
-        //        sysRslt.Message = ex.Message;
-        //    }
-        //    return sysRslt;
-        //}
-        ///// <summary>
-        ///// 更新貨幣
-        ///// </summary>
-        //public SystemResult UpdateCurrency(CurrencyView currency)
-        //{
-        //    var sysRslt = new SystemResult();
-        //    try
-        //    {
-        //        if (currency != null && !string.IsNullOrEmpty(currency.Code))
-        //        {
-        //            string currencyCode = currency.Code;
-
-        //            var cmRec = GetCodeMasterRecord(CodeMasterModule.System, CodeMasterFunction.Currency, currencyCode);
-        //            if (cmRec != null)
-        //            {
-        //                UnitOfWork.IsUnitSubmit = true;
-
-        //                TranslationRepository.UpdateMutiLanguage(cmRec.DescTransId, currency.Descriptions, TranslationType.Currency);
-        //                cmRec.Remark = currency.Remark;
-
-        //                _codeMasterRepository.Update(cmRec);
-
-        //                UnitOfWork.Submit();
-
-        //                #region CodeMaster 緩存更新
-
-        //                string cacheKey = GetCodeMasterCacheKey(cmRec);
-
-        //                CacheManager.NoticUpdate(cacheKey);
-
-
-        //                #region  for gen new cachekey
-        //                string key = cmRec.Key;
-        //                cmRec.Key = "";
-        //                cacheKey = GetCodeMasterCacheKey(cmRec);
-        //                cmRec.Key = key;
-        //                #endregion
-
-        //                CacheManager.NoticUpdate(cacheKey);
-
-        //                #endregion
-
-        //                sysRslt.Succeeded = true;
-        //            }
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        sysRslt.Succeeded = false;
-        //        sysRslt.Message = ex.Message;
-        //    }
-        //    return sysRslt;
-        //}
-        ///// <summary>
-        ///// 刪除貨幣
-        ///// </summary>
-        //public SystemResult DeleteCurrency(CurrencyView currency)
-        //{
-        //    var sysRslt = new SystemResult();
-        //    try
-        //    {
-        //        if (currency != null && !string.IsNullOrEmpty(currency.Code))
-        //        {
-        //            string currencyCode = currency.Code;
-        //            string defaultCurrencyCode = GetDefaultCurrencyCode();
-
-        //            if (currencyCode != defaultCurrencyCode)
-        //            {
-        //                UnitOfWork.IsUnitSubmit = true;
-
-        //                var cmRec = GetCodeMasterRecord(CodeMasterModule.System, CodeMasterFunction.Currency, currencyCode);
-        //                if (cmRec != null)
-        //                {
-        //                    cmRec.IsActive = false;
-        //                    cmRec.IsDeleted = true;
-        //                    _codeMasterRepository.Update(cmRec);
-        //                }
-
-        //                var rateRec = CurrExchangeRateRwpository.Entities.FirstOrDefault(x => x.ToCurCode == currencyCode && x.FromCurCode == defaultCurrencyCode && x.IsActive && !x.IsDeleted);
-        //                if (rateRec != null)
-        //                {
-        //                    rateRec.IsActive = false;
-        //                    rateRec.IsDeleted = true;
-        //                    CurrExchangeRateRwpository.Update(rateRec);
-        //                }
-
-        //                UnitOfWork.Submit();
-
-        //                #region CodeMaster 緩存更新
-
-        //                string cacheKey = GetCodeMasterCacheKey(cmRec);
-
-        //                CacheManager.NoticUpdate(cacheKey);
-
-
-        //                #region  for gen new cachekey
-        //                string key = cmRec.Key;
-        //                cmRec.Key = "";
-        //                cacheKey = GetCodeMasterCacheKey(cmRec);
-        //                cmRec.Key = key;
-        //                #endregion
-
-        //                CacheManager.NoticUpdate(cacheKey);
-
-        //                #endregion
-
-        //                sysRslt.Succeeded = true;
-        //            }
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        sysRslt.Succeeded = false;
-        //        sysRslt.Message = ex.Message;
-        //    }
-        //    return sysRslt;
-        //}
-
-        ///// <summary>
-        ///// 刪除多個貨幣資料
-        ///// </summary>
-        ///// <param name="recIdList"></param>
-        ///// <returns></returns>
-        //public SystemResult DeleteCurrencyList(string recIdList)
-        //{
-        //    var sysRslt = new SystemResult();
-        //    try
-        //    {
-        //        string[] codeList = recIdList.Split(',');
-
-        //        UnitOfWork.IsUnitSubmit = true;
-
-        //        foreach (var code in codeList)
-        //        {
-        //            if (!string.IsNullOrEmpty(code))
-        //            {
-        //                string currencyCode = code.Trim();
-        //                string defaultCurrencyCode = GetDefaultCurrencyCode();
-
-        //                if (currencyCode != defaultCurrencyCode)
-        //                {
-        //                    var cmRec = GetCodeMasterRecord(CodeMasterModule.System, CodeMasterFunction.Currency, currencyCode);
-        //                    if (cmRec != null)
-        //                    {
-        //                        cmRec.IsActive = false;
-        //                        cmRec.IsDeleted = true;
-        //                        _codeMasterRepository.Update(cmRec);
-        //                    }
-
-        //                    var rateRec = CurrExchangeRateRwpository.Entities.FirstOrDefault(x => x.ToCurCode == currencyCode && x.FromCurCode == defaultCurrencyCode && x.IsActive && !x.IsDeleted);
-        //                    if (rateRec != null)
-        //                    {
-        //                        rateRec.IsActive = false;
-        //                        rateRec.IsDeleted = true;
-        //                        CurrExchangeRateRwpository.Update(rateRec);
-        //                    }
-
-        //                    UnitOfWork.Submit();
-
-        //                    #region CodeMaster 緩存更新
-
-        //                    string cacheKey = GetCodeMasterCacheKey(cmRec);
-
-        //                    CacheManager.NoticUpdate(cacheKey);
-
-
-        //                    #region  for gen new cachekey
-        //                    string key = cmRec.Key;
-        //                    cmRec.Key = "";
-        //                    cacheKey = GetCodeMasterCacheKey(cmRec);
-        //                    cmRec.Key = key;
-        //                    #endregion
-
-        //                    CacheManager.NoticUpdate(cacheKey);
-
-        //                    #endregion
-
-        //                    sysRslt.Succeeded = true;
-        //                }
-        //            }
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        sysRslt.Succeeded = false;
-        //        sysRslt.Message = ex.Message;
-        //    }
-        //    return sysRslt;
-        //}
-
-        private CodeMasterDto GetCodeMasterRecord(CodeMasterModule module, CodeMasterFunction function, string currencyCode)
+        /// <summary>
+        /// 新增貨幣
+        /// </summary>
+        public SystemResult InsertCurrency(CurrencyView currency)
         {
-            var cmRec = _codeMasterRepository.GetCodeMaster(module.ToString(), function.ToString(), currencyCode);
-            return cmRec;
+            var sysRslt = new SystemResult();
+            string currencyCode = currency.Code.ToUpper();
+            if (currency != null && !string.IsNullOrEmpty(currency.Code))
+            {
+                var cmRec = GetCodeMasterRecord(CodeMasterModule.System, CodeMasterFunction.Currency, currencyCode);
+
+                UnitOfWork.IsUnitSubmit = true;
+                if (cmRec == null)
+                {
+                    var dbCmRec = new CodeMaster();
+                    dbCmRec.Key = currencyCode;
+                    dbCmRec.Value = currencyCode;
+                    dbCmRec.DescTransId = translationRepository.InsertMutiLanguage(currency.Descriptions, TranslationType.Currency);
+                    dbCmRec.Module = CodeMasterModule.System.ToString();
+                    dbCmRec.Function = CodeMasterFunction.Currency.ToString();
+                    dbCmRec.Remark = currency.Remark;
+                    dbCmRec.CreateDate = DateTime.Now;
+                    dbCmRec.CreateBy = Guid.Parse(CurrentUser.UserId);
+                    dbCmRec.UpdateDate = DateTime.Now;
+                    dbCmRec.UpdateBy = Guid.Parse(CurrentUser.UserId);
+                    dbCmRec.IsActive = true;
+                    baseRepository.Insert(cmRec);
+                }
+                var rateRec = baseRepository.GetList<CurrencyExchangeRate>().FirstOrDefault(x => x.ToCurCode == currencyCode && x.IsActive && !x.IsDeleted);
+                if (rateRec == null)
+                {
+                    if (rateRec == null)
+                    {
+                        string defaultCurrencyCode = GetDefaultCurrencyCode();
+                        rateRec = new CurrencyExchangeRate()
+                        {
+                            Id = Guid.NewGuid(),
+                            FromCurCode = defaultCurrencyCode,
+                            ToCurCode = currencyCode,
+                            Rate = 0,
+                            CreateDate = DateTime.Now,
+                            CreateBy = Guid.Parse(CurrentUser.UserId),
+                            UpdateDate = DateTime.Now,
+                            UpdateBy = Guid.Parse(CurrentUser.UserId),
+                            IsActive = true,
+                        };
+                        baseRepository.Insert(rateRec);
+                    }
+                }
+                else
+                {
+                    sysRslt.Message = BDMall.Resources.Label.CurrencyCode + BDMall.Resources.Message.HasExist;
+                    sysRslt.Succeeded = false;
+                }
+            }
+
+
+            UnitOfWork.Submit();
+            sysRslt.Succeeded = true;
+            return sysRslt;
+        }
+        /// <summary>
+        /// 更新貨幣
+        /// </summary>
+        public SystemResult UpdateCurrency(CurrencyView currency)
+        {
+            var sysRslt = new SystemResult();
+            if (currency != null && !string.IsNullOrEmpty(currency.Code))
+            {
+                string currencyCode = currency.Code;
+
+                var cmRec = GetCodeMasterRecord(CodeMasterModule.System, CodeMasterFunction.Currency, currencyCode);
+                if (cmRec != null)
+                {
+                    UnitOfWork.IsUnitSubmit = true;
+
+                    translationRepository.UpdateMutiLanguage(cmRec.DescTransId, currency.Descriptions, TranslationType.Currency);
+                    cmRec.Remark = currency.Remark;
+
+                    baseRepository.Update(cmRec);
+
+                    UnitOfWork.Submit();
+
+                    sysRslt.Succeeded = true;
+                }
+            }
+            return sysRslt;
+        }
+        /// <summary>
+        /// 刪除貨幣
+        /// </summary>
+        public SystemResult DeleteCurrency(CurrencyView currency)
+        {
+            var sysRslt = new SystemResult();
+            if (currency != null && !string.IsNullOrEmpty(currency.Code))
+            {
+                string currencyCode = currency.Code;
+                string defaultCurrencyCode = GetDefaultCurrencyCode();
+
+                if (currencyCode != defaultCurrencyCode)
+                {
+                    UnitOfWork.IsUnitSubmit = true;
+
+                    var cmRec = GetCodeMasterRecord(CodeMasterModule.System, CodeMasterFunction.Currency, currencyCode);
+                    if (cmRec != null)
+                    {
+                        cmRec.IsActive = false;
+                        cmRec.IsDeleted = true;
+                        cmRec.UpdateDate = DateTime.Now;
+                        cmRec.UpdateBy = Guid.Parse(CurrentUser.UserId);
+                        baseRepository.Update(cmRec);
+                    }
+
+                    var rateRec = baseRepository.GetList<CurrencyExchangeRate>().FirstOrDefault(x => x.ToCurCode == currencyCode && x.FromCurCode == defaultCurrencyCode && x.IsActive && !x.IsDeleted);
+                    if (rateRec != null)
+                    {
+                        rateRec.IsActive = false;
+                        rateRec.IsDeleted = true;
+                        rateRec.UpdateDate = DateTime.Now;
+                        rateRec.UpdateBy = Guid.Parse(CurrentUser.UserId);
+                        baseRepository.Update(rateRec);
+                    }
+
+                    UnitOfWork.Submit();
+
+                    sysRslt.Succeeded = true;
+                }
+            }
+            return sysRslt;
         }
 
-        private List<CodeMasterDto> GetCodeMasterList(CodeMasterModule module, CodeMasterFunction function)
+        /// <summary>
+        /// 刪除多個貨幣資料
+        /// </summary>
+        /// <param name="recIdList"></param>
+        /// <returns></returns>
+        public SystemResult DeleteCurrencyList(string recIdList)
+        {
+            var sysRslt = new SystemResult();
+            string[] codeList = recIdList.Split(',');
+
+            UnitOfWork.IsUnitSubmit = true;
+
+            foreach (var code in codeList)
+            {
+                if (!string.IsNullOrEmpty(code))
+                {
+                    string currencyCode = code.Trim();
+                    string defaultCurrencyCode = GetDefaultCurrencyCode();
+
+                    if (currencyCode != defaultCurrencyCode)
+                    {
+                        var cmRec = GetCodeMasterRecord(CodeMasterModule.System, CodeMasterFunction.Currency, currencyCode);
+                        if (cmRec != null)
+                        {
+                            cmRec.IsActive = false;
+                            cmRec.IsDeleted = true;
+                            cmRec.UpdateDate = DateTime.Now;
+                            cmRec.UpdateBy = Guid.Parse(CurrentUser.UserId);
+                            baseRepository.Update(cmRec);
+                        }
+
+                        var rateRec = baseRepository.GetList<CurrencyExchangeRate>().FirstOrDefault(x => x.ToCurCode == currencyCode && x.FromCurCode == defaultCurrencyCode && x.IsActive && !x.IsDeleted);
+                        if (rateRec != null)
+                        {
+                            rateRec.IsActive = false;
+                            rateRec.IsDeleted = true;
+                            rateRec.UpdateDate = DateTime.Now;
+                            rateRec.UpdateBy = Guid.Parse(CurrentUser.UserId);
+                            baseRepository.Update(rateRec);
+                        }
+
+                        UnitOfWork.Submit();
+                        sysRslt.Succeeded = true;
+                    }
+                }
+            }
+            return sysRslt;
+        }
+
+        private CodeMaster GetCodeMasterRecord(CodeMasterModule module, CodeMasterFunction function, string currencyCode)
+        {
+            var cmRec = _codeMasterRepository.GetCodeMaster(module.ToString(), function.ToString(), currencyCode);
+
+            var dbCMRec = AutoMapperExt.MapTo<CodeMaster>(cmRec);
+            return dbCMRec;
+        }
+
+        private List<CodeMaster> GetCodeMasterList(CodeMasterModule module, CodeMasterFunction function)
         {
             var cmList = _codeMasterRepository.GetCodeMasters(module, function);
-            return cmList;
+            var dbCMRecs = AutoMapperExt.MapToList<CodeMasterDto, CodeMaster>(cmList);
+            return dbCMRecs;
         }
 
         //private string GetCodeMasterCacheKey(CodeMasterDto codeMaster)

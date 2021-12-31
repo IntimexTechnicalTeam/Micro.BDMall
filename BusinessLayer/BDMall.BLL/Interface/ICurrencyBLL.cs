@@ -18,7 +18,7 @@ namespace BDMall.BLL
 
         List<SimpleCurrency> GetCurrencys();
 
-        List<CurrencyExchangeRate> GetCurrExchangeRate(string baseCode);
+        List<CurrencyExchangeRateDto> GetCurrExchangeRate(string baseCode);
 
         string GetDefaultCurrencyCode();
 
@@ -45,7 +45,7 @@ namespace BDMall.BLL
         /// <summary>
         /// 搜尋貨幣信息列表
         /// </summary>
-        ///List<CurrencyView> SearchCurrencyList(CurrencyPageInfo pageInfo);
+        List<CurrencyView> SearchCurrencyList(CurrencyPageInfo pageInfo);
         /// <summary>
         /// 新增貨幣
         /// </summary>

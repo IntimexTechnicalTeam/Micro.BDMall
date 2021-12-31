@@ -103,7 +103,7 @@ namespace BDMall.Repository
 
         public DbSet<MemberLoginRecord> MemberLoginRecords { get; set; }
 
-        public virtual DbSet<CurrencyExchangeRate> CurrencyExchangeRates { get; set; }
+        public DbSet<CurrencyExchangeRate> CurrencyExchangeRates { get; set; }
 
 
 

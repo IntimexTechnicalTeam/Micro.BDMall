@@ -34,10 +34,10 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public List<CurrencyExchangeRate> GetCurrItems(string baseCode)
+        public List<CurrencyExchangeRateDto> GetCurrItems(string baseCode)
         {
             //SystemResult result = new SystemResult();
-            List<CurrencyExchangeRate> list = null;
+            List<CurrencyExchangeRateDto> list = null;
             try
             {
                 list = CurrencyBLL.GetCurrExchangeRate(baseCode);
@@ -49,26 +49,18 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
             return list;
         }
 
-        /// <summary>
-        /// 獲取CurrencyCode表的詳細信息
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        [HttpGet]
-        public CurrencyDto GetCurrDetail(Guid id)
-        {
-            try
-            {
-                CurrencyDto currency = CurrencyBLL.GetCurrency(id);
-                return currency;
-            }
-            catch (BLException blex)
-            {
-                //result.Succeeded = false;
-                throw CreateCustomException(blex);
-            }
+        ///// <summary>
+        ///// 獲取CurrencyCode表的詳細信息
+        ///// </summary>
+        ///// <param name="id"></param>
+        ///// <returns></returns>
+        //[HttpGet]
+        //public CurrencyDto GetCurrDetail(Guid id)
+        //{
+        //    CurrencyDto currency = CurrencyBLL.GetCurrency(id);
+        //    return currency;
 
-        }
+        //}
 
         /// <summary>
         /// 獲取基准货币
@@ -101,7 +93,7 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
         /// <returns></returns>
         [HttpPost]
         [AdminApiAuthorize(Module = ModuleConst.SystemModule)]
-        public SystemResult UpdateRate(CurrencyListView data)
+        public SystemResult UpdateRate([FromBody]CurrencyListView data)
         {
             SystemResult result = new SystemResult();
 
@@ -135,7 +127,7 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
 
         [HttpPost]
         [AdminApiAuthorize(Module = ModuleConst.SystemModule)]
-        public List<CurrencyView> SearchCurrencyList(CurrencyPageInfo pageInfo)
+        public List<CurrencyView> SearchCurrencyList([FromBody] CurrencyPageInfo pageInfo)
         {
             var currencyList = new List<CurrencyView>();
             currencyList = CurrencyBLL.SearchCurrencyList(pageInfo);
@@ -144,7 +136,7 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
 
         [HttpPost]
         [AdminApiAuthorize(Module = ModuleConst.SystemModule)]
-        public SystemResult SaveCurrency(CurrencyView currencyvW)
+        public SystemResult SaveCurrency([FromForm] CurrencyView currencyvW)
         {
             var sysRslt = new SystemResult();
             if (currencyvW != null)
@@ -164,7 +156,7 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
 
         [HttpPost]
         [AdminApiAuthorize(Module = ModuleConst.SystemModule)]
-        public SystemResult DeleteCurrency(CurrencyView currencyvW)
+        public SystemResult DeleteCurrency([FromBody] CurrencyView currencyvW)
         {
             var sysRslt = new SystemResult();
             return CurrencyBLL.DeleteCurrency(currencyvW);

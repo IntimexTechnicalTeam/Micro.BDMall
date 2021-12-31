@@ -1,0 +1,226 @@
+﻿
+@{
+    ViewBag.Title = "CurrencyEdit";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="divMain" v-cloak>
+    <div id="divEmptyTop" class="form-group"></div>
+    <div id="divContent" class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">@BDMall.Resources.Label.TabNameCurrency</h3>
+        </div>
+        <div class="panel-body">
+            <input type="hidden" id="hidID" v-model="curItem.Code" />
+            <form id="frmInput" class="form-horizontal">
+                <div class="form-group">
+                    <div class="form-group col-sm-12">
+                        <label for="txtCurCode" class="col-sm-2 control-label text-danger">*@BDMall.Resources.Label.CurrencyCode</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" id="txtCurCode" name="CurCode" placeholder="@BDMall.Resources.Label.CurrencyCode" v-model="curItem.Code" v-bind:readonly="curCode!=''||editType=='Readonly'">
+                        </div>
+                    </div>
+                    <div class="col-sm-offset-2 col-sm-8">
+                        <multilang-bar v-bind:data="curItem.Descriptions" ref="langbar" v-bind:selectlanguage="selectLanguage"></multilang-bar>
+                    </div>
+                </div>
+                <div class="form-group col-sm-12">
+                    <div v-for="descItem in curItem.Descriptions" v-show="descItem.Lang.Code==languageType">
+                        <label class="col-sm-2 control-label text-danger">*@BDMall.Resources.Label.Name</label>
+                        <div class="col-sm-8">
+                            <input type="text" v-bind:name="'desc_'+descItem.Lang.Code" v-bind:id="'desc_'+descItem.Lang.Code" class="form-control" v-model="descItem.Desc" v-bind:readonly="curCode!=''&&editType=='Readonly'" />
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group col-sm-12">
+                    <label for="txtRemark" class="col-sm-2 control-label">@BDMall.Resources.Label.Remark</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" id="txtRemark" name="Remark" placeholder="@BDMall.Resources.Label.Remark" v-model="curItem.Remark" v-bind:readonly="curCode!=''&&editType=='Readonly'">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <input type="button" class="btn btn-default btn-action-default" value="@BDMall.Resources.Action.Close" v-on:click="closeTab" />
+        <input id="btnEdit" type="button" class="btn btn-default btn-action-default" value="@BDMall.Resources.Action.Edit" v-if="isReadonly" v-on:click="setModifyState" />
+        <input id="btnModiy" type="button" class="btn btn-primary btn-action-default" value="@BDMall.Resources.Action.Save" v-if="!isReadonly" v-on:click="saveCheck" />
+        <input id="btnCancelModify" type="button" class="btn btn-default btn-action-default" value="@BDMall.Resources.Action.Cancel" v-if="!isReadonly&&editType=='Modify'" v-on:click="cancelSave" />
+    </div>
+</div>
+
+@section scripts{
+    <script src="~/Scripts/admin/vue-component/multilangbar.js"></script>
+
+    <script type="text/javascript">
+        var mLanguage = (window.parent.$.cookie("Language")==undefined?"E":window.parent.$.cookie("Language"));
+        var mCode = '@ViewBag.Code';
+        var mEditType = '@ViewBag.EditType';
+
+        var vm = new Vue({
+            el:"#divMain",
+            data:{
+                curCode :mCode,
+                editType:mEditType,
+                isReadonly: false,
+                languageType:"",
+                language: "",
+                curItem:{
+                    Code: "",
+                    Descriptions: [{ Lang: { Code: "", Text: "" }, Desc: "" }],
+                    Remark:"",
+                    IsModify: false,
+                }
+            },
+            methods:{
+                getCurrencyItem:function(){
+                    var data =  new Object();
+                    data.code = vm.curCode;
+                    WS.AjaxP("get","/adminapi/Currency/GetCurrencyByCode",data,function(response){
+                        vm.curItem = response;
+
+                        vm.$nextTick(function () {
+                            vm.setDefaultLanguage(vm.curItem.Descriptions);
+                            vm.curItem.Descriptions.forEach(function (val) {
+                                $("#desc_" + val.Lang.Code).rules('add', { required: true, messages: { required: '@BDMall.Resources.Message.RequiredField' } });
+                            });
+                        });
+                    },function(){});
+                },
+                selectLanguage:function(obj)
+                {
+                    vm.$refs.langbar.setCurrentLanguage(obj.Lang.Code);
+                    vm.language = obj.Lang.Text;
+                    vm.languageType = obj.Lang.Code;
+                },
+                setDefaultLanguage: function (data) {
+                    if (data.length > 0) {
+                        var defaultLang = data[0].Lang.Code;
+                        vm.$refs.langbar.setCurrentLanguage(defaultLang);
+                        vm.language = data[0].Lang.Text;
+                        vm.languageType = data[0].Lang.Code;
+                    }
+                },
+                saveCheck: function () {
+                    if (myValidate.form()) {
+                        $("#frmInput").submit();
+                    }
+                },
+                save:function(){
+                    if (vm.curItem != undefined) {
+                        if (vm.editType == "Add") {
+                            vm.curItem.IsModify = false;
+                        }
+                        else {
+                            vm.curItem.IsModify = true;
+                        }
+                    }
+
+                    WS.AjaxP("post", "/adminapi/Currency/SaveCurrency", vm.curItem, function (response) {
+                        if (response.Succeeded == true) {
+                            vm.setModifyState();
+                            clowWin();
+                        }
+                        else {
+                            showWarn('@BDMall.Resources.Message.SaveFail' + "\n\n" + response.Message);
+                        }
+                    }, function () { })
+                },
+                closeTab:function(){
+                    clowWin();
+                },
+                cancelSave:function(){
+                    SystemConfirm('@BDMall.Resources.Message.ConfirmCancel', function () {
+                        vm.setReadonlyState();
+                    });
+                },
+                //設置窗體內容為只讀狀態
+                setReadonlyState:function () {
+                    vm.isReadonly = true;
+                    vm.editType = "Readonly";
+                    vm.getCurrencyItem();
+                },
+                //設置窗體內容為修改狀態
+                setModifyState:function () {
+                    vm.isReadonly = false;
+                    vm.editType = "Modify";
+                },
+                //設置窗體內容為新增狀態
+                setAddState:function () {
+                    vm.isReadonly = false;
+                    vm.editType = "Add";
+                }
+            },
+            mounted: function () {
+            }
+        });
+
+        function initValidate() {
+
+            myValidate = $("#frmInput").validate({
+                ignore: "",
+                submitHandler: function () {
+                    vm.save();
+                },
+                rules: {
+                    CurCode: "required",
+                },
+                messages: {
+                    CurCode: "@BDMall.Resources.Message.RequiredField",
+                },
+                success: function (label) {
+                    $(label).parent().removeClass('has-error');
+                },
+                showErrors: function (errorMap, errorList) {
+                    // 遍历错误列表
+                    focusWrongPlace(errorMap, function (lang){
+                        vm.$refs.langbar.setCurrentLanguage(lang);
+                        vm.languageType = lang;
+                    });
+                    // 此处注意，一定要调用默认方法，这样保证提示消息的默认效果
+                    this.defaultShowErrors();
+                }
+            });
+        }
+
+        function valueNotEqualsValidate() {
+            jQuery.validator.addMethod("valueNotEquals", function (value, element, param) {
+                if (value == param || param == "" || param == null || value == null) {
+                    return false;
+                }
+                else {
+                    return true;
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            vm.curCode = '@ViewBag.Code';
+            vm.editType = '@ViewBag.EditType';
+
+            if (vm.editType == "Readonly") {
+                vm.setReadonlyState();
+            }
+            else if (vm.editType == "Modify") {
+                vm.setModifyState();
+                vm.getCurrencyItem();//填充欄位資料
+            }
+            else if (vm.editType == "Add") {
+                vm.setAddState();
+                vm.getCurrencyItem();//填充欄位資料
+            }
+
+            valueNotEqualsValidate();
+            initValidate();
+        });
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+    </script>
+}
+
