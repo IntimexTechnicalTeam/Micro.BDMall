@@ -13,54 +13,54 @@ namespace BDMall.BLL
     public interface ICurrencyBLL :IDependency
     {
       
-        //Currency GetCurrency(Guid id);
+        //CurrencyDto GetCurrency(Guid id);
         SimpleCurrency GetSimpleCurrency(string code);
 
         List<SimpleCurrency> GetCurrencys();
 
-        //List<CurrencyExchangeRate> GetCurrExchangeRate(string baseCode);
+        List<CurrencyExchangeRateDto> GetCurrExchangeRate(string baseCode);
 
         string GetDefaultCurrencyCode();
 
         //SimpleCurrency GetDefaultCurrency();
 
-        ///// <summary>
-        ///// 獲取貨幣列表
-        ///// </summary>
-        ///// <returns></returns>
-        //List<KeyValue> GetCurrList();
+        /// <summary>
+        /// 獲取貨幣列表
+        /// </summary>
+        /// <returns></returns>
+        List<KeyValue> GetCurrList();
 
-        ///// <summary>
-        ///// 更新匯率
-        ///// </summary>
-        ///// <param name="list"></param>
-        //void UpdateRate(CurrencyListView items);
+        /// <summary>
+        /// 更新匯率
+        /// </summary>
+        /// <param name="list"></param>
+        void UpdateRate(CurrencyListView items);
 
-        //void SetDefault(string code);
+        void SetDefault(string code);
 
-        ///// <summary>
-        ///// 獲取指定編號的貨幣信息
-        ///// </summary>
-        //CurrencyView GetCurrencyByCode(string code);
-        ///// <summary>
-        ///// 搜尋貨幣信息列表
-        ///// </summary>
-        /////List<CurrencyView> SearchCurrencyList(CurrencyPageInfo pageInfo);
-        ///// <summary>
-        ///// 新增貨幣
-        ///// </summary>
-        //SystemResult InsertCurrency(CurrencyView currency);
-        ///// <summary>
-        ///// 更新貨幣
-        ///// </summary>
-        //SystemResult UpdateCurrency(CurrencyView currency);
-        ///// <summary>
-        ///// 刪除貨幣
-        ///// </summary>
-        //SystemResult DeleteCurrency(CurrencyView currency);
-        ///// <summary>
-        ///// 刪除貨幣列表
-        ///// </summary>
-        //SystemResult DeleteCurrencyList(string recIdList);
+        /// <summary>
+        /// 獲取指定編號的貨幣信息
+        /// </summary>
+        CurrencyView GetCurrencyByCode(string code);
+        /// <summary>
+        /// 搜尋貨幣信息列表
+        /// </summary>
+        List<CurrencyView> SearchCurrencyList(CurrencyPageInfo pageInfo);
+        /// <summary>
+        /// 新增貨幣
+        /// </summary>
+        SystemResult InsertCurrency(CurrencyView currency);
+        /// <summary>
+        /// 更新貨幣
+        /// </summary>
+        SystemResult UpdateCurrency(CurrencyView currency);
+        /// <summary>
+        /// 刪除貨幣
+        /// </summary>
+        SystemResult DeleteCurrency(CurrencyView currency);
+        /// <summary>
+        /// 刪除貨幣列表
+        /// </summary>
+        SystemResult DeleteCurrencyList(string recIdList);
     }
 }

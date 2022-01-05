@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\BDMall.Resources\BDMall.Resources.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\BDMall.Utility\BDMall.Utility.csproj" />
     <ProjectReference Include="..\..\Infrastructure\Intimex.Common\Intimex.Common.csproj" />
     <ProjectReference Include="..\..\Infrastructure\Web.Framework\Web.Framework.csproj" />
     <ProjectReference Include="..\..\Infrastructure\Web.Jwt\Web.Jwt.csproj" />

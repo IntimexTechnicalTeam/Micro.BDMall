@@ -1,0 +1,441 @@
+﻿
+@{
+    ViewBag.Title = "EditCustomMenu";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+<link href="~/Scripts/bootstrap-fileinput/css/fileinput.min.css" rel="stylesheet"/>
+<div id="app" v-cloak>
+    <form id="commentForm">
+        <div style="display:none;">
+            <input name="txt_file" id="bannerImg" type="file" class="file" />
+        </div>
+        <table class="table">
+            <tr>
+                <td class="col-md-2">
+                    @BDMall.Resources.Label.MenuPosition
+                </td>
+                <td class="col-md-10">
+                    <select id="cboMenuPosition" class="form-control" data-width="150" v-bind:disabled="items.Position>=0"></select>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2"></td>
+                <td class="col-md-10">
+                    <multilang-bar v-bind:data="items.Names" ref="langbar" v-bind:selectlanguage="selectLanguage"></multilang-bar>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">
+                    <span style="color:red;">*</span>@BDMall.Resources.Label.Name
+                </td>
+                <td class="col-md-10">
+                    <div v-for="pItem in items.Names" v-show="pItem.Lang.Code==languageType">
+                        <input type="text" v-bind:id="'Name_'+pItem.Lang.Code" v-bind:name="'Name_'+pItem.Lang.Code" class="form-control" v-model="pItem.Desc" />
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">
+                    @BDMall.Resources.Label.Title
+                </td>
+                <td class="col-md-10">
+                    <div v-for="pItem in items.Titles" v-show="pItem.Lang.Code==languageType">
+                        <input type="text" v-bind:id="'Titles_'+pItem.Lang.Code" v-bind:name="'Titles_'+pItem.Lang.Code" class="form-control" v-model="pItem.Desc" />
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">@BDMall.Resources.Label.Img</td>
+                <td>
+                    <div v-for="item in items.Images" v-show="item.Lang.Code==languageType">
+                        <img class="img-rounded" v-bind:src="item.Desc" width="100" />
+                        <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.UploadImage" v-on:click="uploadImage(item.Lang.Code)" />
+                        <a v-if="item.Desc.length>0" style="cursor:pointer;" v-on:click="copyToOtherLang(item.Desc)">@BDMall.Resources.Action.CopyToOtherLanguage</a>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">
+                    @BDMall.Resources.Label.Status
+                </td>
+                <td class="col-md-10">
+                    <input type="checkbox" id="chkStatus" v-model="items.IsShow" />
+                    <label for="chkStatus">@BDMall.Resources.Label.Show</label>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">
+                    @BDMall.Resources.Label.Seq
+                </td>
+                <td class="col-md-10">
+                    <input type="number" class="form-control" v-model="items.Seq" style="width:150px;" @*v-on:change="Verify"*@ />
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">
+                    @BDMall.Resources.Label.RedirectURL
+                </td>
+                <td class="col-md-10">
+                    <select id="cboRedirectType" class="form-control" data-width="150" v-model="items.RedirectType" v-on:change="redirectTypeChange"></select>
+                    <input v-show="items.RedirectType>0" type="button" class="btn btn-default" v-on:click="selectByRedirectType" value="@BDMall.Resources.Action.Select" />
+                    <span v-show="items.RedirectType>0">
+                        <input type="hidden" v-model="items.RedirectValue" />
+                        <label>{{items.RedirectName}}</label>
+                    </span>
+                    <span v-show="items.RedirectType==0">
+                        <input type="text" class="form-control" v-model="items.RedirectValue" style="width:300px;" />
+                        <input type="checkbox" id="chkIsNewWin" v-model="items.IsNewWin" />
+                        <label>@BDMall.Resources.Message.OpenWithNewTab</label>
+                        <input type="hidden" v-model="items.RedirectValue" />
+                    </span>
+                </td>
+
+            </tr>
+            <tr>
+                <td class="col-md-2">
+                    @BDMall.Resources.Label.MenuType
+                </td>
+                <td class="col-md-10">
+                    <select id="cboMenuType" class="form-control" data-width="150" v-model="items.Type" v-on:change="typeChange"></select>
+                    <input v-show="items.Type>0" type="button" class="btn btn-default" v-on:click="selectByType" value="@BDMall.Resources.Action.Select" />
+                    <div v-show="items.Type==1 || items.Type==4 || items.Type==5" class="form-inline">
+                        <input type="checkbox" value="true" v-model="items.ShowSub" id="chkShowChild" /><label for="chkShowChild">@BDMall.Resources.Label.ShowSubValue</label>
+                    </div>
+                    <div v-show="(items.Type==1 || items.Type==2 || items.Type==3 || items.Type==4 || items.Type==5 || items.Type==6) && items.Details.length==1">
+                        <input type="checkbox" value="true" v-model="items.PlacedTop" id="chkPlacedTop" /><label for="chkPlacedTop">@BDMall.Resources.Label.PlacedTop</label>
+                    </div>
+
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">
+                    <span v-if="items.Type==0">@BDMall.Resources.Label.Url</span>
+                    <span v-if="items.Type==1">@BDMall.Resources.Label.CMSCategory</span>
+                    <span v-if="items.Type==2">@BDMall.Resources.Label.CMSContent</span>
+                    <span v-if="items.Type==3">@BDMall.Resources.Label.RegNPay</span>
+                    <span v-if="items.Type==4">@BDMall.Resources.Label.ProductCatalog</span>
+                    <span v-if="items.Type==5">@BDMall.Resources.Label.Attribute</span>
+                    <span v-if="items.Type==6">@BDMall.Resources.Label.AttributeValue</span>
+                </td>
+                <td class="col-md-10">
+                    <div v-if="items.Type==0">
+                        <input type="text" class="form-control" v-model="items.Details[0].ValueName" />
+                    </div>
+                    <div v-else>
+                        <table class="table">
+                            <tr>
+                                <th>@BDMall.Resources.Label.Code</th>
+                                <th>@BDMall.Resources.Label.Name</th>
+                                <th>@BDMall.Resources.Label.Seq</th>
+                                <th v-show="items.Type==1 || items.Type==2">@BDMall.Resources.Label.IsAnchor</th>
+                                <th>@BDMall.Resources.Label.Operation</th>
+
+                            </tr>
+                            <tr v-for="a,i in items.Details">
+                                <td>{{a.ValueId}}</td>
+                                <td>{{a.ValueName}}</td>
+                                <td>
+                                    <input type="number" class="form-control" style="width:100px;" v-model="a.Seq" />
+                                </td>
+                                <td v-show="items.Type==1 || items.Type==2">
+                                    <input type="checkbox" value="true" v-model="a.IsAnchor" class="checkbox"/>
+                                </td>
+                                <td>
+                                    @*<input v-if="a.PlacedTop==false" type="button" class="btn btn-default" value="@WS.Resources.Action.SetForParentLink" v-on:click="setDetailPlacedTop(i)" />
+                                        <input v-else type="button" class="btn btn-default" value="@WS.Resources.Action.CancelForParentLink" v-on:click="cancelDetailPlacedTop(i)" />*@
+                                    <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Delete" v-on:click="deleteTypeDetail(a)" />
+                                </td>
+
+                            </tr>
+                        </table>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" class="text-center">
+                    <input type="button" class="btn btn-primary size-large" v-on:click="saveCheck" value="@BDMall.Resources.Action.Save" />
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+
+@section scripts{
+    <script src="~/Scripts/bootstrap-fileinput/js/fileinput.min.js"></script>
+    <script src="~/Scripts/admin/vue-component/multilangbar.js"></script>
+    <script type="text/javascript">
+        var id = '@ViewBag.Id';
+        var parentId = '@ViewBag.ParentId';
+        var type = @ViewBag.Type;
+        var formValidate;
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                languageType: "",
+                language: "",
+                bannerLang:"E",
+                items: {
+                    Id: WS.GuidEmpty,
+                    ParentId: parentId,
+                    Names: [{ Lang: { Code: "", Text: "" }, Desc: "" }],
+                    Titles: [{ Lang: { Code: "", Text: "" }, Desc: "" }],
+                    Images: [{ Lang: { Code: "", Text: "" }, Desc: "" }],
+                    Seq: 0,
+                    IsShow: true,
+                    ShowSub: false,
+                    Type: 0,
+                    Position: type,
+                    PlacedTop: false,
+                    Details: [{ Id: WS.GuidEmpty, ValueId: "", ValueName: "" }],
+                    RedirectType: -1,
+                    RedirectValue: "",
+                    RedirectName: "",
+                    IsNewWin: false,
+                    IsAnchor: false
+                }
+            },
+            methods: {
+                getById: function () {
+                    WS.AjaxP("get", "/adminapi/CustomMenuBar/GetHeaderMenu", { id: id }, function (response) {
+                        if (response.Succeeded == true) {
+
+                            vm.items = response.ReturnValue;
+
+                            InitBootstrapSelect("cboMenuPosition", "/adminapi/CustomMenuBar/GetMenuPosition", 1, false, false, null, function () {
+                                if (id == WS.GuidEmpty) {
+                                    $("#cboMenuPosition").selectpicker('val', type);
+                                }
+                                else {
+                                    $("#cboMenuPosition").selectpicker('val', vm.items.Position);
+                                }
+                            });
+
+                            InitBootstrapSelect("cboMenuType", "/adminapi/CustomMenuBar/GetMenuTypeWithNoLink", 1, false, true, null, function () {
+                                $("#cboMenuType").selectpicker('val', vm.items.Type);
+                            });
+
+                            InitBootstrapSelect("cboRedirectType", "/adminapi/CustomMenuBar/GetMenuType", 1, false, false, null, function () {
+                                $('#cboRedirectType').selectpicker('val', vm.items.RedirectType);
+                            });
+
+                            vm.$nextTick(function () {
+                                vm.setDefaultLanguage(vm.items.Names);
+                                vm.items.Names.forEach(function (val, item) {
+                                    $("#Name_" + val.Lang.Code).rules('add', { required: true, messages: { required: '@BDMall.Resources.Message.RequiredField' } });
+
+                                    if (val.Lang.Code == "E") {
+                                        $("#Name_" + val.Lang.Code).attr({ maxlength: "50" });
+                                    }
+                                    else {
+                                        $("#Name_" + val.Lang.Code).attr({ maxlength: "15" });
+                                    }
+                                });
+                            });
+                        }
+                        else {
+                            showWarn(response.Message);
+                        }
+                    }, function () { });
+                },
+                typeChange: function () {
+                    vm.items.Type = $("#cboMenuType").val();
+                    vm.items.ShowSub = false; 6
+                    vm.items.PlacedTop = false;
+                    vm.items.Details = [];
+                    if (vm.items.Type == 0) {
+                        var a = new Object();
+                        a.Id = WS.GuidEmpty;
+                        a.ValueId = "";
+                        a.ValueName = "";
+                        vm.items.Details.push(a);
+                    }
+                },
+                redirectTypeChange: function () {
+                    vm.items.RedirectType = $("#cboRedirectType").val();
+                    vm.items.RedirectValue = "";
+                    vm.items.RedirectName = "";
+                    vm.items.IsNewWin = false;
+                },
+                selectByType: function () {
+                    OpenDialog("Select Data", 1200, 900, "/System/SelectCustomMenuData/" + vm.items.Type + "/0", null, function (data) {
+                        if (data && data.results && data.results.length > 0) {
+                            var datas = [];
+                            if (data.results) {
+                                data.results.forEach(function (val) {
+                                    var a = {};
+                                    a.ValueId = val.ValueId;
+                                    a.ValueName = val.ValueName;
+
+                                    if (vm.items.Details.length == 0) {
+                                        vm.items.Details.push(a);
+                                    }
+                                    else {
+                                        var isExist = false;
+                                        vm.items.Details.forEach(function (val) {
+                                            if (val.ValueId == a.ValueId) {
+                                                isExist = true;
+                                            }
+                                        });
+
+                                        if (isExist == false) {
+                                            vm.items.Details.push(a);
+                                        }
+                                    }
+                                })
+                            }
+                        }
+
+                    });
+                },
+                selectByRedirectType: function () {
+                    OpenDialog("Select Data", 1200, 900, "/System/SelectCustomMenuData/" + vm.items.RedirectType + "/1", null, function (data) {
+                        if (data && data.results && data.results.length > 0) {
+                            var datas = [];
+                            if (data.results) {
+                                data.results.forEach(function (val) {
+                                    vm.items.RedirectValue = val.ValueId;
+                                    vm.items.RedirectName = val.ValueName;
+                                })
+                            }
+                        }
+                    });
+                },
+                selectLanguage: function (obj) {
+                    vm.$refs.langbar.setCurrentLanguage(obj.Lang.Code);
+                    vm.language = obj.Lang.Text;
+                    vm.languageType = obj.Lang.Code;
+                },
+                setDefaultLanguage: function (data) {
+                    if (data.length > 0) {
+                        var defaultLang = data[0].Lang.Code;
+                        vm.$refs.langbar.setCurrentLanguage(defaultLang);
+                        vm.language = data[0].Lang.Text;
+                        vm.languageType = data[0].Lang.Code;
+                    }
+                },
+                saveCheck: function () {
+                    //checkMultiLang()
+
+                    if (formValidate.form()) {
+                        $("#commentForm").submit();
+                    }
+                },
+                save: function () {
+                    vm.items.ParentId = parentId;
+                    vm.items.Position = $("#cboMenuPosition").selectpicker('val');
+                    vm.items.Type = $("#cboMenuType").selectpicker('val');
+                    WS.AjaxP("post", "/adminapi/CustomMenuBar/SaveMenu", vm.items, function (response) {
+                        if (response.Succeeded == true) {
+                            clowWin();
+                        } else {
+                            showWarn('@BDMall.Resources.Message.SaveFail' + response.Message);
+                        }
+                    }, function () { });
+                },
+                uploadImage: function (code) {
+                    vm.bannerLang = code;
+                    $("#bannerImg").click();
+
+                },
+                copyToOtherLang: function (val) {
+                    vm.items.Images.forEach(function (image) {
+                        image.Desc = val;
+                    });
+                },
+                deleteTypeDetail: function (obj) {
+                    var index = vm.items.Details.indexOf(obj);
+                    vm.items.Details.splice(index, 1);
+                },
+                setDetailPlacedTop: function (index) {
+                    vm.items.Details.forEach(function (val, i) {
+                        if (i == index) {
+                            val.PlacedTop = true;
+                        }
+                        else {
+                            val.PlacedTop = false;
+                        }
+
+                    });
+                },
+                cancelDetailPlacedTop: function (index) {
+                    vm.items.Details.forEach(function (val, i) {
+                        if (i == index) {
+                            val.PlacedTop = false;
+                        }
+                    });
+                },
+                Verify: function () {
+                    vm.items.ParentId = parentId;
+                    vm.items.Position = $("#cboMenuPosition").selectpicker('val');
+                    vm.items.Type = $("#cboMenuType").selectpicker('val');
+                    WS.AjaxP("post", "/adminapi/CustomMenuBar/VerifySeq", vm.items, function (response) {
+                        if (response.Succeeded == true) {
+
+                        } else {
+                            showWarn('@BDMall.Resources.Message.HasExist');
+                        }
+                    }, function () { });
+                }
+            }
+        });
+
+        var iconImgOption = new FileInputOption();
+        iconImgOption.CtrlName = "bannerImg";
+        iconImgOption.UploadUrl = "/adminapi/FileUpload/UploadFile";
+        iconImgOption.MaxFile = 1;
+        iconImgOption.SuccessCallback = function (data) {
+            vm.items.Images.forEach(function (val) {
+                if (val.Lang.Code == vm.bannerLang) {
+                    val.Desc = data.response.ReturnValue[0].Path;
+                }
+            });
+            $("#bannerImg").fileinput("refreshContainer");
+        };
+        iconImgOption.ErrorCallback = function (data) {};
+        FileInputInit(iconImgOption);
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+
+        $(document).ready(function () {
+            vm.getById();
+
+            formValidate = $("#commentForm").validate({
+                ignore: "",
+                submitHandler: function () {
+                    vm.save();
+                },
+                rules: {
+                },
+                messages:
+                {
+
+                },
+
+                success: function (label) {
+                    $(label).parent().removeClass('has-error');
+                },
+                showErrors: function (errorMap, errorList) {
+                    focusWrongPlace(errorMap, function (lang) {
+                        vm.$refs.langbar.setCurrentLanguage(lang);
+                        vm.languageType = lang;
+                    });
+                    // 此处注意，一定要调用默认方法，这样保证提示消息的默认效果
+                    this.defaultShowErrors();
+                },
+                errorPlacement: function (error, element) {
+                    if (error.length > 0) {
+                        if (error[0].innerHTML != '') {
+                            error.insertAfter(element);
+                        }
+                    }
+                }
+
+            });
+        })
+    </script>
+}

@@ -1,0 +1,150 @@
+﻿
+@{
+    ViewBag.Title = "EditMailServer";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="app" class="container">
+
+    <form id="commentForm" v-cloak>
+        <table class="table">
+
+            <tr>
+                <td class="col-md-2"><span style="color:red;">*</span>@BDMall.Resources.Label.Code</td>
+                <td class="col-md-10">
+                    <input type="text" name="Code" v-model="item.Code" class="form-control" v-bind:disabled="item.Id!='00000000-0000-0000-0000-000000000000'"/>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2"><span style="color:red;">*</span>@BDMall.Resources.Label.MailServer</td>
+                <td class="col-md-10">
+                    <input type="text" name="MailServer" v-model="item.MailServer" class="form-control" />
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2"><span style="color:red;">*</span>@BDMall.Resources.Label.Port</td>
+                <td class="col-md-10">
+                    <input type="text" name="Port" v-model="item.Port" class="form-control" />
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">@BDMall.Resources.Label.IsSSL</td>
+                <td class="col-md-10">
+                    <input type="checkbox" v-model="item.IsSSL" value="true"  />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" class="text-center">
+                    <input type="button" class="btn btn-primary" v-on:click="saveCheck" value="@BDMall.Resources.Action.Save" />
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+
+@section scripts{
+
+    <script type="text/javascript">
+        var tid = '@ViewBag.Id';
+        var formValidate;
+        //var params = bDialog.getDialogParams();
+        //var parentObject = null;
+        var vm = new Vue({
+            el: "#commentForm",
+            data: {
+                item: {}
+            },
+
+            methods: {
+                closeTab: function () {
+                    clowWin();
+                },
+                save: function () {
+                    WS.AjaxP("post",
+                        "/adminapi/MailServer/SaveMailServer",
+                        vm.item,
+                        function(response) {
+                            if (response.Succeeded == true) {
+                                //vm.getItemById();
+                                clowWin();
+                            } else {
+                                showWarn(response.Message);
+                            }
+                        },
+                        function() {});
+                },
+
+                saveCheck:function()
+                {
+                    if(formValidate.form())
+                    {
+                        $("#commentForm").submit();
+                    }
+                },
+
+                //通过Id获取Item
+                getItemById: function () {
+
+                    var obj = new Object();
+                    obj.id = tid;
+                    WS.AjaxP("get", "/adminapi/MailServer/GetById", obj, function (response) {
+                        if (response) {
+                            vm.item = response;
+                        }
+                    }, function () { });
+                },
+
+              
+            }
+        });
+
+
+
+
+
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+        $(document).ready(function () {
+
+
+            vm.getItemById();
+
+
+            formValidate = $("#commentForm").validate({
+                ignore: "",
+                submitHandler: function () {
+                    vm.save();
+                },
+                rules: {
+                    Code: "required",
+                    MailServer: "required",
+                    Port: "required",
+                },
+                messages:
+                {
+                    Code: '@BDMall.Resources.Message.RequiredField',
+                    MailServer: '@BDMall.Resources.Message.RequiredField',
+                    Port: '@BDMall.Resources.Message.RequiredField'
+                },
+
+                success: function (label) {
+                    $(label).parent().removeClass('has-error');
+                },
+                showErrors: function (errorMap, errorList) {
+                    focusWrongPlace(errorMap, function (lang) {
+                        //vm.$refs.langbar.setCurrentLanguage(lang);
+                        //vm.languageType = lang;
+                    });
+                    // 此处注意，一定要调用默认方法，这样保证提示消息的默认效果
+                    this.defaultShowErrors();
+                }
+
+            });
+        });
+    </script>
+}

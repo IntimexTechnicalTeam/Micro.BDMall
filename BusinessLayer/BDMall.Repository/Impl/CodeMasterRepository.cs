@@ -79,6 +79,8 @@ namespace BDMall.Repository
                             DescTransId = m.DescTransId,
                             Remark = m.Remark,
                             Description = mt.Value,
+                            CreateDate = m.CreateDate,
+                            UpdateDate = m.UpdateDate
 
                         };
 

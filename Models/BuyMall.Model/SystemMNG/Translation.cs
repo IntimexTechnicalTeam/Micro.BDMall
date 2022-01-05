@@ -12,6 +12,10 @@ namespace BDMall.Model
     public class Translation : BaseEntity<Guid>
     {
 
+        public Translation()
+        {
+            Module = string.Empty;
+        }
 
         [Required]
         [Column(Order = 3)]
@@ -36,9 +40,6 @@ namespace BDMall.Model
         //[ForeignKey("TransId")]
         //public virtual ProductAttribute ProductAttribute { get; set; }
 
-        public Translation()
-        {
-            Module = string.Empty;
-        }
+
     }
 }

@@ -8,4 +8,9 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Models\BuyMall.Enums\BDMall.Enums.csproj" />
+    <ProjectReference Include="..\..\Models\BuyMall.Model\BDMall.Model.csproj" />
+  </ItemGroup>
+
 </Project>
