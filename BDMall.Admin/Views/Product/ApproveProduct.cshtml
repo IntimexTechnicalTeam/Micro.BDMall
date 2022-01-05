@@ -309,7 +309,7 @@
 
         $(document).ready(function () {
             //InitNormalSelect("cboMerchant", "/adminapi/Merchant/GetMerchantCboSrc", true, null, false);
-            InitBootstrapSelect("cboMerchant", "/adminapi/Merchant/GetMerchantCboSrc", 1, true, true, null, function () { }, true);
+            InitBootstrapSelect("cboMerchant", "/adminapi/Dict/GetMerchantOptions", 1, true, true, null, function () { }, true);
             var oTable = ProductTableInit();
             oTable.Init();
             vm.showTableData();

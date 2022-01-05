@@ -5,6 +5,7 @@ using BDMall.Enums;
 using Intimex.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
@@ -167,11 +168,20 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
 
         [HttpPost]
         [AdminApiAuthorize(Module = ModuleConst.ProductModule, Function = new string[] { FunctionConst.Prod_Search })]
-        public PageData<ProductSummary> SearchData([FromForm]ProdSearchCond condition)
+        public PageData<ProductSummary> SearchData([FromBody]ProdSearchCond condition)
         {
             PageData<ProductSummary> result = productBLL.SearchBackEndProductSummary(condition);
 
             return result;
+        }
+
+        [HttpGet]
+        [AdminApiAuthorize(Module = ModuleConst.ProductModule, Function = new string[] { FunctionConst.Prod_View })]
+        public ProductEditModel GetById(Guid id)
+        {
+            ProductEditModel product = new ProductEditModel();
+            product = productBLL.GetProductInfo(id);           
+            return product;
         }
     }
 

@@ -102,6 +102,12 @@ namespace BDMall.Repository
 
         public DbSet<MemberLoginRecord> MemberLoginRecords { get; set; }
         
+        public DbSet<Inventory> Inventories { get; set; }
 
+        public DbSet<ProductAttrValue> ProductAttrValues { get; set; }
+
+        public DbSet<ProductCommission> ProductCommissions { get; set; }
+
+        public DbSet<ProductRefuseDelivery> ProductRefuseDeliveries { get; set;}
     }
 }

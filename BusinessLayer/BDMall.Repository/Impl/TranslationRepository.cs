@@ -44,39 +44,28 @@ namespace BDMall.Repository
                 }
                 return data;
             }
-            else
+
+            //var translates = baseRepository.GetList<Translation>().Where(d => d.TransId == transId && d.IsActive && !d.IsDeleted).Select(d => d).ToList();
+            var translates = GetTranslation(transId);
+            bool exist = false;
+            foreach (var supportLang in supportLangs)
             {
-                var translates = baseRepository.GetList<Translation>().Where(d => d.TransId == transId && d.IsActive && !d.IsDeleted).Select(d => d).ToList();
-
-                bool exist = false;
-                foreach (var supportLang in supportLangs)
+                exist = false;
+                foreach (var tran in translates)
                 {
-                    exist = false;
-                    foreach (var tran in translates)
+                    if (supportLang.Code.Trim() == tran.Lang.ToString().Trim())
                     {
-                        if (supportLang.Code.Trim() == tran.Lang.ToString().Trim())
-                        {
-                            exist = true;
-                            data.Add(new MutiLanguage { Desc = tran.Value, Lang = supportLang });
-                        }
+                        exist = true;
+                        data.Add(new MutiLanguage { Desc = tran.Value, Lang = supportLang });
+                    }
 
-                    }
-                    if (!exist)
-                    {
-                        data.Add(new MutiLanguage { Desc = "", Lang = supportLang });
-                    }
                 }
-
-                return data;
-                //var data = Entities.Where(d => d.TransId == transId).Select(d => new MutiLanguage()
-                //{
-                //    Desc = d.Value,
-                //    Language = d.Lang,
-                //    Lang = new SystemLang() { Code = d.Lang.ToString(), Text = d.Value }
-                //}).ToList();
-                //return data;
+                if (!exist)
+                {
+                    data.Add(new MutiLanguage { Desc = "", Lang = supportLang });
+                }
             }
-
+            return data;        
         }
 
         public string GetDescForLang(Guid transId, Language lang)

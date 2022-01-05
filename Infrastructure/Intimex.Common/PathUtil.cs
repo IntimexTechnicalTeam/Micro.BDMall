@@ -94,6 +94,8 @@ namespace Intimex.Common
             folder = $"/ClientResources{folder}";
             folder = folder.Replace('/', '\\');
             folder = $"{RootPath}{folder}";
+
+            if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
             return folder;
         }
 

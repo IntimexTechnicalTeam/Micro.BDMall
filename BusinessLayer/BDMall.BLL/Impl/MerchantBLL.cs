@@ -53,7 +53,7 @@ namespace BDMall.BLL
             var query = (from d in baseRepository.GetList<Merchant>()
                          join t in baseRepository.GetList<Translation>() on new { a1 = d.NameTransId, a2 = CurrentUser.Lang } equals new { a1 = t.TransId, a2 = t.Lang } into TransTemp
                          from tt in TransTemp.DefaultIfEmpty()
-                         where (!isMerchant || (isMerchant && d.Id == CurrentUser.MechantId)) && d.IsDeleted == false
+                         where (!isMerchant || (isMerchant && d.Id == CurrentUser.MerchantId)) && d.IsDeleted == false
                          select new KeyValue
                          {
                              Id = d.Id.ToString().ToLower(),

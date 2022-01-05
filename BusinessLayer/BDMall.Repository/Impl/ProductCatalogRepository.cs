@@ -122,5 +122,40 @@ namespace BDMall.Repository
             list.AddRange(products);
             return list;
         }
+
+        public List<ProductCatalogDto> GetCatalogUrlByCatalogId(Guid Id)
+        {           
+            var list = (from u in baseRepository.GetList<ProductCatalogParent>()
+                         join c in baseRepository.GetList<ProductCatalog>() on u.ParentCatalogId equals c.Id
+                         join t in baseRepository.GetList<Translation>() on new { a1 = c.NameTransId, a2 = CurrentUser.Lang }
+                          equals new { a1 = t.TransId, a2 = t.Lang } into tc
+                         from tt in tc.DefaultIfEmpty()
+                         where u.CatalogId == Id && u.IsDeleted == false && u.IsActive
+                         select new ProductCatalogDto
+                         {
+                             Desc = tt.Value ?? "",
+                             Id = c.Id,
+                             Level = c.Level,
+                             Code = c.Code,
+                             MBigIcon = c.MBigIcon,
+                             MOriginalIcon = c.MOriginalIcon,
+                             MSmallIcon = c.MSmallIcon,
+                             OriginalIcon = c.OriginalIcon,
+                             ParentId = c.ParentId,
+                             Seq = c.Seq,
+                             SmallIcon = c.SmallIcon,
+                             NameTransId = c.NameTransId,
+                             IsActive = c.IsActive,
+                             IsDeleted = c.IsDeleted,
+                             CreateDate = c.CreateDate,
+                             CreateBy = c.CreateBy,
+                             UpdateDate = c.UpdateDate,
+                             UpdateBy = c.UpdateBy,
+                             BigIcon = c.BigIcon,
+                         }
+                     ).OrderBy(o => o.Seq).ToList();
+
+            return list;
+        }
     }
 }

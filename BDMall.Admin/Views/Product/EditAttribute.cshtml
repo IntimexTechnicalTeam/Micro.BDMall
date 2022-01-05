@@ -3,7 +3,7 @@
     Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
 }
 
-
+<link href="~/Scripts/bootstrap-fileinput/css/fileinput.min.css" rel="stylesheet"/>
 <div id="app" class="col-md-12" v-cloak>
     <form id="commentForm" class="form-horizontal">
         <input type="hidden" id="hidAttributeID" v-model="attr.Id" />
@@ -16,13 +16,13 @@
         <div class="form-group" v-for="item in attr.Descs">
             <label class="col-md-2">@BDMall.Resources.Label.Desc ({{item.Lang.Text}})</label>
             <div class="col-md-10">
-                <input type="text" class="form-control" v-bind:id="'txtDesc_'+item.Lang.Code" v-bind:name="'txtDesc_'+item.Lang.Code" v-model="item.Desc" style="width:300px;" v-bind:disabled="IsMerchant==false" />
+                <input type="text" class="form-control" v-bind:id="'txtDesc_'+item.Lang.Code" v-bind:name="'txtDesc_'+item.Lang.Code" v-model="item.Desc" style="width:300px;" v-bind:disabled="IsMerchant" />
             </div>
         </div>
         <div class="form-group">
             <label class="col-md-2"><span style="color:red;">*</span>@BDMall.Resources.Label.AttributeLayout</label>
             <div class="col-md-10">
-                <select id="cboAttrLayout" data-width="300px" v-bind:disabled="IsMerchant==false"></select>
+                <select id="cboAttrLayout" data-width="300px" v-bind:disabled="IsMerchant"></select>
             </div>
         </div>
         @*<div class="form-group" v-show="attr.IsInvAttribute==1">
@@ -33,7 +33,7 @@
 
         <div class="panel-body">
             <div id="subToolbar" class="btn-group">
-                <button id="btn_SubAdd" type="button" class="btn btn-default" v-on:click="SubAdd" v-show="IsMerchant">
+                <button id="btn_SubAdd" type="button" class="btn btn-default" v-on:click="SubAdd" v-show="!IsMerchant">
                     <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>@BDMall.Resources.Action.Add
                 </button>
                 <button id="btn_SubEdit" type="button" class="btn btn-default" v-on:click="SubModify" v-bind:disabled="IsModify">
@@ -109,9 +109,7 @@
 
 @section scripts
 {
-    @Styles.Render("~/Content/bootstrapfile")
-    @Scripts.Render("~/bundles/bootstrapfile")
-
+    @*<script src="~/Scripts/bootstrap-fileinput/js/fileinput.min.js"></script>*@
     <script type="text/javascript">
         var attrItemRowID = 0;
         //var params = bDialog.getDialogParams();
@@ -176,7 +174,7 @@
                         vm.attr.IsInvAttribute = isInv;
                         InitSubTable();
 
-                        InitBootstrapSelect("cboAttrLayout", "/adminapi/ProdAttribute/GetAttrLayout", 1, false, false, null, function () {
+                        InitBootstrapSelect("cboAttrLayout", "/adminapi/Dict/GetAttrLayout", 1, false, false, null, function () {
                             $("#cboAttrLayout").selectpicker('val', vm.attr.Layout);
                         });
 
@@ -263,7 +261,7 @@
                     var selected = $("#tblSubAttribute").bootstrapTable("getSelections");
                     if (selected.length == 1) {
                          //&& selected[0].MerchantName != ''
-                        if (vm.IsMerchant) {
+                        if (!vm.IsMerchant) {
                             vm.IsModify = false;
                         }
                         else {
@@ -532,6 +530,9 @@
         }
         //將數據庫中的屬性值列表中的多語言列表平攤
         function DBDataToSubTableData(datas) {
+           
+            vm.subTableValues=[];
+
             for (var i = 0; i < datas.length; i++) {
                 var val = datas[i];
 

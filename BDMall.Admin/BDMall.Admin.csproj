@@ -6,15 +6,12 @@
 
   <ItemGroup>
     <Content Remove="Views\Product\AccessoriesProduct.cshtml" />
-    <Content Remove="Views\Product\ApproveProduct.cshtml" />
     <Content Remove="Views\Product\ApproveProductDetail.cshtml" />
     <Content Remove="Views\Product\ApproveProductHistory.cshtml" />
     <Content Remove="Views\Product\CombinationProduct.cshtml" />
     <Content Remove="Views\Product\CustomPrcRngEdit.cshtml" />
     <Content Remove="Views\Product\CustomPriceRange.cshtml" />
-    <Content Remove="Views\Product\EditAttribute.cshtml" />
     <Content Remove="Views\Product\EditProdPeriodPrice.cshtml" />
-    <Content Remove="Views\Product\EditProduct.cshtml" />
     <Content Remove="Views\Product\ExportData.cshtml" />
     <Content Remove="Views\Product\MassUploadDetail.cshtml" />
     <Content Remove="Views\Product\MassUploadInstoreProduct.cshtml" />

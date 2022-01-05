@@ -13,15 +13,15 @@ namespace BDMall.Domain
 
         public Language Language { get; set; }
 
-        public Guid MerchantId { get; set; }
+        public Guid MerchantId { get; set; } = Guid.Empty;
         public string Key { get; set; }
 
         public string ProductCode { get; set; }
         public string KeyWordType { get; set; }
-        public Guid Category { get; set; }
+        public Guid Category { get; set; } = Guid.Empty;
 
-        public Guid Attribute { get; set; }
-        public Guid AttributeValue { get; set; }
+        public Guid Attribute { get; set; } = Guid.Empty;
+        public Guid AttributeValue { get; set; } = Guid.Empty;
 
         public bool OnSale { get; set; }
         public bool SaleOff { get; set; }

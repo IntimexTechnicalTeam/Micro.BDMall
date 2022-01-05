@@ -18,13 +18,13 @@ namespace BDMall.BLL
         private static SimpleCurrency DefaultCurrency;
 
         //public ICurrExchangeRateRwpository CurrExchangeRateRwpository { get; set; }
-        public ISettingBLL settingBLL { get; set; }
+        public ISettingBLL settingBLL;
 
-        ICodeMasterRepository _codeMasterRepository;
+        public ICodeMasterRepository _codeMasterRepository;
 
         public CurrencyBLL(IServiceProvider services) : base(services)
         {
-
+            _codeMasterRepository = Services.Resolve<ICodeMasterRepository>();
         }
 
         public SimpleCurrency GetSimpleCurrency(string code)

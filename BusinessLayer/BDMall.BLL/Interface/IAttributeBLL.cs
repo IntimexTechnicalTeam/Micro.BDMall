@@ -17,8 +17,24 @@ namespace BDMall.BLL
 
         List<KeyValue> GetNonInveAttribute();
 
+        List<KeyValue> GetAttrLayout();
+
         List<ProductAttributeValueDto> GetInveAttributeValueSummary();
 
         PageData<ProductAttributeDto> SearchAttribute(ProductAttributeCond attrCond);
+
+        ProductAttributeDto GetAttribute(Guid id);
+
+        ProductAttributeValueDto GetAttributeValue(Guid id);
+
+        bool CheckAttrIsUsed(string ids);
+
+        SystemResult DeleteAttribute(Guid[] ids);
+
+        SystemResult Save(ProductAttributeDto attributeObj);
+
+        List<AttributeObjectView> GetInvAttributeByCatId(Guid catId);
+
+        List<AttributeObjectView> GetNonInvAttributeByCatId(Guid catId);
     }
 }

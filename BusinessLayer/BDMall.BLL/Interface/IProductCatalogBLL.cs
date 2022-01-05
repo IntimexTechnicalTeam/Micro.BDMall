@@ -25,5 +25,9 @@ namespace BDMall.BLL
         Task<SystemResult> DisActiveCatalogAsync(Guid catId);
 
         Task<SystemResult> ActiveCatalogAsync(Guid catId);
+
+        string GetCatalogPath(Guid catID);
+
+      
     }
 }
