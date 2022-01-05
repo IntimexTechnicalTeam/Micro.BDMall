@@ -370,10 +370,10 @@ namespace BDMall.BLL
             foreach (var img in images)
             {
                 var fileName = Path.GetFileName(img.Desc);
-                var tempFilePath = PathUtil.GetPhysicalPath(Configuration["UploadPath"], CurrentUser.MechantId.ToString(), FileFolderEnum.CustomMenu) + fileName;
+                var tempFilePath = PathUtil.GetPhysicalPath(Configuration["UploadPath"], CurrentUser.MerchantId.ToString(), FileFolderEnum.CustomMenu) + fileName;
 
                 var newImgName = Guid.NewGuid().ToString() + Path.GetExtension(img.Desc);
-                var menuImgPath = PathUtil.GetRelativePath(CurrentUser.MechantId.ToString(), FileFolderEnum.CustomMenu) + "/" + newImgName;
+                var menuImgPath = PathUtil.GetRelativePath(CurrentUser.MerchantId.ToString(), FileFolderEnum.CustomMenu) + "/" + newImgName;
 
                 if (File.Exists(tempFilePath))
                 {
