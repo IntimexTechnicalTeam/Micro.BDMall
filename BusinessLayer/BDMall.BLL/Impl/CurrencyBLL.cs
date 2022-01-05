@@ -381,34 +381,33 @@ namespace BDMall.BLL
                     dbCmRec.DescTransId = translationRepository.InsertMutiLanguage(currency.Descriptions, TranslationType.Currency);
                     dbCmRec.Module = CodeMasterModule.System.ToString();
                     dbCmRec.Function = CodeMasterFunction.Currency.ToString();
-                    dbCmRec.Remark = currency.Remark;
+                    dbCmRec.Remark = currency.Remark ?? "";
                     dbCmRec.CreateDate = DateTime.Now;
                     dbCmRec.CreateBy = Guid.Parse(CurrentUser.UserId);
                     dbCmRec.UpdateDate = DateTime.Now;
                     dbCmRec.UpdateBy = Guid.Parse(CurrentUser.UserId);
                     dbCmRec.IsActive = true;
-                    baseRepository.Insert(cmRec);
+                    baseRepository.Insert(dbCmRec);
                 }
                 var rateRec = baseRepository.GetList<CurrencyExchangeRate>().FirstOrDefault(x => x.ToCurCode == currencyCode && x.IsActive && !x.IsDeleted);
                 if (rateRec == null)
                 {
-                    if (rateRec == null)
+
+                    string defaultCurrencyCode = GetDefaultCurrencyCode();
+                    rateRec = new CurrencyExchangeRate()
                     {
-                        string defaultCurrencyCode = GetDefaultCurrencyCode();
-                        rateRec = new CurrencyExchangeRate()
-                        {
-                            Id = Guid.NewGuid(),
-                            FromCurCode = defaultCurrencyCode,
-                            ToCurCode = currencyCode,
-                            Rate = 0,
-                            CreateDate = DateTime.Now,
-                            CreateBy = Guid.Parse(CurrentUser.UserId),
-                            UpdateDate = DateTime.Now,
-                            UpdateBy = Guid.Parse(CurrentUser.UserId),
-                            IsActive = true,
-                        };
-                        baseRepository.Insert(rateRec);
-                    }
+                        Id = Guid.NewGuid(),
+                        FromCurCode = defaultCurrencyCode,
+                        ToCurCode = currencyCode,
+                        Rate = 0,
+                        CreateDate = DateTime.Now,
+                        CreateBy = Guid.Parse(CurrentUser.UserId),
+                        UpdateDate = DateTime.Now,
+                        UpdateBy = Guid.Parse(CurrentUser.UserId),
+                        IsActive = true,
+                    };
+                    baseRepository.Insert(rateRec);
+
                 }
                 else
                 {

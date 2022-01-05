@@ -1,0 +1,251 @@
+﻿
+@{
+    ViewBag.Title = "MailServerSetting";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="app" class="col-md-12" v-cloak>
+
+    <div>
+        <div class="text-right">
+            <input type="button" class="btn btn-primary" value="@BDMall.Resources.Action.Search" onclick="search();" />
+        </div>
+    </div>
+
+
+    <div>
+        <div class="panel-body">
+            <div id="toolbar" class="btn-group">
+                <button id="btn_add" type="button" class="btn btn-default" v-on:click="Add">
+                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>@BDMall.Resources.Action.Add
+                </button>
+                <button id="btn_Modify" type="button" class="btn btn-default" v-on:click="Modify" v-bind:disabled="IsModify==false">
+                    <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>@BDMall.Resources.Action.Modify
+                </button>
+                <button id="btn_delete" type="button" class="btn btn-default" v-on:click="Delete" v-bind:disabled="IsDelete==false">
+                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>@BDMall.Resources.Action.Delete
+                </button>
+            </div>
+            <table id="tblServer"></table>
+        </div>
+    </div>
+
+</div>
+@section scripts {
+    <script type="text/javascript">
+        layui.use(['miniTab'], function () {
+            var layer = layui.layer,
+                miniTab = layui.miniTab;
+        });
+        var timer = null;
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                cond: {},
+                IsModify: false,
+                IsDelete: false
+            },
+            methods: {
+
+                Add: function () {
+                    var tabId = self.frameElement.parentElement.id;
+                    miniTab.openNewTabByIframe({
+                        href:"/System/EditMailServer/" + WS.GuidEmpty,
+                        title: '@BDMall.Resources.Label.Add',
+                        callback: search
+                    });
+                },
+                Modify: function () {
+                    var tabId = self.frameElement.parentElement.id;
+                    var row = $("#tblServer").bootstrapTable("getSelections");
+                    var id = row[0].Id;
+                    miniTab.openNewTabByIframe({
+                        href:"/System/EditMailServer/" + row[0].Id,
+                        title: row[0].Code + "_" + Resources.Modify,
+                        callback: search
+                    });
+                },
+                Delete: function () {
+                    var selects = $("#tblServer").bootstrapTable("getSelections");
+
+                    SystemConfirm('@BDMall.Resources.Message.DeleteConfirm',
+                        function () {
+
+                            var strSkus = "";
+
+                            selects.forEach(function (val) {
+                                strSkus += val.Id + ",";
+                            });
+
+                            var data = new Object();
+                            data.ids = strSkus;
+                            WS.AjaxP("get",
+                                "/adminapi/MailServer/DeleteMailServer",
+                                data,
+                                function (response) {
+                                    if (response.Succeeded == true) {
+                                        showWarn('@BDMall.Resources.Message.DeleteSucceeded');
+                                        search();
+                                    } else {
+                                        showWarn(response.Message);
+                                    }
+                                },
+                                function () { });
+                        });
+
+                },
+                SetButtonState: function () {
+                    var selected = $("#tblServer").bootstrapTable("getSelections");
+                    if (selected.length == 1) {
+                        vm.IsModify = true;
+                    }
+                    else {
+                        vm.IsModify = false;
+                    }
+
+                    if (selected.length >= 1) {
+                        vm.IsDelete = true;
+                    }
+                    else {
+                        vm.IsDelete = false;
+                    }
+
+                }
+            }
+        });
+
+        var serverTableInit = function () {
+
+            var btTable = new Object();
+
+            btTable.queryParams = function (params) {
+                var page = 1;
+                if (params.offset > 0) {
+                    page = parseInt(params.offset / params.limit) + 1;
+                }
+
+
+                vm.cond.Page = page;
+                vm.cond.PageSize = params.limit;
+
+                return vm.cond;
+
+            }
+            btTable.Init = function () {
+
+                $("#tblServer").bootstrapTable({
+                    method: 'post',                      //请求方式（*）
+                    //url: '/adminapi/Product/Search',         //请求后台的URL（*）
+                    queryParams: btTable.queryParams,//传递参数（*）
+                    //queryParamsType:'limit',
+                    toolbar: '#toolbar',                //工具按钮用哪个容器
+                    striped: true,                      //是否显示行间隔色
+                    cache: true,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                    sortable: true,                     //是否启用排序
+                    sortOrder: "asc",                   //排序方式
+                    sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+                    pageNumber: 1,                       //初始化加载第一页，默认第一页
+                    pageSize: 10,                       //每页的记录行数（*）
+                    pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                    smartDisplay: false,
+                    showRefresh: true,                  //是否显示刷新按钮
+                    clickToSelect: true,                //是否启用点击选中行
+                    //height: 750,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+                    uniqueId: "Id",                     //每一行的唯一标识，一般为主键列
+                    cardView: false,                    //是否显示详细视图
+                    detailView: false,                   //是否显示父子表
+                    pagination: true,                   //是否显示分页（*）
+                    dataField: "Data",
+                    totalField: "TotalRecord",
+                    ajaxOptions: {
+                        beforeSend: function (request) {
+                            var access_token = $.cookie("access_token");
+                            request.setRequestHeader("Authorization", "Bearer " + access_token);
+                        }
+                    },
+                    onLoadSuccess: function () {
+                        vm.SetButtonState();
+                    },
+                    onCheck: function (row) {
+                        vm.SetButtonState();
+                    },
+                    onUncheck: function (row) {
+                        vm.SetButtonState();
+                    },
+                    onCheckAll: function (rows) {
+                        vm.SetButtonState();
+                    },
+                    onUncheckAll: function (rows) {
+                        vm.SetButtonState();
+                    },
+
+                    columns: [{
+                        checkbox: true
+                    }, {
+                        field: 'Id',
+                        title: 'Id',
+                        visible: false
+                    }, {
+                        field: 'Code',
+                        title: '@BDMall.Resources.Label.Code',
+                    }, {
+                        field: 'MailServer',
+                        title: '@BDMall.Resources.Label.MailServer',
+                    }, {
+                        field: 'Port',
+                        title: '@BDMall.Resources.Label.Port',
+                    }, {
+                        field: 'IsSSL',
+                        title: '@BDMall.Resources.Label.IsSSL',
+                        formatter: function (value, row, index) {
+                            var result = '';
+                            if (value) {
+                                result = '@BDMall.Resources.Label.Yes'
+                            }
+                            else {
+                                result = '@BDMall.Resources.Label.No'
+                            }
+                            return result;
+                        }
+                    }],
+                    formatLoadingMessage: function () {
+                        //return '<%=Resources.Message.Processing%>';
+                        return '';
+                    }
+
+                });
+            };
+
+            return btTable;
+        }
+
+
+
+        function search() {
+            $("#tblServer").bootstrapTable("refresh", { url: "/adminapi/MailServer/GetMailServerSettings", pageNumber: 1 });
+        }
+
+
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+
+
+
+
+
+
+        $(document).ready(function () {
+
+            var oTable = serverTableInit();
+            oTable.Init();
+
+            search();
+        });
+
+    </script>
+}

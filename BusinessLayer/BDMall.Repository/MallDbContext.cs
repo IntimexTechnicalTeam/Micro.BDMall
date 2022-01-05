@@ -105,7 +105,23 @@ namespace BDMall.Repository
 
         public DbSet<CurrencyExchangeRate> CurrencyExchangeRates { get; set; }
 
+        public DbSet<MailServer> MailServers { get; set; }
+        public DbSet<CustomMenu> CustomMenus { get; set; }
+        public DbSet<CustomMenuDetail> CustomMenuDetails { get; set; }
 
+        public DbSet<CMSContent> CMSContents { get; set; }
+
+        public DbSet<CMSCategory> CMSCategories { get; set; }
+
+        public DbSet<Country> Countries { get; set; }
+        public DbSet<Province> Provinces { get; set; }
+
+        public DbSet<RnpForm> RnpForms { get; set; }
+        public DbSet<RnpAnswer> RnpAnswers { get; set; }
+        public DbSet<RnpPayment> RnpPayments { get; set; }
+        public DbSet<RnpQuestion> RnpQuestions { get; set; }
+        public DbSet<RnpSubmit> RnpSubmits { get; set; }
+        public DbSet<RnpSubmitData> RnpSubmitDatas { get; set; }
 
     }
 }

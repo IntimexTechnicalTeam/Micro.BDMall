@@ -26,7 +26,9 @@ namespace Domain
             ConfigMap<CodeMasterDto, CodeMaster>();
             ConfigMap<ExpressCompanyDto, ExpressCompany>();
             ConfigMap<CurrencyExchangeRateDto, CurrencyExchangeRate>();
-            
+            ConfigMap<CustomMenuDto, CustomMenu>();
+            ConfigMap<CustomMenuDetailDto, CustomMenuDetail>();
+
 
 
             ConfigMap<ProductAttributeDto, ProductAttribute>();

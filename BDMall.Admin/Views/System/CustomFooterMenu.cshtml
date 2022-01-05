@@ -1,0 +1,379 @@
+﻿
+@{
+    ViewBag.Title = @BDMall.Resources.Label.CustomFooterMenu;
+    Layout = "~/Views/Shared/_ElementLayoutAdmin.cshtml";
+}
+
+<div id="app" class="row">
+    <div class="col-md-12">
+        <input class="btn btn-default" type="button" value="@BDMall.Resources.Action.AddMenu" v-on:click="addRoot" />
+        <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Sorted" v-on:click="sorted" />
+    </div>
+    <div class="col-md-6">
+        <el-tree :props="props"
+                 :load="loadNode"
+                 ref="tree"
+                 lazy
+                 @*show-checkbox*@
+                 node-key="id"
+                 highlight-current
+                 :expand-on-click-node="false"
+                 @*v-on:node-click="handleNodeClick"*@
+                 v-on:check-change="handleCheckChange"
+                 :render-content="renderContent">
+        </el-tree>
+        <div class="text-right" style="margin:10px 0 0 0;">
+            <input class="btn btn-default" v-show="isSorted==true" type="button" value="@BDMall.Resources.Action.Save" v-on:click="saveSorted" />
+            <input class="btn btn-default" v-show="isSorted==true" type="button" value="@BDMall.Resources.Action.Cancel" v-on:click="cancelSorted" />
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script type="text/javascript">
+        var rootNode;
+        var rootResolve
+        var subNode;
+        var subResolve;
+        var tabId = self.frameElement.parentElement.id;
+        var layer, miniTab;
+        layui.use(['miniTab'], function () {
+            layer = layui.layer;
+            miniTab = layui.miniTab;
+        });
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                props: {
+                    id: "Id",
+                    label: 'name',
+                    seq: 'Seq',
+                    children: 'zones'
+                },
+                count: 1,
+                isSorted: false,
+            },
+            methods: {
+                handleCheckChange(data, checked, indeterminate) {
+                    console.log(data, checked, indeterminate);
+                },
+                //handleNodeClick(data, node) {
+                //    this.loadNode(node,resolve);
+                //},
+                addRoot() {
+                    miniTab.openNewTabByIframe({
+                         href: "/System/EditCustomMenu/00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000/1",
+                        title:'@BDMall.Resources.Action.Add' + "-" + '@BDMall.Resources.Label.FooterMenu',
+                        callback: vm.refreshRootNode
+                    });
+                },
+                addNode(parendId) {                  
+                    miniTab.openNewTabByIframe({
+                        href: "/System/EditCustomMenu/00000000-0000-0000-0000-000000000000/" + parendId+"/1",
+                        title:'@BDMall.Resources.Action.Add' + "-" + '@BDMall.Resources.Label.FooterMenu',
+                        callback: vm.refreshRootNode
+                    });
+                },
+                editNode(id) {
+                    parent.addTab({
+                        id: "FooterMenuEdit_"+id,
+                        title:
+                            '@BDMall.Resources.Action.Edit' + "-" + subNode.data.name,
+                        href:
+                            "/System/EditCustomMenu/" + id +"/00000000-0000-0000-0000-000000000000/1",
+                        checkLogin: true,
+                        callback: vm.refreshNode,
+                        parentId: tabId
+                    });
+
+                     miniTab.openNewTabByIframe({
+                         href: "/System/EditCustomMenu/" + id+"/00000000-0000-0000-0000-000000000000/1",
+                         title:'@BDMall.Resources.Action.Edit' + "-" +subNode.data.name,
+                         callback: vm.refreshRootNode
+                    });
+                },
+                delNode(id) {
+                    var parentNode = subNode.parent;
+                    if (parentNode) {
+                        SystemConfirm('@BDMall.Resources.Message.DeleteConfirm',
+                        function () {
+                            WS.AjaxP("get", "/adminapi/CustomMenuBar/DeleteMenu", { id: id }, function (response) {
+                                if (response.Succeeded == true) {
+                                    vm.refreshNode();
+                                }
+                                else {
+                                    showWarn('@BDMall.Resources.Message.DeleteFailed');
+                                }
+                            }, function () { });
+                        });
+                    }
+                },
+                loadNode(node, resolve) {
+
+                    if (node.level === 0) {
+
+                        this.loadRootNode(node, resolve);
+                    }
+                    else {
+
+                        this.getNodeById(node, resolve);
+                    }
+                },
+                refreshRootNode: function () {
+                    vm.loadRootNode(rootNode, rootResolve);
+                },
+                refreshNode: function () {
+                    if (subNode.level == 1) {
+                        vm.loadRootNode(rootNode, rootResolve);
+                    }
+                    else {
+
+                        vm.getNodeById2(subNode);
+                    }
+
+                },
+                loadRootNode(node, resolve) {
+                    var _this = this;
+                    rootNode = node;
+                    rootResolve = resolve;
+                    rootNode.childNodes = [];
+                    WS.AjaxP("get", "/adminapi/CustomMenuBar/GetRootMenuTree", { position:1}, function (response) {
+                        if (response) {
+                            var a = [];
+                            response.forEach(function (val) {
+                                var b = new Object();
+                                b.Id = val.Id;
+                                b.name = val.Name;
+                                b.IsNewWin = val.IsNewWin;
+                                b.Seq = val.Seq;
+                                a.push(b);
+                            });
+                            resolve(a);
+                        }
+                        else {
+                            showInfo("@BDMall.Resources.Message.GetTreeFail");
+                        }
+
+                    }, function () { });
+                },
+                getNodeById(node, resolve) {
+                    var _this = this;
+                    subNode = node;
+                    subResolve = resolve;
+                    WS.AjaxP("get", "/adminapi/CustomMenuBar/GetMenuTreeById", { id: node.data.Id }, function (response) {
+                        if (response) {
+                            var a = [];
+                            response.forEach(function (val) {
+                                var b = new Object();
+                                b.Id = val.Id;
+                                b.name = val.Name;
+                                b.IsNewWin = val.IsNewWin;
+                                a.push(b);
+                            });
+                            resolve(a);
+                        }
+
+
+                    }, function () { });
+                },
+                getNodeById2(node) {
+                    var _this = this;
+                    var parentNode = subNode.parent;
+                    if (parentNode) {
+                        parentNode.childNodes = [];
+                        WS.AjaxP("get", "/adminapi/CustomMenuBar/GetMenuTreeById", { id: parentNode.data.Id }, function (response) {
+                            if (response) {
+                                var a = [];
+                                response.forEach(function (val) {
+                                    var b = new Object();
+                                    b.Id = val.Id;
+                                    b.name = val.Name;
+                                    b.IsNewWin = val.IsNewWin;
+                                    _this.$refs.tree.append(b, parentNode)
+                                });
+                            }
+
+
+                        }, function () { });
+                    }
+                }, sorted() {
+                    vm.isSorted = true;
+                    this.$refs.tree.$children.forEach(function (obj) {
+                        var id = obj.node.data.Id;
+                        $("#" + id).show();
+                    });
+                },
+                saveSorted() {
+                    var arr = new Array();
+                    this.$refs.tree.$children.forEach(function (obj) {
+                        var item = new Object();
+                        item.Id = obj.node.data.Id;
+                        item.Seq = $("#" + item.Id).val();
+                        arr.push(item);
+                    });
+
+                    if (arr.length > 0) {
+                        var data = new Object();
+                        data.menus = arr;
+                        WS.AjaxP("post", "/adminapi/CustomMenuBar/SaveSeq", data, function (response) {
+                            if (response.Succeeded == true) {
+                                showInfo('@BDMall.Resources.Message.SaveSuccess');
+                                vm.cancelSorted();
+                            } else {
+                                showWarn('@BDMall.Resources.Message.SaveFail' + response.Message);
+                            }
+                        }, function () { });
+                    }
+                },
+                cancelSorted() {
+                    vm.isSorted = false;
+                    this.$refs.tree.$children.forEach(function (obj) {
+                        var id = obj.node.data.Id;
+                        $("#" + id).hide();
+                    });
+                    vm.refreshRootNode();
+                },
+                intValidator: function (e)
+                {
+                    var value = e.target.value;
+                    value = value.replace(/\D+/, "");
+                    if (value.length > 0) {
+                        if (value.length > 1 && value[0] == 0) {
+                            e.target.value = value.substring(1, value.length);
+                            return;
+                        }
+                        e.target.value = value;
+                    } else {
+                        e.target.value = 0;
+                    };
+                },
+                renderContent(createElement, { node, data, store }) {
+                    return createElement(
+                        'span',
+                        {
+                            style: {
+                                'flex': '1',
+                                'display': 'flex',
+                                'align-items': 'center',
+                                'justify-content': 'space-between',
+                                'font-size': '14px',
+                                'padding-right': '8px'
+                            }
+                        },
+                        [
+                            createElement(
+                                'span',
+                                {},
+                                [
+                                    createElement('span', node.label)
+                                ]
+                            ),
+
+                            createElement(
+                                'span',
+                                {},
+                                [
+                                    createElement('input',
+                                    {
+                                        domProps: {
+                                            value: node.data.Seq,
+                                            type: "number",
+                                        },
+                                        style: {
+                                            'width': '45px',
+                                            'margin-right': '5px',
+                                            'display': 'none',
+                                        },
+                                        attrs: {
+                                            'id': node.data.Id,
+                                            'min': 0,
+                                            'max': 10,
+                                        },
+                                        on: {
+                                            input: function (e) {
+                                                vm.intValidator(e);
+                                            }
+                                        }
+                                    }),
+                                    createElement('el-button',
+                                        {
+                                            class: {
+                                                'glyphicon glyphicon-plus': true
+                                            },
+                                            style: {
+                                                'font-size': ' 12px'
+                                            },
+                                            attrs: {
+                                                'type': 'text'
+                                            },
+                                            on: {
+                                                click: function (event) {
+                                                    //vue.menuAdd(node, data, store);
+                                                    event.stopPropagation();
+                                                    subNode = node;
+                                                    vm.addNode(node.data.Id);
+                                                }
+                                            },
+                                            domProps: {
+                                                //innerHTML: '增加'
+                                            }
+                                        }
+                                    ),
+                                    createElement('el-button',
+                                        {
+                                            class: {
+                                                'glyphicon glyphicon-edit': true
+                                            },
+                                            style: {
+                                                'font-size': ' 12px'
+                                            },
+                                            attrs: {
+                                                'type': 'text'
+                                            },
+                                            on: {
+                                                click: function (event) {
+                                                    //vue.menuRemove(node, data, store);
+                                                    event.stopPropagation();
+                                                    subNode = node;
+                                                    vm.editNode(node.data.Id);
+                                                }
+                                            },
+                                            domProps: {
+                                                //innerHTML: '删除'
+                                            }
+                                        }
+                                    ),
+                                    createElement('el-button',
+                                        {
+                                            class: {
+                                                'glyphicon glyphicon-trash': true
+                                            },
+                                            style: {
+                                                'font-size': ' 12px'
+                                            },
+                                            attrs: {
+                                                'type': 'text'
+                                            },
+                                            on: {
+                                                click: function (event) {
+                                                    //vue.menuEdit(node, data, store);
+                                                    event.stopPropagation();
+                                                    subNode = node;
+                                                    vm.delNode(node.data.Id);
+
+                                                }
+                                            },
+                                            domProps: {
+                                                //innerHTML: '编辑'
+                                            }
+                                        }
+                                    )
+                                ]
+                            )
+                        ]
+                    );
+                }
+            }
+        });        
+    </script>
+}

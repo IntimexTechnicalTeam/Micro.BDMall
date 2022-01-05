@@ -27,7 +27,8 @@ namespace BDMall.Enums
 
         ShoppingCart,
 
-        System
+        System,
+        MenuBars
     }
 
     public enum CacheField
