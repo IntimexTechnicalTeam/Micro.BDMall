@@ -173,5 +173,30 @@ namespace Intimex.Common
 
             return folder;
         }
+
+        /// <summary>
+        /// 用正斜杠串联相对路径
+        /// </summary>
+        /// <param name="path1"></param>
+        /// <param name="path2"></param>
+        /// <returns></returns>
+        public static string Combine(string path1, string path2)
+        {
+            string path = path1;
+            if (path1.LastIndexOf("/") != path1.Length - 1)
+            {
+                path += "/";
+            }
+
+            if (path2.IndexOf("/") != 0)
+            {
+                path += path2;
+            }
+            else
+            {
+                path += path2.Substring(1);
+            }
+            return path;
+        }
     }
 }

@@ -1,0 +1,195 @@
+﻿
+@{
+    ViewBag.Title = BDMall.Resources.Menu.MenuMng;
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<link href="~/Scripts/bootstrap-fileinput/css/fileinput.min.css" rel="stylesheet"/>
+<div id="MainContent" class="container-fluid">
+    <div class="row">
+        <div class="col-md-6">
+            <div>
+                <input class="btn btn-default" type="button" value="@BDMall.Resources.Action.Sorted" v-on:click="sorted" />
+                <input class="btn btn-default" type="button" value="@BDMall.Resources.Action.AddRoot" v-on:click="createNew" />
+            </div>
+
+            <ul class="nav nav-tabs">
+                <li class="active">
+                    <a href="#panel-714393" data-toggle="tab">@BDMall.Resources.Label.TreeView</a>
+                </li>
+                <li>
+                    <a href="#panel-656549" data-toggle="tab">@BDMall.Resources.Label.TableListView</a>
+
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane active" id="panel-714393">
+                    <p>
+                        <menu-item v-bind:items="treeNodes" v-bind:limitlevel="2" v-bind:canedit="1" v-bind:clickadd="addItem" v-bind:clickedit="editItem"
+                                   v-bind:clickremove="removeItem" v-bind:issorted="isSorted"></menu-item>
+                    </p>
+                    <div class="text-right" style="margin:10px 0 0 0;">
+                        <input class="btn btn-default" v-show="isSorted==true" type="button" value="@BDMall.Resources.Action.Save" v-on:click="saveSorted" />
+                        <input class="btn btn-default" v-show="isSorted==true" type="button" value="@BDMall.Resources.Action.Cancel" v-on:click="cancelSorted" />
+                    </div>
+                </div>
+                <div class="tab-pane" id="panel-656549">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    Seq.
+                                </th>
+                                <th>
+                                    @BDMall.Resources.Model.Code
+                                </th>
+
+                                <th>
+                                    @BDMall.Resources.Model.Name
+                                </th>
+
+                                <th>
+                                    @BDMall.Resources.Model.Image
+                                </th>
+                                <th>
+                                    @BDMall.Resources.Model.PageUrl
+                                </th>
+                            </tr>
+                        </thead>
+                        <tr v-for="(m,index) in itemList" v-on:click="editItem(m)">
+                            <td>
+                                {{index+1}}
+                            </td>
+                            <td>
+                                {{m.Code}}
+                            </td>
+                            <td>
+                                {{m.Name}}
+                            </td>
+                            <td>
+                                {{m.ImageUrl}}
+                            </td>
+                            <td>
+                                {{m.PageUrl}}
+                            </td>
+                        </tr>
+
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-md-6">
+            <div class="row">
+                <div class="form-group">
+                    <label for="menuCode">@BDMall.Resources.Model.Id</label>
+                    <input type="text" class="form-control" id="menuId" v-model="model.Id" v-bind:disabled="true">
+                </div>
+                <div class="form-group">
+                    <label for="menuParentId">@BDMall.Resources.Model.ParentId</label>
+                    <input type="text" class="form-control" id="menuParentId" v-model="model.ParentId">
+                </div>
+                <div class="form-group">
+                    <label for="menuCode">@BDMall.Resources.Model.Code</label>
+                    <input type="text" class="form-control" id="menuCode" v-model="model.Code" v-on:blur="checkCodeUniqe" v-bind:disabled="model.Id!=0">
+                </div>
+                <div class="form-group" v-for="n in model.NameTranslation">
+                    <label v-bind:for="'menu_id_'+n.Lang.Code">@BDMall.Resources.Model.Name ({{ n.Lang.Text}})</label>
+                    <input type="text" v-bind:id="'menu_id_'+n.Lang.Code" class="form-control" v-model="n.Desc" />
+                </div>
+                <div class="form-group">
+                    <label for="menuUrl">@BDMall.Resources.Model.PageUrl</label>
+                    <input type="text" class="form-control" id="menuUrl" v-model="model.PageUrl" />
+                    <p>
+                        @BDMall.Resources.Label.MenuRelativePath
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <label for="menuIcon">@BDMall.Resources.Label.Img</label>
+                    <div>
+                        <img class="img-rounded" v-bind:src="model.ImgUrl" width="100" />
+                        <input type="hidden" v-model="model.Img" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div>
+                        <input name="txt_file" id="txt_file" type="file" class="file" />
+                    </div>
+                </div>
+                <div class="form-group  ">
+                    <label>@BDMall.Resources.Label.ModulePermission</label>
+                    <div>
+                        <select id="cboModule" class="form-control" style="width:300px" v-model="model.ModuleId" v-on:change="loadFunc" required>
+                            <option v-for="m in modules" v-bind:value="m.Id">{{m.Description}}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group ">
+                    <label>@BDMall.Resources.Label.FuncPermission</label>
+                    <div>
+                        <select id="cboFunction" class="form-control" style="width:300px" v-model="model.FunctionId">
+                            <option v-for="f in functions" v-bind:value="f.Id">{{f.Description}}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>@BDMall.Resources.Label.IsActive</label>
+                    <div>
+                        <input type="checkbox" id="chkActive" v-model="model.IsActive" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>@BDMall.Resources.Label.IsMobileEnable</label>
+                    <div>
+                        <input type="checkbox" id="chkMobileEnable" v-model="model.IsMobileEnable" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>@BDMall.Resources.Label.IsHomePageMenuItem</label>
+                    <div>
+                        <input type="checkbox" id="chkIsHomeItem" v-model="model.IsHomeItem" />
+                    </div>
+                </div>
+                <input type="button" value="@BDMall.Resources.Action.Save" class="btn btn-primary" v-on:click="saveModel" />
+                @*<button type="button" class="btn btn-default" v-on:click="saveModel"></button>*@
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script src="~/Scripts/bootstrap-fileinput/js/fileinput.min.js"></script>
+    <script src="~/Scripts/admin/system/menuMng.js"></script>
+    <script type="text/javascript">
+        var iconImgOption = new FileInputOption();
+        iconImgOption.CtrlName = "txt_file";
+        iconImgOption.UploadUrl = "/adminapi/FileUpload/UploadFile";
+        iconImgOption.MaxFile = 1;
+        iconImgOption.SuccessCallback = function (data) {
+            Vue.set(app.model, 'Img', data.response.ReturnValue[0].Name);
+            Vue.set(app.model, 'ImgUrl', data.response.ReturnValue[0].ThumbnailPath);
+            $("#txt_file").fileinput("refreshContainer");
+
+        };
+        iconImgOption.ErrorCallback = function (data) {
+            app.model.Img = ""
+            app.model.ImgUrl = ""
+        };
+        FileInputInit(iconImgOption);
+
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+
+
+
+    </script>
+}
+
+

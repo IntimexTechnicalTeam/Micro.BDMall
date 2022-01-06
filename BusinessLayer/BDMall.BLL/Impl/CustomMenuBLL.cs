@@ -189,15 +189,17 @@ namespace BDMall.BLL
             SystemResult result = new SystemResult();
             try
             {
+                UnitOfWork.IsUnitSubmit = true;
                 foreach (var item in cond.menus)
                 {
-                    var menu = GetCustomMenuById(item.Id);
+                    var menu = baseRepository.GetList<CustomMenu>().FirstOrDefault(p => p.Id == item.Id);// GetCustomMenuById(item.Id);
                     if (menu != null)
                     {
                         menu.Seq = item.Seq;
-                        UnitOfWork.Submit();
+                        baseRepository.Update(menu);
                     }
                 }
+                UnitOfWork.Submit();
                 result.Succeeded = true;
             }
             catch (Exception ex)

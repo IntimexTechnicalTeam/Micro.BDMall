@@ -32,5 +32,23 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
             var menuList = this.menuBLL.GetMenuTreeNodes(new UserDto());          
             return menuList;
         }
+        /// <summary>
+        /// 获取菜单数据所有节点
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<TreeNode> GetMenuTree()
+        {
+
+            return menuBLL.GetMenuTreeNodes();
+        }
+        /// <summary>
+        /// 获取所有菜单项目的数据集合
+        /// </summary>
+        /// <returns></returns>
+        [AdminApiAuthorize(Module = ModuleConst.SystemModule)]
+        public IEnumerable<MenuItem> GetList()
+        {
+            return menuBLL.GetMenus();
+        }
     }
 }

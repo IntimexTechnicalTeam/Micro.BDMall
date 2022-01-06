@@ -150,5 +150,15 @@ namespace BDMall.BLL
             list = vals.Select(s => new ImageSize { Width = int.Parse(s.Value), Length = int.Parse(s.Value) }).ToList();
             return list;
         }
+        public ImageSize GetSmallProductImageSize()
+        {
+            ImageSize size = new ImageSize();
+
+            var val = _codeMasterRepo.GetCodeMaster(CodeMasterModule.Setting.ToString(), CodeMasterFunction.ProductImgSize.ToString(), "S");
+            size.Width = int.Parse(val?.Value ?? "100");
+            size.Length = int.Parse(val?.Value ?? "100");
+
+            return size;
+        }
     }
 }
