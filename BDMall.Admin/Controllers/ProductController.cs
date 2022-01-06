@@ -47,7 +47,7 @@ namespace BDMall.Admin.Controllers
                     ViewBag.CanEdit = 1; break;
                 }
             }
-
+            ViewBag.Lang = CurrentUser.Lang;
             return View();
         }
 
@@ -64,6 +64,7 @@ namespace BDMall.Admin.Controllers
             //ViewBag.StatusList = JsonConvert.SerializeObject(statusList);
 
             //ViewBag.IsMerchant = CurrentUser.IsMerchant ? 1 : 0;
+            ViewBag.Lang = CurrentUser.Lang;
             return View("ProductIndex");
         }
 
@@ -75,12 +76,14 @@ namespace BDMall.Admin.Controllers
         public ActionResult CataLogIndex(string id)
         {
             ViewBag.Type = id ?? "1";
+            ViewBag.Lang = CurrentUser.Lang;
             return View();
         }
 
         public ActionResult SelectCatalog()
         {
             ViewBag.Type = "2";
+            ViewBag.Lang = CurrentUser.Lang;
             return View();
         }
         /// <summary>
@@ -95,7 +98,7 @@ namespace BDMall.Admin.Controllers
             ViewBag.Id = id;
             ViewBag.ParentInfo = para2 ?? "";
 
-
+            ViewBag.Lang = CurrentUser.Lang;
             return View();
         }
 
@@ -112,6 +115,7 @@ namespace BDMall.Admin.Controllers
             //ViewBag.IsMerchant = CurrentUser.IsMerchant ? 1 : 0;
             //ViewBag.MerchantId = para2 ?? Guid.Empty.ToString();
             //ViewBag.SearchProductType = para3;
+            ViewBag.Lang = CurrentUser.Lang;
             return View();
         }
 
@@ -125,19 +129,26 @@ namespace BDMall.Admin.Controllers
         /// <returns></returns>
         public ActionResult EditProduct(string id, string para2)
         {
-            //ViewBag.Id = id;
-            //ViewBag.Type = para2;
-            //ViewBag.IsMerchant = CurrentUser.IsMerchant ? 1 : 0;
-            //if (!HasPermission(FunctionConst.Prod_Edit))
-            //{
-            //    //HasPermission(FunctionConst.Prod_View)
-            //    ViewBag.EditType = "";
-            //}
-            //else
-            //{
-            //    ViewBag.EditType = "Edit";
-            //}
+            ViewBag.Id = id;
+            ViewBag.Type = para2;
 
+            if (!HasPermission(FunctionConst.Prod_Edit))
+            {
+                //HasPermission(FunctionConst.Prod_View)
+                ViewBag.EditType = "";
+            }
+            else
+            {
+                ViewBag.EditType = "Edit";
+            }
+
+            if (CurrentUser == null)
+                ViewBag.IsMerchant = 0;
+            else
+                ViewBag.IsMerchant = CurrentUser.IsMerchant.ToInt();
+
+
+            ViewBag.Lang = CurrentUser.Lang;
             return View();
         }
 
@@ -153,6 +164,7 @@ namespace BDMall.Admin.Controllers
             //ViewBag.Id = id;
             //ViewBag.IsMerchant = CurrentUser.IsMerchant ? 1 : 0;
             //ViewBag.IsApprove = para2 ? 1 : 0;
+            ViewBag.Lang = CurrentUser.Lang;
             return View();
         }
 
@@ -164,6 +176,7 @@ namespace BDMall.Admin.Controllers
         public ActionResult AccessoriesProduct(int id)
         {
             ViewBag.Sku = id;
+            ViewBag.Lang = CurrentUser.Lang;
             return View();
         }
 
@@ -176,6 +189,7 @@ namespace BDMall.Admin.Controllers
         {
             //ViewBag.Id = id;
             //ViewBag.IsMerchant = CurrentUser.IsMerchant ? 1 : 0;
+            ViewBag.Lang = CurrentUser.Lang;
             return View();
         }
 
@@ -189,6 +203,7 @@ namespace BDMall.Admin.Controllers
         {
             ViewBag.Sku = id;
             ViewBag.IsConfirm = para2;
+            ViewBag.Lang = CurrentUser.Lang;
             return View();
         }
 
@@ -198,6 +213,7 @@ namespace BDMall.Admin.Controllers
         /// <returns></returns>
         public ActionResult ProdAttributeIndex()
         {
+            ViewBag.Lang = CurrentUser.Lang;
             return View();
         }
 
@@ -209,10 +225,16 @@ namespace BDMall.Admin.Controllers
         /// <returns></returns>
         public ActionResult EditAttribute(string id, string para2)
         {
-            //ViewBag.LimitSize = 2048;// _settingBLL.GetAttributeImageLimitSize();
-            //ViewBag.AttrID = id;
-            //ViewBag.IsInv = para2;
-            //ViewBag.IsMerchant = (CurrentUser.MerchantId == Guid.Empty || CurrentUser.IsMerchant) ? 1 : 0;
+            ViewBag.LimitSize = 2048;// _settingBLL.GetAttributeImageLimitSize();
+            ViewBag.AttrID = id;
+            ViewBag.IsInv = para2;
+           
+            if (CurrentUser == null)
+                ViewBag.IsMerchant = 0;
+            else
+                ViewBag.IsMerchant = CurrentUser.IsMerchant.ToInt();
+            ViewBag.Lang = CurrentUser.Lang;
+
             return View();
         }
 
@@ -222,6 +244,8 @@ namespace BDMall.Admin.Controllers
         /// <returns></returns>
         public ActionResult CustomPriceRange()
         {
+            ViewBag.Lang = CurrentUser.Lang;
+
             return View();
         }
 
@@ -235,6 +259,8 @@ namespace BDMall.Admin.Controllers
         {
             ViewBag.Id = id;
             ViewBag.EditType = para2;
+            ViewBag.Lang = CurrentUser.Lang;
+
             return View();
         }
 
@@ -244,6 +270,7 @@ namespace BDMall.Admin.Controllers
         /// <returns></returns>
         public ActionResult ExportData()
         {
+            ViewBag.Lang = CurrentUser.Lang;
 
             return View();
         }
@@ -255,6 +282,8 @@ namespace BDMall.Admin.Controllers
         /// <returns></returns>
         public ActionResult UpdPriceIndex()
         {
+            ViewBag.Lang = CurrentUser.Lang;
+
             return View();
         }
 
@@ -264,6 +293,7 @@ namespace BDMall.Admin.Controllers
         /// <returns></returns>
         public ActionResult ApproveProduct()
         {
+            ViewBag.Lang = CurrentUser.Lang;
             return View();
         }
 
@@ -275,6 +305,7 @@ namespace BDMall.Admin.Controllers
         public ActionResult ApproveProductDetail(string id)
         {
             ViewBag.Id = id;
+            ViewBag.Lang = CurrentUser.Lang;
             return View();
         }
 
@@ -286,18 +317,21 @@ namespace BDMall.Admin.Controllers
         public ActionResult ApproveProductHistory(string id)
         {
             ViewBag.Id = id;
+            ViewBag.Lang = CurrentUser.Lang;
             return View();
         }
 
         public ActionResult ProductClickRate()
         {
             //ViewBag.IsMerchant = CurrentUser.IsMerchant ? 1 : 0;
+            ViewBag.Lang = CurrentUser.Lang;
             return View();
         }
 
         public ActionResult ProductSearchRate()
         {
             //ViewBag.IsMerchant = CurrentUser.IsMerchant ? 1 : 0;
+            ViewBag.Lang = CurrentUser.Lang;
             return View();
         }
 
@@ -318,6 +352,8 @@ namespace BDMall.Admin.Controllers
         {
             ViewBag.Id = id;
             ViewBag.IsFinished = para2;
+            ViewBag.Lang = CurrentUser.Lang;
+
             return View();
         }
 

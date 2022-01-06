@@ -15,5 +15,9 @@ namespace BDMall.BLL
         Dictionary<string, ClickRateSummaryView> GetSearchRateView(int topMonthQty, int topWeekQty, int topDayQty);
 
         PageData<ProductSummary> SearchBackEndProductSummary(ProdSearchCond cond);
+
+        ProductEditModel GetProductInfo(Guid id);
+
+        List<string> GetProductImages(Guid prodID);
     }
 }

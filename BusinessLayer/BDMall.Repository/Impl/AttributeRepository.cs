@@ -41,8 +41,7 @@ namespace BDMall.Repository
                              Value = tt.Value,
                              Desc = tt.Value,
                          });
-            //var queryGroup = query.GroupBy(g => g.attr).Select(d => new { attr = d.Key, Trans = d.Select(a => a.Tran).ToList() });
-
+            
             if (!attrCond.Desc.IsEmpty())
                 query = query.Where(p => p.Value.Contains(attrCond.Desc));
 
@@ -54,23 +53,24 @@ namespace BDMall.Repository
             result.TotalRecord = query.Count();
             var data = query.Skip(attrCond.PageInfo.Offset).Take(attrCond.PageInfo.PageSize).ToList();
 
-            //List<ProductAttribute> list = new List<ProductAttribute>();
-            //var supportLang = GetSupportLanguage();
-            //foreach (var item in data)
-            //{
-            //    //item.AttributeValues.Where(p => p.MerchantId == CurrentUser.MechantId).ToList();               
-            //    item.Desc = item?.Value ?? "";
-            //}
-
-            var list = baseRepository.GetList<ProductAttributeValue>(x => data.Select(s => s.Id).Contains(x.AttrId));
-            if (CurrentUser.IsMerchant)
-                list = list.Where(x => x.MerchantId == CurrentUser.MechantId);
-
-
             result.Data = data;
-
             return result;
         }
 
+        public ProductAttribute GetAttribute(Guid id)
+        {
+            ProductAttribute result = baseRepository.GetModel<ProductAttribute>(p => p.Id == id && !p.IsDeleted && p.IsActive);             
+            return result;
+        }
+
+        public List<ProductAttribute> GetAttributeItemsByCatID(Guid catID)
+        {
+            var attributes = (from e in baseRepository.GetList<ProductAttribute>()
+                              join c in baseRepository.GetList<ProductCatalogAttr>() on e.Id equals c.AttrId
+                              where c.CatalogId == catID && !e.IsDeleted && e.IsActive && c.IsActive && !c.IsDeleted
+                              select e).ToList();
+
+            return attributes;
+        }
     }
 }

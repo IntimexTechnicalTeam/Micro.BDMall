@@ -30,12 +30,14 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
         public ICodeMasterBLL codeMasterBLL;
         public ISettingBLL settingBLL;
         public IMerchantBLL merchantBLL;
+        public IAttributeBLL attributeBLL;
 
         public DictController(IComponentContext services) : base(services)
         {
             codeMasterBLL = Services.Resolve<ICodeMasterBLL>();
             settingBLL = Services.Resolve<ISettingBLL>();
-            merchantBLL = Services.Resolve<IMerchantBLL>();   
+            merchantBLL = Services.Resolve<IMerchantBLL>();
+            attributeBLL = Services.Resolve<IAttributeBLL>();
         }
 
         /// <summary>
@@ -258,6 +260,15 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
         {
             List<KeyValue> keyValLIst = merchantBLL.GetMerchantCboSrcByCond(false);
             return keyValLIst;
+        }
+
+        /// <summary>
+        /// 獲取屬性的佈局
+        /// </summary>
+        public List<KeyValue> GetAttrLayout()
+        {
+            var list = attributeBLL.GetAttrLayout();
+            return list;
         }
     }
 }

@@ -113,7 +113,7 @@ namespace BDMall.Repository
                     //加载用户角色，先从缓存读
                     string key = $"{CacheKey.CurrentUser}";
                     var cacheUser = RedisHelper.HGet<UserDto>(key, _currentUser.UserId);                  
-                    _currentUser.MechantId = cacheUser?.MerchantId ?? Guid.Empty;
+                    _currentUser.MerchantId = cacheUser?.MerchantId ?? Guid.Empty;
                 }
 
                 return _currentUser;

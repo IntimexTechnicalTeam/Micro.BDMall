@@ -23,7 +23,7 @@ namespace BDMall.Domain
 
         public List<RoleDto> Roles { get; set; } = new List<RoleDto>();
 
-        public Guid MechantId { get; set; }
+        public Guid MerchantId { get; set; }
 
         public bool IsMerchant => LoginType <= LoginType.ThirdMerchantLink ? true : false;
     }

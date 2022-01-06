@@ -19,5 +19,6 @@ namespace BDMall.Domain
         /// 是否库存属性
         /// </summary>
         public bool IsInv { get; set; }
+
     }
 }

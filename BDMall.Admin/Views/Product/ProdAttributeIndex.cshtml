@@ -138,7 +138,6 @@
                     vm.action = "Modify";
                     vm.AttrID = selected.Id;
 
-
                     //parent.setSrcTobTab("AttributeAdd", "@BDMall.Resources.Label.AddAttribute", "/Product/AttributeEdit/" + vm.AttrID + "/" + vm.condition.IsInv, true, true);
                     miniTab.openNewTabByIframe({
                         href:"/Product/EditAttribute/" + vm.AttrID + "/" + vm.condition.IsInv,
@@ -392,7 +391,7 @@
 
                     }, {
                         field: 'Desc',
-                        title: '@BDMall.Resources.Label.AttributeCode',
+                        title: '@BDMall.Resources.Label.Desc',
                         sortable: true,
                     }]
                 });

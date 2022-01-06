@@ -15,6 +15,7 @@ using Web.Jwt;
 
 namespace Web.Mvc
 {
+     [LanguageResource]
     public abstract class BaseMvcController : Controller
     {
         public IComponentContext Services;
@@ -177,7 +178,7 @@ namespace Web.Mvc
                         cacheUser.Roles = userInfo.Roles;
                     }
                     _currentUser.Roles = cacheUser?.Roles;
-                    _currentUser.MechantId = cacheUser?.MerchantId ?? Guid.Empty;
+                    _currentUser.MerchantId = cacheUser?.MerchantId ?? Guid.Empty;
                 }
 
                 return _currentUser;
@@ -187,6 +188,31 @@ namespace Web.Mvc
         public string AutoGenerateNumber(string perfix = "BD")
         {
             return $"{perfix}{IdGenerator.NewId}";
+        }
+
+        public bool HasPermission(string funcName)
+        {
+            try
+            {
+
+                foreach (var role in CurrentUser.Roles)
+                {
+                    foreach (var p in role.PermissionList)
+                    {
+                        if (p.Function == funcName)
+                        {
+                            return true;
+                        }
+                    }
+
+                }
+                return false;
+            }
+            catch (Exception)
+            {
+                return false;
+                //throw;
+            }
         }
     }
 }

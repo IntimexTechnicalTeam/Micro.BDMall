@@ -22,5 +22,7 @@ namespace BDMall.Repository
         List<ProductCatalog> GetAllCatalogChilds(Guid id);
 
         List<Product> GetAllCatalogChildProducts(Guid id);
+
+        List<ProductCatalogDto> GetCatalogUrlByCatalogId(Guid Id);
     }
 }

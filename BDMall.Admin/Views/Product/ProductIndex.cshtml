@@ -101,7 +101,7 @@
             </table>
         </div>
         <div class="text-right">
-            <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Search" onclick="search();" />
+            <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Search" v-on:click="search" />
             <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.ExtraCondition" data-toggle="collapse" data-target="#collapseOne" />
         </div>
     </div>
@@ -162,14 +162,14 @@
                 statusSelect: mSelectStatusList,
                 //SpecialItem: [],
                 condition: {
-                    Language: "",
+                    Language: 0,
                     Key: "",
                     KeyWordType: "",
                     ProductCode: "",
-                    Category: -1,
+                    Category: WS.GuidEmpty,
                     //Brand: -1,
-                    Attribute: -1,
-                    AttributeValue: -1,
+                    Attribute: WS.GuidEmpty,
+                    AttributeValue: WS.GuidEmpty,
                     //Size: -1,
                     //Function: -1,
                     //SelectedSpecialItem: [],
@@ -225,7 +225,7 @@
                     miniTab.openNewTabByIframe({
                         href:"/Product/EditProduct/" + WS.GuidEmpty + "/Add/0",
                         title: '@BDMall.Resources.Label.AddProduct',
-                        callback: search
+                        callback: vm.search
                     });
                 },
                 Modify: function (id, name, type) {
@@ -257,7 +257,7 @@
                                 function (response) {
                                     if (response.Succeeded == true) {
                                         showWarn('@BDMall.Resources.Message.DeleteSucceeded');
-                                        search();
+                                       vm.search();
                                     } else {
                                         showWarn(response.Message);
                                     }
@@ -331,7 +331,7 @@
                         { ids: strSkus},
                         function (response) {
                             if (response.Succeeded == true) {
-                                search();
+                                vm.search();
                             }
                             else {
                                 showWarn(response.Message);
@@ -353,7 +353,7 @@
                         { ids: strSkus },
                         function (response) {
                             if (response.Succeeded == true) {
-                                search();
+                                vm.search();
                             }
                             else {
                                 showWarn(response.Message);
@@ -365,7 +365,7 @@
                     WS.Get("/adminapi/Product/ApplyApprove", { id: id },
                         function (response) {
                             if (response.Succeeded == true) {
-                                search();
+                                vm.search();
                             }
                             else {
                                 showWarn(response.Message);
@@ -388,6 +388,10 @@
                             window.open(response);
                         },
                         function () { });
+                },
+                search:function(){
+                
+                     $("#tblProduct").bootstrapTable("refresh", { url: "/adminapi/Product/SearchData", pageNumber: 1 });
                 }
             }
         });
@@ -396,30 +400,6 @@
 
             var btTable = new Object();
 
-            btTable.queryParams = function (params) {
-                var page = 1;
-                if (params.offset > 0) {
-                    page = parseInt(params.offset / params.limit) + 1;
-                }
-
-                var sortedBy = params.sort;
-                var sorted = params.order;
-
-                vm.condition.KeyWordType = $("#cboKeyWordType").val();
-                vm.condition.Attribute = $("#cboAttribute").val();
-                vm.condition.AttributeValue = $("#cboAttributeValue").val();
-                vm.condition.PermissionLevel = $("#cboPermission").val();
-                vm.condition.ApproveStatus = vm.statusSelect.join(",");// $("#cboStatus").val();
-                vm.condition.MerchantId = $("#cboMerchant").val() == -1 ? WS.GuidEmpty : $("#cboMerchant").val();
-
-                vm.condition.PageInfo = { Page: page, PageSize: params.limit, SortName: sortedBy, SortOrder: sorted };
-
-                //vm.$refs.pager.setPageSize(params.limit);
-                return vm.condition;
-                //return {
-                //    Condition: vm.condition, Page: page, PageSize: params.limit, SortName: sortedBy, SortOrder: sorted
-                //};
-            }
             btTable.Init = function () {
 
                 $("#tblProduct").bootstrapTable({
@@ -581,6 +561,36 @@
                 });
             };
 
+            btTable.queryParams = function (params) {
+                var page = 1;
+                if (params.offset > 0) {
+                    page = parseInt(params.offset / params.limit) + 1;
+                }
+
+                var sortedBy = params.sort;
+                var sorted = params.order;
+
+                vm.condition.KeyWordType = $("#cboKeyWordType").val();
+
+                if ($("#cboAttribute").val() == "-1"  || $("#cboAttribute").val() == null )
+                    vm.condition.Attribute = WS.GuidEmpty;
+                else                 
+                    vm.condition.Attribute =$("#cboAttribute").val() ;
+                
+                 if ($("#cboAttributeValue").val() == "-1" || $("#cboAttributeValue").val() == null)
+                    vm.condition.AttributeValue = WS.GuidEmpty ;
+                else
+                    vm.condition.AttributeValue = $("#cboAttributeValue").val();
+
+                vm.condition.PermissionLevel = $("#cboPermission").val();
+                vm.condition.ApproveStatus = vm.statusSelect.join(",");// $("#cboStatus").val();
+                vm.condition.MerchantId = $("#cboMerchant").val() == "-1" ? WS.GuidEmpty : $("#cboMerchant").val();
+
+                vm.condition.PageInfo = { Page: page, PageSize: params.limit, SortName: sortedBy, SortOrder: sorted };
+                return vm.condition;               
+            }
+            
+
             return btTable;
         }
 
@@ -605,13 +615,13 @@
 
         }
 
-        function search() {
+        //function search() {
 
 
-            $("#tblProduct").bootstrapTable("refresh", { url: "/adminapi/Product/SearchData", pageNumber: 1 });
+        //    $("#tblProduct").bootstrapTable("refresh", { url: "/adminapi/Product/SearchData", pageNumber: 1 });
 
 
-        }
+        //}
 
         function modifyProduct(id, name,type) {
             var id = id;
@@ -621,7 +631,7 @@
             miniTab.openNewTabByIframe({
                 href:"/Product/EditProduct/" + id + "/" + type,
                 title: '@BDMall.Resources.Action.Modify' + "-" + name,
-                callback: search
+                callback: vm.search
             });
         }
         function showApproveDetail(id, name) {
@@ -640,7 +650,7 @@
             miniTab.openNewTabByIframe({
                 href:"/Product/EditProduct/" + ID + "/Copy",
                 title: '@BDMall.Resources.Label.CopyProduct',
-                callback: search
+                callback: vm.search
             });
         }
         function newVerProduct(id) {
@@ -648,7 +658,7 @@
             miniTab.openNewTabByIframe({
                 href:"/Product/EditProduct/" + ID + "/NewVer",
                 title: '@BDMall.Resources.Label.CreateNewVersion',
-                callback: search
+                callback: vm.search
             });
         }
 
@@ -665,30 +675,16 @@
             InitNormalSelect("cboMerchant", "/adminapi/Dict/GetMerchantOptions", true, null, false);
 
             WS.AjaxP("get", "/AdminAPI/Product/GetProductCondition", null, function (response) {
-                vm.ProductCondtionCache = response.ReturnValue;
-                //InitNormalSelectByData("cboSize", response.Skins.AttributeValue);
-                //InitNormalSelectByData("cboFunction", response.Virtues.AttributeValue);
-                //InitNormalSelectByData("cboBrand", response.ProductTypes.AttributeValue);
+                vm.ProductCondtionCache = response.ReturnValue;              
                 InitNormalSelectByData("cboKeyWordType", response.ReturnValue.KeyWordTypes);
                 BindAttributeCombobox();
                 InitNormalSelectByData("cboPermission", response.ReturnValue.Permissions);
                 InitNormalSelectByData("cboSortedKey", response.ReturnValue.SortedKeys);
-                InitNormalSelectByData("cboSortedType", response.ReturnValue.SortedKeyTypes);
-                //InitNormalSelectByData("cboIsActive", response.ReturnValue.IsActive);
-                //InitNormalSelectByData("cboStatus", response.ReturnValue.ApproveStatus);
-
+                InitNormalSelectByData("cboSortedType", response.ReturnValue.SortedKeyTypes);               
                 InitBootstrapSelectByData("cboStatus", response.ReturnValue.ApproveStatus, 7, false, false, function () {
-                    //var arr = [];
-                    //arr.push(0);
-                    //arr.push(1);
-                    //arr.push(2);
-                    //arr.push(3);
-                    //arr.push(4);
-                    //vm.statusSelect = arr;
+                   
                     $('#cboStatus').selectpicker('val', vm.statusSelect);
                 })
-
-
             }, function () {
 
             });
@@ -735,7 +731,7 @@
 
             var oTable = ProductTableInit();
             oTable.Init();
-            search();
+            vm.search();
 
             //setTimeout(search, 1000);
             //cover();

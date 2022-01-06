@@ -128,6 +128,48 @@ namespace BDMall.BLL
             return sysRslt;
         }
 
+        public string GetCatalogPath(Guid catID)
+        {
+            string result = "";
+
+            var dbCatalog = baseRepository.GetModelById<ProductCatalog>(catID);
+            var catalog = AutoMapperExt.MapTo<ProductCatalogDto>(dbCatalog);
+            catalog.Descs = translationRepository.GetMutiLanguage(catalog.NameTransId);
+            catalog.Desc = catalog.Descs?.FirstOrDefault(p => p.Language == CurrentUser.Lang)?.Desc;
+            var catalogView = AutoMapperExt.MapTo<ProductCatalogSummaryView>(catalog);
+            var dbCatalogPaths = productCatalogRepository.GetCatalogUrlByCatalogId(catalog.Id);
+            if (catalog != null)
+            {
+                if (dbCatalogPaths != null && dbCatalogPaths.Any())
+                {
+                    var catalogPaths = AutoMapperExt.MapTo<List<ProductCatalogEditModel>>(dbCatalogPaths);
+                    foreach (var item in catalogPaths)
+                    {
+                        //var parentCatalog = _productCatalogRepository.GetByKey(item.ParentCatalogId);
+                        var parentCatalogView = GenProductCatalogEditModel(item);
+                        if (result == "")
+                        {
+                            result = parentCatalogView.Desc;
+                        }
+                        else
+                        {
+                            result += "->" + parentCatalogView.Desc;
+                        }
+
+                    }
+                }
+                if (result == "")
+                {
+                    result = catalogView.Desc;
+                }
+                else
+                {
+                    result += "->" + catalogView.Desc;
+                }
+            }
+            return result;
+        }
+
         private async Task UpdateCatalogSeq(List<ProductCatalogEditModel> list)
         {
             var catalogList = await baseRepository.GetListAsync<ProductCatalog>(x => list.Select(s => s.Id).Contains(x.Id));
@@ -305,7 +347,7 @@ namespace BDMall.BLL
             return result;
         }
 
-        private void GenProductCatalogEditModel(ProductCatalogEditModel item)
+        private ProductCatalogEditModel GenProductCatalogEditModel(ProductCatalogEditModel item)
         {
             var fileServer = string.Empty;
 
@@ -331,6 +373,8 @@ namespace BDMall.BLL
             item.Desc = item?.Desc ?? "";
             item.IsMappingProduct = baseRepository.Any<Product>(x => x.CatalogId == item.Id);
             item.IsActive = item?.IsActive ?? false;
+
+            return item;
         }
 
         /// <summary>

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using BDMall.Domain;
+using BDMall.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,5 +12,11 @@ namespace BDMall.Repository
     public interface IProductRepository :IDependency
     {
          Task UpdateProduct();
+
+        List<Product> GetProductByAttrValueId(Guid attrValueId);
+
+        List<Product> GetProductByAttrId(Guid attrId);
+
+        PageData<ProductSummary> Search(ProdSearchCond cond);
     }
 }

@@ -32,6 +32,8 @@ namespace BDMall.Admin.Controllers
                 ViewBag.IsMerchant = 0;
             else
                 ViewBag.IsMerchant = CurrentUser.IsMerchant.ToInt();
+
+            ViewBag.Lang = CurrentUser.Lang;
             return View();
         }
 
@@ -47,6 +49,7 @@ namespace BDMall.Admin.Controllers
                 ViewBag.IsMerchant = 0;
             else
                 ViewBag.IsMerchant = CurrentUser.IsMerchant.ToInt();
+            ViewBag.Lang = CurrentUser.Lang;
             return View("Index");
         }
 
@@ -64,7 +67,7 @@ namespace BDMall.Admin.Controllers
                 ViewBag.IsMerchant = 0;
             else
                 ViewBag.IsMerchant = CurrentUser.IsMerchant.ToInt();
-
+            ViewBag.Lang = CurrentUser.Lang;
             return View();
         }
 
@@ -75,6 +78,7 @@ namespace BDMall.Admin.Controllers
        // [ActionAuthorize(Module = ModuleConst.MerchantModule, Function = new string[] { FunctionConst.Merch_Edit })]
         public ActionResult MerchantAccount()
         {
+            ViewBag.Lang = CurrentUser.Lang;
             return View();
         }
 
@@ -86,7 +90,7 @@ namespace BDMall.Admin.Controllers
        // [ActionAuthorize(Module = ModuleConst.MerchantModule, Function = new string[] { FunctionConst.Merch_Promt })]
         public ActionResult MerchantPromotionHeadPage()
         {
-           
+            ViewBag.Lang = CurrentUser.Lang;
             return View();
         }
         /// <summary>
@@ -116,7 +120,6 @@ namespace BDMall.Admin.Controllers
                 ViewBag.IsMerchant = CurrentUser.IsMerchant.ToInt();
 
             ViewBag.Lang = CurrentUser.Lang;
-
             return View();
         }
 
@@ -127,12 +130,14 @@ namespace BDMall.Admin.Controllers
                 ViewBag.IsMerchant = 0;
             else
                 ViewBag.IsMerchant = CurrentUser.IsMerchant.ToInt();
+            ViewBag.Lang = CurrentUser.Lang;
             return View();
         }
 
       //  [ActionAuthorize(Module = ModuleConst.MerchantModule, Function = new string[] { FunctionConst.Merch_Promt })]
         public ActionResult MerchantFreeChargeSetting()
         {
+            ViewBag.Lang = CurrentUser.Lang;
             return View();
         }
 
@@ -141,6 +146,7 @@ namespace BDMall.Admin.Controllers
        // [ActionAuthorize(Module = ModuleConst.MerchantModule, Function = new string[] { FunctionConst.Merch_Approve_Promt })]
         public ActionResult ApproveMerchantPromotion()
         {
+            ViewBag.Lang = CurrentUser.Lang;
             return View();
         }
 
@@ -163,6 +169,7 @@ namespace BDMall.Admin.Controllers
                 ViewBag.IsMerchant = 0;
             else
                 ViewBag.IsMerchant = CurrentUser.IsMerchant.ToInt();
+            ViewBag.Lang = CurrentUser.Lang;
             return View();
         }
 
@@ -173,6 +180,7 @@ namespace BDMall.Admin.Controllers
                 ViewBag.IsMerchant = 0;
             else
                 ViewBag.IsMerchant = CurrentUser.IsMerchant.ToInt();
+            ViewBag.Lang = CurrentUser.Lang;
             return View();
         }
 
@@ -180,11 +188,13 @@ namespace BDMall.Admin.Controllers
         public ActionResult MerchantCCEdit(string id)
         {
             ViewBag.MerchantId = id;
+            ViewBag.Lang = CurrentUser.Lang;
             return View();
         }
 
         public ActionResult SelectMerchant()
         {
+            ViewBag.Lang = CurrentUser.Lang;
             return View();
         }
 
