@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Web.Jwt;
 
 namespace Web.Mvc
 {
@@ -29,8 +30,17 @@ namespace Web.Mvc
         /// <param name="context"></param>
         public void OnResultExecuting(ResultExecutingContext context)
         {
-            string langCode = ((ViewResult)context.Result).ViewData["Lang"]?.ToString() ?? "C";
+            var jwtToken = context.HttpContext.RequestServices.GetService(typeof(IJwtToken)) as IJwtToken;
+            var token = context.HttpContext.Request.Cookies["access_token"];
+            string langCode = "C";
+            if (!string.IsNullOrEmpty(token))
+            {
+                var payload = jwtToken.DecodeJwt(token);
+                langCode = payload["Lang"];
+            }
 
+            //string langCode = ((ViewResult)context.Result).ViewData["Lang"]?.ToString() ?? "C";
+            ((ViewResult)context.Result).ViewData["Lang"]=langCode; 
             string cultureName = CultureHelper.GetSupportCulture(langCode);
             Thread.CurrentThread.CurrentCulture = new CultureInfo(cultureName);
             Thread.CurrentThread.CurrentUICulture = Thread.CurrentThread.CurrentCulture;

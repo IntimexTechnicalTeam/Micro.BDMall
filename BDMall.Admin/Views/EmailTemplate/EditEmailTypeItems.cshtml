@@ -1,0 +1,77 @@
+﻿
+@{
+    ViewBag.Title = "EditEmailTypeItems";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="app" class="col-md-12" v-cloak>
+    <div class="col-md-6">
+        <div class="row">
+            <div class="form-group">
+                <label for="txtEmailType">@BDMall.Resources.Label.EmailType</label>
+                <input type="text" class="form-control" id="txtEmailType" v-model="map.EmailTypeId" disabled />
+            </div>
+            <div class="form-group">
+                <label for="txtEmailTypeDesc">@BDMall.Resources.Label.Desc</label>
+                <input type="text" class="form-control" id="txtEmailTypeDesc" v-model="map.Description" disabled />
+            </div>
+            <div>
+                <label for="cboEmailItems">@BDMall.Resources.Label.EmailItems</label>
+                <select id="cboEmailItems" multiple v-model="map.EmailItems" data-width="570px"></select>
+            </div>
+            <div class="text-right">
+                <button type="button" class="btn btn-default" v-on:click="saveMap">@BDMall.Resources.Action.Save</button>
+                <button type="button" class="btn btn-default" v-on:click="close">@BDMall.Resources.Action.Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts
+{
+    <script type="text/javascript">
+        var params = bDialog.getDialogParams();
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                map: {
+                    EmailTypeId: "",
+                    EmailType:"",
+                    Description: "",
+                    EmailItems: []
+                }
+            },
+            methods: {
+                getEmailTypeItems: function () {
+                    var data = new Object();
+                    data.emailType = params.Id;
+                    WS.AjaxP("get", "/adminapi/EmailTypeItems/GetById", data, function (response) {
+                        vm.map = response;
+                        $('#cboEmailItems').selectpicker('val', response.EmailItems);
+                    }, function () { });
+                },
+                saveMap: function () {
+                    WS.AjaxP("post", "/adminapi/EmailTypeItems/Save", vm.map, function (response) {
+                        if (response.Succeeded == true) {
+                            showWarn('@BDMall.Resources.Message.SaveSuccess');
+                        }
+                        else {
+                            showWarn(response.Message);
+                        }
+                    }, function () { });
+                },
+                close: function () {
+                    bDialog.closeCurrent();
+                }
+            }
+        });
+
+        $(document).ready(function () {
+            InitBootstrapSelect("cboEmailItems", "/adminapi/EmailTempItem/GetEmailItems", 20, false, false, null, function () {
+                vm.getEmailTypeItems();
+            });
+
+        });
+    </script>
+}
+

@@ -29,6 +29,11 @@ namespace Domain
             ConfigMap<CustomMenuDto, CustomMenu>();
             ConfigMap<CustomMenuDetailDto, CustomMenuDetail>();
 
+            ConfigMap<EmailTempItemDto, EmailTempItem>();
+            ConfigMap<EmailTemplateDto, EmailTemplate>();
+            ConfigMap<EmailTypeTempItemDto, EmailTypeTempItem>();
+
+
             ConfigMap<ProductDto, Product>();
             ConfigMap<ProductEditModel, ProductDto>();
 

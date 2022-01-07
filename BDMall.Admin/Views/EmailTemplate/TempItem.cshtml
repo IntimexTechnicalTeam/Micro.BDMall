@@ -1,0 +1,211 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="app" class="col-md-12" v-cloak>
+    <table class="table">
+        <tr>
+            <td class="col-md-2">
+                <form class="form-inline">
+                    @BDMall.Resources.Label.PlaceHolder
+                    <input type="text" class="form-control" id="txtPlaceHolder" v-model="item.Value" style="width:300px;" />
+                    <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Search" v-on:click="Search" />
+                </form>
+            </td>
+        </tr>
+    </table>
+    <div>
+        <div class="panel-body">
+            <div id="Routinetoolbar" class="btn-group">
+                <button type="button" class="btn btn-default" v-on:click="Add">
+                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>@BDMall.Resources.Action.Add
+                </button>
+                <button type="button" class="btn btn-default" v-on:click="Modify" v-bind:disabled="IsModify">
+                    <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>@BDMall.Resources.Action.Modify
+                </button>
+                <button type="button" class="btn btn-default" v-on:click="Delete" v-bind:disabled="IsDelete">
+                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>@BDMall.Resources.Action.Delete
+                </button>
+            </div>
+            <table id="tblItem"></table>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        var tabId = self.frameElement.parentElement.id;
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                item: {
+                    Value: ""
+                },
+                Description: "",
+                IsModify: true,
+                IsDelete: true
+            },
+            methods: {
+                Search: function () {
+
+                    $("#tblItem").bootstrapTable("refresh", { url: "/adminapi/EmailTempItem/Search", pageNumber: 1 })
+
+
+                },
+                Add: function () {
+                    miniTab.openNewTabByIframe({
+                        href:"/EmailTemplate/EditTempItem",
+                        title: '@BDMall.Resources.Label.AddEmailTemplateItem',
+                        callback: vm.Search
+                    });
+                },
+                Modify: function () {
+                    var row = $("#tblItem").bootstrapTable("getSelections");
+                    miniTab.openNewTabByIframe({
+                        href:"/EmailTemplate/EditTempItem/" + row[0].Id,
+                        title: '@BDMall.Resources.Action.Modify' + '-' + row[0].Description,
+                        callback: vm.Search
+                    });
+                },
+
+                Delete: function () {
+
+                    var a = $("#tblItem").bootstrapTable("getSelections");
+                    var ids = [];
+
+                    SystemConfirm('@BDMall.Resources.Message.ConfirmDelete', function () {
+                        a.forEach(function (val, index) {
+                            ids.push(val.Id);
+                        })
+                        var data = ids.join(","); 
+                        WS.Get("/adminapi/EmailTempItem/DeleteItem", {ids: data}, function (response) {
+                            if (response.Succeeded == true) {
+                                vm.Search();
+                            }
+                            else {
+                                showWarn('@BDMall.Resources.Message.DeleteFailed');
+                            }
+                        }, function () { });
+                    });
+                },
+                SetButtonState: function () {
+                    var selected = $("#tblItem").bootstrapTable("getSelections");
+                    if (selected.length == 1) {
+                        vm.IsModify = false;
+                    }
+                    else {
+                        vm.IsModify = true;
+                    }
+
+                    if (selected.length >= 1) {
+                        vm.IsDelete = false;
+                    }
+                    else {
+                        vm.IsDelete = true;
+                    }
+                },
+            }
+        });
+
+
+        var ItemsTableInit = function () {
+
+            var rTableInit = new Object();
+            rTableInit.Init = function () {
+
+                $("#tblItem").bootstrapTable({
+                    method: 'post',                      //请求方式（*）
+                    //url: '/adminapi/Attribute/GetSelfDefineAttribute',         //请求后台的URL（*）
+                    queryParams: rTableInit.queryParams,//传递参数（*）
+                    //queryParamsType:'limit',
+                    toolbar: '#toolbar',                //工具按钮用哪个容器
+                    striped: true,                      //是否显示行间隔色
+                    cache: true,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                    sortable: false,                     //是否启用排序
+                    sortOrder: "asc",                   //排序方式
+                    sidePagination: "client",           //分页方式：client客户端分页，server服务端分页（*）
+                    pageNumber: 1,                       //初始化加载第一页，默认第一页
+                    pageSize: 10,                       //每页的记录行数（*）
+                    pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                    smartDisplay: false,
+                    showRefresh: false,                  //是否显示刷新按钮
+                    clickToSelect: true,                //是否启用点击选中行
+                    height: 500,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+                    //uniqueId: "id",                     //每一行的唯一标识，一般为主键列
+                    cardView: false,                    //是否显示详细视图
+                    detailView: false,                   //是否显示父子表
+                    pagination: true,                   //是否显示分页（*）
+                    ajaxOptions: {
+                        beforeSend: function (request) {
+                            var access_token = $.cookie("access_token");
+                            request.setRequestHeader("Authorization", "Bearer " + access_token);
+                        }
+                    },
+                    onLoadSuccess: function () {
+                        vm.SetButtonState();
+                    },
+                    onCheck: function (row) {
+                        vm.SetButtonState();
+                    },
+                    onUncheck: function (row) {
+                        vm.SetButtonState();
+                    },
+                    onCheckAll: function (rows) {
+                        vm.SetButtonState();
+                    },
+                    onUncheckAll: function (rows) {
+                        vm.SetButtonState();
+                    },
+                    columns: [{
+                        checkbox: true
+                    }, {
+                        field: 'Id',
+                        title: '',
+                        visible: false
+                    },
+                    {
+                        field: 'DescId',
+                        title: '',
+                        visible: false
+                    },
+                    {
+                        field: 'PlaceHolder',
+                        title: '@BDMall.Resources.Label.PlaceHolder'
+                    },
+                    {
+                        field: 'ObjectType',
+                        title: '@BDMall.Resources.Label.ObjectType'
+                    },
+                    {
+                        field: 'Description',
+                        title: '@BDMall.Resources.Label.Desc'
+                    },
+                     {
+                         field: 'Propertity',
+                         title: '@BDMall.Resources.Label.Preprotity'
+                     },
+                     {
+                         field: 'Remark',
+                         title: '@BDMall.Resources.Label.Remarks'
+                     }
+                    ]
+                });
+            };
+
+            rTableInit.queryParams = function (params) {
+                return vm.item;
+            }
+            return rTableInit;
+        }
+
+        $(document).ready(function () {
+
+            var oTable = ItemsTableInit();
+            oTable.Init();
+
+        });
+    </script>
+}
+

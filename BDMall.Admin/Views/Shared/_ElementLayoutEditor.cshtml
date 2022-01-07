@@ -16,6 +16,7 @@
     <link href="~/Scripts/bDialog/css/b.dialog.bootstrap3.css" rel="stylesheet"/>
     <link href="~/Scripts/layui/lib/layui-v2.5.5/css/layui.css" rel="stylesheet"/>
     <link href="~/Scripts/layui/css/layuimini.css?v=2.0.4.2" rel="stylesheet"/>
+    <link href="~/Content/ElementUI/element-ui.css rel="stylesheet"/>
     <link href="~/Content/admin/admin.css" rel="stylesheet"/>
 
 </head>
@@ -37,7 +38,7 @@
     <script src="~/Scripts/bootstraptable/js/bootstrap-table.min.js"></script>
     <script src="~/Scripts/bootstrap3-dialog/js/bootstrap-dialog.min.js"></script>
     <script src="~/Scripts/bDialog/js/b.dialog.min.js"></script>
-
+    <script src="~/Scripts/ElementUI/element-ui.js"></script>   
     <script src="~/Scripts/admin/admin.js"></script>
     <script src="~/Scripts/admin/Common-v100.js"></script>    
 
@@ -68,7 +69,7 @@
     </script>
 
     <script type="text/javascript" src="/Content/LanguageScript"></script>
-    <script src="@Url.Content(BDMall.Utility.PathUtil.GetBoostrapTableLang(ViewData["Lang"].ToString()))"></script>
+    <script src="@Url.Content(BDMall.Utility.PathUtil.GetBoostrapTableLang(ViewBag.Lang.ToString()))"></script>
 
     <script src="~/Scripts/admin/vue-component/pager.js"></script>
 

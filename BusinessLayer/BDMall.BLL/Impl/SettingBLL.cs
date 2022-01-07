@@ -180,5 +180,15 @@ namespace BDMall.BLL
             }
             return typeList;
         }
+        public ImageSize GetSmallProductImageSize()
+        {
+            ImageSize size = new ImageSize();
+
+            var val = _codeMasterRepo.GetCodeMaster(CodeMasterModule.Setting.ToString(), CodeMasterFunction.ProductImgSize.ToString(), "S");
+            size.Width = int.Parse(val?.Value ?? "100");
+            size.Length = int.Parse(val?.Value ?? "100");
+
+            return size;
+        }
     }
 }

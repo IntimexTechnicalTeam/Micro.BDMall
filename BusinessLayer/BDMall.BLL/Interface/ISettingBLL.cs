@@ -68,7 +68,7 @@ namespace BDMall.BLL
         ///// <returns></returns>
         List<ImageSize> GetProductImageSize();
         //List<ImageSize> GetProductAdditionalImageSize();
-        //ImageSize GetSmallProductImageSize();
+        ImageSize GetSmallProductImageSize();
         //ImageSize GetMiddleProductImageSize();
         //ImageSize GetBigProductImageSize();
         //ImageSize GetLargeProductImageSize();

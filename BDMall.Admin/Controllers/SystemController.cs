@@ -27,6 +27,7 @@ namespace BDMall.Admin.Controllers
 
         public ActionResult Menu()
         {
+            ViewBag.Lang = "";
             return View();
         }
 

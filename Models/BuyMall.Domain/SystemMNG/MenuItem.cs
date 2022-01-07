@@ -23,7 +23,7 @@ namespace BDMall.Domain
         /// </summary>
         public Guid NameTransId { get; set; }
 
-        //public List<MutiLanguage> NameTranslation { get; set; }
+        public List<MutiLanguage> NameTranslation { get; set; }
 
         /// <summary>
         /// 访问路径
@@ -69,5 +69,8 @@ namespace BDMall.Domain
         /// 是否首頁顯示的菜單項
         /// </summary>
         public bool IsHomeItem { get; set; }
+
+        public bool IsActive { get; set; }
+        public bool IsDeleted { get; set; }
     }
 }
