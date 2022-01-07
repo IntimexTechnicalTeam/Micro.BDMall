@@ -17,7 +17,7 @@ tempStr += "                            <div v-if='c.Level<limitlevel' style='cu
 tempStr += "                            <div v-if='c.IsActive==false' style='cursor:pointer;' v-bind:class ='BtnActive' v-on:click='activeClick(c)'></div>";
 tempStr += "                            <div v-else style='cursor:pointer;' v-bind:class ='BtnDisActive' v-on:click='disActiveClick(c)'></div>";
 tempStr += "                        </div>";
-tempStr += "                        <div v-if='canedit==2&&!c.Children' style='float:right;' >";
+tempStr += "                        <div v-if='canedit==2&&c.Children.length==0' style='float:right;' >";
 tempStr += "                            <a v-on:click='selectClick(c,$event)' style='cursor:pointer;'>select</a>";
 tempStr += "                        </div>";
 tempStr += "                    </div>";

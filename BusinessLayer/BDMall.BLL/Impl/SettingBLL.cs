@@ -150,5 +150,35 @@ namespace BDMall.BLL
             list = vals.Select(s => new ImageSize { Width = int.Parse(s.Value), Length = int.Parse(s.Value) }).ToList();
             return list;
         }
+
+        public List<KeyValue> GetCMCalculateTypes()
+        {
+            List<KeyValue> typeList = new List<KeyValue>();
+            foreach (ProdCommissionType typeItm in Enum.GetValues(typeof(ProdCommissionType)))
+            {
+                var type = new KeyValue()
+                {
+                    Id = ((int)typeItm).ToString(),
+                };
+                switch (typeItm)
+                {
+                    case ProdCommissionType.MerchInheriting:
+                        type.Text = Resources.Label.CMType_MerchInheriting;
+                        break;
+                    case ProdCommissionType.FixedValue:
+                        type.Text = Resources.Label.CMType_FixedValue;
+                        break;
+                    case ProdCommissionType.FixedRate:
+                        type.Text = Resources.Label.CMType_FixedRate;
+                        break;
+                    default:
+                        type.Text = Resources.Value.Unknown;
+                        break;
+                }
+
+                typeList.Add(type);
+            }
+            return typeList;
+        }
     }
 }

@@ -1,10 +1,11 @@
-﻿using BDMall.Domain;
+﻿
+using BDMall.Domain;
 using BDMall.Enums;
 using BDMall.Model;
 using System;
 using System.Collections.Generic;
 
-namespace Intimex.Common
+namespace BDMall.Utility
 {
     public  class LangUtil
     {

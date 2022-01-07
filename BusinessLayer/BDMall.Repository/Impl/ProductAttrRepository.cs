@@ -41,7 +41,7 @@ namespace BDMall.Repository
                                   Seq = a.Seq,
                                   UpdateBy = a.UpdateBy,
                                   UpdateDate = a.UpdateDate,
-                                  AttrValues = AutoMapperExt.MapTo<List<ProductAttrValueDto>>(vc),
+                                  //AttrValues = AutoMapperExt.MapTo<List<ProductAttrValueDto>>(vc),
                               }).Distinct().OrderBy(o => o.IsInv).ToList();
 
        

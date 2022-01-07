@@ -29,7 +29,8 @@ namespace Domain
             ConfigMap<CustomMenuDto, CustomMenu>();
             ConfigMap<CustomMenuDetailDto, CustomMenuDetail>();
 
-
+            ConfigMap<ProductDto, Product>();
+            ConfigMap<ProductEditModel, ProductDto>();
 
             ConfigMap<ProductAttributeDto, ProductAttribute>();
         }

@@ -16,5 +16,7 @@ namespace BDMall.Repository
         ProductAttribute GetAttribute(Guid id);
 
         List<ProductAttribute> GetAttributeItemsByCatID(Guid catID);
+
+        List<ProductAttribute> GetAttributeItemsByProductId(Guid prodID);
     }
 }

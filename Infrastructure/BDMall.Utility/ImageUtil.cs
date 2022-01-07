@@ -6,7 +6,7 @@ using System.IO;
 using System.Drawing;
 using System.Drawing.Imaging;
 
-namespace Intimex.Common
+namespace BDMall.Utility
 {
     public class ImageUtil
     {

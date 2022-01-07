@@ -130,5 +130,7 @@ namespace BDMall.Repository
         public DbSet<ProductCommission> ProductCommissions { get; set; }
 
         public DbSet<ProductRefuseDelivery> ProductRefuseDeliveries { get; set;}
+
+        public DbSet<ProductRelatedItem> ProductRelatedItems { get; set; }
     }
 }

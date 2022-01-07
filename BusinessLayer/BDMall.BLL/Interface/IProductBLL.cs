@@ -1,4 +1,5 @@
 ﻿using BDMall.Domain;
+using BDMall.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,5 +20,15 @@ namespace BDMall.BLL
         ProductEditModel GetProductInfo(Guid id);
 
         List<string> GetProductImages(Guid prodID);
+
+        SystemResult CheckTimePriceByCode(string code, Guid MerchantId);
+
+        ProductDto SaveProduct(ProductEditModel product);
+
+        Task UpdateCache(string Code, ProdAction action);
+
+        Task<List<string>> CopyProductImageToPath(ProductEditModel product);
+
+        Task CreateDefaultImage(ProductEditModel product);
     }
 }

@@ -2,6 +2,7 @@
 using BDMall.Enums;
 using BDMall.Model;
 using BDMall.Repository;
+using BDMall.Utility;
 using Intimex.Common;
 using System;
 using System.Collections.Generic;
@@ -21,6 +22,7 @@ namespace BDMall.BLL
         IMerchantBLL merchantBLL;
         IProductAttrValueRepository productAttrValueRepository;
         IProductRepository productRepository;
+        IProductAttrRepository productAttrRepository;
 
         public AttributeBLL(IServiceProvider services) : base(services)
         {
@@ -30,6 +32,7 @@ namespace BDMall.BLL
             codeMasterRepository = Services.Resolve<ICodeMasterRepository>();
             productAttrValueRepository = Services.Resolve<IProductAttrValueRepository>();
             productRepository = Services.Resolve<IProductRepository>();
+            productAttrRepository = Services.Resolve<IProductAttrRepository>();
         }
 
         public List<KeyValue> GetInveAttribute()
@@ -262,6 +265,46 @@ namespace BDMall.BLL
             return list;
         }
 
+        public List<AttributeObjectView> GetNonInvAttributeByProduct(Guid prodId)
+        {
+            List<AttributeObjectView> list = new List<AttributeObjectView>();           
+            var dbAttrs = attributeRepository.GetAttributeItemsByProductId(prodId).Where(p => p.IsInvAttribute == false).ToList();
+            list = GenAttributeObjectView(dbAttrs);
+            return list;
+        }
+
+        public List<AttributeObjectView> GetInvAttributeByProduct(Guid prodId)
+        {
+            List<AttributeObjectView> list = new List<AttributeObjectView>();
+            var mapAttrs = productAttrRepository.GetAttributeItemsMappByProductId(prodId).Where(p => p.IsInv == true).OrderBy(o => o.Seq).ToList();
+            var produt = baseRepository.GetModel<Product>(x => x.Id == prodId);
+
+            if (mapAttrs != null && mapAttrs.Any())
+            {
+                foreach (var item in mapAttrs)
+                {
+                    var dbAttr = baseRepository.GetModel<ProductAttribute>(x => x.Id == item.AttrId);
+                    var attr = AutoMapperExt.MapTo<ProductAttributeDto>(dbAttr);
+                    var modelAttr = GenProductAttribute(attr);
+                    AttributeObjectView obj = new AttributeObjectView();
+                    obj.Id = modelAttr.Id;
+                    obj.Desc = modelAttr.Desc;
+                    obj.SubItems = modelAttr.AttributeValues.Where(x => x.IsActive && !x.IsDeleted && (x.MerchantId == produt.MerchantId || x.MerchantId == Guid.Empty))
+                                            .Select(s => new AttributeValueView
+                                            {
+                                                Id = s.Id.ToString(),
+                                                Text = s.Desc,
+                                                Price = item.AttrValues.FirstOrDefault(p => p.AttrValueId == s.Id)?.AdditionalPrice ?? 0
+                                            }).ToList();
+                    list.Add(obj);
+                }
+            }
+
+            return list;
+        }
+
+
+
         private List<AttributeObjectView> GenAttributeObjectView(List<ProductAttribute> dbAttrs)
         {
             List<AttributeObjectView> list = new List<AttributeObjectView>();
@@ -291,7 +334,7 @@ namespace BDMall.BLL
 
             attribute.Descs = translationRepository.GetMutiLanguage(attribute.DescTransId);
             attribute.Layout = attribute.Layout;
-
+            attribute.Desc = attribute.Descs.FirstOrDefault(x=>x.Language == CurrentUser.Lang)?.Desc ?? "";
             var attrValuelist = baseRepository.GetList<ProductAttributeValue>(x => x.AttrId == attribute.Id && x.IsActive && !x.IsDeleted);
             if (CurrentUser.IsMerchant)
                 attrValuelist = attrValuelist.Where(x => x.MerchantId == CurrentUser.MerchantId);
@@ -304,6 +347,8 @@ namespace BDMall.BLL
                 item.ImagePath = item.Image;
                 item.Status = RecordStatus.Update;
             }
+
+
 
             return attribute;
         }

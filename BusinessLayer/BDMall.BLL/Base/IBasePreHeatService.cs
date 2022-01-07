@@ -28,13 +28,13 @@ namespace BDMall.BLL
 
         //Task UpdatePromotionProductByMchId(string key, Guid MchId);
 
-        ///// <summary>
-        ///// 下架商品并更新Product缓存
-        ///// </summary>
-        ///// <param name="key"></param>
-        ///// <param name="Code">ProductCode</param>
-        ///// <returns></returns>
-        //Task UpdateProductWhenOffSale(string key, string Code);
+        /// <summary>
+        /// 下架商品并更新Product缓存
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="Code">ProductCode</param>
+        /// <returns></returns>
+        Task UpdateProductWhenOffSale(string key, string Code);
 
         ///// <summary>
         ///// 

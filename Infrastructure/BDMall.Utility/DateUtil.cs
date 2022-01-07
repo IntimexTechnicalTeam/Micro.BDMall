@@ -16,5 +16,15 @@ namespace BDMall.Utility
 
             return DateTime.ParseExact(date, format, System.Globalization.CultureInfo.InvariantCulture);
         }
+
+        public static string DateTimeToString(DateTime? date, string format)
+        {
+            if (date == null)
+            {
+                return "";
+            }
+
+            return DateTime.Parse(date.ToString()).ToString(format);
+        }
     }
 }

@@ -2,6 +2,7 @@
 using BDMall.BLL;
 using BDMall.Domain;
 using BDMall.Enums;
+using BDMall.Utility;
 using Intimex.Common;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -147,6 +148,16 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
 
             result.Succeeded = true;
             return result;
+        }
+
+        [HttpGet]
+        public SystemResult GetCatalogPath(Guid catID)
+        {
+            var result = new SystemResult();
+            result.ReturnValue = productCatalogBLL.GetCatalogPath(catID);
+            result.Succeeded = true;
+            return result;
+
         }
 
         [NonAction]

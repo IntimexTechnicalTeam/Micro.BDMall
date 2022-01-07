@@ -4,6 +4,7 @@ using BDMall.Model;
 using BDMall.Model.SystemMNG;
 using BDMall.Repository;
 using BDMall.Runtime;
+using BDMall.Utility;
 using Intimex.Common;
 using System;
 using System.Collections.Generic;

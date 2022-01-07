@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Web.Framework;
 
 namespace BDMall.Domain
 {
@@ -231,6 +232,23 @@ namespace BDMall.Domain
 
         public bool IsTimeStatus => TimePrice != SalePrice;
 
+        public virtual void Validate()
+        {
+            if (ToolUtil.CheckHasHTMLTag(this))
+                throw new InvalidInputException($"{ Resources.Message.ExistHTMLLabel}");
 
+            //检查多语言值中是否有HTML标签
+            if (ToolUtil.CheckMultLangListHasHTMLTag(ProductNames.Select(s => s.Desc).ToList()))
+                throw new InvalidInputException($"{ Resources.Message.ExistHTMLLabel}");
+
+            if (ToolUtil.CheckMultLangListHasHTMLTag(PageTitles.Select(s => s.Desc).ToList()))
+                throw new InvalidInputException($"{ Resources.Message.ExistHTMLLabel}");
+
+            if (ToolUtil.CheckMultLangListHasHTMLTag(SeoKeywords.Select(s => s.Desc).ToList()))
+                throw new InvalidInputException($"{ Resources.Message.ExistHTMLLabel}");
+
+            if (ToolUtil.CheckMultLangListHasHTMLTag(ProductBriefs.Select(s => s.Desc).ToList()))
+                throw new InvalidInputException($"{ Resources.Message.ExistHTMLLabel}");
+        }
     }
 }

@@ -3,6 +3,7 @@ using BDMall.Domain;
 using BDMall.Enums;
 using BDMall.Model;
 using BDMall.Repository;
+using BDMall.Utility;
 using Intimex.Common;
 using MediatR;
 using Microsoft.AspNetCore.Http;

@@ -22,7 +22,6 @@
     <Content Remove="Views\Product\ProductIndex-backup.cshtml" />
     <Content Remove="Views\Product\ProductSearchRate.cshtml" />
     <Content Remove="Views\Product\RelatedProduct.cshtml" />
-    <Content Remove="Views\Product\SelectCatalog.cshtml" />
     <Content Remove="Views\Product\SelectProduct.cshtml" />
     <Content Remove="Views\Product\UpdPriceIndex.cshtml" />
   </ItemGroup>

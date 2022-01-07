@@ -363,7 +363,7 @@ namespace BDMall.BLL
         ///// <summary>
         ///// 獲取佣金計算方式清單
         ///// </summary>
-        //List<KeyValue> GetCMCalculateTypes();
+        List<KeyValue> GetCMCalculateTypes();
 
         ///// <summary>
         ///// 獲取Transin API的連結地址

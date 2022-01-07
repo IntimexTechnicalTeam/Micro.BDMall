@@ -1,22 +1,17 @@
 ﻿using Autofac;
 using BDMall.BLL;
 using BDMall.Domain;
+using BDMall.Enums;
 using Intimex.Common;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-using Intimex.Common;
+using System.Globalization;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Web.Framework;
 using Web.Mvc;
-using Autofac;
-using Microsoft.AspNetCore.Mvc;
-using BDMall.Domain;
-using BDMall.Enums;
-using System.Threading;
-using System.Globalization;
-using BDMall.BLL;
-using System.Linq;
 
 namespace BDMall.Admin.Areas.AdminAPI.Controllers
 {
@@ -31,13 +26,15 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
         public ISettingBLL settingBLL;
         public IMerchantBLL merchantBLL;
         public IAttributeBLL attributeBLL;
-
+        public ICountryBLL countryBLL;
+        
         public DictController(IComponentContext services) : base(services)
         {
             codeMasterBLL = Services.Resolve<ICodeMasterBLL>();
             settingBLL = Services.Resolve<ISettingBLL>();
             merchantBLL = Services.Resolve<IMerchantBLL>();
             attributeBLL = Services.Resolve<IAttributeBLL>();
+            countryBLL = Services.Resolve<ICountryBLL>();
         }
 
         /// <summary>
@@ -145,12 +142,18 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
         /// <returns></returns>
         [HttpGet]
         public async Task<List<MutiLanguage>> GetUseLanguage()
-            {
+        {
 
             return new List<MutiLanguage>();
         }
 
-     
+        [HttpGet]
+        public List<KeyValue> GetCountry()
+        {         
+            var countrys = countryBLL.GetCountry();
+            return countrys;
+        }
+
         /// <summary>
         /// 送貨方式
         /// </summary>
@@ -270,5 +273,43 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
             var list = attributeBLL.GetAttrLayout();
             return list;
         }
+
+        [HttpGet]
+        public List<KeyValue> GetCMCalculateTypes()
+        {
+            List<KeyValue> typeList = settingBLL.GetCMCalculateTypes();
+            return typeList;
+        }
+
+        [HttpGet]
+        [AdminApiAuthorize(Module = ModuleConst.ProductModule)]
+        public List<KeyValue> GetProductUnit()
+        {
+            List<KeyValue> list = new List<KeyValue>();
+            var masters = codeMasterBLL.GetCodeMasters(CodeMasterModule.Setting, CodeMasterFunction.ProductUnit);
+            list = masters.Select(s => new KeyValue { Id = s.Value, Text = s.Description }).ToList();
+            return list;
+        }
+
+        [HttpGet]
+        [AdminApiAuthorize(Module = ModuleConst.ProductModule)]
+        public List<KeyValue> GetCTNUnit()
+        {
+            List<KeyValue> list = new List<KeyValue>();
+            var masters = codeMasterBLL.GetCodeMasters(CodeMasterModule.Setting, CodeMasterFunction.CTNUnit);
+            list = masters.Select(s => new KeyValue { Id = s.Value, Text = s.Description }).ToList();
+            return list;
+        }
+
+        [HttpGet]
+        [AdminApiAuthorize(Module = ModuleConst.ProductModule)]
+        public List<KeyValue> GetWeightUnit()
+        {
+            List<KeyValue> list = new List<KeyValue>();
+            var masters = codeMasterBLL.GetCodeMasters(CodeMasterModule.Setting, CodeMasterFunction.WeightUnit);
+            list = masters.Select(s => new KeyValue { Id = s.Value, Text = s.Description }).ToList();
+            return list;
+        }
+
     }
 }

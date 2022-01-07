@@ -102,5 +102,54 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
             result = attributeBLL.Save(attributeObj);
             return result;
         }
+
+        /// <summary>
+        /// 通过产品目录获取库存属性的下拉框对象
+        /// </summary>
+        /// <param name="catId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public List<AttributeObjectView> GetInvAttributeByCatId(Guid catId)
+        {
+            var list = attributeBLL.GetInvAttributeByCatId(catId);
+            return list;
+        }
+
+        /// <summary>
+        /// 通过产品目录获取非库存属性的下拉框对象
+        /// </summary>
+        /// <param name="catId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public List<AttributeObjectView> GetNonInvAttributeByCatId(Guid catId)
+        {
+            var list  = attributeBLL.GetNonInvAttributeByCatId(catId);
+            return list;
+        }
+
+        /// <summary>
+        /// 通过产品ID获取产品下的属性下拉框对象
+        /// </summary>
+        /// <param name="prodId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public List<AttributeObjectView> GetInvAttributeByProduct(Guid prodId)
+        {
+            var  list = attributeBLL.GetInvAttributeByProduct(prodId);
+            return list;
+        }
+
+        /// <summary>
+        /// 通过产品ID获取产品下的非库存属性下拉框对象
+        /// </summary>
+        /// <param name="prodId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public List<AttributeObjectView> GetNonInvAttributeByProduct(Guid prodId)
+        {
+            List<AttributeObjectView> list = attributeBLL.GetNonInvAttributeByProduct(prodId);
+          
+            return list;
+        }
     }
 }

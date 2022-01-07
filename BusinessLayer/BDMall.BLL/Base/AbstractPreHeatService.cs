@@ -1,4 +1,5 @@
-﻿using BDMall.Enums;
+﻿using BDMall.Domain;
+using BDMall.Enums;
 using BDMall.Model;
 using System;
 using System.Collections.Generic;
@@ -54,48 +55,32 @@ namespace BDMall.BLL
         ///// <returns></returns>
         public virtual async Task UpdateProductWhenOffSale(string key, string Code)
         {
-            ////根据Code查找最后一条已下架版本的商品
-            //var lastProducts = (await baseRepository.GetListAsync<Product>(x => x.Code == Code && x.IsDeleted ||
-            //                            (x.Status == ProductStatus.AutoOffSale || x.Status == ProductStatus.ManualOffSale)))
-            //                            .OrderByDescending(o => o.UpdateDate).FirstOrDefault();
+            key = $"{key}_{Language.C}";
+            var product = await RedisHelper.HGetAsync<HotProduct>(key, Code);
+            if (product != null)
+            {
+                product.Status = ProductStatus.ManualOffSale;
+                product.UpdateDate = DateTime.Now;
+                await RedisHelper.HSetAsync(key, Code, product);
+            }
 
-            //var product = new HotProduct();
-            //if (lastProducts != null)
-            //{
-            //    #region 
-            //    product.CurrencyCode = lastProducts.CurrencyCode;
-            //    product.InternalPrice = lastProducts.InternalPrice;
-            //    product.MarkUpPrice = lastProducts.MarkUpPrice;
-            //    product.OriginalPrice = lastProducts.OriginalPrice + lastProducts.MarkUpPrice;
-            //    product.SalePrice = lastProducts.SalePrice + lastProducts.MarkUpPrice;
-            //    product.Status = lastProducts.Status;
-            //    product.ProductCode = lastProducts.Code;
-            //    product.UpdateDate = lastProducts.UpdateDate ?? new DateTime(1970, 01, 01);
-            //    product.CreateDate = lastProducts.CreateDate;
-            //    product.CatalogId = lastProducts.CatalogId;
-            //    product.DefaultImageId = lastProducts.DefaultImage;
-            //    product.MchId = lastProducts.MerchantId;
-            //    product.ProductId = lastProducts.Id;
-            //    #endregion
+            key = $"{key}_{Language.E}";
+            product = await RedisHelper.HGetAsync<HotProduct>(key, Code);
+            if (product != null)
+            {
+                product.Status = ProductStatus.ManualOffSale;
+                product.UpdateDate = DateTime.Now;
+                await RedisHelper.HSetAsync(key, Code, product);
+            }
 
-            //    #region 生成三个语言版本
-            //    product.LangType = Language.C;
-            //    key = $"{PreHotType.Hot_Products}_{product.LangType}";
-            //    product.Name = baseRepository.GetModel<Translation>(x => x.TransId == lastProducts.NameTransId && x.Lang == product.LangType)?.Value ?? "";
-            //    await RedisHelper.HSetAsync(key, product.Code, product);
-
-            //    product.LangType = Language.E;
-            //    key = $"{PreHotType.Hot_Products}_{product.LangType}";
-            //    product.Name = baseRepository.GetModel<Translation>(x => x.TransId == lastProducts.NameTransId && x.Lang == product.LangType)?.Value ?? "";
-            //    await RedisHelper.HSetAsync(key, product.Code, product);
-
-            //    product.LangType = Language.S;
-            //    key = $"{PreHotType.Hot_Products}_{product.LangType}";
-            //    product.Name = baseRepository.GetModel<Translation>(x => x.TransId == lastProducts.NameTransId && x.Lang == product.LangType)?.Value ?? "";
-            //    await RedisHelper.HSetAsync(key, product.Code, product);
-
-            //    #endregion
-           // }
+            key = $"{key}_{Language.S}";
+            product = await RedisHelper.HGetAsync<HotProduct>(key, Code);
+            if (product != null)
+            {
+                product.Status = ProductStatus.ManualOffSale;
+                product.UpdateDate = DateTime.Now;
+                await RedisHelper.HSetAsync(key, Code, product);
+            }
         }
 
         public virtual async Task UpdatePromotionMerchant(string key, Guid MchId)

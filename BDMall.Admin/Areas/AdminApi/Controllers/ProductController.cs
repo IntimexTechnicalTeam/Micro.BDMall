@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
+using System.Threading.Tasks;
 using Web.Framework;
 using Web.Mvc;
 
@@ -182,6 +183,58 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
             ProductEditModel product = new ProductEditModel();
             product = productBLL.GetProductInfo(id);           
             return product;
+        }
+
+        [HttpGet]
+        [AdminApiAuthorize(Module = ModuleConst.ProductModule, Function = new string[] { FunctionConst.Prod_Edit })]
+        public ProductEditModel GetCopyProduct(Guid id)
+        {
+            ProductEditModel product = new ProductEditModel();
+            product = productBLL.GetProductInfo(id);
+            product.Code = "";          
+            product.OriginalId = Guid.Empty;
+            product.IsExistInvRec = false;
+            product.IsApprove = false;
+            product.SaleTime = null;
+            product.Action = ActionTypeEnum.Copy.ToString();
+            product.SalePrice = product.TimePrice;
+
+            return product;
+        }
+
+        /// <summary>
+        /// 检查是否有时段价格
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public SystemResult CheckTimePriceByCode(string code, Guid MerchantId)
+        {
+            var result = productBLL.CheckTimePriceByCode(code, MerchantId);
+            return result;
+        }
+
+        [HttpPost]
+        [AdminApiAuthorize(Module = ModuleConst.ProductModule, Function = new string[] { FunctionConst.Prod_Edit })]
+        public async Task<SystemResult> Save(ProductEditModel product)
+        {
+            SystemResult result = new SystemResult();
+            product.Validate();
+
+            var productInfo = productBLL.SaveProduct(product);
+            //更新商品缓存
+            await productBLL.UpdateCache(productInfo.Code, ProdAction.Apporve);
+
+            var prodcutModel = AutoMapperExt.MapTo<ProductEditModel>(productInfo);
+            if (product.Action == ActionTypeEnum.NewVer.ToString() || product.Action == ActionTypeEnum.Copy.ToString())       
+                await productBLL.CopyProductImageToPath(prodcutModel);
+            
+            if (product.Action == ActionTypeEnum.Add.ToString())          
+                await productBLL.CreateDefaultImage(prodcutModel);
+            
+            result.Succeeded = true;
+            result.Message = "";
+            result.ReturnValue = productInfo;
+            return result;
         }
     }
 

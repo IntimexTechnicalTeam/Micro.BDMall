@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using BDMall.BLL;
 using BDMall.Domain;
+using BDMall.Utility;
 using Intimex.Common;
 using Microsoft.AspNetCore.Mvc;
 using System;

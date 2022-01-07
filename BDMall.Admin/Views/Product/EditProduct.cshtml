@@ -745,7 +745,7 @@
                 InitAttributeByCatID: function () {
                     if (vm.productInfo.Category != WS.GuidEmpty) {
                         var data = new Object();
-                        data.catId = vm.productInfo.Category;
+                        data.catId = vm.productInfo.Category;                        
                         //绑定库存属性
                         WS.AjaxP("get", "/adminapi/ProdAttribute/GetInvAttributeByCatId", data, function (response) {
                             if (response) {
@@ -871,9 +871,9 @@
                         if (obj.results != null) {
                             var data = new Object();
                             data.catID = obj.results[0].Id;
-                            WS.AjaxP("get", "/adminapi/ProdCatalog/GetCatalogPath", data, function (response) {
+                            WS.AjaxP("get", "/adminapi/ProdCatalog/GetCatalogPath", data, function (response) {                           
                                 vm.productInfo.Category = obj.results[0].Id;
-                                vm.productInfo.CategoryPath = response;
+                                vm.productInfo.CategoryPath = response.ReturnValue;
                                 vm.InitAttributeByCatID();
                             }, function () { });
                         }
@@ -967,7 +967,7 @@
                 //    vm.action = "Modify";
                 //},
                 InitCountry: function () {
-                    WS.AjaxP("get", "/adminapi/Product/GetCountry", null, function (a) {
+                    WS.AjaxP("get", "/adminapi/Dict/GetCountry", null, function (a) {
                         vm.countries = a;
                     }, function () { });
                 },
@@ -1307,13 +1307,13 @@
             //InitBootstrapSelect("cboPermission", "/adminapi/Product/GetPermission", 1, false, false, data, function () {
             //    $("#cboPermission").selectpicker('val', vm.productInfo.SpecifExtension.PermissionLevel);
             //});
-            InitBootstrapSelect("cboUnit", "/adminapi/Product/GetProductUnit", 1, false, false, null, function () {
+            InitBootstrapSelect("cboUnit", "/adminapi/Dict/GetProductUnit", 1, false, false, null, function () {
                 $("#cboUnit").selectpicker('val', vm.productInfo.Specification.Unit);
             });
-            InitBootstrapSelect("cboCtnUnit", "/adminapi/Product/GetCTNUnit", 1, false, false, null, function () {
+            InitBootstrapSelect("cboCtnUnit", "/adminapi/Dict/GetCTNUnit", 1, false, false, null, function () {
                 $("#cboCtnUnit").selectpicker('val', vm.productInfo.Specification.PackageUnit);
             });
-            InitBootstrapSelect("cboWeightUnit", "/adminapi/Product/GetWeightUnit", 1, false, false, null, function () {
+            InitBootstrapSelect("cboWeightUnit", "/adminapi/Dict/GetWeightUnit", 1, false, false, null, function () {
                 if (vm.productInfo.Specification.WeightUnit > 0) {
                     $("#cboWeightUnit").selectpicker('val', vm.productInfo.Specification.WeightUnit);
                 }
@@ -1328,7 +1328,7 @@
             $("#txtActiveTo").val(vm.productInfo.ActiveTimeTo);
             $("#txtSaleTime").val(vm.productInfo.SaleTime);
             //綁定可選的佣金計算方式
-            InitBootstrapSelect("cboCMCalType", "/adminapi/Product/GetCMCalculateTypes", 1, false, false, null, function () {
+            InitBootstrapSelect("cboCMCalType", "/adminapi/Dict/GetCMCalculateTypes", 1, false, false, null, function () {
                 $("#cboCMCalType").selectpicker('val', vm.productInfo.CommissionConfig.CMCalType);
             });
 

@@ -36,5 +36,11 @@ namespace BDMall.BLL
         List<AttributeObjectView> GetInvAttributeByCatId(Guid catId);
 
         List<AttributeObjectView> GetNonInvAttributeByCatId(Guid catId);
+
+        List<AttributeObjectView> GetNonInvAttributeByProduct(Guid prodId);
+
+        List<AttributeObjectView> GetInvAttributeByProduct(Guid prodId);
+
+        
     }
 }

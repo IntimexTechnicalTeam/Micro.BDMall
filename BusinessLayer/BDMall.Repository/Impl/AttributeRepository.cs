@@ -72,5 +72,22 @@ namespace BDMall.Repository
 
             return attributes;
         }
+
+        public List<ProductAttribute> GetAttributeItemsByProductId(Guid prodID)
+        {
+           var attributes = (from e in  baseRepository.GetList<ProductAttribute>()
+                                  join c in baseRepository.GetList<ProductAttr>() on e.Id equals c.AttrId
+                                  where c.ProductId == prodID && !e.IsDeleted
+                                  && e.IsActive && !c.IsDeleted && c.IsActive
+                                  //&& e.IsInvAttribute == true
+                                  select e).ToList();
+
+                return attributes;
+           
+        }
+
+
+
+
     }
 }

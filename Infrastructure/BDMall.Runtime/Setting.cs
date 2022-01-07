@@ -9,7 +9,10 @@ namespace BDMall.Runtime
         /// </summary>
         public static readonly string DefaultDateTimeFormat = "yyyy-MM-dd HH:mm:ss";
 
-
+        /// <summary>
+        /// 無限制數量內容的字數上限
+        /// </summary>
+        public static int UnlimitedContentWordQty = 200000;
 
         public static readonly string DefaultDateTimeFormat2 = "yyyy-MM-dd HH:mm";
 
