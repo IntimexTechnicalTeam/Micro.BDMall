@@ -134,8 +134,7 @@ namespace BDMall.Repository
         public DbSet<EmailTemplate> EmailTemplates { get; set; }
         public DbSet<EmailTempItem> EmailTempItems { get; set; }
         public DbSet<EmailTypeTempItem> EmailTypeTempItems { get; set; }
-        public DbSet<ProductRefuseDelivery> ProductRefuseDeliveries { get; set;}
-
+        
         public DbSet<ProductRelatedItem> ProductRelatedItems { get; set; }
     }
 }
