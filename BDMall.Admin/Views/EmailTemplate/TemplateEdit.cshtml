@@ -1,0 +1,281 @@
+﻿@model  BDMall.Model.EmailTemplate;
+
+@{
+    ViewBag.Title = "TemplateEdit";
+    Layout = "~/Views/Shared/_LayoutEditor.cshtml";
+
+}
+<div id="app" class="col-md-12" v-cloak>
+    <div class="col-md-8">
+        <form id="frmValidate">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-md-1 control-label text-right"><span style="color:red">*</span>@BDMall.Resources.Label.EmailType</label>
+                    <div class="col-md-5">
+                        <select class="form-control" name="EmailType" id="cboEmailType" v-model="Email.EmailType" v-on:change="getEmailTypeItems"></select>
+                    </div>
+                    <div>
+                        <label class="col-md-1 control-label text-right"><span style="color:red">*</span>@BDMall.Resources.Label.Language</label>
+                        <div class="col-md-5">
+                            <select class="form-control" name="Language" id="cboLanguage" v-model="Email.LangText"></select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-1 control-label text-right"><span style="color:red">*</span>@BDMall.Resources.Label.Code</label>
+                    <div class="col-md-11">
+                        <input type="text" name="Code" class="form-control " v-model="Email.Code" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-1 control-label text-right"><span style="color:red">*</span>@BDMall.Resources.Label.Name</label>
+                    <div class="col-md-11">
+                        <input type="text" name="Name" class="form-control" v-model="Email.Name" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-1 control-label text-right"><span style="color:red">*</span>@BDMall.Resources.Label.EmailSubject</label>
+                    <div class="col-md-11">
+                        <input type="text" name="Subject" class="form-control" v-model="Email.Subject" />
+                    </div>
+                </div>
+
+                @*<div class="form-group">
+            <label class="col-md-1 control-label text-right">@BDMall.Resources.Label.EmailIsActive</label>
+            <div class="col-md-11">
+                <input type="checkbox" class="checkbox size-large" v-model="Email.IsActive" />
+            </div>
+        </div>*@
+                <div class="form-group">
+                    <label class="col-md-1 control-label text-right">@BDMall.Resources.Label.EmailContent</label>
+                    <div class="col-md-11">
+                        @*<textarea id="areaEmailContent" class="form-control"></textarea>*@
+                        <div id="areaEmailContent" type="text/plain">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-1 control-label text-right">@BDMall.Resources.Label.WhatsAppContent</label>
+                    <div class="col-md-11">
+                        <textarea id="areaWhatsAppContent" v-model="Email.WhatsAppContent" class="form-control" rows="10"></textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-12 text-center">
+                        <input type="submit" class="btn btn-primary btn-lg" value="@BDMall.Resources.Action.Save" />
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="col-md-4">
+        <div>
+            <table id="tblChecked" class="table table-bordered">
+                <tr>
+                    <th></th>
+                    <th hidden>Id</th>
+                    <th>@BDMall.Resources.Label.EmailItems</th>
+                </tr>
+                <tr v-for="item in EmailItems" onclick="selected(this);">
+                    <td>
+                        <input type="checkbox" />
+                    </td>
+                    <td hidden>{{item.PlaceHolder}}</td>
+                    <td>{{item.Description}}</td>
+                </tr>
+            </table>
+
+        </div>
+        <div class="text-right">
+            <input type="button" onclick="insertContent();" value="@BDMall.Resources.Action.Insert" class="btn btn-default" v-bind:disabled="IsInsert" />
+        </div>
+
+    </div>
+</div>
+
+@section scripts{
+
+    <script type="text/javascript">
+        var formValidate;
+        var editor;
+        var tid = '@ViewBag.Tid';
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                IsInsert: true,
+                Email: {
+                    EmailType: "-1",
+                    Lang: "-1",
+                    LangText:"",
+                    Code: "",
+                    Name: "",
+                    Subject: "",
+                    IsActive: false,
+                    Content: ""
+                },
+                EmailItems: []
+            },
+            methods: {
+                GetTemplateById: function () {
+                    if (tid != '') {
+                        var obj = new Object();
+                        obj.Id = tid;
+                        WS.Get("/adminapi/EmailTemplate/GetById", obj, function (response) {
+
+                            vm.Email = response;
+                            if (response.EmailContent != null) {
+                                editor.ready(function () {//當編輯器初始化好后才賦值
+                                    editor.setContent(response.EmailContent);
+                                });
+                            }
+                            vm.$nextTick(function () {
+                                vm.getEmailTypeItems();
+                            });
+
+                        }, function () { });
+                    }
+                },
+                SaveEmailTemplate: function () {
+                    vm.Email.EmailType = $("#cboEmailType").val();
+                    vm.Email.Lang = $("#cboLanguage").val();
+                    vm.Email.EmailContent = editor.getContent();
+
+
+                    WS.AjaxP("post", "/adminapi/EmailTemplate/Save", vm.Email, function (response) {
+                        if (response.Succeeded == true) {
+                            @*clowWin();*@
+                            showCloseInfo('@BDMall.Resources.Message.SaveSuccess');
+                        } else {
+                            showWarn('@BDMall.Resources.Message.SaveFail');
+                        }
+                    }, function () { })
+
+                },
+                getEmailTypeItems: function () {
+                    var data = new Object();
+                    data.EmailTypeId = $("#cboEmailType").val();
+                    WS.AjaxP("get", "/adminapi/EmailTypeItems/GetEmailTypeItems", data, function (response) {
+                        vm.EmailItems = response;
+                    }, function () { });
+                }
+            }
+        });
+
+        function InitControl() {
+            InitNormalSelect("cboEmailType", "/adminapi/Dict/GetEmailType", true, null, false);
+            InitNormalSelect("cboLanguage", "/adminapi/Dict/GetSupportLanguage", true, null, false);
+
+            var config={
+                wordCount: true
+                    , maximumWords: 200000
+                    , wordCountMsg: "@BDMall.Resources.Message.EditorWordCountMsg"
+                    , wordOverFlowMsg:"@BDMall.Resources.Message.EditorWordOverFlowMsg"
+            };
+            editor = UE.getEditor('areaEmailContent', config);
+            //InitKin("areaEmailContent");
+        }
+        /**
+        */
+        function insertContent() {
+
+            var text = "";
+            $("#tblChecked tr").each(function () {
+                if ($(this).find("td:eq(0)>input:checkbox").is(":checked") == true) {
+
+                    text = $(this).find("td:eq(1)")[0].innerHTML;
+                }
+            });
+            editor.execCommand('inserthtml', text);
+        }
+        function selected(me) {
+
+            var check = $(me).find("input[type='checkbox']");
+            if (check) {
+                var flag = check[0].checked;
+                var allCheck = $("#tblChecked").find("input[type='checkbox']");
+                if (flag == true) {
+                    check[0].checked = false;
+                    for (var i = 0; i < allCheck.length; i++) {
+                        allCheck[i].checked = false;
+                    }
+                    vm.IsInsert = true;
+                }
+                else {
+                    for (var i = 0; i < allCheck.length; i++) {
+                        allCheck[i].checked = false;
+                    }
+                    check[0].checked = true;
+                    vm.IsInsert = false;
+                }
+            }
+
+        }
+
+        function selfDefineRules() {
+            $.validator.addMethod("valueNotEquals", function (value, element, param) {
+                if (value == param || param == "" || param == null) {
+                    return false;
+                }
+                else {
+                    return true;
+                }
+            });
+        }
+
+        function initFormValidate() {
+            formValidate = $("#frmValidate").validate({
+                ignore: "",
+                submitHandler: function () {
+                    vm.SaveEmailTemplate();
+                },
+                rules: {
+                    EmailType: { valueNotEquals: "-1" },
+                    Language: { valueNotEquals: "-1" },
+                    Code: "required",
+                    Name: "required",
+                    Subject: "required"
+
+                },
+                messages: {
+                    EmailType: { valueNotEquals: "@BDMall.Resources.Message.RequiredField" },
+                    Language: { valueNotEquals: "@BDMall.Resources.Message.RequiredField" },
+                    Code: "@BDMall.Resources.Message.RequiredField",
+                    Name: "@BDMall.Resources.Message.RequiredField",
+                    Subject: "@BDMall.Resources.Message.RequiredField"
+                },
+                success: function (label) {
+                    $(label).parent().removeClass('has-error');
+                },
+                showErrors: function (errorMap, errorList) {
+                    focusWrongPlace(errorMap, function (lang) {
+                        //vm.$refs.langbar.setCurrentLanguage(lang);
+                        //vm.languageType = lang;
+                    });
+                    this.defaultShowErrors();
+                }
+
+            });
+        }
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        })
+
+        $(document).ajaxStop(function () {
+            hideLoading();
+        })
+
+
+        $(document).ready(function () {
+            selfDefineRules();
+            initFormValidate();
+            InitControl();
+            vm.GetTemplateById();
+            //setTimeout(function () {
+            //    vm.GetTemplateById();
+            //}, 5000);
+
+        });
+    </script>
+}
+

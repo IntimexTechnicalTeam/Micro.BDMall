@@ -18,5 +18,10 @@ namespace BDMall.Runtime
         /// 短日期格式
         /// </summary>
         public static readonly string ShortDateFormat = "yyyy-MM-dd";
+
+        /// <summary>
+        /// 無限制數量內容的字數上限
+        /// </summary>
+        public static int UnlimitedContentWordQty = 200000;
     }
 }

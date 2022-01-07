@@ -1,0 +1,250 @@
+﻿@*@model IEnumerable<BDMall.Model.EmailTemplate>*@
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="app" class="col-md-12" v-cloak>
+    <table class="table">
+        <tr>
+            <td class="col-md-1">@BDMall.Resources.Label.EmailType</td>
+            <td class="col-md-5"><select class="form-control" id="cboEmailType"></select></td>
+            <td class="col-md-1">@BDMall.Resources.Label.Language</td>
+            <td class="col-md-5"><select class="form-control" id="cboLanguage"></select></td>
+        </tr>
+        <tr>
+            <td colspan="4" class="col-md-12 text-right">
+                <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Search" v-on:click="Search" />
+            </td>
+        </tr>
+    </table>
+
+
+    <div>
+        <div class="panel-body">
+            <div id="toolbar" class="btn-group">
+                <button id="btn_add" type="button" class="btn btn-default" v-on:click="Add">
+                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>@BDMall.Resources.Action.Add
+                </button>
+                <button id="btn_edit" type="button" class="btn btn-default" v-on:click="Modify" v-bind:disabled="IsModify">
+                    <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>@BDMall.Resources.Action.Modify
+                </button>
+                <button id="btn_delete" type="button" class="btn btn-default" v-on:click="Delete" v-bind:disabled="IsDelete">
+                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>@BDMall.Resources.Action.Delete
+                </button>
+                <button id="btn_active" type="button" class="btn btn-default" v-on:click="active" v-bind:disabled="IsSetActive">
+                    <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>@BDMall.Resources.Action.Active
+                </button>
+            </div>
+            <table id="tblEmailTemplate"></table>
+        </div>
+    </div>
+
+</div>
+
+@section scripts
+{
+    <script type="text/javascript">
+        layui.use(['miniTab'], function () {
+            var layer = layui.layer,
+                miniTab = layui.miniTab;
+        });
+        var tabId = self.frameElement.parentElement.id;
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                condition:
+                    {
+                        Type: "-1",
+                        Language: "-1",
+                        //IsActive: false,
+                        //IsDeleted: false,
+                        //Code: "",
+                        //Name: "",
+                    },
+
+                IsModify: true,
+                IsDelete: true,
+                IsSetActive: true
+            },
+            methods:
+                {
+                    Search: function () {
+                        $("#tblEmailTemplate").bootstrapTable("refresh", { url: "/adminapi/EmailTemplate/Search", pageNumber: 1 })
+                        //$('#tblEmailTemplate').bootstrapTable('refreshOptions', { pageNumber: 1 });
+                        vm.IsModify = true;
+                        vm.IsDelete = true;
+                        vm.IsSetActive = true;
+                    },
+                    Add: function () {
+                        //parent.setSrcTobTab("AddEmailTemplate", "Add EmailTemplate", "/EmailTemplate/AddTemplate", true);
+                        miniTab.openNewTabByIframe({
+                            href:"/EmailTemplate/TemplateEdit",
+                            title:'@BDMall.Resources.Label.AddEmailTemplate',
+                            callback: vm.Search
+                        });
+                    },
+                    Modify: function () {
+                        var a = $("#tblEmailTemplate").bootstrapTable("getSelections");
+                        console.log(a[0]);
+                        //parent.setSrcTobTab(a[0].Name + "_Modify", a[0].Name + "_Modify", "/EmailTemplate/AddTemplate/" + a[0].TemplateId, true);
+                        miniTab.openNewTabByIframe({
+                            href:"/EmailTemplate/TemplateEdit/" + a[0].Id,
+                            title:'@BDMall.Resources.Action.Modify' + '-' + a[0].Name,
+                            callback: vm.Search
+                        });
+                    },
+                    Delete: function () {
+
+                        var a = $("#tblEmailTemplate").bootstrapTable("getSelections");
+                        var ids = "";
+
+                        SystemConfirm('@BDMall.Resources.Message.ConfirmDelete', function () {
+                            a.forEach(function (val, index) {
+                                if (ids == "") {
+                                    ids = val.Id;
+                                }
+                                else {
+                                    ids += "," + val.Id;
+                                }
+                            })
+                            var obj = new Object();
+                            obj.tids = ids;
+                            WS.AjaxP("get", "/adminapi/EmailTemplate/Delete", obj, function (response) {
+                                if (response.Succeeded == true) {
+                                    vm.Search();
+                                }
+                                else {
+                                    showWarn('@BDMall.Resources.Message.DeleteFailed');
+                                }
+                            }, function () { });
+                        });
+                    },
+                    setToolbarButtonState: function () {
+                        var selected = $("#tblEmailTemplate").bootstrapTable("getSelections");
+                        if (selected.length == 1) {
+                            vm.IsModify = false;
+                            vm.IsSetActive = false;
+                        }
+                        else {
+                            vm.IsModify = true;
+                            vm.IsSetActive = true;
+                        }
+
+                        if (selected.length >= 1) {
+                            vm.IsDelete = false;
+                        }
+                        else {
+                            vm.IsDelete = true;
+                        }
+
+                    },
+                    active: function () {
+                        var rows = $("#tblEmailTemplate").bootstrapTable("getSelections");
+                        var obj = new Object();
+                        obj.tid = rows[0].Id;
+                        WS.AjaxP("get", "/adminapi/emailtemplate/SetActive", obj, function (response) {
+                            vm.Search();
+                        }, function () { });
+                    }
+                }
+        })
+
+        var EmailTemplateTableInit = function () {
+
+            var oTableInit = new Object();
+            oTableInit.Init = function () {
+                $("#tblEmailTemplate").bootstrapTable({
+                    method: 'post',                      //请求方式（*）
+                    //url: '/adminapi/Product/SearchTableData',         //请求后台的URL（*）
+                    queryParams: oTableInit.queryParams,//传递参数（*）
+                    //queryParamsType:'limit',
+                    toolbar: '#toolbar',                //工具按钮用哪个容器
+                    striped: true,                      //是否显示行间隔色
+                    cache: true,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                    sortable: true,                     //是否启用排序
+                    sortOrder: "asc",                   //排序方式
+                    sidePagination: "client",           //分页方式：client客户端分页，server服务端分页（*）
+                    pageNumber: 1,                       //初始化加载第一页，默认第一页
+                    pageSize: 10,                       //每页的记录行数（*）
+                    pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                    smartDisplay: false,
+                    showRefresh: true,                  //是否显示刷新按钮
+                    clickToSelect: true,                //是否启用点击选中行
+                    //height: 750,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+                    uniqueId: "Sku",                     //每一行的唯一标识，一般为主键列
+                    cardView: false,                    //是否显示详细视图
+                    detailView: false,                   //是否显示父子表
+                    pagination: true,                   //是否显示分页（*）
+                    ajaxOptions: {
+                        beforeSend: function (request) {
+                            var access_token = $.cookie("access_token");
+                            request.setRequestHeader("Authorization", "Bearer " + access_token);
+                        }
+                    },
+                    onLoadSuccess: function () {
+                        vm.setToolbarButtonState();
+                    },
+                    onCheck: function (row) {
+                        vm.setToolbarButtonState();
+                    },
+                    onUncheck: function (row) {
+                        vm.setToolbarButtonState();
+                    },
+                    onCheckAll: function (rows) {
+                        vm.setToolbarButtonState();
+                    },
+                    onUncheckAll: function (rows) {
+                        vm.setToolbarButtonState();
+                    },
+                    columns: [{
+                        checkbox: true
+                    }, {
+                        field: 'TemplateId',
+                        title: '',
+                        visible: false
+                    }, {
+                        field: 'EmailTypeDesc',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.EmailType'
+                    }, {
+                        field: 'Code',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.Code'
+                    }, {
+                        field: 'Name',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.Name'
+                    }, {
+                        field: 'LangText',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.Language'
+                    },
+                    {
+                        field: 'IsActive',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.EmailIsActive'
+                    }]
+
+
+                });
+            };
+
+            oTableInit.queryParams = function (params) {
+                vm.condition.Type = $("#cboEmailType").val();
+                vm.condition.Language = $("#cboLanguage").val();
+                return vm.condition;
+            }
+            return oTableInit;
+        }
+
+        $(document).ready(function () {
+
+            InitNormalSelect("cboEmailType", "/adminapi/Dict/GetEmailType", true, null, false);
+            InitNormalSelect("cboLanguage", "/adminapi/Dict/GetSupportLanguage", true, null, false);
+            var oTable = EmailTemplateTableInit();
+            oTable.Init();
+        });
+    </script>
+}

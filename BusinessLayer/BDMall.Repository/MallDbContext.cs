@@ -8,23 +8,23 @@ namespace BDMall.Repository
 {
     public class MallDbContext : DbContext
     {
-        public MallDbContext() 
+        public MallDbContext()
         {
-              
+
         }
 
         public MallDbContext(DbContextOptions<MallDbContext> options) : base(options)
         {
-            
+
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {           
+        {
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            
+
 
         }
 
@@ -83,7 +83,7 @@ namespace BDMall.Repository
 
         public DbSet<MerchantPromotion> MerchantPromotions { get; set; }
 
-        public DbSet<MerchantStatistic> MerchantStatistics { get; set; }    
+        public DbSet<MerchantStatistic> MerchantStatistics { get; set; }
 
         public DbSet<CustomUrl> CustomUrls { get; set; }
 
@@ -97,7 +97,7 @@ namespace BDMall.Repository
 
         public DbSet<MerchantPromotionProduct> MerchantPromotionProducts { get; set; }
 
-        public DbSet<ApproveHistory> ApproveHistories { get; set;}
+        public DbSet<ApproveHistory> ApproveHistories { get; set; }
 
         public DbSet<ScheduleJob> ScheduleJobs { get; set; }
 
@@ -122,13 +122,17 @@ namespace BDMall.Repository
         public DbSet<RnpQuestion> RnpQuestions { get; set; }
         public DbSet<RnpSubmit> RnpSubmits { get; set; }
         public DbSet<RnpSubmitData> RnpSubmitDatas { get; set; }
-        
+
         public DbSet<Inventory> Inventories { get; set; }
 
         public DbSet<ProductAttrValue> ProductAttrValues { get; set; }
 
         public DbSet<ProductCommission> ProductCommissions { get; set; }
 
-        public DbSet<ProductRefuseDelivery> ProductRefuseDeliveries { get; set;}
+        public DbSet<ProductRefuseDelivery> ProductRefuseDeliveries { get; set; }
+
+        public DbSet<EmailTemplate> EmailTemplates { get; set; }
+        public DbSet<EmailTempItem> EmailTempItems { get; set; }
+        public DbSet<EmailTypeTempItem> EmailTypeTempItems { get; set; }
     }
 }

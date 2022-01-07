@@ -18,6 +18,8 @@ namespace BDMall.BLL
         List<MenuItem> GetMenusByUser();
 
         List<MenuItem> GetMenus();
+
+        MenuItem GetMenu(int menuId);
         /// <summary>
         /// 保存菜單
         /// </summary>
@@ -36,5 +38,12 @@ namespace BDMall.BLL
         /// <param name="code"></param>
         /// <returns></returns>
         bool CheckMenuCodeIsExists(string code);
+
+        /// <summary>
+        /// 根据ID删除菜单项目
+        /// </summary>
+        /// <param name="menuId"></param>
+        /// <returns></returns>
+        bool RemoveMenuItem(int menuId);
     }
 }

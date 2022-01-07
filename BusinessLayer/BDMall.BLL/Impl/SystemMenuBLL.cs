@@ -139,47 +139,72 @@ namespace BDMall.BLL
         {
             var result = new List<MenuItem>();
 
-            var langs = GetSupportLanguage();
+            //var langs = GetSupportLanguage();
 
             var query = (from a in baseRepository.GetList<SystemMenu>()
-                         join t in baseRepository.GetList<Translation>() on new { a1 = a.NameTransId, a2 = true, a3 = false } equals new { a1 = t.TransId, a2 = t.IsActive, a3 = t.IsDeleted } into tc
-                         from tt in tc.DefaultIfEmpty()
-                         select new
+                         select new MenuItem
                          {
-                             attr = new MenuItem
-                             {
-                                 Id = a.Id,
-                                 Code = a.Code,
-                                 Img = "",//Path.GetFileName(a.ImgUrl)
-                                 ImgUrl = a.ImgUrl,
-                                 PageUrl = a.PageUrl,
-                                 ParentId = a.ParentId,
-                                 NameTransId = a.NameTransId,
-                                 FunctionId = a.FunctionId,
-                                 ModuleId = a.ModuleId,
-                                 Seq = a.Seq,
-                                 IsActive = a.IsActive,
-                                 IsDeleted = a.IsDeleted,
-                                 IsMobileEnable = a.IsMobileEnable,
-                                 IsHomeItem = a.IsHomeItem
-                             },
-                             Tran = tt
-                         });
-            var queryGroup = query.ToList().GroupBy(g => g.attr).Select(d => new { attr = d.Key, Trans = d.Select(a => a.Tran).ToList() }).OrderBy(o => o.attr.Seq);
-            var data = queryGroup.Distinct().ToList();
-            foreach (var item in data)
+                             Id = a.Id,
+                             Code = a.Code,
+                             Img = "",//Path.GetFileName(a.ImgUrl)
+                             ImgUrl = a.ImgUrl,
+                             PageUrl = a.PageUrl,
+                             ParentId = a.ParentId,
+                             NameTransId = a.NameTransId,
+                             FunctionId = a.FunctionId,
+                             ModuleId = a.ModuleId,
+                             Seq = a.Seq,
+                             IsActive = a.IsActive,
+                             IsDeleted = a.IsDeleted,
+                             IsMobileEnable = a.IsMobileEnable,
+                             IsHomeItem = a.IsHomeItem,
+                         }).ToList();
+            foreach (var item in query)
             {
-                item.attr.NameTranslation = langs == null ? new List<MutiLanguage>() : LangUtil.GetMutiLangFromTranslation(item.Trans, langs);
-                item.attr.Name = langs == null ? "" : item.attr.NameTranslation.FirstOrDefault(p => p.Language == CurrentUser.Lang)?.Desc ?? "";
-                result.Add(item.attr);
+                item.NameTranslation = _translationRepo.GetMutiLanguage(item.NameTransId);
+                item.Name = item.NameTranslation.FirstOrDefault(p => p.Language == CurrentUser.Lang)?.Desc ?? "";
+                result.Add(item);
             }
 
             return result;
         }
 
+        public MenuItem GetMenu(int menuId)
+        {
+
+            MenuItem menuItem = new MenuItem();
+            var result = baseRepository.GetList<SystemMenu>().FirstOrDefault(p => p.Id == menuId);
+
+            if (result != null)
+            {
+                //var langs = SettingBLL.GetSupportLanguages();
+                //var trans = _translationRepo.GetTranslation(result.NameTransId);
+                menuItem.Id = result.Id;
+                menuItem.Code = result.Code;
+                menuItem.Img = Path.GetFileName(result.ImgUrl);
+                menuItem.ImgUrl = result.ImgUrl;
+                menuItem.PageUrl = result.PageUrl;
+                menuItem.ParentId = result.ParentId;
+                menuItem.NameTransId = result.NameTransId;
+                menuItem.FunctionId = result.FunctionId;
+                menuItem.ModuleId = result.ModuleId;
+                menuItem.Seq = result.Seq;
+                menuItem.IsActive = result.IsActive;
+                menuItem.IsHomeItem = result.IsHomeItem;
+                menuItem.IsMobileEnable = result.IsMobileEnable;
+
+                menuItem.NameTranslation = _translationRepo.GetMutiLanguage(result.NameTransId);
+            }
+
+
+            return menuItem;
+
+
+        }
+
         public void SaveMenu(MenuItem item)
         {
-            string tempPath = PathUtil.GetPhysicalPath(Globals.Configuration["UploadPath"], CurrentUser.MechantId.ToString(), FileFolderEnum.TempPath);
+            string tempPath = PathUtil.GetPhysicalPath(Globals.Configuration["UploadPath"], CurrentUser.MerchantId.ToString(), FileFolderEnum.TempPath);
             //保存圖片
             UnitOfWork.IsUnitSubmit = true;
 
@@ -187,8 +212,8 @@ namespace BDMall.BLL
             {
                 string tempFileFullName = Path.Combine(tempPath, item.Img);
                 string targetFileName = item.Code + Path.GetExtension(item.Img);
-                string targetPhysicalPath = PathUtil.GetPhysicalPath(Globals.Configuration["UploadPath"], CurrentUser.MechantId.ToString(), FileFolderEnum.MenuIcon);
-                string targetRelativePartPath = PathUtil.GetRelativePath(CurrentUser.MechantId.ToString(), FileFolderEnum.MenuIcon);
+                string targetPhysicalPath = PathUtil.GetPhysicalPath(Globals.Configuration["UploadPath"], CurrentUser.MerchantId.ToString(), FileFolderEnum.MenuIcon);
+                string targetRelativePartPath = PathUtil.GetRelativePath(CurrentUser.MerchantId.ToString(), FileFolderEnum.MenuIcon);
 
                 if (File.Exists(tempFileFullName))
                 {
@@ -217,24 +242,42 @@ namespace BDMall.BLL
             foreach (var lang in item.NameTranslation)
             {
                 var trans = _translationRepo.GetTranslation(item.NameTransId);
-                var oldTrans = trans.Where(p => p.Lang == (Language)Enum.Parse(typeof(Language), lang.Lang.Code));
-                if (lang.Lang != null)
+                var oldTrans = trans.FirstOrDefault(p => p.Lang == (Language)Enum.Parse(typeof(Language), lang.Lang.Code));
+                if (oldTrans != null)
                 {
-
-                    foreach (var t in oldTrans)
-                    {
-                        t.IsActive = false;
-                    }
-
+                    oldTrans.Value = lang.Desc;
+                    oldTrans.UpdateDate = DateTime.Now;
+                    oldTrans.UpdateBy = Guid.Parse(CurrentUser.UserId);
+                    baseRepository.Update(oldTrans);
+                }
+                else
+                {
                     Translation newTrans = new Translation();
                     newTrans.Id = Guid.NewGuid();
                     newTrans.TransId = item.NameTransId;
                     newTrans.Lang = (Language)Enum.Parse(typeof(Language), lang.Lang.Code);
                     newTrans.Value = lang?.Desc ?? "";
                     newTrans.Module = TranslationType.SystemMenu.ToString();
-                    baseRepository.Insert(newTrans);
+                    newTrans.CreateDate = DateTime.Now;
+                    newTrans.CreateBy = Guid.Parse(CurrentUser.UserId);
 
+                    baseRepository.Insert(newTrans);
                 }
+
+                //if (lang.Lang != null)
+                //{
+
+                //}
+                //else
+                //{
+                //    Translation newTrans = new Translation();
+                //    newTrans.Id = Guid.NewGuid();
+                //    newTrans.TransId = item.NameTransId;
+                //    newTrans.Lang = (Language)Enum.Parse(typeof(Language), lang.Lang.Code);
+                //    newTrans.Value = lang?.Desc ?? "";
+                //    newTrans.Module = TranslationType.SystemMenu.ToString();
+                //    baseRepository.Insert(newTrans);
+                //}
 
             }
 
@@ -307,6 +350,7 @@ namespace BDMall.BLL
                 {
                     systemMenu.PermissionId = item.FunctionId;
                 }
+                baseRepository.Update(systemMenu);
                 UnitOfWork.Submit();
                 result.Succeeded = true;
             }
