@@ -38,6 +38,9 @@ namespace Domain
             ConfigMap<ProductEditModel, ProductDto>();
 
             ConfigMap<ProductAttributeDto, ProductAttribute>();
+
+            ConfigMap<PaymentMethodDto, PaymentMethod>();
+            
         }
         void ConfigMap<TSource, TDestination>()
         {

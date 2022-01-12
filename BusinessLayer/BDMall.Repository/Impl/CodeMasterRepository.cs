@@ -15,9 +15,10 @@ namespace BDMall.Repository
     public class CodeMasterRepository : PublicBaseRepository, ICodeMasterRepository
     {
         public const string CacheKeyFormat = "{0}_{1}_{2}_{3}";
-
+        ITranslationRepository _translationRpo;
         public CodeMasterRepository(IServiceProvider service) : base(service)
         {
+            _translationRpo = Services.Resolve<ITranslationRepository>();
         }
 
         public CodeMasterDto GetCodeMaster(string module, string function, string key)
@@ -126,143 +127,59 @@ namespace BDMall.Repository
         {
             PageData<CodeMasterDto> result = new PageData<CodeMasterDto>();
             var query = from m in UnitOfWork.DataContext.CodeMasters
-                        join t in UnitOfWork.DataContext.Translations on m.DescTransId equals t.TransId into mts
-                        from mt in mts.DefaultIfEmpty()
-                        select new
-                        {
-                            m = m,
-                            t = mt
-                        };
+                            //join t in UnitOfWork.DataContext.Translations on m.DescTransId equals t.TransId into mts
+                            //from mt in mts.DefaultIfEmpty()
+                        select m
+                        ;
 
             if (cond.IsActive != -1)
             {
                 bool a = cond.IsActive == 0 ? false : true;
-                query = query.Where(d => d.m.IsActive == a);
+                query = query.Where(d => d.IsActive == a);
             }
             if (cond.IsDeleted != -1)
             {
                 bool a = cond.IsDeleted == 0 ? false : true;
-                query = query.Where(d => d.m.IsDeleted == a);
+                query = query.Where(d => d.IsDeleted == a);
             }
 
             if (!string.IsNullOrEmpty(cond.Module) && cond.Module != "-1")
             {
-                query = query.Where(d => d.m.Module == cond.Module);
+                query = query.Where(d => d.Module == cond.Module);
             }
             if (!string.IsNullOrEmpty(cond.Function) && cond.Function != "-1")
             {
-                query = query.Where(d => d.m.Function == cond.Function);
+                query = query.Where(d => d.Function == cond.Function);
             }
             if (!string.IsNullOrEmpty(cond.Key))
             {
-                query = query.Where(d => d.m.Key == cond.Key);
+                query = query.Where(d => d.Key == cond.Key);
             }
             if (!string.IsNullOrEmpty(cond.Value))
             {
-                query = query.Where(d => d.m.Value == cond.Value);
+                query = query.Where(d => d.Value == cond.Value);
             }
-
-            var queryGroup = query.GroupBy(g => g.m).Select(d => new { m = d.Key, Trans = d.Select(a => a.t).ToList() });
+            if (!string.IsNullOrEmpty(cond.PageInfo.SortName))
             {
-                if (!string.IsNullOrEmpty(cond.PageInfo.SortName))
-                {
-                    if (cond.PageInfo.SortName == "Module")
-                    {
-                        if (cond.PageInfo.SortOrder.ToUpper() == "DESC")
-                        {
-                            queryGroup = queryGroup.OrderByDescending(o => o.m.Module);
-                        }
-                        else
-                        {
-                            queryGroup = queryGroup.OrderBy(o => o.m.Module);
-                        }
-                    }
-                    if (cond.PageInfo.SortName == "Function")
-                    {
-                        if (cond.PageInfo.SortOrder.ToUpper() == "DESC")
-                        {
-                            queryGroup = queryGroup.OrderByDescending(o => o.m.Function);
-                        }
-                        else
-                        {
-                            queryGroup = queryGroup.OrderBy(o => o.m.Function);
-                        }
-                    }
-                    if (cond.PageInfo.SortName == "Key")
-                    {
-                        if (cond.PageInfo.SortOrder.ToUpper() == "DESC")
-                        {
-                            queryGroup = queryGroup.OrderByDescending(o => o.m.Key);
-                        }
-                        else
-                        {
-                            queryGroup = queryGroup.OrderBy(o => o.m.Key);
-                        }
-                    }
-                    if (cond.PageInfo.SortName == "Value")
-                    {
-                        if (cond.PageInfo.SortOrder.ToUpper() == "DESC")
-                        {
-                            queryGroup = queryGroup.OrderByDescending(o => o.m.Value);
-                        }
-                        else
-                        {
-                            queryGroup = queryGroup.OrderBy(o => o.m.Value);
-                        }
-                    }
-                    if (cond.PageInfo.SortName == "Remark")
-                    {
-                        if (cond.PageInfo.SortOrder.ToUpper() == "DESC")
-                        {
-                            queryGroup = queryGroup.OrderByDescending(o => o.m.Remark);
-                        }
-                        else
-                        {
-                            queryGroup = queryGroup.OrderBy(o => o.m.Remark);
-                        }
-                    }
-                    if (cond.PageInfo.SortName == "IsActive")
-                    {
-                        if (cond.PageInfo.SortOrder.ToUpper() == "DESC")
-                        {
-                            queryGroup = queryGroup.OrderByDescending(o => o.m.IsActive);
-                        }
-                        else
-                        {
-                            queryGroup = queryGroup.OrderBy(o => o.m.IsActive);
-                        }
-                    }
-                    if (cond.PageInfo.SortName == "IsDeleted")
-                    {
-                        if (cond.PageInfo.SortOrder.ToUpper() == "DESC")
-                        {
-                            queryGroup = queryGroup.OrderByDescending(o => o.m.IsDeleted);
-                        }
-                        else
-                        {
-                            queryGroup = queryGroup.OrderBy(o => o.m.IsDeleted);
-                        }
-                    }
-                }
-                else
-                {
-                    queryGroup = queryGroup.OrderBy(o => o.m.Key);
-                }
+                query = query.SortBy(cond.PageInfo.SortName, cond.PageInfo.SortOrder.ToUpper().ToEnum<SortType>());
             }
+            else
+            {
+                query = query.SortBy("Key", cond.PageInfo.SortOrder.ToUpper().ToEnum<SortType>());
+            }
+            
 
+            result.TotalRecord = query.Count();
 
-
-            result.TotalRecord = queryGroup.Count();
-
-            var skipRecord = queryGroup.Skip(cond.PageInfo.Offset).Take(cond.PageInfo.PageSize).ToList();
+            var skipRecord = query.Skip(cond.PageInfo.Offset).Take(cond.PageInfo.PageSize).ToList();
 
             List<CodeMasterDto> data = new List<CodeMasterDto>();
             var supportLang = GetSupportLanguage();
             foreach (var item in skipRecord)
             {
                 CodeMasterDto dto = new CodeMasterDto();
-                dto = AutoMapperExt.MapTo<CodeMasterDto>(item.m);
-                dto.Descriptions = LangUtil.GetMutiLangFromTranslation(item.Trans, supportLang);
+                dto = AutoMapperExt.MapTo<CodeMasterDto>(item);
+                dto.Descriptions = _translationRpo.GetMutiLanguage(item.DescTransId);
                 dto.Description = dto.Descriptions.FirstOrDefault(d => d.Language == CurrentUser.Lang)?.Desc ?? "";
                 data.Add(dto);
             }

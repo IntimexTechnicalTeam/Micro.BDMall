@@ -2,6 +2,7 @@
 using BDMall.Enums;
 using BDMall.Model;
 using BDMall.Repository;
+using BDMall.Utility;
 using Intimex.Common;
 using System;
 using System.Collections.Generic;
@@ -16,21 +17,46 @@ namespace BDMall.BLL
     {
         ICodeMasterRepository _codeMasterRepo;
         ITranslationRepository _translationRepo;
+        ISettingBLL _settingBLL;
 
         public CodeMasterBLL(IServiceProvider services) : base(services)
         {
             _codeMasterRepo = Services.Resolve<ICodeMasterRepository>();
             _translationRepo = Services.Resolve<ITranslationRepository>();
+            _settingBLL = Services.Resolve<ISettingBLL>();
         }
 
         public bool ActualDelete(int id)
         {
-            throw new NotImplementedException();
+
+            var codeMaster = baseRepository.GetModel<CodeMaster>(p => p.Id == id);
+            if (codeMaster != null)
+            {
+                _translationRepo.DeleteByTransId(codeMaster.DescTransId);
+                baseRepository.Delete(codeMaster);
+                if (codeMaster.Remark?.Length == 36)
+                {
+                    Guid remarkTransId;
+                    if (Guid.TryParse(codeMaster.Remark, out remarkTransId))
+                    {
+                        _translationRepo.DeleteByTransId(remarkTransId);
+                    }
+                }
+            }
+            return true;
+
         }
 
         public bool DeleteCodeMaster(int id)
         {
-            throw new NotImplementedException();
+            var codeMaster = baseRepository.GetModel<CodeMaster>(p => p.Id == id);
+            if (codeMaster != null)
+            {
+                codeMaster.IsDeleted = true;
+                baseRepository.Update(codeMaster);
+            }
+            return true;
+
         }
 
         public CodeMasterDto GetCodeMaster(CodeMasterModule module, CodeMasterFunction function, string key)
@@ -40,17 +66,54 @@ namespace BDMall.BLL
 
         public CodeMasterDto GetCodeMaster(CodeMasterModule module, CodeMasterFunction function, string key, string value)
         {
-            throw new NotImplementedException();
+            CodeMasterDto model = null;
+
+            model = _codeMasterRepo.GetCodeMaster(module.ToString(), function.ToString(), key, value);
+
+            return model;
         }
 
         public CodeMasterDto GetCodeMasterById(int id)
         {
-            throw new NotImplementedException();
+            CodeMasterDto model = null;
+            //ISettingBLL settingBLL = new SettingBLL(UnitOfWork, _codeMasterRepo, _translationRepo);
+
+            var langs = _settingBLL.GetSupportLanguages();
+
+            if (id == 0)
+            {
+                model = new CodeMasterDto();
+                model.Descriptions = LangUtil.GetMutiLangFromTranslation(new List<Translation>(), langs);
+
+            }
+            else
+            {
+                var dbModel = baseRepository.GetModel<CodeMaster>(p => p.Id == id);
+
+                if (dbModel != null)
+                {
+                    model = AutoMapperExt.MapTo<CodeMasterDto>(dbModel);
+                    if (model.DescTransId != null)
+                    {
+                        var translates = _translationRepo.GetTranslation(model.DescTransId);
+
+                        model.Descriptions = LangUtil.GetMutiLangFromTranslation(translates, langs);
+
+                    }
+                    else
+                    {
+                        model.Descriptions = LangUtil.GetMutiLangFromTranslation(null, langs);
+                    }
+
+                }
+            }
+            return model;
         }
 
         public CodeMasterDto GetCodeMasterByKey(string module, string function, string key)
         {
-            throw new NotImplementedException();
+            return _codeMasterRepo.GetCodeMaster(module, function, key);
+
         }
 
         public List<CodeMasterDto> GetCodeMasters(CodeMasterModule module, CodeMasterFunction function)
@@ -70,17 +133,117 @@ namespace BDMall.BLL
 
         public MailBox GetMailBox()
         {
-            throw new NotImplementedException();
+            string MailSender = "MailSender";
+            string MailSenderAccount = "MailSenderAccount";
+            string MailServer = "MailServer";
+            string MailServerPort = "MailServerPort";
+            string MailServerSSL = "MailServerSSL";
+            string MailSenderPwd = "MailSenderPwd";
+            string MailSenderDisplay = "MailSenderDisplay";
+
+
+            MailBox box = new MailBox();
+            box.Sender = GetCodeMasterByKey(CodeMasterModule.Setting.ToString(), CodeMasterFunction.Email.ToString(), MailSender)?.Value;
+            box.Account = GetCodeMasterByKey(CodeMasterModule.Setting.ToString(), CodeMasterFunction.Email.ToString(), MailSenderAccount)?.Value;
+
+            if (string.IsNullOrEmpty(box.Sender))
+            {
+                throw new BLException("MailSender is null or empty.");
+            }
+            if (string.IsNullOrEmpty(box.Account))
+            {
+                throw new BLException("MailSenderAccount is null or empty.");
+            }
+            box.Display = GetCodeMasterByKey(CodeMasterModule.Setting.ToString(), CodeMasterFunction.Email.ToString(), MailSenderDisplay)?.Value;
+            box.Server = GetCodeMasterByKey(CodeMasterModule.Setting.ToString(), CodeMasterFunction.Email.ToString(), MailServer)?.Value;
+            if (string.IsNullOrEmpty(box.Server))
+            {
+                throw new BLException("MailServer IsNullOrEmpty");
+            }
+            string port = GetCodeMasterByKey(CodeMasterModule.Setting.ToString(), CodeMasterFunction.Email.ToString(), MailServerPort)?.Value;
+            if (string.IsNullOrEmpty(port))
+            {
+                throw new BLException("port IsNullOrEmpty");
+            }
+            box.Port = string.IsNullOrEmpty(port) ? 25 : int.Parse(port);
+            box.Password = GetCodeMasterByKey(CodeMasterModule.Setting.ToString(), CodeMasterFunction.Email.ToString(), MailSenderPwd)?.Value;
+
+            string ssl = GetCodeMasterByKey(CodeMasterModule.Setting.ToString(), CodeMasterFunction.Email.ToString(), MailServerSSL)?.Value;
+            if (ssl != null)
+            {
+                if (ssl == "1" || ssl.ToLower() == "true")
+                {
+                    box.SSL = true;
+                }
+            }
+            return box;
+
         }
 
         public List<CodeMasterDto> GetMallInfo()
         {
-            throw new NotImplementedException();
+            string MallInfoName = "MallInfoName";
+            string MallInfoAddress = "MallInfoAddress";
+            string MallInfoContact = "MallInfoContact";
+            string MallInfoFax = "MallInfoFax";
+            string MallInfoPhone = "MallInfoPhone";
+            string MallInfoEmail = "MallInfoEmail";
+            string MailSender = "MailSender";
+            string MailSenderPwd = "MailSenderPwd";
+            string MailSenderDisplay = "MailSenderDisplay";
+            string MallInfoWebSiteUrl = "MallInfoWebSiteUrl";
+            string MallAdminUrl = "MallAdminUrl";
+
+            string[] mallInfoList = { MallInfoName, MallInfoAddress, MallInfoContact, MallInfoFax, MallInfoPhone, MallInfoEmail, MallInfoWebSiteUrl, MallAdminUrl };
+            string[] emailList = { MailSender, MailSenderPwd, MailSenderDisplay };
+
+            List<CodeMasterDto> list = new List<CodeMasterDto>();
+            foreach (var item in mallInfoList)
+            {
+                var info = GetCodeMasterByKey(CodeMasterModule.Setting.ToString(), CodeMasterFunction.MallInfo.ToString(), item);
+                list.Add(info);
+            }
+            foreach (var item in emailList)
+            {
+                var info = GetCodeMasterByKey(CodeMasterModule.Setting.ToString(), CodeMasterFunction.Email.ToString(), item);
+                list.Add(info);
+            }
+            return list;
+
         }
 
         public StoreInfo GetStoreInfo(Language lang)
         {
-            throw new NotImplementedException();
+            StoreInfo storeInfo = new StoreInfo();
+            storeInfo.Name = GetCodeMasterByKey(CodeMasterModule.Setting.ToString(), CodeMasterFunction.MallInfo.ToString(), "MallInfoName")?.Descriptions.FirstOrDefault(d => d.Language == lang)?.Desc ?? "";
+            storeInfo.Address = GetCodeMasterByKey(CodeMasterModule.Setting.ToString(), CodeMasterFunction.MallInfo.ToString(), "MallInfoAddress")?.Descriptions.FirstOrDefault(d => d.Language == lang)?.Desc ?? "";
+            storeInfo.Phone = GetCodeMasterByKey(CodeMasterModule.Setting.ToString(), CodeMasterFunction.MallInfo.ToString(), "MallInfoPhone")?.Value ?? "";
+            storeInfo.Email = GetCodeMasterByKey(CodeMasterModule.Setting.ToString(), CodeMasterFunction.MallInfo.ToString(), "MallInfoEmail")?.Value ?? "";
+            storeInfo.Fax = GetCodeMasterByKey(CodeMasterModule.Setting.ToString(), CodeMasterFunction.MallInfo.ToString(), "MallInfoFax")?.Value ?? "";
+            storeInfo.WebSiteUrl = GetCodeMasterByKey(CodeMasterModule.Setting.ToString(), CodeMasterFunction.MallInfo.ToString(), "MallInfoWebSiteUrl")?.Value ?? "";
+            storeInfo.AdminUrl = GetCodeMasterByKey(CodeMasterModule.Setting.ToString(), CodeMasterFunction.MallInfo.ToString(), "MallAdminUrl")?.Value ?? "";
+            var emailLogo = GetCodeMasterByKey(CodeMasterModule.Setting.ToString(), CodeMasterFunction.SystemLogo.ToString(), "EmailLogo")?.Value ?? "";
+            var storeLogo = GetCodeMasterByKey(CodeMasterModule.Setting.ToString(), CodeMasterFunction.SystemLogo.ToString(), "StoreLogo")?.Value ?? "";
+            storeInfo.WhatsAppChannelId = GetCodeMasterByKey(CodeMasterModule.Setting.ToString(), CodeMasterFunction.WhatsAppSetting.ToString(), "Channel_ID")?.Value ?? "";
+            storeInfo.WhatsAppApiKey = GetCodeMasterByKey(CodeMasterModule.Setting.ToString(), CodeMasterFunction.WhatsAppSetting.ToString(), "API_Key")?.Value ?? "";
+            storeInfo.WhatsAppDelayMs = GetCodeMasterByKey(CodeMasterModule.Setting.ToString(), CodeMasterFunction.WhatsAppSetting.ToString(), "DelayMs")?.Value ?? "";
+
+            storeInfo.EmailLogo = PathUtil.GetRelativePath(Guid.Empty.ToString(), FileFolderEnum.StoreLogo) + emailLogo;
+
+            storeInfo.StoreLogo = PathUtil.GetRelativePath(Guid.Empty.ToString(), FileFolderEnum.StoreLogo) + storeLogo;
+            //if (CurrentUser.Type == AccountType.User)//后台用户
+            //{
+
+            //    storeInfo.EmailLogo = PathUtil.GetStoreLogoImagePath(AppTypeEnum.AdminSite, CurrentWebStore.ClientId, emailLogo);
+            //    storeInfo.StoreLogo = PathUtil.GetStoreLogoImagePath(AppTypeEnum.AdminSite, CurrentWebStore.ClientId, storeLogo);
+            //}
+            //else
+            //{
+            //    storeInfo.EmailLogo = PathUtil.GetStoreLogoImagePath(AppTypeEnum.MobileApp, CurrentWebStore.ClientId, emailLogo);
+            //    storeInfo.StoreLogo = PathUtil.GetStoreLogoImagePath(AppTypeEnum.MobileApp, CurrentWebStore.ClientId, storeLogo);
+            //}
+
+            return storeInfo;
         }
 
 
@@ -103,9 +266,68 @@ namespace BDMall.BLL
 
         public void InsertCodeMaster(CodeMasterDto codeMaster)
         {
-            throw new NotImplementedException();
+
+            if (StringHtmlContentCheck(codeMaster))
+            {
+                throw new BLException(Resources.Message.ExistHTMLLabel);
+            }
+            UnitOfWork.IsUnitSubmit = true;
+
+            Guid translateId = _translationRepo.InsertMutiLanguage(codeMaster.Descriptions, TranslationType.CodeMaster);
+            CodeMaster master = new CodeMaster();
+            master.ClientId = Guid.Empty;
+            master.Module = codeMaster.Module;
+            master.Function = codeMaster.Function;
+            master.DescTransId = translateId;
+            master.Key = codeMaster.Key;
+            master.Value = codeMaster.Value;
+            master.IsActive = true;
+            master.IsDeleted = false;
+            master.Remark = codeMaster.Remark;
+            baseRepository.Insert(master);
+
+            UnitOfWork.Submit();
+        }
+        public bool StringHtmlContentCheck(CodeMasterDto model)
+        {
+            if (model != null)
+            {
+                if (StringUtil.CheckHasHTMLTag(model.Value))
+                {
+                    return true;
+                }
+                if (StringUtil.CheckHasHTMLTag(model.Description))
+                {
+                    return true;
+                }
+                if (StringUtil.CheckHasHTMLTag(model.Remark))
+                {
+                    return true;
+                }
+
+                if (CheckMultLangListHasHTMLTag(model.Descriptions))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
+        private bool CheckMultLangListHasHTMLTag(List<MutiLanguage> multList)
+        {
+            if (multList?.Count > 0)
+            {
+                foreach (var item in multList)
+                {
+                    if (StringUtil.CheckHasHTMLTag(item.Desc))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
         public SystemResult SaveSystemLogo(SystemLogo logo)
         {
             SystemResult result = new SystemResult();
@@ -204,6 +426,8 @@ namespace BDMall.BLL
                         DescTransId = Guid.NewGuid(),
                         Key = "ReportLogo",
                         Value = reportLogo.ImageName,
+                        CreateBy = Guid.Parse(CurrentUser.UserId),
+                        CreateDate = DateTime.Now,
                         Remark = ""
                     };
 
@@ -226,12 +450,48 @@ namespace BDMall.BLL
 
         public void UpdateCodeMaster(CodeMasterDto model)
         {
-            throw new NotImplementedException();
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (StringHtmlContentCheck(model))
+            {
+                throw new BLException(Resources.Message.ExistHTMLLabel);
+            }
+
+            var dbModel = baseRepository.GetModel<CodeMaster>(p => p.Id == model.Id);
+            UnitOfWork.IsUnitSubmit = true;
+            if (dbModel != null)
+            {
+                dbModel.Module = model.Module;
+                dbModel.Function = model.Function;
+                dbModel.Key = model.Key;
+                dbModel.Value = model.Value;
+                dbModel.IsActive = model.IsActive;
+                dbModel.Remark = model.Remark;
+                dbModel.UpdateBy = Guid.Parse(CurrentUser.UserId);
+                dbModel.UpdateDate = DateTime.Now;
+                baseRepository.Update(dbModel);
+            }
+
+            //更新翻譯表
+            _translationRepo.UpdateMutiLanguage(dbModel.DescTransId, model.Descriptions, TranslationType.CodeMaster);
+
+            UnitOfWork.Submit();
+
+
         }
 
         public void UpdateMallInfo(List<CodeMasterDto> info)
         {
-            throw new NotImplementedException();
+            if (info?.Count() > 0)
+            {
+                foreach (var item in info)
+                {
+                    UpdateCodeMaster(item);
+                }
+            }
         }
 
         #region  系統定制化功能

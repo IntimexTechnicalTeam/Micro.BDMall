@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BDMall.Domain
 {
-    public class CodeMasterDto
+    public class CodeMasterDto:BaseDto
     {
         public int Id { get; set; }
         public string Module { get; set; }

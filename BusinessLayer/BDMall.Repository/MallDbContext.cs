@@ -136,5 +136,7 @@ namespace BDMall.Repository
         public DbSet<EmailTypeTempItem> EmailTypeTempItems { get; set; }
         
         public DbSet<ProductRelatedItem> ProductRelatedItems { get; set; }
+
+        public DbSet<PaymentMethod> PaymentMethods { get; set; }
     }
 }

@@ -1,0 +1,350 @@
+﻿@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="app" v-cloak>
+    <div>
+        <form id="frmUpdatePayAccount">
+        <div class="panel-body">
+            <div id="Routinetoolbar" class="btn-group">
+                <button type="button" class="btn btn-default" v-on:click="payMethonAdd">
+                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>@BDMall.Resources.Action.Add
+                </button>
+                <button type="button" class="btn btn-default" v-on:click="payMethonModify" v-bind:disabled="IsModify">
+                    <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>@BDMall.Resources.Action.Modify
+                </button>
+                <button type="button" class="btn btn-default" v-on:click="payMethonDelete" v-bind:disabled="IsDelete">
+                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>@BDMall.Resources.Action.Delete
+                </button>
+                <button type="button" class="btn btn-default" v-on:click="customization">
+                    <span class="glyphicon glyphicon-user" aria-hidden="true"></span>@BDMall.Resources.Action.Customization
+                </button>
+            </div>
+            <table id="tblPaymentMethon"></table>
+
+            @*<label for="txtPay" class="control-label col-sm-1">@BDMall.Resources.Label.PaymentAccountWithSymbol</label>
+            <div class="col-sm-4">
+                <input type="text" class="form-control" name="payAccount" id="txtPay" v-model="item.PaymentAccount">
+            </div>*@
+            <div class="col-sm-4" @*id="showStatus"*@>
+                <input type="checkbox" id="checkshow" @*value="true"*@ v-model="item.PayClose" />@*<span>选择的值为: {{ item.PayClose }}</span>*@
+                <label for="checkshow">@BDMall.Resources.Label.ClosePaymentOnline</label>
+                <input type="button" class="btn btn-default" value="@BDMall.Resources.Label.UpdatePaymentStatus" v-on:click="saveCheck" />
+            </div>
+            <div class="row text-right">
+                <div class="btn btn-info" onclick="clowWin();"><i class="glyphicon glyphicon glyphicon-remove"></i> @BDMall.Resources.Action.CloseTab</div>
+            </div>
+        </div>
+        </form>
+    </div>
+    <div id="outerdiv" style="position:fixed;top:0;left:0;background:rgba(0,0,0,0.7);z-index:1200;width:100%;height:100%;display:none;">
+        <div id="innerdiv" style="position:absolute;">
+            <img id="bigimg" style="border:5px solid #fff;" src="" />
+        </div>
+    </div>  
+</div>
+
+@section scripts
+{
+    <script type="text/javascript">
+        layui.use(['miniTab'], function () {
+            var layer = layui.layer,
+                miniTab = layui.miniTab;
+        });
+        var frmUpdatePayAccount;
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                IsModify: true,
+                IsDelete: true,
+                //PayCloseSelect: [],
+                item:{
+                    PaymentAccount: "",
+                    PayClose: "false"
+            }
+            },
+            methods: {
+
+                //getPayAccount: function () {
+
+                //    var obj = new Object();
+
+                //    WS.AjaxP("get", "/adminapi/Payment/GetPayAccount", obj, function (response) {
+
+                //        vm.item = response;
+                //        console.log(response);
+                //       // if (response.Id != null) {
+                //            //vm.PayCloseSelect.push(response.PayClose);
+                //       // }
+                //    }, function () { });
+                //},
+
+                getPmtMethod: function () {
+
+                    $("#tblPaymentMethon").bootstrapTable("refresh", { url: "/adminapi/Payment/GetPaymentMenthodList" });
+                },
+
+                updatePayAccount:function() {
+                    //vm.item.PayClose = vm.PayCloseSelect;
+                    WS.AjaxP("post",
+                        "/adminapi/Payment/SavePayAccount",
+                        vm.item,
+                        function (response) {
+                            if (response.Succeeded == true) {
+                                //vm.getPayAccount();
+                                showInfo('@BDMall.Resources.Message.SaveSuccess');
+                            } else {
+                                showWarn('@BDMall.Resources.Message.SaveFail');
+                            }
+                            
+                        },
+                        function() {});
+                },
+
+                payMethonAdd: function () {
+                    var tabId = self.frameElement.parentElement.id;
+                    miniTab.openNewTabByIframe({
+                        href:"/Paymentmethod/EditPayMethod/00000000-0000-0000-0000-000000000000" + "/" + "Add",
+                        title:  "@BDMall.Resources.Action.AddPaymentMethod",
+                        callback: vm.getPmtMethod
+                    });
+                },
+                payMethonModify: function () {
+                    var row = $("#tblPaymentMethon").bootstrapTable("getSelections");
+                    var tabId = self.frameElement.parentElement.id;
+                    miniTab.openNewTabByIframe({
+                        href: "/Paymentmethod/EditPayMethod/" + row[0].Id + "/" + "Modify",
+                        title: row[0].Name + "_" + "@BDMall.Resources.Action.ModifyPaymentMethod",
+                        callback: vm.getPmtMethod
+                    });
+                },
+                payMethonDelete: function () {
+                    var a = $("#tblPaymentMethon").bootstrapTable("getSelections");
+
+                    var ids = "";
+                    SystemConfirm('@BDMall.Resources.Message.ConfirmDelete', function () {
+
+                        for (var i = 0; i < a.length; i++) {
+                            if (ids == "") {
+                                ids = a[i].Id;
+
+                            }
+                            else {
+                                ids += "," + a[i].Id;
+                            }
+                        }
+
+
+                        var obj = new Object();
+                        obj.tids = ids;
+                        console.log(obj.tids);
+                        WS.AjaxP("get", "/adminapi/Payment/DeletePayMethods", obj, function (response) {
+                            if (response.Succeeded == true) {
+                                var oTable = new PmtMethodTableInit();
+                                oTable.Init();
+                                vm.getPmtMethod();
+                            }
+                            else {
+                                showWarn('@BDMall.Resources.Message.DeleteFailed');
+                            }
+                        }, function () { });
+                    });
+                },
+
+                saveCheck: function () {
+                    if (frmUpdatePayAccount.form()) {
+                        $("#frmUpdatePayAccount").submit();
+                    }
+                },
+
+                setButtonState: function () {
+                    var selected = $("#tblPaymentMethon").bootstrapTable("getSelections");
+                    if (selected.length == 1) {
+                        vm.IsModify = false;
+                    }
+                    else {
+                        vm.IsModify = true;
+                    }
+
+                    if (selected.length >= 1) {
+                        vm.IsDelete = false;
+                    }
+                    else {
+                        vm.IsDelete = true;
+                    }
+                },
+                customization: function () {
+                    var row = $("#tblPaymentMethon").bootstrapTable("getSelections");
+                    var tabId = self.frameElement.parentElement.id;
+
+                    miniTab.openNewTabByIframe({
+                        href: "/PMGW/" + row[0].Code ,
+                        title: row[0].Name + "_" + "@BDMall.Resources.Action.Customization",
+                        callback: vm.Search
+                    });
+                }
+            }
+        });
+
+        var PmtMethodTableInit = function () {
+
+            var oTableInit = new Object();
+            oTableInit.Init = function () {
+
+                $("#tblPaymentMethon").bootstrapTable({
+                    method: 'get',                      //请求方式（*）
+                    url: '/adminapi/Payment/GetPaymentMenthodList',         //请求后台的URL（*）
+                    queryParams: oTableInit.queryParams,//传递参数（*）
+                    queryParamsType: 'limit',
+                    toolbar: '#toolbar',                //工具按钮用哪个容器
+                    striped: true,                      //是否显示行间隔色
+                    cache: true,                        //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                    sortable: true,                    //是否启用排序
+                    sortOrder: "asc",                   //排序方式
+                    sidePagination: "client",           //分页方式：client客户端分页，server服务端分页（*）
+                    pageNumber: 1,                      //初始化加载第一页，默认第一页
+                    pageSize: 10,                       //每页的记录行数（*）
+                    pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                    smartDisplay: false,
+                    showRefresh: false,                  //是否显示刷新按钮
+                    clickToSelect: true,                //是否启用点击选中行
+                    height: 500,                      //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+                    uniqueId: "Id",                     //每一行的唯一标识，一般为主键列
+                    cardView: false,                    //是否显示详细视图
+                    detailView: false,                  //是否显示父子表
+                    pagination: true,                   //是否显示分页（*）
+                    ajaxOptions: {
+                        beforeSend: function (request) {
+                            var access_token = $.cookie("access_token");
+                            request.setRequestHeader("Authorization", "Bearer " + access_token);
+                        }
+                    },
+                    onLoadSuccess: function () {
+                        vm.setButtonState();
+                    },
+                    onCheck: function (row) {
+                        vm.setButtonState();
+                    },
+                    onUncheck: function (row) {
+                        vm.setButtonState();
+                    },
+                    onCheckAll: function (rows) {
+                        vm.setButtonState();
+                    },
+                    onUncheckAll: function (rows) {
+                        vm.setButtonState();
+                    },
+                    columns: [{
+                        checkbox: true
+                    }, {
+                        field: 'Id',
+                        title: 'Id',
+                        visible: false
+                    }, {
+                        field: 'Image',
+                        title: '@BDMall.Resources.Label.Img',
+                        events: {
+                            'click .dialog': function (e, value, row, index) {
+                                var el = e.target;
+                                imgShow("#outerdiv", "#innerdiv", "#bigimg", $(el));
+                            }
+                        },
+                        formatter: function (value, row, index) {
+                            return '<img  src="' + value + '" width="64" class="dialog">';
+                        }
+                    },{
+                        field: 'Name',
+                        title: '@BDMall.Resources.Label.PaymentMethod ',
+                        sortable: true,
+                        events: operateEvents,
+                        formatter: function (val, row, index) {
+                            return '<a class="Readonly" style="cursor:pointer;">' + row.Name + '</a>';
+                            }
+                    },{
+                         field: 'ServRateDesc',
+                         sortable: true,
+                         title: '@BDMall.Resources.Label.PMServRate'
+                    },{
+                         field: 'Remark',
+                         sortable: true,
+                         title: '@BDMall.Resources.Label.Desc'
+                     }, {
+                         field: 'IsActive',
+                         sortable: true,
+                         title: '@BDMall.Resources.Label.Status',
+                         formatter: function (value) { return value ==true? "@BDMall.Resources.Label.Open" : "@BDMall.Resources.Label.Close"}
+                     }
+                    ]
+                });
+            };
+
+            oTableInit.queryParams = function (params) {
+
+                return {
+                    //id: id
+
+                };
+            }
+            return oTableInit;
+        }
+
+        function initValidateForm() {
+            frmUpdatePayAccount = $("#frmUpdatePayAccount").validate({
+                submitHandler: function () {
+                    vm.updatePayAccount();
+                },
+                rules: {
+                   
+                    payAccount: {
+                        required: true
+                       
+                    }
+
+                },
+                messages:
+                {
+                    payAccount: {
+                        required: "@BDMall.Resources.Message.RequiredField"                     
+                    }
+                },
+                success: function (label) {
+                    $(label).parent().removeClass('has-error');
+                    //console.log(label);
+                },
+                showErrors: function (errorMap, errorList) {
+                    // 遍历错误列表
+                    focusWrongPlace(errorMap, function (lang) {
+                    });
+                    // 此处注意，一定要调用默认方法，这样保证提示消息的默认效果
+                    this.defaultShowErrors();
+                }
+            });
+        }
+
+        window.operateEvents = {
+            'click .Readonly': function (e, value, row, index) {
+                var objDatas = $("#tblPaymentMethon").bootstrapTable("getData");
+                var strId = objDatas[index].Id;
+                var strWSName = objDatas[index].Name;
+                var strEditType = "Readonly";
+                var strTabId = "Modify_" + strId;
+
+                var tabId = self.frameElement.parentElement.id;
+                miniTab.openNewTabByIframe({
+                    href:"/Paymentmethod/EditPayMethod/" + strId + "/" + "Modify",
+                    title:  strWSName + "_" + "@BDMall.Resources.Action.ModifyPaymentMethod",
+                    callback: vm.getPmtMethod
+                });
+            }
+        };
+
+        $(document).ready(function () {
+            initValidateForm();
+            //vm.getPayAccount();
+            var oTable = new PmtMethodTableInit();
+            oTable.Init();
+            //vm.getPromoteList();
+        });
+    </script>
+}
