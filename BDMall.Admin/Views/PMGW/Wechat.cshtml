@@ -1,0 +1,126 @@
+﻿
+@{
+    ViewBag.Title = "Wechat";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="container-fluid" id="app">
+    <form class="form-horizontal" id="appform">
+        <div class="form-group">
+            <label for="merchantId" class="col-sm-2 control-label">商戶號</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="merchantId" name="merchantId" v-model="model.MerchantId" required placeholder="商戶號,申請微信支付分配的mch_id">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="merchantName" class="col-sm-2 control-label">商家名稱</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="merchantName" name="merchantName" required v-model="model.MerchantName" placeholder="用於支付頁面顯示商家名稱">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="key" class="col-sm-2 control-label">交易秘鑰</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="key" name="key" required v-model="model.Key" placeholder="交易秘鑰,申請微信支付生成的key">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <button type="submit" class="btn btn-primary" v-on:click="save">@BDMall.Resources.Action.Save</button>
+                <button type="reset" class="btn btn-warn" v-on:click="reset">@BDMall.Resources.Action.Reset</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+
+        $.validator.setDefaults({
+            debug: true,
+            submitHandler: function (form) {
+                // alert("提交事件!");
+            }
+        });
+
+
+
+
+        var app = new Vue({
+            el: "#app",
+            data: {
+                model: {
+                    MerchantId: "",
+                    MerchantName: "",
+                    Key: ""
+                },
+                validater: {}
+            },
+            methods: {
+                initValidater: function () {
+                    this.validater = $("#appform").validate({
+                        debug: true,
+                        rules: {
+                            merchantId: {
+                                required: true
+                            },
+                            merchantName: {
+                                required: true
+                            },
+                            key: {
+                                required: true
+                            }
+                        },
+                        //messages: {
+                        //    merchantId: {
+                        //        required: "please input merchantId!!!"
+                        //    },
+                        //    merchantName: {
+                        //        required: "please input merchantName!!!"
+                        //    },
+                        //    key: {
+                        //        required: "please input key!!!"
+                        //    }
+                        //},
+                        submitHandler: function (form) {
+                            //alert("提交事件2!");
+                        }
+                    });
+                },
+                save: function () {
+                    if (this.validater.form()) {
+                        WS.AjaxP("post", "/adminapi/paymentgateway/SaveWechatConfig", this.model, function (result, status) {
+                            if (result.Succeeded) {
+                                showInfo( "@BDMall.Resources.Message.SaveSuccess");
+                            }
+                        }, function () {
+                        })
+                    }
+                },
+                reset: function () {
+                    this.validater.resetForm();
+                    this.load();
+                },
+                load: function () {
+                    WS.AjaxP("get", "/adminapi/paymentgateway/GetConfig", { type: "wechat" }, function (result, status) {
+                        if (result.Succeeded) {
+                            app.model = result.ReturnValue;
+                        }
+                    }, function () {
+                    })
+
+                }
+            },
+            mounted: function () {
+                this.initValidater();
+            }
+
+        });
+        app.load();
+
+
+
+    </script>
+
+}

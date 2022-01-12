@@ -1,0 +1,161 @@
+﻿
+@{
+    ViewBag.Title = "PayMe";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+
+<div class="container-fluid" id="app">
+    <form class="form-horizontal" id="appform">
+        <div class="form-group">
+            <label for="ClientId" class="col-sm-2 control-label">Client Id</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="ClientId" name="ClientId" v-model="model.ClientId" required placeholder="Client Id">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="ClientSecret" class="col-sm-2 control-label">Client Secret</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="ClientSecret" name="ClientSecret" required v-model="model.ClientSecret" placeholder="Client Secret">
+            </div>
+        </div>
+
+
+        <div class="form-group">
+            <label for="SigningKeyId" class="col-sm-2 control-label">Signing Key Id</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="SigningKeyId" name="SigningKeyId" required v-model="model.SigningKeyId" placeholder="Signing Key Id">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="SigningKey" class="col-sm-2 control-label">Signing Key</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="SigningKey" name="SigningKey" required v-model="model.SigningKey" placeholder="Signing Key">
+            </div>
+        </div>
+
+        @*<div class="form-group">
+                <label for="Url" class="col-sm-2 control-label">Url</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="Url" name="Url" required v-model="model.Url" placeholder="Url">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="Ver" class="col-sm-2 control-label">Ver</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="Ver" name="Ver" required v-model="model.Ver" placeholder="Ver">
+                </div>
+            </div>*@
+
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <button type="submit" class="btn btn-primary" v-on:click="save">@BDMall.Resources.Action.Save</button>
+                <button type="reset" class="btn btn-warn" v-on:click="reset">@BDMall.Resources.Action.Reset</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+
+        $.validator.setDefaults({
+            debug: true,
+            submitHandler: function (form) {
+                // alert("提交事件!");
+            }
+        });
+
+
+
+
+        var app = new Vue({
+            el: "#app",
+            data: {
+                model: {
+                    ClientSecret: "",
+                    ClientId: "",
+                    SigningKeyId: "",
+                    SigningKey: "",
+                    Url: "",
+                    Ver:""
+                },
+                validater: {}
+            },
+            methods: {
+                initValidater: function () {
+                    this.validater = $("#appform").validate({
+                        debug: true,
+                        rules: {
+                            ClientId: {
+                                required: true
+                            },
+                            ClientSecret: {
+                                required: true
+                            },
+                            SigningKeyId: {
+                                required: true
+                            },
+                            SigningKey: {
+                                required: true
+                            },
+                            Url: {
+                                required: true
+                            },
+                            Ver: {
+                                required: true
+                            }
+                        },
+                        //messages: {
+                        //    merchantId: {
+                        //        required: "please input merchantId!!!"
+                        //    },
+                        //    merchantName: {
+                        //        required: "please input merchantName!!!"
+                        //    },
+                        //    key: {
+                        //        required: "please input key!!!"
+                        //    }
+                        //},
+                        submitHandler: function (form) {
+                            //alert("提交事件2!");
+                        }
+                    });
+                },
+                save: function () {
+                    if (this.validater.form()) {
+                        WS.AjaxP("post", "/adminapi/paymentgateway/SavePayMeConfig", this.model, function (result, status) {
+                            if (result.Succeeded) {
+                                showInfo( "@BDMall.Resources.Message.SaveSuccess");
+                            }
+                        }, function () {
+                        })
+                    }
+                },
+                reset: function () {
+                    this.validater.resetForm();
+                    this.load();
+                },
+                load: function () {
+                    WS.AjaxP("get", "/adminapi/paymentgateway/GetConfig", { type: "PayMe" }, function (result, status) {
+                        if (result.Succeeded) {
+                            app.model = result.ReturnValue;
+                        }
+                    }, function () {
+                    })
+
+                }
+            },
+            mounted: function () {
+                this.initValidater();
+            }
+
+        });
+        app.load();
+
+
+
+    </script>
+
+}

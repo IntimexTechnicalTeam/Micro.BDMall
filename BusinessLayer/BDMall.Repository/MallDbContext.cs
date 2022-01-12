@@ -138,5 +138,8 @@ namespace BDMall.Repository
         public DbSet<ProductRelatedItem> ProductRelatedItems { get; set; }
 
         public DbSet<PaymentMethod> PaymentMethods { get; set; }
+
+        public DbSet<Customization> Customizations { get; set; }
+        
     }
 }
