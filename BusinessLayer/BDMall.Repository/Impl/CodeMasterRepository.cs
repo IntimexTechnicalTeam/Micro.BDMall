@@ -54,19 +54,6 @@ namespace BDMall.Repository
 
         private List<CodeMasterDto> GetCodeMasters(string module, string function, string key, string value)
         {
-            //string cacheKey = string.Format(CacheKeyFormat, module, function, key, CurrentUser.Lang.ToString());
-            List<CodeMasterDto> data = new List<CodeMasterDto>();
-            //if (data != null && data.Count > 0)
-            //{
-            //    // CacheLog.Debug("Exist " + cacheKey);
-            //    return data;
-            //}
-            //else
-            //{
-            //    data = new List<CodeMasterDto>();
-            //    //  CacheLog.Debug("Empty " + cacheKey);
-            //}
-
             var query = from m in UnitOfWork.DataContext.CodeMasters
                         join t in UnitOfWork.DataContext.Translations on new { a1 = m.DescTransId, a2 = CurrentUser.Lang } equals new { a1 = t.TransId, a2 = t.Lang } into mts
                         from mt in mts.DefaultIfEmpty()
@@ -103,23 +90,19 @@ namespace BDMall.Repository
                 query = query.Where(d => d.Value == value);
             }
 
-            //var queryGroup = query.Distinct().ToList().GroupBy(g => g.m).Select(d => new { m = d.Key, Trans = d.Select(a => a.t).ToList() });
+            var skipRecord = query.ToList();
 
+            List<CodeMasterDto> data = new List<CodeMasterDto>();
+            var supportLang = GetSupportLanguage();
+            foreach (var item in skipRecord)
+            {
+                CodeMasterDto dto = new CodeMasterDto();
+                dto = AutoMapperExt.MapTo<CodeMasterDto>(item);
+                dto.Descriptions = _translationRpo.GetMutiLanguage(item.DescTransId);
+                dto.Description = dto.Descriptions.FirstOrDefault(d => d.Language == CurrentUser.Lang)?.Desc ?? "";
+                data.Add(dto);
+            }
 
-            //var supportLang = GetSupportLanguage();
-            //foreach (var item in queryGroup)
-            //{
-            //    CodeMasterDto dto = new CodeMasterDto();
-            //    dto = AutoMapperExt.MapTo<CodeMasterDto>(item.m);
-            //    //dto.Descriptions = LangUtil.GetMutiLangFromTranslation(item.Trans, supportLang);
-            //    dto.Description = dto.Descriptions.FirstOrDefault(d => d.Language == CurrentUser.Lang)?.Desc ?? "";
-            //    data.Add(dto);
-            //}
-            //if (module == CodeMasterModule.System.ToString() || function == CodeMasterFunction.SupportLanguage.ToString())
-            //{
-            //    CacheManager.Insert(cacheKey, data);
-            //}
-            data = query.ToList();
             return data;
         }
 
