@@ -1,0 +1,253 @@
+﻿@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="app" v-cloak>
+    <form id="commentForm" v-cloak>
+        <div id="divCurrency" class="panel-group">
+            <div class="form-horizontal">
+
+                <div class="form-group col-sm-12">
+                    <p class="bg-primary">@BDMall.Resources.Label.BaseCurrencySetUp</p>
+                </div>
+
+
+                <div class="form-group col-sm-12">
+                    <label for="cboTransType" class="control-label col-sm-2">@BDMall.Resources.Label.BaseCurrencyCode</label>
+                    <div class="col-sm-4">
+                        <select id="cboCurrency" class="form-control" style="width:300px;" v-model="baseCurrency" onchange="Change();"></select>
+                    </div>
+                    <div class="col-sm-2">
+                        <div class="btn btn-primary" v-on:click="setDefault">@BDMall.Resources.Action.SetDefault</div>
+                    </div>
+                </div>
+
+                <div class="form-group col-sm-12">
+                    <p class="bg-primary">@BDMall.Resources.Label.ExchangeRateTable</p>
+                </div>
+
+
+                <table class="table">
+                    <tr>
+
+                        <th>@BDMall.Resources.Label.BaseCurrencyCode</th>
+                        <th>@BDMall.Resources.Label.ExchangeCode</th>
+                        <th>@BDMall.Resources.Label.DisplayDescription</th>
+                        <th>@BDMall.Resources.Label.ExchangeRate</th>
+                    </tr>
+                    <tr v-for="item in items">
+                        <td>
+                            {{item.FromCurCode}}
+                        </td>
+                        <td>
+                            {{item.ToCurCode}}
+                        </td>
+                        <td>
+                            {{item.ToName}}
+                        </td>
+                        <td>
+                            <div>
+                                <input type="text"  class="form-control bg-success" v-bind:id="'CurrencyRate'+item.ToCode" v-model="item.Rate" style="width:100px;" v-on:input="inputFunc">
+                            </div>
+                        </td>
+                    </tr>
+
+                </table>
+                <div class="col-sm-2">
+
+                </div>
+                <div class="text-right">
+                    <input type="button" class="btn btn-primary btn-action-default" value="@BDMall.Resources.Action.Update" v-on:click="saveCheck" />
+                    <div class="btn btn-info" onclick="clowWin();"><i class="glyphicon glyphicon glyphicon-remove"></i> @BDMall.Resources.Action.CloseTab</div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<style type="text/css">
+    .form-control {
+        width: 100px;
+        height: 30px;
+        border: 1px solid #999;
+        outline: none;
+    }
+</style>
+@section scripts{
+
+
+    <script type="text/javascript">
+        var vm = new Vue({
+            el: "#app",
+            data: {
+
+                items: [],
+                currency: {
+                    Code: "",
+                    ToCode: "",
+                    Desc: "",
+                    Rate: 0,
+                    Id: "0"
+                },
+                ems: {
+                    Id: 0,
+                    SettingName: "",
+                    Value: "",
+                    Remark: "",
+                    Lang: "",
+                    IsActive: ""
+                },
+                baseCurrency:"",
+            },
+            methods: {
+                setDefault: function () {
+                    var data = new Object();
+                    data.code = $("#cboCurrency").val();
+                    WS.AjaxP("get",
+                        "/adminapi/Currency/SetDefault",
+                        data,
+                        function (response) {
+                            if (response.Succeeded == true) {
+                                showCloseInfo('@BDMall.Resources.Message.SaveSuccess');
+                            } else {
+                                showWarn('@BDMall.Resources.Message.SaveFail');
+                            }
+                        },
+                        function () { });
+                },
+                getCurrSetting: function () {
+                    var data = new Object();
+                    data.baseCode = $("#cboCurrency").val();
+                    WS.AjaxP("get",
+                        "/adminapi/Currency/GetCurrItems",
+                        data,
+                        function (response) {
+                            vm.items = response;
+                        },
+                        function () { });
+                },
+
+                getRMBRates: function () {
+                    var data = new Object();
+                    WS.AjaxP("get",
+                        "/adminapi/Currency/GetRMBRates",
+                        data,
+                        function (response) {
+                            vm.ems = response;
+                        },
+                        function () { });
+                },
+                getBaseCurrency: function () {
+                    WS.AjaxP("get",
+                        "/adminapi/Currency/GetBaseCurrency",
+                        null,
+                        function (response) {
+                            vm.baseCurrency = response;
+                            $("#cboCurrency").val(response);
+                            Change();
+                        },
+                        function () { });
+                },
+                getCurrByName: function () {
+                    var data = new Object();
+                    data.code = $("#cboCurrency").val();
+                    WS.AjaxP("get",
+                        "/adminapi/Currency/GetCurrDetail",
+                        data,
+                        function (response) {
+                            console.log(response);
+                            vm.currency = response;
+                        },
+                        function () { });
+                },
+                
+                inputFunc: function () {
+                    inputFunc();
+                },
+
+                save: function () {
+                    save();
+                },
+                saveCheck: function () {
+                    if (formValidate.form()) {
+                        $("#commentForm").submit();
+                    }
+                },
+
+                updateRate: function () {
+                    console.log(vm.items);
+                    var data = new Object;
+                    data.list = vm.items;
+                    WS.AjaxP("post",
+                        "/adminapi/Currency/UpdateRate",
+                       data,
+                        function (response) {
+                            if (response.Succeeded == true) {
+                                showCloseInfo('@BDMall.Resources.Message.SaveSuccess');
+                            } else {
+                                showWarn('@BDMall.Resources.Message.SaveFail');
+                            }
+                        },
+                        function () { });
+
+                }
+            }
+        });
+
+        function Change() {
+            vm.getCurrSetting();
+        }
+        function inputFunc() {
+
+        }
+
+        $(document).ready(function () {
+            InitNormalSelect("cboCurrency", "/adminapi/Currency/GetCurrList", false, null, false);
+
+            vm.getBaseCurrency();
+            //vm.getCurrSetting();
+
+            formValidate = $("#commentForm").validate({
+                ignore: "",
+                submitHandler: function () {
+                    vm.updateRate();
+                },
+                rules: {
+                    //CurrencyRate0: { required: true, number: true },
+                    //CurrencyRate1: { required: true, number: true },
+                    //CurrencyRate2: { required: true, number: true },
+                    //CurrencyRate3: { required: true, number: true },
+
+                },
+                messages:
+                {
+                    @*CurrencyRate0: '@BDMall.Resources.Message.MustBeANumber',
+                    CurrencyRate1: '@BDMall.Resources.Message.MustBeANumber',
+                    CurrencyRate2: '@BDMall.Resources.Message.MustBeANumber',
+                    CurrencyRate3: '@BDMall.Resources.Message.MustBeANumber',*@
+                },
+
+                success: function (label) {
+                    $(label).parent().removeClass('has-error');
+                },
+                showErrors: function (errorMap, errorList) {
+                    //focusWrongPlace(errorMap, function (lang) {
+                    //    vm.$refs.langbar.setCurrentLanguage(lang);
+                    //    vm.languageType = lang;
+                    //});
+                    // 此处注意，一定要调用默认方法，这样保证提示消息的默认效果
+                    this.defaultShowErrors();
+                }
+
+            });
+        });
+    </script>
+}
+
+
+
+
+
+
+
+

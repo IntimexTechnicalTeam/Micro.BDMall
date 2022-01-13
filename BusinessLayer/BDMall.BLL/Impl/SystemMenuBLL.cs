@@ -159,7 +159,7 @@ namespace BDMall.BLL
                              IsDeleted = a.IsDeleted,
                              IsMobileEnable = a.IsMobileEnable,
                              IsHomeItem = a.IsHomeItem,
-                         }).ToList();
+                         }).OrderBy(o => o.Seq).ToList();
             foreach (var item in query)
             {
                 item.NameTranslation = _translationRepo.GetMutiLanguage(item.NameTransId);
@@ -424,6 +424,7 @@ namespace BDMall.BLL
             {
                 menus.Remove(a);
             }
+            subMenus = subMenus.OrderBy(o => o.Seq).ToList();
 
             foreach (var item in subMenus)
             {

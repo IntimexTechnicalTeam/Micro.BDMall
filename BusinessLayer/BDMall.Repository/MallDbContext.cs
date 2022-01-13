@@ -185,5 +185,10 @@ namespace BDMall.Repository
 
 
 
+
+        public DbSet<PaymentMethod> PaymentMethods { get; set; }
+
+        public DbSet<Customization> Customizations { get; set; }
+        
     }
 }

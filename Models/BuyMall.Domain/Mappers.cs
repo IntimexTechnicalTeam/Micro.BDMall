@@ -47,6 +47,9 @@ namespace Domain
             ConfigMap<Supplier, SupplierDto>();
             ConfigMap<InvFlow,InvFlowView>();
 
+
+            ConfigMap<PaymentMethodDto, PaymentMethod>();
+            
         }
         void ConfigMap<TSource, TDestination>()
         {

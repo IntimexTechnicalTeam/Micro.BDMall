@@ -256,7 +256,7 @@ namespace BDMall.BLL
         public void SetDefault(string code)
         {
             UnitOfWork.IsUnitSubmit = true;
-            var newDefault = _codeMasterRepository.GetCodeMaster(CodeMasterModule.Setting.ToString(), CodeMasterFunction.Currency.ToString(), "DefaultCurrency");
+            var newDefault = baseRepository.GetModel<CodeMaster>(p => p.Module == CodeMasterModule.Setting.ToString() && p.Function == CodeMasterModule.Setting.ToString() && p.Key == "DefaultCurrency");
             if (newDefault != null)
             {
                 newDefault.Value = code;

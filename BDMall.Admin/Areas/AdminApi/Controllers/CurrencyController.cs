@@ -93,7 +93,7 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
         /// <returns></returns>
         [HttpPost]
         [AdminApiAuthorize(Module = ModuleConst.SystemModule)]
-        public SystemResult UpdateRate([FromBody]CurrencyListView data)
+        public SystemResult UpdateRate([FromForm] CurrencyListView data)
         {
             SystemResult result = new SystemResult();
 

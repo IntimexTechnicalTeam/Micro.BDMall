@@ -1,0 +1,245 @@
+﻿
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="app" class="col-md-12" v-cloak>
+    <form id="commentForm">
+        <table class="table">
+            <tr>
+                <td class="col-md-2">
+                    <span style="color:red;">*</span>@BDMall.Resources.Label.CodeModule
+                </td>
+                <td class="col-md-10">
+                    <select id="cboModule" name="module" class="form-control" v-model="codeMaster.Module" v-on:change="setDescriptionVisible" v-bind:disabled="cid!=0"></select>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">
+                    <span style="color:red;">*</span>@BDMall.Resources.Label.CodeFunction
+                </td>
+                <td class="col-md-10">
+                    <select id="cboFunction" name="function" class="form-control" v-model="codeMaster.Function" v-bind:disabled="cid!=0"></select>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">
+                    <span style="color:red;">*</span>@BDMall.Resources.Label.Key
+                </td>
+                <td class="col-md-10">
+                    <input type="text" id="txtKey" name="key" class="form-control" v-model="codeMaster.Key" v-bind:disabled="cid!=0" />
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">@BDMall.Resources.Label.Value</td>
+                <td class="col-md-10">
+                    @*<textarea class="form-control" rows="5" v-model="codeMaster.Value"></textarea>*@
+                    <input type="text" id="txtValue" name="value" class="form-control" v-model="codeMaster.Value" />
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">@BDMall.Resources.Label.IsActive</td>
+                <td class="col-md-10">
+                    <input type="checkbox" value="true" v-model="codeMaster.IsActive" />
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2"></td>
+                <td class="col-md-10">
+                    @*<ul class="nav nav-tabs" id="ulLang">
+                            <li v-for="pLang in codeMaster.Descriptions" v-on:click="selectLanguage($event,pLang)"><a style="cursor:pointer;">{{pLang.Lang.Text}}</a></li>
+                        </ul>*@
+                    <multilang-bar v-bind:data="codeMaster.Descriptions" ref="langbar" v-bind:selectlanguage="selectLanguage"></multilang-bar>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">@BDMall.Resources.Label.Desc</td>
+                <td class="col-md-10">
+                    <div v-for="pItem in codeMaster.Descriptions">
+                        <input name="description" type="text" class="form-control" v-if="pItem.Lang.Code==languageType" v-model="pItem.Desc" />
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">@BDMall.Resources.Label.Remark</td>
+                <td class="col-md-10">
+                    @*<textarea class="form-control" rows="5" v-model="codeMaster.Value"></textarea>*@
+                    <textarea id="txtRemark" class="form-control" v-model="codeMaster.Remark" rows="5"></textarea>
+                </td>
+            </tr>
+
+            <tr>
+                <td colspan="2" class="text-center">
+                    <input type="submit" class="btn btn-primary size-large" value="@BDMall.Resources.Action.Save" />
+                    <input type="button" class="btn btn-warning size-large" v-if="codeMaster.IsDeleted" value="@BDMall.Resources.Action.PhysicalDelete" v-on:click="deleteCM" />
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+
+@section scripts{
+    <script src="~/Scripts/admin/vue-component/multilangbar.js"></script>
+
+    <script type="text/javascript">
+        var cid = @ViewBag.cId;
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                cid:cid,
+                codeMaster: {
+                    Module: "",
+                    Function: "",
+                    Key:"",
+                    Value: "",
+                    IsActive: true,
+                    Descriptions: [{ Lang: { Code: "", Text: "" }, Desc: "" }],
+                    Remark: ""
+
+                },
+                language: "English",
+                languageType:"E",
+                IsShow:false,
+            },
+            methods: {
+                saveCheck:function()
+                {
+                    if(cid=="")
+                    {
+                        var obj = new Object();
+                        obj.Module=vm.codeMaster.Module;
+                        obj.Function=vm.codeMaster.Function;
+                        obj.Value=vm.codeMaster.Value;
+                        WS.AjaxP("post","/adminapi/CodeMaster/GetCodeMasterByKey",obj,function(response){
+                            if(response!=null)
+                            {
+                                showWarn('@BDMall.Resources.Message.CodeMasterValueExists')
+                                vm.codeMaster.Value="";
+                                $("#txtValue").focus();
+                            }
+                            else
+                            {
+                                vm.save();
+                            }
+                        },function(){});
+                    }
+                    else{
+                        vm.save();
+                    }
+
+                },
+                save:function()
+                {
+                    WS.AjaxP("post","/adminapi/CodeMaster/Save",vm.codeMaster,function(response){
+                        if(response.Succeeded==true)
+                        {
+                            @*clowWin();*@
+                            showCloseInfo('@BDMall.Resources.Message.SaveSuccess');
+                        }
+                        else
+                        {
+                            showWarn('@BDMall.Resources.Message.SaveFail');
+                        }
+                    },function(){});
+                },
+                deleteCM:function()
+                 {
+                     if (confirm("Confirm to delete?")) {
+                         WS.AjaxP("get", "/adminapi/CodeMaster/ActDelete", { id: cid}, function (response) {
+                             if (response.Succeeded == true) {
+                                 clowWin();
+                             }
+                             else {
+                                 showWarn('@BDMall.Resources.Message.SaveFail');
+                             }
+                         }, function () { });
+                     }
+                },
+                getCodeMasterById:function(){
+                    var obj = new Object();
+                    obj.Id = cid;
+                    WS.AjaxP("get", "/adminapi/CodeMaster/GetById", obj, function (response) {
+                        vm.codeMaster = response;
+                        if(cid==0)
+                        {
+                            vm.codeMaster.Module="Setting"
+                        }
+                        vm.setDefaultLanguage(response.Descriptions);
+                        vm.setDescriptionVisible();
+                        //if(response.Module=="Setting")
+                        //{
+                        //    vm.IsShow=false;
+                        //}
+                    }, function () { });
+                },
+                selectLanguage: function (obj) {
+                    //$("#ulLang li.active").removeClass("active");
+                    //$(me.currentTarget).addClass("active")
+
+                    //vm.language = obj.Lang.Text;
+                    //vm.languageType = obj.Lang.Code;
+
+                    vm.$refs.langbar.setCurrentLanguage(obj.Lang.Code);
+                    vm.language = obj.Lang.Text;
+                    vm.languageType = obj.Lang.Code;
+                },
+                setDefaultLanguage:function(data)
+                {
+                    if(data.length>0)
+                    {
+                        $("#ulLang li:first").addClass("active")
+                        vm.language = data[0].Lang.Text;
+                        vm.languageType = data[0].Lang.Code;
+                    }
+
+                },
+                setDescriptionVisible:function()
+                {
+                    if(vm.codeMaster.Module=="Setting")
+                    {
+                        vm.IsShow=false;
+                    }
+                    else
+                    {
+                        vm.IsShow=true;
+                    }
+                }
+            }
+        });
+
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+        $(document).ready(function () {
+            InitNormalSelect("cboModule", "/adminapi/Dict/GetCodeMasterModules", false, null, false);
+            InitNormalSelect("cboFunction", "/adminapi/Dict/GetCodeMasterFunction", false, null, false);
+            vm.getCodeMasterById();
+            $("#commentForm").validate({
+                submitHandler: function() {
+                    vm.saveCheck();
+                },
+                rules:{
+                    module:"required",
+                    function:"required",
+                    key:"required",
+                    value:"required"
+                },
+                messages:
+                {
+                    module:"@BDMall.Resources.Message.RequiredField",
+                    function:"@BDMall.Resources.Message.RequiredField",
+                    key:"@BDMall.Resources.Message.RequiredField",
+                    value:"@BDMall.Resources.Message.RequiredField"
+
+                }
+            });
+
+        });
+    </script>
+}
+

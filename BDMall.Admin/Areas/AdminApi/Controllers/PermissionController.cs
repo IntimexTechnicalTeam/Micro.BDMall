@@ -77,9 +77,13 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
         /// <returns></returns>
         public async Task<IEnumerable<PermissionDto>> GetPermissionFunction(Guid moduleId)
         {
-
+            var data = new List<PermissionDto>();
             var mod = _permissionBLL.GetById(moduleId);
-            var data = _permissionBLL.GetFunction(mod.Module);
+            if (mod != null)
+            {
+                data = _permissionBLL.GetFunction(mod.Module);
+            }
+            
             return data;
 
         }

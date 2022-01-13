@@ -27,7 +27,7 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
         public IMerchantBLL merchantBLL;
         public IAttributeBLL attributeBLL;
         public ICountryBLL countryBLL;
-        
+
         public DictController(IComponentContext services) : base(services)
         {
             codeMasterBLL = Services.Resolve<ICodeMasterBLL>();
@@ -44,7 +44,22 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
         [HttpGet]
         public async Task<List<KeyValue>> GetEmailType()
         {
-            return new List<KeyValue>();
+            List<KeyValue> list = new List<KeyValue>();
+            var codeMasters = codeMasterBLL.GetCodeMasters(CodeMasterModule.System, CodeMasterFunction.EmailType);
+
+            foreach (var item in codeMasters)
+            {
+                MailType type;
+                if (Enum.TryParse(item.Value, out type))
+                {
+                    KeyValue entity = new KeyValue();
+                    entity.Id = ((int)type).ToString();
+                    entity.Text = item.Description;
+                    list.Add(entity);
+                }
+            }
+
+            return list;
         }
 
         /// <summary>
@@ -54,7 +69,28 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
         [HttpGet]
         public async Task<List<KeyValue>> GetPromoteImgSize()
         {
-            return new List<KeyValue>();
+            List<KeyValue> list = new List<KeyValue>();
+
+            var imageSizes = settingBLL.GetProductImageSize();
+
+            list.Add(new KeyValue
+            {
+                Id = ((int)ImageSizeType.S1).ToString(),
+                Text = imageSizes[0].Width.ToString()
+            });
+            list.Add(new KeyValue
+            {
+                Id = ((int)ImageSizeType.S4).ToString(),
+                Text = imageSizes[3].Width.ToString()
+            });
+            list.Add(new KeyValue
+            {
+                Id = ((int)ImageSizeType.S6).ToString(),
+                Text = imageSizes[5].Width.ToString()
+            });
+
+
+            return list;
         }
 
         [HttpGet]
@@ -79,8 +115,11 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
         [HttpGet]
         public async Task<List<KeyValue>> GetCodeMasterModules()
         {
+            List<KeyValue> list = new List<KeyValue>();
 
-            return new List<KeyValue>();
+            list.Add(new KeyValue { Id = CodeMasterModule.Setting.ToString(), Text = CodeMasterModule.Setting.ToString() });
+            list.Add(new KeyValue { Id = CodeMasterModule.System.ToString(), Text = CodeMasterModule.System.ToString() });
+            return list;
         }
 
         /// <summary>
@@ -90,14 +129,14 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
         [HttpGet]
         public List<KeyValue> GetUpdPriceType()
         {
-            //var lang = WSCookie.GetUserLanguage();
+            //var lang = CurrentUser.Language.ToString();
             //Thread.CurrentThread.CurrentCulture = new CultureInfo(CultureHelper.GetSupportCulture(lang));
             //Resources.Value.Culture = Thread.CurrentThread.CurrentCulture;
 
             List<KeyValue> list = new List<KeyValue>();
 
-            //list.Add(new KeyValue { Id = ((int)UpdPriceTypeEnum.Increase).ToString(), Text = Resources.Value.Increase });
-            //list.Add(new KeyValue { Id = ((int)UpdPriceTypeEnum.Decrease).ToString(), Text = Resources.Value.Decrease });
+            list.Add(new KeyValue { Id = ((int)UpdPriceTypeEnum.Increase).ToString(), Text = Resources.Value.Increase });
+            list.Add(new KeyValue { Id = ((int)UpdPriceTypeEnum.Decrease).ToString(), Text = Resources.Value.Decrease });
             return list;
         }
         /// <summary>
@@ -107,18 +146,20 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
         [HttpGet]
         public async Task<List<KeyValue>> GetCodeMasterFunction()
         {
-            //List<KeyValue> list = new List<KeyValue>();
+            List<KeyValue> list = new List<KeyValue>();
 
 
-            //foreach (CodeMasterFunction codeMstrFunc in Enum.GetValues(typeof(CodeMasterFunction)))
-            //{
-            //    list.Add(new KeyValue { Id = codeMstrFunc.ToString(), Text = codeMstrFunc.ToString() });
-            //}
+            foreach (CodeMasterFunction codeMstrFunc in Enum.GetValues(typeof(CodeMasterFunction)))
+            {
+                list.Add(new KeyValue { Id = codeMstrFunc.ToString(), Text = codeMstrFunc.ToString() });
+            }
 
+            if (list?.Count > 0)
+            {
+                list = list.OrderBy(x => x.Id).ToList();
+            }
 
-            //return list;
-
-              return new List<KeyValue>();
+            return list;
         }
 
         /// <summary>
@@ -149,7 +190,7 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
 
         [HttpGet]
         public List<KeyValue> GetCountry()
-        {         
+        {
             var countrys = countryBLL.GetCountry();
             return countrys;
         }
@@ -199,19 +240,19 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
         /// <returns></returns>
         [HttpGet]
         public async Task<List<KeyValue>> GetReportType()
-                {
+        {
             return new List<KeyValue>();
-                }
+        }
 
         [HttpGet]
         public async Task<List<KeyValue>> GetWhseComboSrc()
         {
             return new List<KeyValue>();
-            }
+        }
 
         [HttpGet]
         public async Task<List<KeyValue>> GetWhseComboSrcByMerchant(Guid merchantId)
-            {
+        {
             return new List<KeyValue>();
         }
 
@@ -224,7 +265,7 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
         {
             List<KeyValue> keyValLIst = merchantBLL.GetMerchantCboSrcByCond(true);
             return keyValLIst;
-            }
+        }
 
         [HttpGet]
         //[AdminApiAuthorize(Module = ModuleConst.MerchantModule)]

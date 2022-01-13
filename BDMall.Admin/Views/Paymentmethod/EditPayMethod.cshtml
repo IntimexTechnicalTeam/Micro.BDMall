@@ -1,0 +1,287 @@
+﻿@{
+    ViewBag.Title = "EditCMSContent";
+    Layout = "~/Views/Shared/_LayoutEditor.cshtml";
+}
+<link href="~/Scripts/bootstrap-fileinput/css/fileinput.min.css" rel="stylesheet"/>
+<div id="app" class="container">
+
+    <form id="commentForm" v-cloak>
+        <table class="table">
+            <tr>
+                <td class="col-md-2">
+                    <span style="color:red;">*</span>@BDMall.Resources.Label.Code
+                </td>
+                <td class="col-md-10">
+                    <input type="text" name="PMCode" v-bind:name="item.Code" class="form-control" v-model="item.Code" />
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2"></td>
+                <td class="col-md-10">
+                    <multilang-bar v-bind:data="item.Names" ref="langbar" v-bind:selectlanguage="selectLanguage"></multilang-bar>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">
+                    <span style="color:red;">*</span>@BDMall.Resources.Label.Name
+                </td>
+                <td class="col-md-10">
+                    <div v-for="pItem in item.Names" v-show="pItem.Lang.Code==languageType">
+                        <input type="text" v-bind:id="'Name_'+pItem.Lang.Code" v-bind:name="'Name_'+pItem.Lang.Code" class="form-control" v-model="pItem.Desc" />
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">
+                    <span style="color:red;">*</span>@BDMall.Resources.Label.PMServRate
+                </td>
+                <td class="col-md-10">
+                    <div class="form-group">
+                        <input type="number" name="ServRate"  class="form-control" v-model="item.ServRate" />
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">
+                    @BDMall.Resources.Label.Remark
+                </td>
+                <td class="col-md-10">
+                    <div v-for="remark in item.Remarks" v-show="remark.Lang.Code==languageType">
+                        <input type="text" v-bind:id="'Desc_'+remark.Lang.Code" v-bind:name="'Desc_'+remark.Lang.Code" class="form-control" v-model="remark.Desc" />
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">@BDMall.Resources.Label.Image</td>
+                <td class="col-md-10">
+                    <div class="form-group">
+                        <img v-bind:src="item.ImgPath" height="100" v-on:click="dialog($event)" />
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">@BDMall.Resources.Label.UploadImage</td>
+                <td>
+                    <div>
+                        <input name="txt_file" id="fileIconImage" type="file" class="file" />
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">@BDMall.Resources.Label.CollectionAccount</td>
+                <td class="col-md-10">
+                    <div class="form-group">
+                        <input type="text" class="form-control" v-model="item.BankAccount" />
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">
+                    @BDMall.Resources.Label.Status
+                </td>
+                <td class="col-md-10">
+                    <ul class="list-inline" id="showList">
+                        <li>
+                            <input type="checkbox" v-model="item.IsActive" />
+                            <label for="chkShow">@BDMall.Resources.Label.Open</label>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" class="text-center">
+                    <input type="button" class="btn btn-primary" v-on:click="saveCheck" value="@BDMall.Resources.Action.Save" />
+                </td>
+            </tr>
+        </table>
+    </form>
+    <div id="outerdiv" style="position:fixed;top:0;left:0;background:rgba(0,0,0,0.7);z-index:1200;width:100%;height:100%;display:none;">
+        <div id="innerdiv" style="position:absolute;">
+            <img id="bigimg" style="border:5px solid #fff;" src="" />
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script src="~/Scripts/bootstrap-fileinput/js/fileinput.min.js"></script>
+    <script src="~/Scripts/admin/vue-component/multilangbar.js"></script>
+
+
+    <script type="text/javascript">
+        var tid = '@ViewBag.Id';
+        var type = '@ViewBag.Type';
+        var pic;
+        var formValidate;
+
+        var vm = new Vue({
+            el: "#commentForm",
+            data: {
+                hidden:"",
+                Action: type,
+                item: {
+                    Id: 0,
+                    Names: [{ Lang: { Code: "", Text: "" }, Desc: "", Text: "" }],
+                    Remarks:[],
+                    Code:"",
+                    IsActive: "",
+                    Image: "",
+                    ImgPath: "",
+                    BankAccount: "",
+                    ServRate: 0
+                },
+                language: "",
+                languageType: "",
+                IsShow: true
+            },
+            methods: {
+                checkCode: function () {
+                    //名字改为code，统一多语言一致
+                    var code;
+                    $.each(vm.item.Names, function (a, b) {
+                        if (b.Lang.Code == vm.languageType) {
+                            code = b.Desc;
+                        }
+                    })
+                    $.each(vm.item.Names, function (a, b) {
+                        b.Desc = code;
+                    })
+                },
+                save: function () {
+                    this.checkCode();
+                    vm.item.Status = vm.StatusSelect;
+                    WS.AjaxP("post",
+                        "/adminapi/Payment/SavePayMethodsItem",
+                        vm.item,
+                        function (response) {
+                            if (response.Succeeded == true) {
+                                showCloseInfo('@BDMall.Resources.Message.SaveSuccess');
+                                @*clowWin();*@
+                            } else {
+                                showWarn('@BDMall.Resources.Message.SaveFail');
+                            }
+                        },
+                        function () { });
+                },
+                saveCheck: function () {
+                    if (formValidate.form()) {
+                        $("#commentForm").submit();
+                    }
+                },
+                deletePic: function () {
+                    var data = new Object();
+                    data.name = vm.item.Img;
+                    console.log(data.name);
+                    WS.AjaxP("get",
+                        "/adminapi/Payment/DeletePicture",
+                        data,
+                        function (response) {
+                            if (response.Succeeded == true) {
+                                vm.item.Image="";
+                            }
+                            else {
+                                showWarn(response.Message);
+                            }
+                        }, function () { });
+                },
+                //通过Id获取Item
+                getItemById: function () {
+
+                    var obj = new Object();
+                    obj.Id = tid;
+
+                    WS.AjaxP("get", "/adminapi/Payment/GetPayManagement", obj, function (response) {
+                        vm.item = response;
+                        //vm.setDefaultLanguage(vm.item.Names);
+                        vm.$nextTick(function () {
+                            vm.setDefaultLanguage(vm.item.Names);
+                            vm.item.Names.forEach(function (val) {
+                                $("#Name_" + val.Lang.Code).rules('add', { required: true, messages: { required: '@BDMall.Resources.Message.RequiredField' } });
+                            });                            
+                        });
+                    }, function () { });
+                },
+                selectLanguage: function (obj) {
+                    vm.$refs.langbar.setCurrentLanguage(obj.Lang.Code);
+                    vm.languag = obj.Lang.Text;
+                    vm.languageType = obj.Lang.Code;
+                },
+                setDefaultLanguage: function (data) {
+                    if (data.length > 0) {
+                        var defaultLang = data[0].Lang.Code;
+                        vm.$refs.langbar.setCurrentLanguage(defaultLang);
+                        vm.language = data[0].Lang.Text;
+                        vm.languageType = data[0].Lang.Code;
+                    }
+                },
+                dialog: function (e) {
+                    //var _this = $(this);//将当前的pimg元素作为_this传入函数
+                    var el = e.target;
+                    imgShow("#outerdiv", "#innerdiv", "#bigimg", $(el));
+                }
+            }
+        });
+
+        //圖片上傳
+        var iconImgOption = new FileInputOption();
+        iconImgOption.CtrlName = "fileIconImage";
+        iconImgOption.UploadUrl = "/adminapi/FileUpload/UploadFile";
+        iconImgOption.MaxFile = 1;
+        iconImgOption.SuccessCallback = function (data) {
+            var result = data.response.ReturnValue[0];
+            Vue.set(vm.item, 'Image', result.Name);
+            Vue.set(vm.item, 'ImgPath', result.Path);
+            $("#txt_file").fileinput("refreshContainer");
+        };
+        iconImgOption.ErrorCallback = function (data) {
+            Vue.set(vm.item, 'Image', "");
+            Vue.set(vm.item, 'ImgPath', "");
+        };
+        FileInputInit(iconImgOption);
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+        $(document).ready(function () {
+            $("#showList").find("input[type=checkbox]").bind("click", function () {
+                $("#showList").find("input[type=checkbox]").not(this).attr("checked", false);
+                vm.StatusSelect.splice(0, vm.StatusSelect.length);
+                if ($(this)[0].checked == true) {
+                    vm.StatusSelect.push($(this).val());
+                }
+            });
+
+            vm.getItemById();
+
+            formValidate = $("#commentForm").validate({
+                ignore: "",
+                submitHandler: function () {
+                    vm.save();
+                },
+                rules: {
+                    PMCode: "required",
+                    ServRate: "required"
+                },
+                messages:
+                {
+                    PMCode: "@BDMall.Resources.Message.RequiredField",
+                    ServRate: "@BDMall.Resources.Message.RequiredField"
+                },
+                success: function (label) {
+                    $(label).parent().removeClass('has-error');
+                    //console.log(label);
+                },
+                showErrors: function (errorMap, errorList) {
+                    focusWrongPlace(errorMap, function (lang) {
+                        vm.$refs.langbar.setCurrentLanguage(lang);
+                        vm.languageType = lang;
+                    });
+                    // 此处注意，一定要调用默认方法，这样保证提示消息的默认效果
+                    this.defaultShowErrors();
+                }
+            });
+        });
+    </script>
+}
