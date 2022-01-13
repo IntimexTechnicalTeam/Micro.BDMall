@@ -3,7 +3,7 @@
     ViewBag.Title = "ProductImg";
     Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
 }
-
+<link href="~/Scripts/bootstrap-fileinput/css/fileinput.min.css" rel="stylesheet"/>
 <div id="app" class="col-md-12" v-cloak>
     <ul id="myTab" class="nav nav-tabs">
         <li class="active" v-on:click="TabClick(2)">
@@ -149,9 +149,8 @@
     </div>
 </div>
 @section scripts{
-    @Styles.Render("~/Content/bootstrapfile")
-    @Scripts.Render("~/bundles/bootstrapfile")
 
+    <script src="~/Scripts/bootstrap-fileinput/js/fileinput.min.js"></script>
     <script type="text/javascript">
         var prodID = '@ViewBag.Id';
         var limitSize = @ViewBag.LimitSize;
@@ -243,6 +242,7 @@
                     if (data.path == "") {
                         return;
                     }
+                    debugger;
                     WS.AjaxP("get","/adminapi/ProdImage/SaveProductSkuImage",data,function(response){
                         if(response.Succeeded==true)
                         {

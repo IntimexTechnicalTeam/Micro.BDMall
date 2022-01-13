@@ -67,7 +67,7 @@ namespace BDMall.BLL
         ///// </summary>
         ///// <returns></returns>
         List<ImageSize> GetProductImageSize();
-        //List<ImageSize> GetProductAdditionalImageSize();
+        List<ImageSize> GetProductAdditionalImageSize();
         ImageSize GetSmallProductImageSize();
         //ImageSize GetMiddleProductImageSize();
         //ImageSize GetBigProductImageSize();
@@ -111,7 +111,7 @@ namespace BDMall.BLL
         ///// 獲取庫存交易類型列表
         ///// </summary>
         ///// <returns></returns>
-        //List<CodeMasterDto> GetInvTransTypeLst();
+        List<CodeMasterDto> GetInvTransTypeLst();
 
 
         ///// <summary>

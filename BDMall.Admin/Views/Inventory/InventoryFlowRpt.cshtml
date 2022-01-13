@@ -1,0 +1,468 @@
+﻿
+@{
+    ViewBag.Title = "InventoryFlowRpt";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="divMain" v-cloak>
+    <div id="divSearchBar" class="panel-group">
+        <div class="form-horizontal">
+            <div class="form-group col-sm-12">
+                <label for="txtProductCode" class="control-label col-sm-2">@BDMall.Resources.Label.ProductCode</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="txtProductCode" v-model="Condition.ProductCode">
+                </div>
+            </div>
+            <div class="form-group col-sm-12">
+                <label for="txtProductName" class="control-label col-sm-2">@BDMall.Resources.Label.ProductName</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="txtProductName" v-model="Condition.ProductName">
+                </div>
+            </div>
+            <div class="form-group col-sm-12">
+                <label for="cboSupplier" class="control-label col-sm-2">@BDMall.Resources.Label.InventoryFlowTpye</label>
+                <div class="col-sm-10">
+                    <label class="checkbox-inline" v-for="item in FlowTypeList">
+                        <input type="checkbox" id="cbxFlowTypw" v-on:click="selectFlowType($event,item)">{{ item.Text }}
+                    </label>
+                </div>
+            </div>
+
+            <div v-show="ExpandExtCondition">
+                <div class="form-group col-sm-12">
+                    <label for="cboCategory" class="control-label col-sm-2">@BDMall.Resources.Label.Category</label>
+                    <combobox-item v-bind:getcombobox="getCurrentCategory" id="cboCategory" class="col-sm-10"></combobox-item>
+                </div>
+                <div class="form-group col-sm-12">
+                    <label for="cboAttrI" class="control-label col-sm-2">@BDMall.Resources.Label.StockAttributeI</label>
+                    <div class="col-sm-4">
+                        <select id="cboAttrI" class="form-control" v-model="Condition.AttributeI"></select>
+                    </div>
+                </div>
+                <div class="form-group col-sm-12">
+                    <label for="cboAttrII" class="control-label col-sm-2">@BDMall.Resources.Label.StockAttributeII</label>
+                    <div class="col-sm-4">
+                        <select id="cboAttrII" class="form-control" v-model="Condition.AttributeII"></select>
+                    </div>
+                </div>
+                <div class="form-group col-sm-12">
+                    <label for="cboAttrIII" class="control-label col-sm-2">@BDMall.Resources.Label.StockAttributeIII</label>
+                    <div class="col-sm-4">
+                        <select id="cboAttrIII" class="form-control" v-model="Condition.AttributeIII"></select>
+                    </div>
+                </div>
+                @*<div class="form-group col-sm-12">
+                        <label for="cboSupplier" class="control-label col-sm-2">@BDMall.Resources.Label.SupplierName</label>
+                        <div class="col-sm-4">
+                            <select id="cboSupplier" class="form-control" v-model="Condition.Supplier"></select>
+                        </div>
+                    </div>*@
+                <div class="form-group col-sm-12">
+                    <label for="cboMerchant" class="control-label col-sm-2">@BDMall.Resources.Label.MerchantName</label>
+                    <div class="col-sm-4">
+                        <select id="cboMerchant" class="form-control selectpicker show-tick" onchange="onChangeMerchantId()"></select>
+                    </div>
+                </div>
+                <div class="form-group col-sm-12">
+                    <div class="form-inline">
+                        <label for="txtTransDateB" class="control-label col-sm-2">@BDMall.Resources.Label.InventoryFlowTransDate</label>
+                        <div class="col-sm-8">
+                            <label for="txtTransDateB" class="control-label">@BDMall.Resources.Label.From</label>
+                            <input name="DateTimePicker" type="text" class="form-control" id="txtTransDateB">
+                            <label for="txtTransDateE" class="control-label">@BDMall.Resources.Label.To</label>
+                            <input name="DateTimePicker" type="text" class="form-control" id="txtTransDateE">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group col-sm-12">
+                <div class="col-sm-offset-2 col-sm-2">
+                    <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Search" v-on:click="searchInventoryFlowList" />
+                    <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.ExtraCondition" v-on:click="setExtConditionExpand" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="divDataArea" class="tab-content">
+        <div id="divSelfDefine" class="tab-pane fade in active">
+            <div class="panel-body">
+                <div id="divToolBar" class="btn-group">
+                </div>
+                <table id="tblInventoryFlowList" class="table table-condensed"></table>
+            </div>
+        </div>
+    </div>
+    <div id="outerdiv" style="position:fixed;top:0;left:0;background:rgba(0,0,0,0.7);z-index:1200;width:100%;height:100%;display:none;">
+        <div id="innerdiv" style="position:absolute;">
+            <img id="bigimg" style="border:5px solid #fff;" src="" />
+        </div>
+    </div>
+</div>
+
+@section scripts
+{
+    <script src="~/Scripts/admin/vue-component/productCatalog.js"></script>
+    <script type="text/javascript">
+        var mPageCache = new Object();//頁面緩存
+        var mIsMerchant = @ViewBag.IsMerchant;
+        var empGuid = "00000000-0000-0000-0000-000000000000";
+        var timer=null;
+        var vm = new Vue({
+            el: "#divMain",
+            data: {
+                FlowTypeList: [{ Id: "", Text: "" }],
+                FlowTypeCheckedList: [],
+                Condition: {
+                    Page: 1,
+                    PageSize: 10,
+                    ProductCode: "",
+                    ProductName: "",
+                    TransBeginDate: "",
+                    TransEndDate: "",
+                    CategoryId: WS.GuidEmpty,
+                    Supplier: WS.GuidEmpty,
+                    TransTypeList: "",
+                    AttributeI: WS.GuidEmpty,
+                    AttributeII: WS.GuidEmpty,
+                    AttributeIII: WS.GuidEmpty,
+                    SortName: "",
+                    SortBy: "",
+                    MerchantId: empGuid,
+                },
+                IsSingleSelected: false,
+                ExpandExtCondition: false,
+            },
+            methods: {
+                setToolbarBtnState: function () {
+                    var objSelections = $("#tblInventoryFlowList").bootstrapTable("getSelections");
+                    if (objSelections.length == 1) {
+                        vm.IsSingleSelected = true;
+                    }
+                    else {
+                        vm.IsSingleSelected = false;
+                    }
+                },
+                getCurrentCategory: function (data) {
+                    vm.Condition.CategoryId = data.currentValue;
+
+                    var dataAjaxP = new Object();
+                    dataAjaxP.CatID = data.currentValue;
+                    //清空屬性下拉框的資料
+                    $("#cboAttrI").empty();
+                    vm.Condition.AttributeI = -1;
+                    $("#cboAttrII").empty();
+                    vm.Condition.AttributeII = -1;
+                    $("#cboAttrIII").empty();
+                    vm.Condition.AttributeIII = -1;
+                    //獲取選中目錄關聯的自定義屬性
+                    WS.AjaxP("get", "/AdminAPI/Inventory/GetInvAttrLstCaches", dataAjaxP, function (response) {
+                        InitNormalSelectByData("cboAttrI", response.AttrIList);
+                        InitNormalSelectByData("cboAttrII", response.AttrIIList);
+                        InitNormalSelectByData("cboAttrIII", response.AttrIIIList);
+                    }, function () {
+                    });
+                },
+                selectFlowType: function (me, obj) {
+                    if (me.currentTarget.checked) {
+                        vm.FlowTypeCheckedList.push(obj.Id);
+                    }
+                    else {
+                        var index = vm.FlowTypeCheckedList.indexOf(obj.Id);
+                        vm.FlowTypeCheckedList.splice(index, 1);
+                    }
+                },
+                searchInventoryFlowList: function () {
+                    vm.Condition.TransBeginDate = $("#txtTransDateB").val();
+                    vm.Condition.TransEndDate = $("#txtTransDateE").val();
+
+                    var strFlowTypeList = "";
+                    if (vm.FlowTypeCheckedList.length > 0) {
+                        vm.FlowTypeCheckedList.forEach(function (Id, Text) {
+                            strFlowTypeList += Id + ",";
+                        });
+                    }
+                    vm.Condition.TransTypeList = strFlowTypeList;
+
+                    $("#tblInventoryFlowList").bootstrapTable("refresh", { url: "/adminapi/Inventory/SearchInvFlowLst", pageNumber: 1 });
+                },
+                getInventoryFlowRptCaches: function() {
+                    WS.AjaxP("get", "/AdminAPI/Inventory/GetInvFlowRptPageCaches", null, function (response) {
+                        mPageCache = response;
+
+                        InitNormalSelectByData("cboSupplier", response.SupplierList);
+
+                        vm.FlowTypeList = response.FlowTypeList;
+                    }, function () {
+                    });
+                },
+                setExtConditionExpand: function () {
+                    if (vm.ExpandExtCondition == true) {
+                        vm.ExpandExtCondition = false;
+                    }
+                    else {
+                        vm.ExpandExtCondition = true;
+                    }
+                },
+                getBigImage: function (e) {
+                        var el = e.target;
+                        var src = $(el).attr("src");
+                        WS.Get("/adminapi/ProdImage/GetBigImgPath", { src: src },
+                            function (response) {
+                                imgShowBySrc("#outerdiv", "#innerdiv", "#bigimg", response);
+                            },
+                            function () { });
+                },
+                openBigImage: function (e) {
+                    var el = e.target;
+                    var src = $(el).attr("src");
+                    WS.Get("/adminapi/ProdImage/GetBigImgPath", { src: src },
+                        function (response) {
+                            window.open(response);
+                        },
+                        function () { });
+                }
+            },
+            mounted: function () {
+                if (mIsMerchant) {
+                    InitBootstrapSelect("cboMerchant", "/adminapi/Dict/GetMerchantCboSrc", 1, false, false, null, function () {
+                        vm.Condition.MerchantId = $("#cboMerchant").val();
+                        getInventoryTransCaches();
+                    });
+                }
+                else {
+                    InitBootstrapSelect("cboMerchant", "/adminapi/Dict/GetMerchantCboSrc", 1, true, true, null, function () { });
+                }
+            }
+        });
+
+        var inventoryFlowListTableInit = function () {
+            var objDataTable = new Object();
+
+            objDataTable.Init = function () {
+                $("#tblInventoryFlowList").bootstrapTable({
+                    method: 'post',                      //请求方式（*）
+                    queryParams: objDataTable.queryParams,//传递参数（*）
+                    toolbar: '#divToolBar',                //工具按钮用哪个容器
+                    striped: true,                      //是否显示行间隔色
+                    cache: true,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                    sortable: true,                     //是否启用排序
+                    sortOrder: "asc",                   //排序方式
+                    sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+                    pageNumber: 1,                       //初始化加载第一页，默认第一页
+                    pageSize: 10,                       //每页的记录行数（*）
+                    pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                    smartDisplay: false,
+                    showRefresh: true,                  //是否显示刷新按钮
+                    clickToSelect: true,                //是否启用点击选中行
+                    //height: 750,                        //行高，如果没有设置height属性，表格自动根据记录条数決定表格高度
+                    uniqueId: "SKU",                     //每一行的唯一标识，一般为主键列
+                    cardView: false,                    //是否显示详细视图
+                    detailView: false,                   //是否显示父子表
+                    pagination: true,                   //是否显示分页（*）
+                    dataField: "Data",
+                    totalField: "TotalRecord",
+                    ajaxOptions: {
+                        beforeSend: function (request) {
+                            var access_token = $.cookie("access_token");
+                            request.setRequestHeader("Authorization", "Bearer " + access_token);
+                        }
+                    },
+                    onCheck: function (row) {//選中項
+                        vm.setToolbarBtnState();
+                    },
+                    onUncheck: function (row) {//取消選中項
+                        vm.setToolbarBtnState();
+                    },
+                    onCheckAll: function (rows) {//選中全部項
+                        vm.setToolbarBtnState();
+                    },
+                    onUncheckAll: function (rows) {//取消選中全部項
+                        vm.setToolbarBtnState();
+                    },
+                    onSort: function (filed, order) {
+                        vm.Condition.SortName = filed;
+                        vm.Condition.SortBy = order;
+
+                        vm.searchInventoryFlowList();
+                    },
+                    columns: [{
+                        field: 'SKU',
+                        title: 'SKU',
+                        visible: false
+                    }, {
+                            field: 'ProductId',
+                            title: 'ProductId',
+                            visible: false
+                    },{
+                        field: 'ImgPath',
+                        title: '@BDMall.Resources.Label.Img',
+                        events: {
+                            'click .dialog': function (e, value, row, index) {
+                                clearTimeout(timer);
+                                timer = setTimeout(function () {  // 这里采用执行自定义事件的方式
+                                    vm.getBigImage(e);
+                                }, 300);
+
+                            },
+                            'dblclick .dialog': function (e, value, row, index) {
+                                clearTimeout(timer);
+                                vm.openBigImage(e);
+                            }
+
+                        },
+                        formatter: function (value, row, index) {
+                            return '<img  src="' + value + '" width="64" class="dialog">';
+                        }
+                    }, {
+                        field: 'ProductCode',
+                        title: '@BDMall.Resources.Label.ProductCode',
+                        align: 'left',
+                        valign: 'middle',
+                        sortable: true,
+                        events: operateEvents,
+                        formatter: tbModifyFormatter
+                    }, {
+                        field: 'ActionType',
+                        title: '@BDMall.Resources.Label.InventoryFlowTpye',
+                        align: 'left',
+                        valign: 'middle',
+                        sortable: true
+                    }, {
+                        field: 'TransDate',
+                        title: '@BDMall.Resources.Label.InventoryFlowTransDate',
+                        align: 'left',
+                        valign: 'middle',
+                            sortable: true
+                    }, {
+                        field: 'TransQty',
+                        title: '@BDMall.Resources.Label.InventoryFlowTransQty',
+                        align: 'left',
+                        valign: 'middle',
+                        sortable: true
+                    }, {
+                        field: 'Attr1Desc',
+                        title: '@BDMall.Resources.Label.StockAttributeI',
+                        align: 'left',
+                        valign: 'middle',
+                        sortable: true
+                    }, {
+                        field: 'Attr2Desc',
+                        title: '@BDMall.Resources.Label.StockAttributeII',
+                        align: 'left',
+                        valign: 'middle',
+                        sortable: true
+                    }, {
+                        field: 'Attr3Desc',
+                        title: '@BDMall.Resources.Label.StockAttributeIII',
+                        align: 'left',
+                        valign: 'middle',
+                            sortable: true
+                    }, {
+                        field: 'WhName',
+                        title: '@BDMall.Resources.Label.WarehouseName',
+                        align: 'left',
+                        valign: 'middle',
+                            sortable: true
+                    }, {
+                        field: 'IOTypeDesc',
+                        title: '@BDMall.Resources.Label.InOutWarehouseType',
+                        align: 'left',
+                        valign: 'middle',
+                        //sortable: true
+                    }, {
+                        field: 'RefNo',
+                        title: '@BDMall.Resources.Label.ReferenceNumber',
+                        align: 'left',
+                        valign: 'middle',
+                        //sortable: true
+                    }, {
+                        field: 'Handler',
+                        title: '@BDMall.Resources.Label.Handler',
+                        align: 'left',
+                        valign: 'middle',
+                        //sortable: true
+                    }, {
+                        field: 'BatchNo',
+                        title: '@BDMall.Resources.Label.BatchNo',
+                        align: 'left',
+                        valign: 'middle',
+                        //sortable: true
+                    }, {
+                        field: 'Remarks',
+                        title: '@BDMall.Resources.Label.Remarks',
+                        align: 'left',
+                        valign: 'middle',
+                        //sortable: true
+                    }],
+                    formatLoadingMessage: function () {
+                        return '';
+                    }
+                });
+            };
+
+            objDataTable.queryParams = function (params) {
+                var page = 1;
+                if (params.offset > 0) {
+                    page = parseInt(params.offset / params.limit) + 1;
+                }
+                vm.Condition.Page = page;
+                vm.Condition.PageSize = params.limit;
+                var SortedBy = "ProductName";
+                var Sorted = "asc";
+                return {
+                    Condition: vm.Condition, Page: page, PageSize: params.limit, sortName: SortedBy, sortOrder: Sorted
+                };
+            }
+            return objDataTable;
+        }
+
+        function tbModifyFormatter(value, row, index) {
+            return '<a class="View btn btn-link">' + value + '</a>';
+        }
+
+        window.operateEvents = {
+            'click .View': function (e, value, row, index) {
+                var objDatas = $("#tblInventoryFlowList").bootstrapTable("getData");
+                var strProdId = objDatas[index].ProductId;
+                var strName = objDatas[index].ProductCode;
+                parent.setSrcTobTab("ProductModify_" + strProdId, strName + "_" + '@BDMall.Resources.Action.Modify', "/Product/EditProduct/" + strProdId + "/Modify", true);
+            }
+        };
+
+        function onChangeMerchantId() {
+            var merchantVal = $("#cboMerchant").val();
+            if (merchantVal != "-1") {
+                vm.Condition.MerchantId = merchantVal;
+            }
+            else {
+                vm.Condition.MerchantId = empGuid;
+            }
+        }
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+
+        $(document).ready(function () {
+
+            InitDateTimePicker();
+
+            var objDataTable = inventoryFlowListTableInit();
+            objDataTable.Init();
+
+            vm.getInventoryFlowRptCaches();
+
+            //鍵盤按下回車後進行搜尋操作
+            $("input").keyup(function (e) {
+                if (e.keyCode == 13) {
+                    vm.searchInventoryFlowList();
+                }
+            });
+        });
+
+
+    </script>
+}

@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-
-using System.Linq;
-using Web.Mvc;
-using Autofac;
-using Microsoft.AspNetCore.Mvc;
-using Web.Framework;
+﻿using Autofac;
 using BDMall.Enums;
+using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Web.Framework;
+using Web.Mvc;
 
 namespace BDMall.Admin.Controllers
 {
@@ -160,10 +156,13 @@ namespace BDMall.Admin.Controllers
         /// <returns></returns>
         public ActionResult ProductImg(Guid id, bool para2)
         {
-            //ViewBag.LimitSize = 2048;// _settingBLL.GetProductImageLimtSize();
-            //ViewBag.Id = id;
-            //ViewBag.IsMerchant = CurrentUser.IsMerchant ? 1 : 0;
-            //ViewBag.IsApprove = para2 ? 1 : 0;
+            ViewBag.LimitSize = 2048;// _settingBLL.GetProductImageLimtSize();
+            ViewBag.Id = id;
+            if (CurrentUser == null)
+                ViewBag.IsMerchant = 0;
+            else
+                ViewBag.IsMerchant = CurrentUser.IsMerchant.ToInt();
+            ViewBag.IsApprove = para2 ? 1 : 0;
             ViewBag.Lang = CurrentUser.Lang;
             return View();
         }
@@ -187,8 +186,12 @@ namespace BDMall.Admin.Controllers
         /// <returns></returns>
         public ActionResult RelatedProduct(string id)
         {
-            //ViewBag.Id = id;
-            //ViewBag.IsMerchant = CurrentUser.IsMerchant ? 1 : 0;
+            ViewBag.Id = id;           
+            if (CurrentUser == null)
+                ViewBag.IsMerchant = 0;
+            else
+                ViewBag.IsMerchant = CurrentUser.IsMerchant.ToInt();
+
             ViewBag.Lang = CurrentUser.Lang;
             return View();
         }

@@ -265,6 +265,14 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
             return keyValLIst;
         }
 
+        [HttpGet]
+        [AdminApiAuthorize(Module = ModuleConst.MerchantModule)]
+        public List<KeyValue> GetMerchantCboSrc()
+        {
+            List<KeyValue> keyValLIst = merchantBLL.GetMerchantCboSrcByCond(true);
+            return keyValLIst;
+        }
+
         /// <summary>
         /// 獲取屬性的佈局
         /// </summary>

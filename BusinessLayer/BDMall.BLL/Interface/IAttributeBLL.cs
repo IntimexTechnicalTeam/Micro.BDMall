@@ -1,5 +1,5 @@
 ﻿using BDMall.Domain;
-
+using BDMall.Enums;
 using Intimex.Common;
 using System;
 using System.Collections.Generic;
@@ -41,6 +41,12 @@ namespace BDMall.BLL
 
         List<AttributeObjectView> GetInvAttributeByProduct(Guid prodId);
 
-        
+        List<AttributeObjectView> GetInvAttributeByProductWithMap(Guid prodId);
+
+        ProductAttributeDto GenProductAttribute(ProductAttributeDto attribute);
+
+        ProductAttributeDto GetProductAttribute(Guid attrId, Language lang);
+
+        InvAttributeLst GetInvAttributeItemsByCatID(Guid catID);
     }
 }

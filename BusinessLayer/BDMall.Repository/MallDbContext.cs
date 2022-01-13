@@ -1,5 +1,7 @@
 ﻿
 using System;
+using System.Linq;
+using System.Reflection;
 using BDMall.Model;
 using BDMall.Model.SystemMNG;
 using Microsoft.EntityFrameworkCore;
@@ -24,8 +26,17 @@ namespace BDMall.Repository
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-
-
+            foreach (var item in modelBuilder.Model.GetEntityTypes())
+            {
+                var type = item.ClrType;
+                var props = type.GetProperties().Where(c => c.IsDefined(typeof(DecimalPrecisionAttribute), true)).ToArray();
+                foreach (var p in props)
+                {
+                    var precis = p.GetCustomAttribute<DecimalPrecisionAttribute>();
+                    modelBuilder.Entity(type).Property(p.Name).HasColumnType($"decimal({precis.Precision},{precis.Scale})");
+                }
+            }
+            base.OnModelCreating(modelBuilder);
         }
 
         public DbSet<Member> Members { get; set; }
@@ -136,5 +147,43 @@ namespace BDMall.Repository
         public DbSet<EmailTypeTempItem> EmailTypeTempItems { get; set; }
         
         public DbSet<ProductRelatedItem> ProductRelatedItems { get; set; }
+
+        public DbSet<ProductDetail> ProductDetails { get; set; }
+
+        public DbSet<ProductExtension> ProductExtensions { get; set; }
+
+        public DbSet<ProductSpecification> ProductSpecifications { get; set; }
+
+        public DbSet<MerchantFreeCharge> MerchantFreeCharges { get; set; }
+
+        public DbSet<ProductImage> ProductImages { get; set; }
+
+        public DbSet<ProductImageList> ProductImageLists { get; set; }  
+
+        public DbSet<Warehouse> Warehouses { get; set; }
+
+        public DbSet<Supplier> Suppliers { get; set; }
+
+        public DbSet<OrderDelivery> OrderDeliveries { get; set; }
+        public DbSet<OrderDeliveryDetail> OrderDeliveryDetails { get; set; }
+
+        public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
+        public DbSet<PurchaseOrderDetail> PurchaseOrderDetails { get; set; }
+
+        public DbSet<PurchaseReturnOrder> PurchaseReturnOrders { get; set; }
+        public DbSet<PurchaseReturnOrderDetail> PurchaseReturnOrderDetails { get; set; }
+
+        public DbSet<RelocationOrder> RelocationOrders { get; set; }
+        public DbSet<RelocationOrderDetail> RelocationOrderDetails { get; set; }
+
+        public DbSet<SalesReturnOrder> SalesReturnOrders { get; set; }
+        public DbSet<SalesReturnOrderDetail> SalesReturnOrderDetails { get; set; }
+
+
+
+
+
+
+
     }
 }

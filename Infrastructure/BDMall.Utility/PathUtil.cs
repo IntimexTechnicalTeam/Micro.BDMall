@@ -199,7 +199,7 @@ namespace BDMall.Utility
 
         public static string GetDefaultImagePath()
         {
-            var folder = "images\\system\\Default.png";
+            var folder = "wwwroot\\images\\system\\Default.png";
 
             return folder;
         }

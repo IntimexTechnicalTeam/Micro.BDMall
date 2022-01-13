@@ -91,18 +91,19 @@ namespace BDMall.BLL
                 {
                     foreach (var item in models)
                     {
-                        var rate = baseRepository.GetModel<CurrencyExchangeRate>(d => d.FromCurCode == defCurrencyCode && d.ToCurCode == item.Key && d.IsActive && !d.IsDeleted).Rate;
-                        if (rate > 0)
+                        var rate = baseRepository.GetModel<CurrencyExchangeRate>(d => d.FromCurCode == defCurrencyCode && d.ToCurCode == item.Key && d.IsActive && !d.IsDeleted);
+                        if (rate !=null )
                         {
                             var m = new SimpleCurrency()
                             {
                                 Id = item.Id,
                                 Code = item.Key,
-                                Name = item.Descriptions.SingleOrDefault(d => d.Language == CurrentUser.Lang)?.Desc,
-                                ExchangeRate = rate,
+                                Name = item.Descriptions.FirstOrDefault(d => d.Language == CurrentUser.Lang)?.Desc,
+                                ExchangeRate = rate.Rate ,
                             };
                             data.Add(m);
                         }
+                       
                     }
                 }
                 AllCurrencies.Add(lang, data);

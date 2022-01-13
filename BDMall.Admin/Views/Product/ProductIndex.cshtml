@@ -278,6 +278,7 @@
 
                     var canOffSale = false;
                     var canOnSale = false;
+                     var vaild = true;
                     if (selected.length >= 1) {
                         selected.forEach(function (val) {
                             if (val.ApproveType == 4) {
@@ -285,6 +286,10 @@
                             }
                             if (val.ApproveType == 0 || val.ApproveType == 5 || val.ApproveType == 6) {
                                 canOnSale = true;
+                            }
+
+                             if (val.IsActive == false || val.IsDeleted == true) {
+                                vaild = false;
                             }
                         });
                     }
@@ -295,7 +300,7 @@
                     }
 
 
-                    if (canOffSale) {
+                    if (canOffSale && vaild) {
                         vm.IsOffSale = true;
                     }
                     else
@@ -303,7 +308,7 @@
                         vm.IsOffSale = false;
                     }
 
-                    if (canOnSale) {
+                    if (canOnSale && vaild) {
                         vm.IsOnSale = true;
                     }
                     else {
@@ -478,7 +483,8 @@
 
                         },
                         formatter: function (value, row, index) {
-                            return '<img  src="' + value[0] + '" width="64" class="dialog">';
+                            //return '<img  src="' + value[0] + '" width="64" class="dialog">';
+                            return '<img  src="' + row.ImgPath + '" width="64" class="dialog">';
                         }
                     }, {
                         field: 'Code',
@@ -514,6 +520,32 @@
                         title: '@BDMall.Resources.Label.GS1Status',
                         sortable: true,
                         },
+                        {
+                        field: 'IsActive',
+                        title: '@BDMall.Resources.Label.IsActive',
+                        formatter: function (value, row, index) {
+                            var result = "";
+                            if (value) {
+                                return '@BDMall.Resources.Label.Yes';
+                            }
+                            else {
+                                return '@BDMall.Resources.Label.No';
+                            }
+                        }
+                    },
+                    {
+                        field: 'IsDeleted',
+                        title: '@BDMall.Resources.Label.IsDeleted',
+                        formatter: function (value, row, index) {
+                            var result = "";
+                            if (value) {
+                                return '@BDMall.Resources.Label.Yes';
+                            }
+                            else {
+                                return '@BDMall.Resources.Label.No';
+                            }
+                        }
+                    },
                     {
                         field: 'ApproveType',
                         title: '',
@@ -528,7 +560,7 @@
                         //    return '<a href="#" onClick="showApproveDetail(\'' + row.ProductId + '\' ,\'' + name + '\');">' + value + '</a>';
                         //}
                     },{
-                        field: 'UpdateDateString',
+                        field: 'UpdateDate',
                         sortable: true,
                         title: '@BDMall.Resources.Label.UpdateDate',
 

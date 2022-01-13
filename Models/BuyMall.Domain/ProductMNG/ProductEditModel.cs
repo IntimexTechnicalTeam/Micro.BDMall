@@ -24,7 +24,7 @@ namespace BDMall.Domain
         public string Code { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
 
-        public string MerchantSupplierId { get; set; }
+        public string MerchantSupplierId { get; set; } = string.Empty;
 
         /// <summary>
         /// 产品名称
@@ -72,7 +72,7 @@ namespace BDMall.Domain
         /// <summary>
         /// 貨幣Code
         /// </summary>
-        public string CurrencyCode { get; set; }
+        public string CurrencyCode { get; set; } = string.Empty;
 
 
 
@@ -93,8 +93,8 @@ namespace BDMall.Domain
         public ProductStatus Status { get; set; } = ProductStatus.Editing;
 
         public Guid Category { get; set; }
-        public string CategoryName { get; set; }
-        public string CategoryPath { get; set; }
+        public string CategoryName { get; set; } = string.Empty;
+        public string CategoryPath { get; set; } = string.Empty;
 
         public Guid DefaultImage { get; set; } = Guid.Empty;
 
@@ -106,7 +106,7 @@ namespace BDMall.Domain
         /// <summary>
         /// 附加圖片
         /// </summary> 
-        public List<string[]> AdditionalImages { get; set; } = new List<string[]>();
+        public List<string[]> AdditionalImages { get; set; } 
 
 
         /// <summary>
@@ -159,7 +159,7 @@ namespace BDMall.Domain
         /// <summary>
         /// 备注
         /// </summary>
-        public string Remark { get; set; }
+        public string Remark { get; set; } =string.Empty;
 
         public bool? IsActive { get; set; } = false;
         /// <summary>

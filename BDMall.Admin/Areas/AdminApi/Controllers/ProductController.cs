@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Web.Framework;
@@ -215,27 +216,168 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
 
         [HttpPost]
         [AdminApiAuthorize(Module = ModuleConst.ProductModule, Function = new string[] { FunctionConst.Prod_Edit })]
-        public async Task<SystemResult> Save(ProductEditModel product)
+        public async Task<SystemResult> Save([FromForm]ProductEditModel product)
         {
             SystemResult result = new SystemResult();
             product.Validate();
 
             var productInfo = productBLL.SaveProduct(product);
-            //更新商品缓存
-            await productBLL.UpdateCache(productInfo.Code, ProdAction.Apporve);
-
+          
             var prodcutModel = AutoMapperExt.MapTo<ProductEditModel>(productInfo);
             if (product.Action == ActionTypeEnum.NewVer.ToString() || product.Action == ActionTypeEnum.Copy.ToString())       
                 await productBLL.CopyProductImageToPath(prodcutModel);
             
-            if (product.Action == ActionTypeEnum.Add.ToString())          
+            if (product.Action == ActionTypeEnum.Add.ToString())          //新建时创建一个默认图片
                 await productBLL.CreateDefaultImage(prodcutModel);
-            
+
+            //更新商品缓存
+            await productBLL.UpdateCache(productInfo.Code, ProdAction.Apporve);
+
             result.Succeeded = true;
             result.Message = "";
-            result.ReturnValue = productInfo;
+            result.ReturnValue = productInfo.Id;
             return result;
         }
+
+        [HttpPost]
+        [AdminApiAuthorize(Module = ModuleConst.ProductModule, Function = new string[] { FunctionConst.Prod_Edit })]
+        public PageData<ProductSummary> SearchRelatedProduct(RelatedProductCond condition)
+        {
+            PageData<ProductSummary> list = list = productBLL.SearchRelatedProduct(condition);         
+            return list;
+        }
+
+        [HttpGet]
+        [AdminApiAuthorize(Module = ModuleConst.ProductModule, Function = new string[] { FunctionConst.Prod_Edit })]
+        public List<ProductSummary> GetRelatedProduct(Guid id)
+        {
+            List<ProductSummary> list = productBLL.GetRelatedProduct(id);          
+            return list;
+        }
+
+        /// <summary>
+        /// 為產品添加關聯產品
+        /// </summary>
+        /// <param name="OriginalSku"></param>
+        /// <param name="products">1,2,3</param>
+        /// <returns></returns>
+        [HttpGet]
+        [AdminApiAuthorize(Module = ModuleConst.ProductModule, Function = new string[] { FunctionConst.Prod_Edit })]
+        public SystemResult AddRelatedProduct(Guid OriginalId, string products)
+        {
+            SystemResult result = new SystemResult();
+
+            var lisrProducts = products.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+
+            productBLL.AddRelatedProduct(lisrProducts, OriginalId);
+
+            result.Succeeded = true;
+            result.Message = "";
+            return result;
+        }
+
+        /// <summary>
+        /// 刪除產品的關聯產品
+        /// </summary>
+        /// <param name="OriginalSku"></param>
+        /// <param name="products"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [AdminApiAuthorize(Module = ModuleConst.ProductModule, Function = new string[] { FunctionConst.Prod_Edit })]
+        public SystemResult DeleteRelatedProduct(Guid prodID, string products)
+        {
+            SystemResult result = new SystemResult();
+
+            var lisrProducts = products.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+            productBLL.DeleteRelatedProduct(prodID, lisrProducts);
+            result.Succeeded = true;
+            result.Message = "";
+            return result;
+        }
+
+        /// <summary>
+        /// 删除产品
+        /// </summary>
+        /// <param name="prodIDs"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [AdminApiAuthorize(Module = ModuleConst.ProductModule, Function = new string[] { FunctionConst.Prod_Del })]
+        public async Task<SystemResult> Delete(string prodIDs)
+        {
+            SystemResult result = new SystemResult();
+            var list = prodIDs.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+            await productBLL.ProductLogicalDelete(list);
+            result.Succeeded = true;
+            result.Message = "";
+            return result;
+        }
+
+        /// <summary>
+        /// 设置为上架
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [AdminApiAuthorize(Module = ModuleConst.ProductModule, Function = new string[] { FunctionConst.Prod_Edit })]
+        public async Task<SystemResult> ActiveProducts(string ids)
+        {
+            SystemResult result = new SystemResult();
+            var idArr = ids.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+            await productBLL.ActiveProducts(idArr);
+            result.Succeeded = true;
+            result.Message = "";
+
+            return result;
+        }
+
+        /// <summary>
+        /// 设置为下架
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [AdminApiAuthorize(Module = ModuleConst.ProductModule, Function = new string[] { FunctionConst.Prod_Edit })]
+        public async Task<SystemResult> DisActiveProducts(string ids)
+        {
+            SystemResult result = new SystemResult();
+
+            var idArr = ids.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+            await productBLL.DisActiveProducts(idArr);
+            result.Succeeded = true;
+            result.Message = "";
+           
+            return result;
+        }
+
+        /// <summary>
+        /// 将产品状品改为待审批
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [AdminApiAuthorize(Module = ModuleConst.ProductModule, Function = new string[] { FunctionConst.Prod_Edit })]
+        public SystemResult ApplyApprove(Guid id)
+        {
+             return productBLL.ApplyApprove(id); 
+        }
+
+        /// <summary>
+        /// 拒絕通過產品
+        /// </summary>
+        /// <param name="prodID">產品ID</param>
+        /// <param name="reason">原因</param>
+        [HttpGet]
+        [AdminApiAuthorize(Module = ModuleConst.ProductModule, Function = new string[] { FunctionConst.Prod_Approve })]
+        public async Task<SystemResult> TurndownProduct(Guid prodID, string reason)
+        {
+            SystemResult result = new SystemResult();
+            await productBLL.TurndownProduct(prodID, reason);
+            result.Succeeded = true;
+            result.Message = "";
+
+            return result;
+        }
+
     }
 
 }

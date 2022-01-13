@@ -30,5 +30,23 @@ namespace BDMall.BLL
         Task<List<string>> CopyProductImageToPath(ProductEditModel product);
 
         Task CreateDefaultImage(ProductEditModel product);
+
+        PageData<ProductSummary> SearchRelatedProduct(RelatedProductCond cond);
+
+        List<ProductSummary> GetRelatedProduct(Guid id);
+
+        void AddRelatedProduct(List<string> prodCodes, Guid originalId);
+
+        void DeleteRelatedProduct(Guid prodId, List<string> prodCodes);
+
+        Task ProductLogicalDelete(List<string> prodIDs);
+
+        Task ActiveProducts(List<string> ids);
+
+        Task DisActiveProducts(List<string> ids);
+
+        SystemResult ApplyApprove(Guid id);
+
+        Task TurndownProduct(Guid prodID, string reason);
     }
 }

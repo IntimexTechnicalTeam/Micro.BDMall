@@ -1,4 +1,5 @@
 ﻿using BDMall.Domain;
+using BDMall.Enums;
 using BDMall.Model;
 using System;
 using System.Collections.Generic;
@@ -18,5 +19,11 @@ namespace BDMall.Repository
         List<Product> GetProductByAttrId(Guid attrId);
 
         PageData<ProductSummary> Search(ProdSearchCond cond);
+
+        PageData<Product> SearchRelatedProduct(RelatedProductCond cond);
+
+        List<Product> GetRelatedProduct(Guid id);
+
+        LastVersionProductView GetLastVersionProductByCode(string prodCode);
     }
 }

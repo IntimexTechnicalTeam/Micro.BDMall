@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations.Schema;
 namespace BDMall.Model
 {
+   
     public class ProductDimensionParameter : IDimensions
     {
 
@@ -19,10 +20,13 @@ namespace BDMall.Model
 
         [Column("Width")]
         public decimal Width { get; set; }
+
         [Column("Heigth")]
         public decimal Heigth { get; set; }
+
         [Column("Length")]
         public decimal Length { get; set; }
+
         [Column("Unit")]
         public int Unit { get; set; }
     }

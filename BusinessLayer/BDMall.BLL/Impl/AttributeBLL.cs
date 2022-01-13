@@ -303,7 +303,39 @@ namespace BDMall.BLL
             return list;
         }
 
+        public List<AttributeObjectView> GetInvAttributeByProductWithMap(Guid prodId)
+        {
+            List<AttributeObjectView> list = new List<AttributeObjectView>();
 
+            var mapAttrs = productAttrRepository.GetAttributeItemsMappByProductId(prodId).Where(p => p.IsInv == true).OrderBy(o => o.Seq).ToList();
+            var dbAttrs = attributeRepository.GetAttributeItemsByProductId(prodId).Where(p => p.IsInvAttribute == true).ToList();
+
+            if (dbAttrs != null && dbAttrs.Any())
+            {
+                var attrs = AutoMapperExt.MapTo<List<ProductAttributeDto>>(dbAttrs);
+                foreach (var item in mapAttrs)
+                {
+                    var attr = attrs.FirstOrDefault(p => p.Id == item.AttrId);
+                    if (attr != null)
+                    {
+                        var modelAttr = GenProductAttribute(attr);
+                        AttributeObjectView obj = new AttributeObjectView();
+                        obj.Id = modelAttr.Id;
+                        obj.Desc = modelAttr.Desc;                     
+                        obj.SubItems = modelAttr.AttributeValues.Where(x => x.IsActive && !x.IsDeleted && x.AttrId ==attr.Id)
+                                            .Select(s => new AttributeValueView
+                                            {
+                                                Id = s.Id.ToString(),
+                                                Text = s.Desc,
+                                                Price = item.AttrValues.FirstOrDefault(p => p.AttrValueId == s.Id)?.AdditionalPrice ?? 0
+                                            }).ToList();
+
+                        list.Add(obj);
+                    }
+                }
+            }
+            return list;
+        }
 
         private List<AttributeObjectView> GenAttributeObjectView(List<ProductAttribute> dbAttrs)
         {
@@ -328,16 +360,14 @@ namespace BDMall.BLL
             return list;
         }
 
-        private ProductAttributeDto GenProductAttribute(ProductAttributeDto attribute)
-        {
-            ProductAttribute result = new ProductAttribute();
-
+        public ProductAttributeDto GenProductAttribute(ProductAttributeDto attribute)
+        {         
             attribute.Descs = translationRepository.GetMutiLanguage(attribute.DescTransId);
             attribute.Layout = attribute.Layout;
             attribute.Desc = attribute.Descs.FirstOrDefault(x=>x.Language == CurrentUser.Lang)?.Desc ?? "";
             var attrValuelist = baseRepository.GetList<ProductAttributeValue>(x => x.AttrId == attribute.Id && x.IsActive && !x.IsDeleted);
-            if (CurrentUser.IsMerchant)
-                attrValuelist = attrValuelist.Where(x => x.MerchantId == CurrentUser.MerchantId);
+            //if (CurrentUser.IsMerchant)
+            //    attrValuelist = attrValuelist.Where(x => x.MerchantId == CurrentUser.MerchantId);
 
             attribute.AttributeValues = AutoMapperExt.MapTo<List<ProductAttributeValueDto>>(attrValuelist.ToList());
             foreach (var item in attribute.AttributeValues)
@@ -345,19 +375,90 @@ namespace BDMall.BLL
                 item.MerchantName = merchantBLL.GetMerchById(item.MerchantId)?.Name ?? string.Empty;
                 item.Descs = translationRepository.GetMutiLanguage(item.DescTransId);
                 item.ImagePath = item.Image;
-                item.Status = RecordStatus.Update;
+                item.Status = item.MerchantName == string.Empty ? RecordStatus.Add : RecordStatus.Update;
+                item.Desc = item.Descs.FirstOrDefault(x=>x.Language== CurrentUser.Lang)?.Desc ?? string.Empty;
+            }
+            return attribute;
+        }
+
+        public ProductAttributeDto GetProductAttribute(Guid attrId, Language lang)
+        {
+            var dbAttribute = baseRepository.GetModel<ProductAttribute>(p => p.Id == attrId && !p.IsDeleted  && p.IsActive);
+            if (dbAttribute == null) return null;
+            var attribute = AutoMapperExt.MapTo<ProductAttributeDto>(dbAttribute);
+            return GenProductAttribute(attribute);
+        }
+
+        public InvAttributeLst GetInvAttributeItemsByCatID(Guid catID)
+        {
+            InvAttributeLst inven = new InvAttributeLst();
+            var attr1 = new List<KeyValue>();
+            var attr2 = new List<KeyValue>();
+            var attr3 = new List<KeyValue>();
+
+            var dbAttributes = attributeRepository.GetAttributeItemsByCatID(catID).Where(p => p.IsInvAttribute == true).ToList();
+            var attributes = AutoMapperExt.MapTo<List<ProductAttributeDto>>(dbAttributes);
+
+            if (attributes != null && attributes.Any())
+            {
+                var supportLangs = GetSupportLanguage();
+                var emptyLangs = LangUtil.GetMutiLangFromTranslation(null, supportLangs);
+
+                foreach (var attribute in attributes)
+                {                   
+                    var dbAttValues = baseRepository.GetList<ProductAttributeValue>(x => x.AttrId == attribute.Id && x.IsActive && !x.IsDeleted).ToList();
+                    attribute.AttributeValues = AutoMapperExt.MapTo<List<ProductAttributeValueDto>>(dbAttValues);
+                    attribute.Descs = translationRepository.GetMutiLanguage(attribute.DescTransId) ??  emptyLangs;                   
+                    attribute.Desc = attribute.Descs.FirstOrDefault(x => x.Language == CurrentUser.Lang)?.Desc;
+                }
+                {
+                    //if (attributes[0].AttributeValues != null && attributes[0].AttributeValues.Any())
+                    //{
+                    //    foreach (var item in attributes[0].AttributeValues)
+                    //    {
+                    //        item.Descs = translationRepository.GetMutiLanguage(item.DescTransId) ?? emptyLangs;
+                    //        item.Desc = item.Descs.FirstOrDefault(x => x.Language == CurrentUser.Lang)?.Desc;
+
+                    //        attr1.Add(new KeyValue { Id = item.Id.ToString(), Text = item.Desc });
+                    //    }
+                    //}
+
+                    //if (attributes.Count > 1 && attributes[1].AttributeValues != null && attributes[1].AttributeValues.Any())
+                    //{
+                    //    foreach (var item in attributes[1].AttributeValues)
+                    //    {
+                    //        item.Descs = translationRepository.GetMutiLanguage(item.DescTransId) ?? emptyLangs;                        
+                    //        item.Desc = item.Descs.FirstOrDefault(x => x.Language == CurrentUser.Lang)?.Desc;
+
+                    //        attr2.Add(new KeyValue { Id = item.Id.ToString(), Text = item.Desc });
+                    //    }
+                    //}
+
+                    //if (attributes.Count > 2 && attributes[2].AttributeValues != null && attributes[2].AttributeValues.Any())
+                    //{
+                    //    foreach (var item in attributes[2].AttributeValues)
+                    //    {
+                    //        item.Descs = translationRepository.GetMutiLanguage(item.DescTransId) ?? emptyLangs;                      
+                    //        item.Desc = item.Descs.FirstOrDefault(x => x.Language == CurrentUser.Lang)?.Desc;
+
+                    //        attr3.Add(new KeyValue { Id = item.Id.ToString(), Text = item.Desc });
+                    //    }
+                    //}
+                }
+
+                inven.AttrIList = GenAttrOption(attributes);
+                inven.AttrIIList = GenAttrOption(attributes,1);
+                inven.AttrIIIList = GenAttrOption(attributes,2);
             }
 
-
-
-            return attribute;
+            return inven;
         }
 
         private ProductAttributeValueDto GenProductAttrValue(ProductAttributeValueDto attributeValue)
         {
             attributeValue.Descs = translationRepository.GetMutiLanguage(attributeValue.DescTransId);
             attributeValue.Desc = attributeValue.Descs.FirstOrDefault(x=>x.Language == CurrentUser.Lang)?.Desc ?? string.Empty;
-            attributeValue.Status = RecordStatus.Update;
+            attributeValue.Status = attributeValue.Desc == string.Empty ? RecordStatus.Add : RecordStatus.Update;
             return attributeValue;
         }
 
@@ -563,6 +664,23 @@ namespace BDMall.BLL
 
             return result;
 
+        }
+
+        private List<KeyValue> GenAttrOption(List<ProductAttributeDto> attributes, int index = 0)
+        {
+            var result = new List<KeyValue>();
+
+            if (index < 0) return result;
+
+            if ((index == 0 || attributes.Count > index) && attributes[index].AttributeValues != null && attributes[index].AttributeValues.Any())
+            {
+                result = attributes[index].AttributeValues.Select(s => new KeyValue { 
+                            Id = s.Id.ToString(), 
+                            Text = translationRepository.GetDescForLang(s.DescTransId, CurrentUser.Lang) })
+                .ToList();
+            }
+
+            return result;
         }
     }
 }

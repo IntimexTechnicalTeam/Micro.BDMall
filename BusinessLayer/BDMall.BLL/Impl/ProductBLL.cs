@@ -18,32 +18,22 @@ namespace BDMall.BLL
     public class ProductBLL : BaseBLL, IProductBLL
     {
         public IProductRepository productRepository;
-
         public ICurrencyBLL currencyBLL;
-
         public IAttributeBLL attributeBLL;
-
         public IProductCatalogBLL productCatalogBLL;
-
         public ITranslationRepository translationRepository;
-
         public IProductImageRepository productImageRepository;
-
         public IProductAttrBLL productAttrBLL;
-
         public IMerchantShipMethodMappingRepository merchantShipMethodMappingRepository;
-
         public IProductImageBLL productImageBLL;
-
         public ISettingBLL settingBLL;
-
         public IProductSkuRepository productSkuRepository;
-
+        public IProductDetailRepository productDetailRepository;
+        
         public PreHeatProductService productService;
-
-        public PreProductImageService productImageService;
-
+        public PreHeatProductImageService productImageService;
         public PreHeatProductStaticsService productStatisticsService;
+        public PreHeatProductSkuService  productSkuService; 
 
         public ProductBLL(IServiceProvider services) : base(services)
         {
@@ -58,10 +48,12 @@ namespace BDMall.BLL
             productSkuRepository = Services.Resolve<IProductSkuRepository>();
             productImageBLL = Services.Resolve<IProductImageBLL>();
             settingBLL = Services.Resolve<ISettingBLL>();
+            productDetailRepository = Services.Resolve<IProductDetailRepository>();
 
             productService = (PreHeatProductService)Services.GetService(typeof(PreHeatProductService));
-            productImageService = (PreProductImageService)Services.GetService(typeof(PreProductImageService));
+            productImageService = (PreHeatProductImageService)Services.GetService(typeof(PreHeatProductImageService));
             productStatisticsService = (PreHeatProductStaticsService)Services.GetService(typeof(PreHeatProductStaticsService));
+            productSkuService = (PreHeatProductSkuService)Services.GetService(typeof(PreHeatProductSkuService));
         }
 
         public Dictionary<string, ClickRateSummaryView> GetClickRateView(int topMonthQty, int topWeekQty, int topDayQty)
@@ -151,12 +143,13 @@ namespace BDMall.BLL
 
             result = productRepository.Search(cond);
             //var currency = CurrencyBLL.GetDefaultCurrency();
-            //foreach (var item in result.Data)
-            //{
-            //    item.Imgs = GetProductImages(item.ProductId);
-            //    item.IconRUrl = PathUtil.GetProductIconUrl(item.IconRType, CurrentUser.ComeFrom, CurrentUser.Language);
-            //    //item.Currency = currency;
-            //}
+            foreach (var item in result.Data)
+            {
+                item.Imgs = GetProductImages(item.ProductId);
+                item.ImgPath = item.Imgs.FirstOrDefault() ?? "";  
+                //item.IconRUrl = PathUtil.GetProductIconUrl(item.IconRType, CurrentUser.ComeFrom, CurrentUser.Language);
+                //item.Currency = currency;
+            }
             return result;
         }
 
@@ -177,40 +170,31 @@ namespace BDMall.BLL
                 var dbproductImage = baseRepository.GetModelById<ProductImage>(product.DefaultImage);
                 if (dbproductImage != null)
                 {
-                    if (dbproductImage.ImageItems != null)
+                    var imageItems = baseRepository.GetList<ProductImageList>(x => x.ImageID == dbproductImage.Id).OrderBy(o => o.Type).ToList();
+                    var fileServer = string.Empty;
+                    var activeImages = imageItems.Where(p => p.Path != null && p.Path != "").OrderBy(o => o.Type).ToList();
+                    foreach (var item in imageItems)
                     {
-                        var imageItems = dbproductImage.ImageItems.OrderBy(o => o.Type).ToList();
-                        if (imageItems != null)
+                        if (!string.IsNullOrEmpty(item.Path))
                         {
-                            var fileServer = string.Empty;
-                            var activeImages = imageItems.Where(p => p.Path != null && p.Path != "").OrderBy(o => o.Type).ToList();
-                            foreach (var item in imageItems)
-                            {
-                                if (!string.IsNullOrEmpty(item.Path))
-                                {
-                                    productImages.Add(fileServer + item.Path);
-                                }
-                                else
-                                {
-                                    productImages.Add(fileServer + imageItems[activeImages.Count - 1].Path);
-                                }
-
-                            }
-                            if (productImages.Count < 8)//如果圖片不夠8個尺寸，最最大的尺寸補齊8張
-                            {
-                                int startI = productImages.Count;
-                                for (int i = startI; i < 8; i++)
-                                {
-                                    productImages.Add(fileServer + imageItems[startI - 1].Path);
-                                }
-                            }
+                            productImages.Add(fileServer + item.Path);
+                        }
+                        else
+                        {
+                            productImages.Add(fileServer + imageItems[activeImages.Count - 1].Path);
                         }
                     }
-
+                    if (productImages.Count < 8)//如果圖片不夠8個尺寸，最最大的尺寸補齊8張
+                    {
+                        int startI = productImages.Count;
+                        for (int i = startI; i < 8; i++)
+                        {
+                            productImages.Add(fileServer + imageItems[startI - 1].Path);
+                        }
+                    }
                 }
             }
             return productImages;
-
         }
 
         public SystemResult CheckTimePriceByCode(string code, Guid MerchantId)
@@ -279,7 +263,7 @@ namespace BDMall.BLL
                 baseRepository.Insert(dbProduct);
 
                 InsertOrUpdateProductTranslation(dbProduct, product, ActionTypeEnum.Add);
-                InsertOrUpdateProductDetail(product, ActionTypeEnum.Add);
+                InsertOrUpdateProductDetail(product, ActionTypeEnum.Add);               
                 InsertOrUpdateInvProductAttribute(dbProduct, product, ActionTypeEnum.Add);//插入库存属性并新增SKU
                 InsertOrUpdateNonInvProductAttribute(dbProduct, product, ActionTypeEnum.Add);
                 InsertOrUpdateProductExtension(product, ActionTypeEnum.Add);
@@ -297,16 +281,16 @@ namespace BDMall.BLL
                     {
                         item.IsActive = false;
                     }
-                    //_productRepository.Update(oldProducts);  //移动到新表，待完成
+                    baseRepository.Update(oldProducts);    
 
                     var oldStatics = baseRepository.GetModel<ProductStatistics>(p => p.Code == dbProduct.Code);
                     if (oldStatics != null) oldStatics.InternalNameTransId = dbProduct.NameTransId;
                     baseRepository.Update(oldStatics);
                 }
             }
-            else
+            else  //编辑
             {
-                InsertOrUpdateProductTranslation(dbProduct, product, ActionTypeEnum.Modify);
+                InsertOrUpdateProductTranslation(dbProduct, product, ActionTypeEnum.Modify);                
                 InsertOrUpdateInvProductAttribute(dbProduct, product, ActionTypeEnum.Modify);
                 InsertOrUpdateNonInvProductAttribute(dbProduct, product, ActionTypeEnum.Modify);
                 InsertOrUpdateProductDetail(product, ActionTypeEnum.Modify);
@@ -329,6 +313,7 @@ namespace BDMall.BLL
                 UpdateProductHourPriceRemak(product);
             }
             product.Code = dbProduct.Code;
+            product.MerchantId = dbProduct.MerchantId;
             InsertOrUpdateFreeChargeProduct(product);
 
             UnitOfWork.Submit();
@@ -367,6 +352,9 @@ namespace BDMall.BLL
                     //传入ProductId,在里面转换
                     await productStatisticsService.CreatePreHeat(product.Id);
 
+                    //更新ProductSku缓存
+                    await productSkuService.CreatePreHeat(product.Id);
+
                     #region 更新商品的可配送区域
 
                     key = CacheKey.RefuseCountries.ToString();
@@ -396,7 +384,6 @@ namespace BDMall.BLL
             if (destProductImages != null)
             {
                 var skuImages = destProductImages.Where(p => p.Type == ImageType.SkuImage).ToList();
-
                 var additionalImages = destProductImages.Where(p => p.Type == ImageType.AdditionImage).ToList();
 
                 foreach (var item in skuImages)//複製SKU圖片
@@ -500,27 +487,228 @@ namespace BDMall.BLL
             cond.ProdId = product.Id;
 
             cond.ImagePaths = dbImagePaths;
-       
+            
             string tempPath =PathUtil.GetPhysicalPath(Globals.Configuration["UploadPath"], product.MerchantId.ToString(), FileFolderEnum.TempPath);
             string targetPath =PathUtil.GetPhysicalPath(Globals.Configuration["UploadPath"], product.MerchantId.ToString(), FileFolderEnum.Product) + "\\" + product.Id;
             List<string> insertImgs = new List<string>();
 
-            for (int i = 0; i < imageSizes.Count; i++)
+            if (dbImagePaths != null && dbImagePaths.Any())
             {
-                var img = dbImagePaths[i];
-                var imgSize = imageSizes[i];
-                insertImgs.Add(img.Text);
-                ImageUtil.CreateImg(sourcePath, targetPath, Path.GetFileName(img.Text), imgSize.Width, imgSize.Length);
+                for (int i = 0; i < imageSizes.Count; i++)
+                {
+                    var img = dbImagePaths[i];
+                    var imgSize = imageSizes[i];
+                    insertImgs.Add(img.Text);
+                    ImageUtil.CreateImg(sourcePath, targetPath, Path.GetFileName(img.Text), imgSize.Width, imgSize.Length);
+                }
             }
 
+            productImageBLL.SaveProductImage(cond);
+           
         }
 
+        public PageData<ProductSummary> SearchRelatedProduct(RelatedProductCond cond)
+        {
+            PageData<ProductSummary> result = new PageData<ProductSummary>();
+            var products = productRepository.SearchRelatedProduct(cond);
 
+            result.TotalRecord = products.TotalRecord;
+            result.Data = products.Data.Select(d => GenProductSummary(d)).ToList();
 
+            return result;
+        }
 
+        public List<ProductSummary> GetRelatedProduct(Guid id)
+        {
 
+            List<ProductSummary> result = new List<ProductSummary>();
+            var products = productRepository.GetRelatedProduct(id);
 
+            result = products.Select(d => GenProductSummary(d)).ToList();
+            return result;
+        }
 
+        public void AddRelatedProduct(List<string> prodCodes, Guid originalId)
+        {
+            if (prodCodes != null && prodCodes.Any())
+            {
+                var product = baseRepository.GetModelById<Product>(originalId);
+                if (product != null)
+                {                   
+                    var list = prodCodes.Select(item => new ProductRelatedItem
+                    {
+                        Id = Guid.NewGuid(),
+                        ItemId = baseRepository.GetModel<Product>(x => x.Code == item && x.Status == ProductStatus.OnSale && !x.IsDeleted)?.Id ?? Guid.Empty,
+                        ItemCode = item,
+                        ProductId = originalId,
+                        Seq = 0,
+                    }).ToList();
+
+                    baseRepository.Insert(list);
+                }               
+            }
+        }
+
+        public void DeleteRelatedProduct(Guid prodId, List<string> prodCodes)
+        {
+            if (prodCodes != null)
+            {
+                var product = baseRepository.GetModel<Product>(x => x.Id == prodId);
+                if (product != null)
+                {
+                    var list = baseRepository.GetList<ProductRelatedItem>(p => p.IsActive && !p.IsDeleted && p.ProductId == prodId && prodCodes.Contains(p.ItemCode));
+                    foreach (var item in list)
+                    {
+                        item.IsDeleted = true;
+                    }
+                    baseRepository.Update(list);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 删除产品
+        /// </summary>
+        /// <param name="prodIDs"></param>
+        /// <returns></returns>
+        public async Task ProductLogicalDelete(List<string> prodIDs)
+        {
+            if (prodIDs != null && prodIDs.Any())
+            {
+                foreach (var item in prodIDs)
+                {
+                    var product = baseRepository.GetModel<Product>(x=>x.Id == Guid.Parse(item));
+                    if (product != null)
+                    {
+                        product.IsDeleted = true;
+                        if (product.Status == ProductStatus.OnSale) product.Status = ProductStatus.ManualOffSale;
+                    }
+                    baseRepository.Update(product);
+                    await UpdateCache(product.Code, ProdAction.Delete);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 设置为上架
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <returns></returns>
+        /// <exception cref="BLException"></exception>
+        public async Task ActiveProducts(List<string> ids)
+        {
+            var productList = ids.Select(s=>Guid.Parse(s)).ToList();
+            var wrongStatus = baseRepository.GetList<Product>(p=>productList.Contains(p.Id) && (p.Status != ProductStatus.ManualOffSale 
+                                && p.Status != ProductStatus.Editing && p.Status != ProductStatus.AutoOffSale)).Select(s=>s.Code).ToList();
+            if (wrongStatus !=null && wrongStatus.Any())
+                throw new BLException(string.Format(Resources.Message.PleaseSelectOffSaleProduct, string.Join(",", wrongStatus.ToArray())));
+
+            var products = baseRepository.GetList<Product>(p => productList.Contains(p.Id)).ToList();
+            foreach (var item in products)
+            {
+                item.UpdateDate = DateTime.Now;
+                if (item.ActiveTimeFrom > DateTime.Now || item.ActiveTimeTo < DateTime.Now)                
+                    item.Status = ProductStatus.WaitingOnSale;                
+                else               
+                    item.Status = ProductStatus.OnSale;              
+            }
+            baseRepository.Update(products);
+
+            foreach (var item in products)
+            {
+                 if (item.Status == ProductStatus.OnSale) await UpdateCache(item.Code, ProdAction.OnSale);
+            }
+        }
+
+        /// <summary>
+        /// 设置为下架
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <returns></returns>
+        /// <exception cref="BLException"></exception>
+        public async Task DisActiveProducts(List<string> ids)
+        {
+            var productList = ids.Select(s => Guid.Parse(s)).ToList();
+            var wrongStatus = baseRepository.GetList<Product>(p => productList.Contains(p.Id) && p.Status != ProductStatus.OnSale).Select(s => s.Code).ToList();
+            if (wrongStatus != null && wrongStatus.Any())
+                throw new BLException(string.Format(Resources.Message.PleaseSelectOnSaleProduct, string.Join(",", wrongStatus.ToArray())));
+
+            var products = baseRepository.GetList<Product>(p => productList.Contains(p.Id)).ToList();
+
+            foreach (var item in products)
+            {
+                item.Status = ProductStatus.ManualOffSale;
+                item.UpdateDate = DateTime.Now;
+            }
+            baseRepository.Update(products);
+
+            foreach (var item in products)
+            {
+                await UpdateCache(item.Code, ProdAction.OffSale);
+            }
+        }
+
+        /// <summary>
+        /// 将产品状品改为待审批
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public SystemResult ApplyApprove(Guid id)
+        {
+            SystemResult result = new SystemResult();
+
+            UnitOfWork.IsUnitSubmit = true;
+            var product = baseRepository.GetModelById<Product>(id);
+            if (product != null)
+            {
+                product.Status = ProductStatus.WaitingApprove;
+                baseRepository.Update(product);
+                InsertProductApproveHistory(id, ApproveResult.WaitingApprove, "");
+            }
+            UnitOfWork.Submit();
+
+            result.Succeeded = true;
+            return result;
+        }
+
+        /// <summary>
+        /// 拒絕通過產品
+        /// </summary>
+        /// <param name="prodID"></param>
+        /// <param name="reason"></param>
+        /// <returns></returns>
+        public async Task TurndownProduct(Guid prodID, string reason)
+        {
+            UnitOfWork.IsUnitSubmit = true;
+            var product = baseRepository.GetModelById<Product>(prodID);
+            if (product != null)
+            {
+                product.IsApprove = true;
+                product.Status = ProductStatus.Reject;
+            }
+
+            baseRepository.Update(product);
+            InsertProductApproveHistory(prodID, ApproveResult.Reject, reason);
+            UnitOfWork.Submit();
+
+            //发送邮件
+        }
+
+        public void InsertProductApproveHistory(Guid productId, ApproveResult type, string remark)
+        {
+            ApproveHistory obj = new ApproveHistory();
+
+            obj.Id = Guid.NewGuid();
+            obj.ApproveType = type;
+            obj.MerchantId = CurrentUser.MerchantId;
+            obj.OperateDate = DateTime.Now;
+            obj.OperateId = Guid.Parse(CurrentUser.UserId);
+            obj.ModuleId = productId;
+            obj.ApproveModule = ApproveModule.Product;
+            obj.Remark = remark;
+
+            baseRepository.Insert(obj);
+        }
 
         /// <summary>
         /// 整合产品浏览（日，周，月）
@@ -783,7 +971,7 @@ namespace BDMall.BLL
                 productEditModel.IntroductionTransId = product.IntroductionTransId;
                 productEditModel.ProductBriefs = translationRepository.GetMutiLanguage(product.IntroductionTransId);
                 productEditModel.DetailTransId = product.DetailTransId;
-                productEditModel.ProductDetail = translationRepository.GetMutiLanguage(product.DetailTransId); 
+                productEditModel.ProductDetail = productDetailRepository.GetMutiLanguage(product.DetailTransId); 
                 productEditModel.NameTransId = product.NameTransId;
                 productEditModel.ProductNames = translationRepository.GetMutiLanguage(product.NameTransId);
                 productEditModel.SeoDescTransId = product.SeoDescTransId;
@@ -826,6 +1014,11 @@ namespace BDMall.BLL
             return productEditModel;
         }
 
+        /// <summary>
+        /// 檢查產品是否有庫存記錄
+        /// </summary>
+        /// <param name="prodID"></param>
+        /// <returns></returns>
         bool CheckProductHasInventory(Guid prodID)
         {
             var invCount = (from a in baseRepository.GetList<Product>()
@@ -844,15 +1037,15 @@ namespace BDMall.BLL
             var specification = baseRepository.GetModelById<ProductSpecification>(id);
             if (specification != null)
             {
-                view.Heigth = specification.ProductDimension.Heigth;
-                view.Width = specification.ProductDimension.Width;
-                view.Length = specification.ProductDimension.Length;
-                view.Unit = specification.ProductDimension.Unit;
+                view.Heigth = specification.Heigth;
+                view.Width = specification.Width;
+                view.Length = specification.Length;
+                view.Unit = specification.Unit;
                 view.PackageDescription = specification.PackageDescription;
-                view.PackageHeight = specification.ProductPackage.Heigth;
-                view.PackageWidth = specification.ProductPackage.Width;
-                view.PackageLength = specification.ProductPackage.Length;
-                view.PackageUnit = specification.ProductPackage.Unit;
+                view.PackageHeight = specification.PackageHeigth;
+                view.PackageWidth = specification.PackageWidth;
+                view.PackageLength = specification.PackageLength;
+                view.PackageUnit = specification.PackageUnit;
                 view.GrossWeight = specification.GrossWeight;
                 view.NetWeight = specification.NetWeight;
                 view.WeightUnit = specification.WeightUnit;
@@ -912,12 +1105,11 @@ namespace BDMall.BLL
             var refuseCountries = (await RedisHelper.HGetAsync<List<ProductDeliveryArea>>(key, Code))?.AsQueryable();
             if (refuseCountries == null || !refuseCountries.Any())
             {
-                var query = from r in baseRepository.GetList<ProductRefuseDelivery>().ToList()
-                                  join c in baseRepository.GetList<Country>().ToList() on r.CountryId equals c.Id
+                refuseCountries = from r in baseRepository.GetList<ProductRefuseDelivery>()
+                                  join c in baseRepository.GetList<Country>() on r.CountryId equals c.Id
                                   where r.ProductId == ProductId && r.IsActive && !r.IsDeleted
-                                  select new ProductDeliveryArea { ProductId = r.ProductId, Code = Code, Country = AutoMapperExt.MapTo<CountryDto>(c) };
+                                  select new ProductDeliveryArea { ProductId = r.ProductId, Code = Code, Country = c };
 
-                refuseCountries = query.AsQueryable();
                 if (refuseCountries != null && refuseCountries.Any())
                     await RedisHelper.HSetAsync(key, Code, refuseCountries.ToList());       //最好能设置过期时间
             }
@@ -926,17 +1118,15 @@ namespace BDMall.BLL
             var supportCountries = (await RedisHelper.HGetAsync<List<ProductDeliveryArea>>(key, Code))?.AsQueryable();
             if (supportCountries == null || !supportCountries.Any())
             {
-                var query = baseRepository.GetList<Country>()
+                supportCountries = baseRepository.GetList<Country>()
                         .Where(x => x.IsActive && !x.IsDeleted && !refuseCountries.Select(s => s.Country.Id).Any(c => c.Equals(x.Id)))
-                        .OrderBy(o => o.Id).Select(s => new ProductDeliveryArea { ProductId = ProductId, Code = Code, Country = AutoMapperExt.MapTo<CountryDto>(s) });
+                        .OrderBy(o => o.Id).Select(s => new ProductDeliveryArea { ProductId = ProductId, Code = Code, Country = s });
 
-                supportCountries = query.AsQueryable();
                 if (supportCountries != null && supportCountries.Any())
                     await RedisHelper.HSetAsync(key, Code, supportCountries.ToList());      //最好能设置过期时间                
             }
 
             var result = new Tuple<List<ProductDeliveryArea>, List<ProductDeliveryArea>>(refuseCountries.ToList(), supportCountries.ToList());
-
             return result;
         }
 
@@ -1267,7 +1457,8 @@ namespace BDMall.BLL
                     Lang = item.Language,
                     ProductId = product.Id,
                     Value = StringUtil.ConvertToHTML(StringUtil.FilterHTMLFunction(item.Desc)),
-                    TransId = product.DetailTransId
+                    TransId = product.DetailTransId,
+                    CreateBy = Guid.Parse(CurrentUser.UserId),
                 }).ToList();
                 baseRepository.Insert(details);
             }
@@ -1282,7 +1473,8 @@ namespace BDMall.BLL
                         Lang = item.Language,
                         ProductId = product.Id,
                         Value = StringUtil.ConvertToHTML(StringUtil.FilterHTMLFunction(item.Desc)),
-                        TransId = product.DetailTransId
+                        TransId = product.DetailTransId,
+                        CreateBy = Guid.Parse(CurrentUser.UserId),
                     }).ToList();
                     baseRepository.Insert(details);
                 }
@@ -1292,6 +1484,7 @@ namespace BDMall.BLL
                     {
                         item.Value = product.ProductDetail.FirstOrDefault(p => p.Language == item.Lang)?.Desc ?? "";
                         item.UpdateDate = DateTime.Now;
+                        item.UpdateBy = Guid.Parse(CurrentUser.UserId);
                     }
                     baseRepository.Update(details);
                 }
@@ -1317,6 +1510,7 @@ namespace BDMall.BLL
                 extension.IsSalesReturn = product.SpecifExtension.NoRefund;
                 extension.GS1Status = GS1Status.NONGS1;
                 extension.HSCode = product.SpecifExtension.HSCode;
+                extension.CreateBy = Guid.Parse(CurrentUser.UserId);
                 baseRepository.Insert(extension);
             }
             else
@@ -1334,6 +1528,7 @@ namespace BDMall.BLL
                 extension.IsSalesReturn = product.SpecifExtension.NoRefund;
                 extension.HSCode = product.SpecifExtension.HSCode;
                 extension.UpdateDate = DateTime.Now;
+                extension.UpdateBy = Guid.Parse(CurrentUser.UserId);
                 baseRepository.Update(extension);
             }
         }
@@ -1349,8 +1544,9 @@ namespace BDMall.BLL
                         Id = Guid.NewGuid(),
                         ProductId = product.Id,
                         CMVal = product.CommissionConfig.CMVal,
-                        CMRate = product.CommissionConfig.CMRate
-                    };
+                        CMRate = product.CommissionConfig.CMRate,
+                        CreateBy =  Guid.Parse(CurrentUser.UserId),
+                };
 
                     HandleProductCommissionValues(prodCM, product.CommissionConfig);
 
@@ -1364,7 +1560,7 @@ namespace BDMall.BLL
                         prodCM.ProductId = product.Id;
                         prodCM.CMVal = product.CommissionConfig.CMVal;
                         prodCM.CMRate = product.CommissionConfig.CMRate;
-
+                        prodCM.UpdateBy = Guid.Parse(CurrentUser.UserId);
                         HandleProductCommissionValues(prodCM, product.CommissionConfig);
 
                         baseRepository.Update(prodCM);
@@ -1419,18 +1615,15 @@ namespace BDMall.BLL
                 specification.WeightUnit = product.Specification.WeightUnit;
                 specification.PackageDescription = product.Specification.PackageDescription;
 
-                var productDimension = new ProductDimensionParameter();
-                productDimension.Heigth = product.Specification.Heigth;
-                productDimension.Width = product.Specification.Width;
-                productDimension.Length = product.Specification.Length;
-                productDimension.Unit = product.Specification.Unit;
-                specification.ProductDimension = productDimension;
-                var productPackage = new ProductPackageParameter();
-                productPackage.Heigth = product.Specification.PackageHeight;
-                productPackage.Width = product.Specification.PackageWidth;
-                productPackage.Length = product.Specification.PackageLength;
-                productPackage.Unit = product.Specification.PackageUnit;
-                specification.ProductPackage = productPackage;
+                specification.Heigth = product.Specification.Heigth;
+                specification.Width = product.Specification.Width;
+                specification.Length = product.Specification.Length;
+                specification.Unit = product.Specification.Unit;               
+                specification.PackageHeigth = product.Specification.PackageHeight;
+                specification.PackageWidth = product.Specification.PackageWidth;
+                specification.PackageLength = product.Specification.PackageLength;
+                specification.PackageUnit = product.Specification.PackageUnit;
+                specification.CreateBy = Guid.Parse(CurrentUser.UserId);
                 baseRepository.Insert(specification);
             }
             else
@@ -1440,15 +1633,16 @@ namespace BDMall.BLL
                 specification.GrossWeight = product.Specification.GrossWeight;
                 specification.WeightUnit = product.Specification.WeightUnit;
                 specification.PackageDescription = product.Specification.PackageDescription;
-                specification.ProductDimension.Heigth = product.Specification.Heigth;
-                specification.ProductDimension.Width = product.Specification.Width;
-                specification.ProductDimension.Length = product.Specification.Length;
-                specification.ProductDimension.Unit = product.Specification.Unit;
-                specification.ProductPackage.Heigth = product.Specification.PackageHeight;
-                specification.ProductPackage.Width = product.Specification.PackageWidth;
-                specification.ProductPackage.Length = product.Specification.PackageLength;
-                specification.ProductPackage.Unit = product.Specification.PackageUnit;
+                specification.Heigth = product.Specification.Heigth;
+                specification.Width = product.Specification.Width;
+                specification.Length = product.Specification.Length;
+                specification.Unit = product.Specification.Unit;
+                specification.PackageHeigth = product.Specification.PackageHeight;
+                specification.PackageWidth = product.Specification.PackageWidth;
+                specification.PackageLength = product.Specification.PackageLength;
+                specification.PackageUnit = product.Specification.PackageUnit;
                 specification.UpdateDate = DateTime.Now;
+                specification.UpdateBy = Guid.Parse(CurrentUser.UserId);
                 baseRepository.Update(specification);
             }
         }
@@ -1497,209 +1691,146 @@ namespace BDMall.BLL
                 InsertProductSku(productAttrList, dbProduct.Code);
             }
             else//修改
-            {
-                ///获取产品所有库存属性
-                var dbInvAttrs = baseRepository.GetList<ProductAttr>(x => x.ProductId == product.Id && x.IsInv && !x.IsDeleted).ToList();
-
-                var invAttrvalues = new List<AttributeValueView>();//界面所有的属性值
-                var deleteInvAttrs = new List<ProductAttr>();//删除的库存属性
-                var insertInvAttrValues = new List<ProductAttrValue>();//新增的库存属性值
-                var deleteInvAttrValues = new List<ProductAttrValue>();//删除的库存属性值
-
-
-                if (dbInvAttrs != null && dbInvAttrs.Any())
+            {              
+                var isExistInvRec = CheckProductHasInventory(product.Id);
+                if (!isExistInvRec)  //无库存记录
                 {
-                    foreach (var attr in product.InveAttrList)
-                    {
-                        invAttrvalues.AddRange(attr.SubItems);
-                    }
-  
-                    foreach (var item in invAttrvalues)//获取需要新增的属性值
-                    {
-                        var attrId = Guid.Parse(item.Id);//ProductAttrs的Id
-                        var attr = dbInvAttrs.FirstOrDefault(p => p.AttrId == attrId && p.IsDeleted == false);
-                        if (attr != null)
-                        {
-                            var AttrValues = baseRepository.GetList<ProductAttrValue>(x => x.ProdAttrId == attr.Id);
-                            var existAttrValue = AttrValues.FirstOrDefault(p => p.ProdAttrId == attr.Id && p.AttrValueId == Guid.Parse(item.Text));
-                            if (existAttrValue == null)
-                            {
-                                ProductAttrValue attrValue = new ProductAttrValue();
-                                attrValue.Id = Guid.NewGuid();
-                                
-                                attrValue.AttrValueId = Guid.Parse(item.Text);
-                                attrValue.ProdAttrId = attr.Id;
-                                attrValue.Seq = 0;
-                                attrValue.IsActive = true;
-                                attrValue.AdditionalPrice = item.Price;
-                                //attr.AttrValues.Add(attrValue);
-                                insertInvAttrValues.Add(attrValue);
-                            }
-                            else if (existAttrValue != null && existAttrValue.IsDeleted == true)
-                            {
-                                existAttrValue.AdditionalPrice = item.Price;
-                                existAttrValue.IsDeleted = false;
-                                insertInvAttrValues.Add(existAttrValue);
-                            }
-                            else
-                            {
-                                existAttrValue.AdditionalPrice = item.Price;
-                            }
-                        }
+                    //获取产品所有库存属性
+                    var dbInvAttrs = baseRepository.GetList<ProductAttr>(x => x.ProductId == product.Id && x.IsInv && !x.IsDeleted).ToList();
+                    //获取产品所有库存属性值
+                    var dbProductAttrValues = baseRepository.GetList<ProductAttrValue>(x => dbInvAttrs.Select(s => s.Id).Contains(x.ProdAttrId) && !x.IsDeleted).ToList();
 
-                    }
-
-                    foreach (var item in dbInvAttrs)//获取需要删除的属性值
                     {
-                        var AttrValues = baseRepository.GetList<ProductAttrValue>(x => x.ProdAttrId == item.Id);
-                        foreach (var attrValue in AttrValues)
-                        {
-                            var existAttrValue = invAttrvalues.FirstOrDefault(p => p.Text == attrValue.AttrValueId.ToString());
-                            if (existAttrValue == null)
-                            {
-                                attrValue.AdditionalPrice = 0;
-                                attrValue.IsDeleted = true;
-                                deleteInvAttrValues.Add(attrValue);
-                            }
-                          
-                        }
-                    }
+                        //var invAttrvalues = new List<AttributeValueView>();//界面所有的属性值
+                        //var deleteInvAttrs = new List<ProductAttr>();//删除的库存属性
+                        //var insertInvAttrValues = new List<ProductAttrValue>();//新增的库存属性值
+                        //var deleteInvAttrValues = new List<ProductAttrValue>();//删除的库存属性值
 
-                    var isExistInvRec = CheckProductHasInventory(product.Id);
-                    if (isExistInvRec)//判断是否有库存，有库存只对属性值进行删改
-                    {
-
-                        //_productAttrRepository.Update(dbInvAttrs);
-                        //if (insertInvAttrValues.Count > 0)
+                        //if (dbInvAttrs != null && dbInvAttrs.Any())
                         //{
-                        //    InsertProductSku(dbInvAttrs, insertInvAttrValues, dbProduct.Code);
+                        //    foreach (var attr in product.InveAttrList)
+                        //    {
+                        //        invAttrvalues.AddRange(attr.SubItems);
+                        //    }
+
+                        //    foreach (var item in invAttrvalues)//获取需要新增的属性值
+                        //    {
+                        //        var attrId = Guid.Parse(item.Id);//ProductAttrs的Id
+                        //        var attr = dbInvAttrs.FirstOrDefault(p => p.AttrId == attrId && p.IsDeleted == false);
+                        //        if (attr != null)
+                        //        {
+                        //            var AttrValues = baseRepository.GetList<ProductAttrValue>(x => x.ProdAttrId == attr.Id);
+                        //            var existAttrValue = AttrValues.FirstOrDefault(p => p.ProdAttrId == attr.Id && p.AttrValueId == Guid.Parse(item.Text));
+                        //            if (existAttrValue == null)
+                        //            {
+                        //                ProductAttrValue attrValue = new ProductAttrValue();
+                        //                attrValue.Id = Guid.NewGuid();
+
+                        //                attrValue.AttrValueId = Guid.Parse(item.Text);
+                        //                attrValue.ProdAttrId = attr.Id;
+                        //                attrValue.Seq = 0;
+                        //                attrValue.IsActive = true;
+                        //                attrValue.AdditionalPrice = item.Price;
+                        //                //attr.AttrValues.Add(attrValue);
+                        //                insertInvAttrValues.Add(attrValue);
+                        //            }
+                        //            else if (existAttrValue != null && existAttrValue.IsDeleted == true)
+                        //            {
+                        //                existAttrValue.AdditionalPrice = item.Price;
+                        //                existAttrValue.IsDeleted = false;
+                        //                insertInvAttrValues.Add(existAttrValue);
+                        //            }
+                        //            else
+                        //            {
+                        //                existAttrValue.AdditionalPrice = item.Price;
+                        //            }
+                        //        }
+
+                        //    }
+
+                        //    foreach (var item in dbInvAttrs)//获取需要删除的属性值
+                        //    {
+                        //        var AttrValues = baseRepository.GetList<ProductAttrValue>(x => x.ProdAttrId == item.Id);
+                        //        foreach (var attrValue in AttrValues)
+                        //        {
+                        //            var existAttrValue = invAttrvalues.FirstOrDefault(p => p.Text == attrValue.AttrValueId.ToString());
+                        //            if (existAttrValue == null)
+                        //            {
+                        //                attrValue.AdditionalPrice = 0;
+                        //                attrValue.IsDeleted = true;
+                        //                deleteInvAttrValues.Add(attrValue);
+                        //            }
+
+                        //        }
+                        //    }
+
+                        //    if (dbInvAttrs[0].CatalogID == product.Category)//判断属性的catalogId与传入的catalogID是否相同
+                        //    {                      
+                        //        if (insertInvAttrValues.Any() || deleteInvAttrValues.Any())//在没有库存的情况下，只要有增删属性值，则从新生成SKU
+                        //        {                               
+                        //            deleteInvAttrValues = new List<ProductAttrValue>();
+                        //            foreach (var attr in dbInvAttrs)
+                        //            {
+                        //                attr.IsDeleted = true;
+                        //                deleteInvAttrs.Add(attr);
+                        //                var AttrValues = baseRepository.GetList<ProductAttrValue>(x => x.ProdAttrId == attr.Id).ToList();
+                        //                foreach (var attrValue in AttrValues)
+                        //                {
+                        //                    attrValue.IsDeleted = true;
+                        //                }
+                        //                deleteInvAttrValues.AddRange(AttrValues);
+                        //            }
+
+                        //            //_productImageBLL.DeleteImageByProdId(product.Id);
+                        //            baseRepository.Update(deleteInvAttrs);//删除库存属性
+                        //            DeleteProductSku(deleteInvAttrValues, product);
+                        //            InsertOrUpdateInvProductAttribute(dbProduct, product, ActionTypeEnum.Add);//重新添加产品的库存属性、库存属性值、SKU
+
+                        //        }
+                        //    }
+                        //    else
+                        //    {
+                        //        deleteInvAttrValues = new List<ProductAttrValue>();
+                        //        foreach (var attr in dbInvAttrs)
+                        //        {
+                        //            attr.IsDeleted = true;
+                        //            deleteInvAttrs.Add(attr);
+                        //            var AttrValues = baseRepository.GetList<ProductAttrValue>(x => x.ProdAttrId == attr.Id);
+                        //            foreach (var attrValue in AttrValues)
+                        //            {
+                        //                attrValue.IsDeleted = true;
+                        //                deleteInvAttrValues.Add(attrValue);
+                        //            }
+                        //        }
+
+                        //        //_productImageBLL.DeleteImageByProdId(product.Id);
+                        //        baseRepository.Update(deleteInvAttrs);//删除库存属性
+                        //        DeleteProductSku(deleteInvAttrValues, product);
+                        //        InsertOrUpdateInvProductAttribute(dbProduct, product, ActionTypeEnum.Add);//重新添加产品的库存属性、库存属性值、SKU
+                        //    }
                         //}
                     }
-                    else
+
+                    dbProduct.CatalogId = product.Category;
+
+                    foreach (var item in dbInvAttrs)
                     {
-                        if (dbInvAttrs[0].CatalogID == product.Category)//判断属性的catalogId与传入的catalogID是否相同
-                        {
-                            //if (invAttrvalues.Count > 0)//如果有传入属性值，则更新数据库
-                            //{
-                            //    _productAttrRepository.Update(dbInvAttrs);
-                            //    if (insertInvAttrValues.Count > 0)
-                            //    {
-                            //        InsertProductSku(dbInvAttrs, insertInvAttrValues, dbProduct.Code);
-                            //    }
-                            //}
-                            //else
-                            //{
-
-                            //    var dbAttrValues = new List<ProductAttrValue>();
-
-                            //    if (dbInvAttrs.Count > 0)
-                            //    {
-                            //        foreach (var item in dbInvAttrs)
-                            //        {
-                            //            if (item.AttrValues != null)
-                            //            {
-                            //                foreach (var attrValue in item.AttrValues)
-                            //                {
-                            //                    if (attrValue.IsDeleted == false)
-                            //                    {
-                            //                        dbAttrValues.Add(attrValue);
-                            //                    }
-                            //                }
-
-                            //            }
-                            //        }
-                            //    }
-
-                            //    if (dbAttrValues.Count > 0)//数据库有属性值，不过界面冇传属性值。表示用户将所有属性值删除。所以原数据删除，再重新生成
-                            //    {
-                            //        deleteInvAttrValues = new List<ProductAttrValue>();
-                            //        foreach (var attr in dbInvAttrs)
-                            //        {
-                            //            attr.IsDeleted = true;
-                            //            deleteInvAttrs.Add(attr);
-                            //            foreach (var attrValue in attr.AttrValues)
-                            //            {
-                            //                attrValue.IsDeleted = true;
-                            //                deleteInvAttrValues.Add(attrValue);
-                            //            }
-                            //        }
-
-                            //        _productImageBLL.DeleteImageByProdId(product.Id);
-                            //        _productAttrRepository.Update(deleteInvAttrs);//删除库存属性
-                            //        DeleteProductSku(deleteInvAttrValues, product);
-                            //        InsertOrUpdateInvProductAttribute(dbProduct, product, ActionTypeEnum.Add);//重新添加产品的库存属性、库存属性值、SKU
-                            //    }
-
-
-
-                            //}
-
-                            if (insertInvAttrValues.Any() || deleteInvAttrValues.Any())//在没有库存的情况下，只要有增删属性值，则从新生成SKU
-                            {
-                                //var oldSkus = _productSkuRepository.GetByProductCode(product.Code);
-                                //if (oldSkus != null)
-                                //{
-                                //    foreach (var sku in oldSkus)
-                                //    {
-                                //        sku.IsDeleted = true;
-                                //    }
-                                //    _productSkuRepository.Update(oldSkus);
-                                //}
-
-                                //deleteInvAttrValues = new List<ProductAttrValue>();
-                                //foreach (var attr in dbInvAttrs)
-                                //{
-                                //    attr.IsDeleted = true;
-                                //    deleteInvAttrs.Add(attr);
-                                //    foreach (var attrValue in attr.AttrValues)
-                                //    {
-                                //        attrValue.IsDeleted = true;
-                                //        deleteInvAttrValues.Add(attrValue);
-                                //    }
-                                //}
-                                //_productAttrRepository.Update(deleteInvAttrs);//删除库存属性
-                                //InsertOrUpdateInvProductAttribute(dbProduct, product, ActionTypeEnum.Add);//重新添加产品的库存属性、库存属性值、SKU
-                                deleteInvAttrValues = new List<ProductAttrValue>();
-                                foreach (var attr in dbInvAttrs)
-                                {
-                                    attr.IsDeleted = true;
-                                    deleteInvAttrs.Add(attr);
-                                    var AttrValues = baseRepository.GetList<ProductAttrValue>(x => x.ProdAttrId == attr.Id).ToList();
-                                    foreach (var attrValue in AttrValues)
-                                    {
-                                        attrValue.IsDeleted = true;                                      
-                                    }
-                                    deleteInvAttrValues.AddRange(AttrValues);
-                                }
-
-                                //_productImageBLL.DeleteImageByProdId(product.Id);
-                                baseRepository.Update(deleteInvAttrs);//删除库存属性
-                                DeleteProductSku(deleteInvAttrValues, product);
-                                InsertOrUpdateInvProductAttribute(dbProduct, product, ActionTypeEnum.Add);//重新添加产品的库存属性、库存属性值、SKU
-
-                            }
-                        }
-                        else
-                        {
-                            deleteInvAttrValues = new List<ProductAttrValue>();
-                            foreach (var attr in dbInvAttrs)
-                            {
-                                attr.IsDeleted = true;
-                                deleteInvAttrs.Add(attr);
-                                var AttrValues = baseRepository.GetList<ProductAttrValue>(x => x.ProdAttrId == attr.Id);
-                                foreach (var attrValue in AttrValues)
-                                {
-                                    attrValue.IsDeleted = true;
-                                    deleteInvAttrValues.Add(attrValue);
-                                }
-                            }
-
-                            //_productImageBLL.DeleteImageByProdId(product.Id);
-                            baseRepository.Update(deleteInvAttrs);//删除库存属性
-                            DeleteProductSku(deleteInvAttrValues, product);
-                            InsertOrUpdateInvProductAttribute(dbProduct, product, ActionTypeEnum.Add);//重新添加产品的库存属性、库存属性值、SKU
-                        }
+                        item.IsDeleted = true;
+                        item.UpdateDate = DateTime.Now;
                     }
+
+                    foreach (var item in dbProductAttrValues)
+                    {
+                        item.IsDeleted = true;
+                        item.UpdateDate = DateTime.Now;
+                    }
+
+                    baseRepository.Update(dbProduct);
+                    baseRepository.Update(dbInvAttrs);
+                    baseRepository.Update(dbProductAttrValues);
+
+                    DeleteProductSku(dbProductAttrValues, product);
+                    InsertOrUpdateInvProductAttribute(dbProduct, product, ActionTypeEnum.Add);
                 }
             }
         }
@@ -1748,117 +1879,141 @@ namespace BDMall.BLL
             {
 
                 //获取产品所有非库存属性
-                var dbNonInvAttrs = baseRepository.GetList<ProductAttr>(x => x.ProductId == product.Id && !x.IsInv).ToList();
-                                                                                                                            
-                var nonInvAttrvalues = new List<AttributeValueView>();//界面所有的属性值
-                var deleteNonInvAttrs = new List<ProductAttr>();//删除的非库存属性
-                var insertNonInvAttrValues = new List<ProductAttrValue>();//新增的非库存属性值
-                var deleteNonInvAttrValues = new List<ProductAttrValue>();//删除的非库存属性值
+                var dbNonInvAttrs = baseRepository.GetList<ProductAttr>(x => x.ProductId == product.Id && !x.IsInv && !x.IsDeleted).ToList();
+                //获取产品所有非库存属性值
+                var dbProductAttrValues = baseRepository.GetList<ProductAttrValue>(x => dbNonInvAttrs.Select(s => s.Id).Contains(x.ProdAttrId) && !x.IsDeleted).ToList();
 
-                if (dbNonInvAttrs != null && dbNonInvAttrs.Any())
                 {
-                    foreach (var attr in product.NonInveAttrList)
-                    {
-                        nonInvAttrvalues.AddRange(attr.SubItems);
-                    }
+                    //var nonInvAttrvalues = new List<AttributeValueView>();//界面所有的属性值
+                    //var deleteNonInvAttrs = new List<ProductAttr>();//删除的非库存属性
+                    //var insertNonInvAttrValues = new List<ProductAttrValue>();//新增的非库存属性值
+                    //var deleteNonInvAttrValues = new List<ProductAttrValue>();//删除的非库存属性值
 
-                    foreach (var item in nonInvAttrvalues)//获取需要新增的属性值
-                    {
-                        var attr = dbNonInvAttrs.FirstOrDefault(p => p.AttrId == Guid.Parse(item.Id));
-                        if (attr != null)
-                        {
-                            var AttrValues = baseRepository.GetList<ProductAttrValue>(x => x.ProdAttrId == attr.Id);
-                            var existAttrValue = AttrValues.FirstOrDefault(p => p.AttrValueId == Guid.Parse(item.Text));
-                            if (existAttrValue == null)
-                            {
-                                ProductAttrValue attrValue = new ProductAttrValue();
-                                attrValue.Id = Guid.NewGuid();
-                                attrValue.AttrValueId = Guid.Parse(item.Text);
-                                attrValue.ProdAttrId = attr.Id;
-                                attrValue.Seq = 0;
-                                attrValue.AdditionalPrice = item.Price;
-                                //attr.AttrValues.Add(attrValue);
-                                insertNonInvAttrValues.Add(attrValue);
-                            }
-                            else if (existAttrValue != null && existAttrValue.IsDeleted == true)
-                            {
-                                existAttrValue.IsDeleted = false;
-                                insertNonInvAttrValues.Add(existAttrValue);
-                            }
-                        }
+                    //if (dbNonInvAttrs != null && dbNonInvAttrs.Any())
+                    //{
+                    //    foreach (var attr in product.NonInveAttrList)
+                    //    {
+                    //        nonInvAttrvalues.AddRange(attr.SubItems);
+                    //    }
 
-                    }
+                    //    foreach (var item in nonInvAttrvalues)//获取需要新增的属性值
+                    //    {
+                    //        var attr = dbNonInvAttrs.FirstOrDefault(p => p.AttrId == Guid.Parse(item.Id));
+                    //        if (attr != null)
+                    //        {
+                    //            var AttrValues = baseRepository.GetList<ProductAttrValue>(x => x.ProdAttrId == attr.Id);
+                    //            var existAttrValue = AttrValues.FirstOrDefault(p => p.AttrValueId == Guid.Parse(item.Text));
+                    //            if (existAttrValue == null)
+                    //            {
+                    //                ProductAttrValue attrValue = new ProductAttrValue();
+                    //                attrValue.Id = Guid.NewGuid();
+                    //                attrValue.AttrValueId = Guid.Parse(item.Text);
+                    //                attrValue.ProdAttrId = attr.Id;
+                    //                attrValue.Seq = 0;
+                    //                attrValue.AdditionalPrice = item.Price;
+                    //                //attr.AttrValues.Add(attrValue);
+                    //                insertNonInvAttrValues.Add(attrValue);
+                    //            }
+                    //            else if (existAttrValue != null && existAttrValue.IsDeleted == true)
+                    //            {
+                    //                existAttrValue.IsDeleted = false;
+                    //                insertNonInvAttrValues.Add(existAttrValue);
+                    //            }
+                    //        }
 
-                    foreach (var item in dbNonInvAttrs)//获取需要删除的属性值
-                    {
-                        var AttrValues = baseRepository.GetList<ProductAttrValue>(x => x.AttrValueId == item.Id);
-                        foreach (var attrValue in AttrValues)
-                        {
-                            if (attrValue.IsDeleted == false)
-                            {
-                                var existAttrValue = nonInvAttrvalues.FirstOrDefault(p => p.Text == attrValue.AttrValueId.ToString());
-                                if (existAttrValue == null)
-                                {
-                                    attrValue.IsDeleted = true;
-                                    deleteNonInvAttrValues.Add(attrValue);
-                                }
-                            }
-                        }
-                    }
+                    //    }
 
-                    if (product.IsExistInvRec)//判断是否有库存，有库存只对属性值进行删改
-                    {
-                        //baseRepository.Update(dbNonInvAttrs);
-                        //baseRepository.Update(deleteNonInvAttrValues);  //??
-                    }
-                    else
-                    {
-                        if (dbNonInvAttrs[0].CatalogID == product.Category)//判断属性的catalogId与传入的catalogID是否相同
-                        {
-                            if (nonInvAttrvalues.Any())
-                            {
-                                baseRepository.Update(dbNonInvAttrs);
-                            }
-                            else
-                            {
-                                deleteNonInvAttrValues = new List<ProductAttrValue>();
-                                foreach (var attr in dbNonInvAttrs)
-                                {
-                                    attr.IsDeleted = true;
-                                    deleteNonInvAttrs.Add(attr);
-                                    var AttrValues = baseRepository.GetList<ProductAttrValue>(x => x.ProdAttrId == attr.Id);
-                                    foreach (var attrValue in AttrValues)
-                                    {
-                                        attrValue.IsDeleted = true;
-                                        deleteNonInvAttrValues.Add(attrValue);
-                                    }
-                                }
-                                baseRepository.Update(dbNonInvAttrs);//删除库存属性
-                                                                     //_productAttrValueRepository.Update(deleteNonInvAttrValues);//删除库存属性值
-                                InsertOrUpdateNonInvProductAttribute(dbProduct, product, ActionTypeEnum.Add);//重新添加产品的库存属性、库存属性
-                            }
+                    //    foreach (var item in dbNonInvAttrs)//获取需要删除的属性值
+                    //    {
+                    //        var AttrValues = baseRepository.GetList<ProductAttrValue>(x => x.AttrValueId == item.Id);
+                    //        foreach (var attrValue in AttrValues)
+                    //        {
+                    //            if (attrValue.IsDeleted == false)
+                    //            {
+                    //                var existAttrValue = nonInvAttrvalues.FirstOrDefault(p => p.Text == attrValue.AttrValueId.ToString());
+                    //                if (existAttrValue == null)
+                    //                {
+                    //                    attrValue.IsDeleted = true;
+                    //                    deleteNonInvAttrValues.Add(attrValue);
+                    //                }
+                    //            }
+                    //        }
+                    //    }
 
-                        }
-                        else
-                        {
-                            deleteNonInvAttrValues = new List<ProductAttrValue>();
-                            foreach (var attr in dbNonInvAttrs)
-                            {
-                                attr.IsDeleted = true;
-                                deleteNonInvAttrs.Add(attr);
-                                var AttrValues = baseRepository.GetList<ProductAttrValue>(x => x.ProdAttrId == attr.Id);
-                                foreach (var attrValue in AttrValues)
-                                {
-                                    attrValue.IsDeleted = true;
-                                    deleteNonInvAttrValues.Add(attrValue);
-                                }
-                            }
-                            baseRepository.Update(dbNonInvAttrs);//删除库存属性
-                                                                 //_productAttrValueRepository.Update(deleteNonInvAttrValues);//删除库存属性值
-                            InsertOrUpdateNonInvProductAttribute(dbProduct, product, ActionTypeEnum.Add);//重新添加产品的库存属性、库存属性
-                        }
-                    }
+                    //    if (product.IsExistInvRec)//判断是否有库存，有库存只对属性值进行删改
+                    //    {
+                    //        baseRepository.Update(dbNonInvAttrs);
+                    //        //baseRepository.Update(deleteNonInvAttrValues);  //??
+                    //    }
+                    //    else
+                    //    {
+                    //        if (dbNonInvAttrs[0].CatalogID == product.Category)         //判断属性的catalogId与传入的catalogID是否相同
+                    //        {
+                    //            if (nonInvAttrvalues.Any())
+                    //            {
+                    //                baseRepository.Update(dbNonInvAttrs);
+                    //                baseRepository.Insert(insertNonInvAttrValues);
+                    //            }
+                    //            else
+                    //            {
+                    //                deleteNonInvAttrValues = new List<ProductAttrValue>();
+                    //                foreach (var attr in dbNonInvAttrs)
+                    //                {
+                    //                    attr.IsDeleted = true;
+                    //                    deleteNonInvAttrs.Add(attr);
+                    //                    var AttrValues = baseRepository.GetList<ProductAttrValue>(x => x.ProdAttrId == attr.Id);
+                    //                    foreach (var attrValue in AttrValues)
+                    //                    {
+                    //                        attrValue.IsDeleted = true;
+                    //                        deleteNonInvAttrValues.Add(attrValue);
+                    //                    }
+                    //                }
+                    //                baseRepository.Update(dbNonInvAttrs);//删除库存属性  
+                    //                InsertOrUpdateNonInvProductAttribute(dbProduct, product, ActionTypeEnum.Add);//重新添加产品的库存属性、库存属性
+                    //            }
+
+                    //        }
+                    //        else    //如果重选Catalog
+                    //        {
+                    //            deleteNonInvAttrValues = new List<ProductAttrValue>();
+                    //            foreach (var attr in dbNonInvAttrs)
+                    //            {
+                    //                attr.IsDeleted = true;
+                    //                deleteNonInvAttrs.Add(attr);
+                    //                var AttrValues = baseRepository.GetList<ProductAttrValue>(x => x.ProdAttrId == attr.Id);
+                    //                foreach (var attrValue in AttrValues)
+                    //                {
+                    //                    attrValue.IsDeleted = true;
+                    //                    deleteNonInvAttrValues.Add(attrValue);
+                    //                }
+                    //            }
+                    //            baseRepository.Update(dbNonInvAttrs);//删除库存属性
+
+                    //            InsertOrUpdateNonInvProductAttribute(dbProduct, product, ActionTypeEnum.Add);//重新添加产品的库存属性、库存属性
+                    //        }
+                    //    }
+                    //}
                 }
+
+                dbProduct.CatalogId = product.Category;
+
+                foreach (var item in dbNonInvAttrs)
+                {
+                    item.IsDeleted = true;
+                    item.UpdateDate = DateTime.Now;
+                }
+
+                foreach (var item in dbProductAttrValues)
+                {
+                    item.IsDeleted = true;
+                    item.UpdateDate = DateTime.Now;
+                }
+
+                baseRepository.Update(dbProduct);
+                baseRepository.Update(dbNonInvAttrs);
+                baseRepository.Update(dbProductAttrValues);
+
+                InsertOrUpdateNonInvProductAttribute(dbProduct, product, ActionTypeEnum.Add);
             }
         }
 
@@ -1870,12 +2025,15 @@ namespace BDMall.BLL
                 var dbSku = productSkuRepository.GetSkuByAttrValueId(item.ProductCode, item.AttrValue1, item.AttrValue2, item.AttrValue3);
                 if (dbSku == null)
                 {
+                    item.CreateBy =  Guid.Parse(CurrentUser.UserId);
                     baseRepository.Insert(item);
                 }
                 else
                 {
                     dbSku.IsDeleted = false;
                     dbSku.IsActive = true;
+                    dbSku.UpdateDate = DateTime.Now;
+                    dbSku.UpdateBy = Guid.Parse(CurrentUser.UserId);
                     baseRepository.Update(dbSku);
                 }
 
@@ -1915,6 +2073,7 @@ namespace BDMall.BLL
                     MerchantId = product.MerchantId,
                     ProductCode = product.Code,
                     ShipCode = item.ShipCode,
+
                 }).ToList();
 
                 baseRepository.Delete(freeMethods);
@@ -1959,6 +2118,7 @@ namespace BDMall.BLL
             string targetPath = PathUtil.GetPhysicalPath(Globals.Configuration["UploadPath"], product.MerchantId.ToString(), FileFolderEnum.Product) + "\\" + product.Id;
             string relativePath = PathUtil.GetRelativePath(product.MerchantId.ToString(), FileFolderEnum.Product) + "/" + product.Id;
 
+            defaultImage = Path.Combine(hostEnvironment.ContentRootPath, defaultImage);
 
             if (File.Exists(defaultImage))
             {
@@ -1968,6 +2128,156 @@ namespace BDMall.BLL
                     dbImagePaths.Add(new KeyValue { Id = imageItemId.ToString(), Text = relativePath + "/" + imageItemId + Path.GetExtension(defaultImage) });
                 }
             }
+        }
+
+        public ProductSummary GenProductSummary(Product product)
+        {
+            return GenProductSummary(product, Guid.Empty);
+        }
+
+        public ProductSummary GenProductSummary(Product product, Guid skuId)
+        {
+            ProductSummary summary = AutoMapperExt.MapTo<ProductSummary>(product);
+            var statistic = baseRepository.GetModel<ProductStatistics>(x => x.Code == product.Code);
+            var catalogs = baseRepository.GetModelById<ProductCatalog>(product.CatalogId);
+            var mchInfo = baseRepository.GetModelById<Merchant>(product.MerchantId);
+            var prodSepcification = baseRepository.GetModel<ProductSpecification>(x=>x.Id== product.Id);
+            var prodExtension = baseRepository.GetModel<ProductExtension>(x => x.Id == product.Id);
+
+            summary.CatalogPath = "";
+            summary.CatalogName = translationRepository.GetDescForLang((catalogs?.NameTransId ?? Guid.Empty), CurrentUser.Lang);
+            summary.Code = product.Code;
+            summary.Currency = currencyBLL.GetSimpleCurrency(product.CurrencyCode);
+            summary.Imgs = GetProductImages(product.Id);
+            summary.Name = translationRepository.GetDescForLang(product.NameTransId, CurrentUser.Lang);
+            summary.Introduction = translationRepository.GetDescForLang(product.IntroductionTransId,CurrentUser.Lang);
+            summary.OriginalPrice = product.OriginalPrice + product.MarkUpPrice;
+            summary.SalePrice = product.SalePrice + product.MarkUpPrice;
+            summary.ProductId = product.Id;
+            summary.ApproveType = product.Status;          
+            summary.MerchantNo = mchInfo?.MerchNo ?? string.Empty;
+            summary.MerchantNameId = mchInfo.NameTransId;
+            summary.MerchantName = translationRepository.GetDescForLang(mchInfo.NameTransId,CurrentUser.Lang);
+            summary.IsGS1 = MerchantType.GS1  ==mchInfo?.MerchantType ? true : false;          
+            summary.PurchaseCounter = statistic == null ? 0 : statistic.PurchaseCounter;
+            summary.VisitCounter = statistic == null ? 0 : statistic.VisitCounter;
+
+            summary.Score = statistic == null ? 0M : NumberUtil.ConvertToRounded(statistic.Score);
+            if (summary.Score < 1)
+            {
+                summary.Score = 0;
+            }
+            summary.WeightUnit = prodSepcification?.WeightUnit ?? 0;
+            summary.GrossWeight = prodSepcification?.GrossWeight ?? 0;
+            summary.IconType = prodExtension?.ProductType ?? ProductType.Basic;
+            summary.IconRType = prodExtension?.ProductType;
+            summary.IconType = prodExtension?.ProductType ?? ProductType.Basic;
+            summary.IsLimit = prodExtension?.IsLimit ?? false;
+
+        
+            
+            //var addPrices = new List<ProductAtrtValueModel>();
+            //if (skuId != Guid.Empty)
+            //{
+            //    #region 生成產品屬性
+
+            //    var productInvAttrs = product.Attrs.Where(p => p.IsInv == true).OrderBy(o => o.Seq).ToList();
+
+            //    var skuInfo = _productSkuRepository.GetByKey(skuId);
+
+            //    //var skuAttrValues1 = productInvAttrs.FirstOrDefault(p => p.AttrId == skuInfo.Attr1)?.AttrValues;
+            //    //var skuAttrValues2 = productInvAttrs.FirstOrDefault(p => p.AttrId == skuInfo.Attr2)?.AttrValues;
+            //    //var skuAttrValues3 = productInvAttrs.FirstOrDefault(p => p.AttrId == skuInfo.Attr3)?.AttrValues;
+
+            //    // var AttrValueLst = UnitOfWork.DataContext.ProductAttrs.Where(x => x.IsInv == true && x.ProductId == product.Id)
+            //    var AttrValueLst = productInvAttrs.Join(UnitOfWork.DataContext.ProductAttrValues,
+            //                                    pa => pa.Id, pav => pav.ProdAttrId, (pa, pav) => pav).ToList();
+
+            //    var productAttrValue1 = AttrValueLst.FirstOrDefault(f => f.AttrValueId == skuInfo.AttrValue1);
+            //    var productAttrValue2 = AttrValueLst.FirstOrDefault(f => f.AttrValueId == skuInfo.AttrValue2);
+            //    var productAttrValue3 = AttrValueLst.FirstOrDefault(f => f.AttrValueId == skuInfo.AttrValue3);
+
+            //    var attribute = UnitOfWork.DataContext.ProductAttributes.AsNoTracking()
+            //                            .Where(a => a.Id == skuInfo.Attr1 || a.Id == skuInfo.Attr2 || a.Id == skuInfo.Attr3).ToList();
+
+            //    var attributeValues = UnitOfWork.DataContext.ProductAttributeValues.AsNoTracking()
+            //                           .Where(a => a.Id == skuInfo.AttrValue1 || a.Id == skuInfo.AttrValue2 || a.Id == skuInfo.AttrValue3).ToList();
+
+            //    if (productAttrValue1 != null)
+            //    {
+            //        ProductAtrtValueModel model = GenProductAtrtValueModel(productAttrValue1, skuInfo.Attr1, attribute, attributeValues);
+            //        addPrices.Add(model);
+            //    }
+            //    if (productAttrValue2 != null)
+            //    {
+            //        ProductAtrtValueModel model = GenProductAtrtValueModel(productAttrValue2, skuInfo.Attr2, attribute, attributeValues);
+            //        addPrices.Add(model);
+            //    }
+            //    if (productAttrValue3 != null)
+            //    {
+            //        ProductAtrtValueModel model = GenProductAtrtValueModel(productAttrValue3, skuInfo.Attr3, attribute, attributeValues);
+            //        addPrices.Add(model);
+            //    }
+            //}
+
+            //#endregion
+
+            //summary.AttrValues = addPrices;
+            //summary.TotalPrice = summary.SalePrice + addPrices.Sum(s => s.AddPrice);
+            //if (CurrentUser != null)
+            //{
+            //    if (CurrentUser.IsLogin)
+            //    {
+            //        var favoriteList = MemberFavoriteRepos.Entities.FirstOrDefault(d => d.MemberId == CurrentUser.Id && d.ProductCode == product.Code && d.IsActive == true && d.IsDeleted == false);
+            //        if (favoriteList != null)
+            //        {
+            //            summary.IsFavorite = true;
+            //        }
+            //    }
+
+            //    summary.IconRUrl = PathUtil.GetProductIconUrl(summary.IconRType, CurrentUser.ComeFrom, CurrentUser.Language);
+            //    if (summary.IsGS1)
+            //    {
+            //        summary.GS1Url = PathUtil.GetProductIconUrl(ProductType.GS1, CurrentUser.ComeFrom, CurrentUser.Language);
+            //    }
+            //    else
+            //    {
+            //        summary.GS1Url = PathUtil.GetProductIconUrl(ProductType.Basic, CurrentUser.ComeFrom, CurrentUser.Language);
+            //    }
+            //    if (product.DetailDescriptions?.Count > 0)
+            //    {
+            //        summary.DescriptionDetail = product.DetailDescriptions.FirstOrDefault(x => x.Lang == CurrentUser.Language)?.Value ?? string.Empty;
+            //    }
+            //    if (!IsMatchBaseCurrency(CurrentUser.Currency))
+            //    {
+            //        summary.Currency2 = CurrentUser.Currency;
+            //        summary.SalePrice2 = MoneyConversion(product.SalePrice);
+            //        summary.OriginalPrice2 = MoneyConversion(product.OriginalPrice);
+            //    }
+            //}
+
+            //summary.PromotionRuleTitle = PromotionRuleRepository.GetPromotionRuleTitle(product.Code);
+            //summary.IsSalesReturn = product.ProductExtension?.IsSalesReturn ?? false;
+
+            if (!string.IsNullOrEmpty(product.Remark))
+            {
+            
+                    var saleTimes = product.Remark.Trim().Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (saleTimes.Length >= 2)
+                    {
+                        var time = DateUtil.ConvertoDateTime(saleTimes[1], "yyyy-MM-dd HH:mm:00");
+                        summary.SaleTime = time;
+                    }
+                    else
+                    {
+                        summary.SaleTime = null;
+                    }
+            }
+            else
+            {
+                summary.SaleTime = null;
+            }
+            return summary;
         }
     }
 }

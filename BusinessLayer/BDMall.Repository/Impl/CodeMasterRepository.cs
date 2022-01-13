@@ -16,8 +16,11 @@ namespace BDMall.Repository
     {
         public const string CacheKeyFormat = "{0}_{1}_{2}_{3}";
 
+        ITranslationRepository _translationRpo;
+
         public CodeMasterRepository(IServiceProvider service) : base(service)
         {
+            _translationRpo = Services.Resolve<ITranslationRepository>();
         }
 
         public CodeMasterDto GetCodeMaster(string module, string function, string key)
@@ -106,19 +109,13 @@ namespace BDMall.Repository
 
 
             //var supportLang = GetSupportLanguage();
-            //foreach (var item in queryGroup)
-            //{
-            //    CodeMasterDto dto = new CodeMasterDto();
-            //    dto = AutoMapperExt.MapTo<CodeMasterDto>(item.m);
-            //    //dto.Descriptions = LangUtil.GetMutiLangFromTranslation(item.Trans, supportLang);
-            //    dto.Description = dto.Descriptions.FirstOrDefault(d => d.Language == CurrentUser.Lang)?.Desc ?? "";
-            //    data.Add(dto);
-            //}
-            //if (module == CodeMasterModule.System.ToString() || function == CodeMasterFunction.SupportLanguage.ToString())
-            //{
-            //    CacheManager.Insert(cacheKey, data);
-            //}
+
             data = query.ToList();
+
+            foreach (var item in data)
+            {
+                item.Descriptions = _translationRpo.GetMutiLanguage(item.DescTransId);
+            }
             return data;
         }
 

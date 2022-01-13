@@ -35,6 +35,8 @@ namespace BDMall.Enums
 
         Favorite = 13,
 
-        Hot_PreProductStatistics = 14
+        Hot_PreProductStatistics = 14,
+
+        ProductSku,
     }
 }

@@ -19,10 +19,13 @@ namespace BDMall.Model
 
         [Column("PackageWidth")]
         public decimal Width { get; set; }
+
         [Column("PackageHeigth")]
         public decimal Heigth { get; set; }
+
         [Column("PackageLength")]
         public decimal Length { get; set; }
+
         [Column("PackageUnit")]
         public int Unit { get; set; }
     }

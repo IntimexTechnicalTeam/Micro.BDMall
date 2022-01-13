@@ -151,6 +151,27 @@ namespace BDMall.BLL
             return list;
         }
 
+        public List<ImageSize> GetProductAdditionalImageSize()
+        {
+            List<ImageSize> list = new List<ImageSize>();
+            var vals = _codeMasterRepo.GetCodeMasters(CodeMasterModule.Setting.ToString(), CodeMasterFunction.ProductAdditionalImgSize.ToString()).OrderBy(o => o.Key).ToList();
+            if (vals == null || !vals.Any())
+            {
+                list.Add(new ImageSize { Width = 100, Length = 100 });
+                list.Add(new ImageSize { Width = 400, Length = 400 });
+                list.Add(new ImageSize { Width = 800, Length = 800 });
+                return list;
+            }
+
+            list = vals.Select(item => new ImageSize
+            {
+                Width = int.Parse(item.Value),
+                Length = int.Parse(item.Value)
+            }).ToList();
+
+            return list;
+        }
+
         public List<KeyValue> GetCMCalculateTypes()
         {
             List<KeyValue> typeList = new List<KeyValue>();
@@ -189,6 +210,20 @@ namespace BDMall.BLL
             size.Length = int.Parse(val?.Value ?? "100");
 
             return size;
+        }
+
+        /// <summary>
+        /// 獲取庫存交易類型列表
+        /// </summary>
+        /// <returns></returns>
+        public List<CodeMasterDto> GetInvTransTypeLst()
+        {
+            var settingLst = _codeMasterRepo.GetCodeMasters(CodeMasterModule.Setting, CodeMasterFunction.InvtTransType);
+            if (settingLst != null)
+            {
+                return settingLst;
+            }
+            return new List<CodeMasterDto>();
         }
     }
 }

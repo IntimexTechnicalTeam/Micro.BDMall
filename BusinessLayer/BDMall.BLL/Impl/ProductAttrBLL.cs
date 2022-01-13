@@ -48,7 +48,7 @@ namespace BDMall.BLL
         {
             List<AttributeObjectView> list = new List<AttributeObjectView>();
 
-            var attrs = productAttrRepository.GetAttributeItemsMappByProductId(prodId).Where(p => p.IsInv == false).ToList();
+            var attrs = productAttrRepository.GetAttributeItemsMappByProductId(prodId).Where(p => p.IsInv == false).OrderBy(o=>o.Seq).ToList();
 
             if (attrs != null && attrs.Any())
             {

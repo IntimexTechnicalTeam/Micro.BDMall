@@ -33,11 +33,20 @@ namespace Domain
             ConfigMap<EmailTemplateDto, EmailTemplate>();
             ConfigMap<EmailTypeTempItemDto, EmailTypeTempItem>();
 
-
+            ConfigMap<Product, ProductSummary>();
             ConfigMap<ProductDto, Product>();
             ConfigMap<ProductEditModel, ProductDto>();
 
             ConfigMap<ProductAttributeDto, ProductAttribute>();
+            ConfigMap<ProductAttrValueDto, ProductAttrValue>();
+
+            ConfigMap<Warehouse, WarehouseDto>();
+            ConfigMap<WhseView, WarehouseDto>();
+            ConfigMap<ProductSku, ProductSkuDto>();
+
+            ConfigMap<Supplier, SupplierDto>();
+            ConfigMap<InvFlow,InvFlowView>();
+
         }
         void ConfigMap<TSource, TDestination>()
         {

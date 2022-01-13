@@ -1,0 +1,748 @@
+﻿
+@{
+    ViewBag.Title = "InventoryTransaction";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="divMain" v-cloak>
+    <div id="divSearchBar" class="panel-group">
+        <div class="form-horizontal">
+            <div class="form-group col-sm-12">
+                <label for="cboMerchant" class="control-label col-sm-1"><span style="color:red;">*@BDMall.Resources.Label.MerchantName</span></label>
+                <div class="col-sm-4">
+                    <select id="cboMerchant" class="form-control selectpicker show-tick" onchange="onChangeMerchantId()"></select>
+                </div>
+                <label for="cboTransType" class="control-label col-sm-1">@BDMall.Resources.Label.InventoryTransTpye</label>
+                <div class="col-sm-4">
+                    <select id="cboTransType" class="form-control" v-model="TransTpye"></select>
+                </div>
+            </div>
+            <div class="form-group col-sm-12" v-show="Condition.MerchantId!='00000000-0000-0000-0000-000000000000'&&Condition.MerchantId!='-1'&&Condition.MerchantId!=null">
+                @*標題：基本資料*@
+                <div class="form-group col-sm-12">
+                    <p class="bg-primary">@BDMall.Resources.Label.PanelNameBaseInfo</p>
+                </div>
+                @*庫存交易時間、經手人*@
+                <div class="form-group col-sm-12">
+                    <label for="txtTransDate" class="control-label col-sm-1"><span style="color:red;">*@BDMall.Resources.Label.InventoryFlowTransDate</span></label>
+                    <div class="col-sm-4">
+                        <input name="DateTimePicker" type="text" class="form-control" id="txtTransDate">
+                    </div>
+                    <label for="txtHandler" class="control-label col-sm-1">@BDMall.Resources.Label.Handler</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="txtHandler" v-model="HandlerName" readonly>
+                    </div>
+                </div>
+                @*1、採購：供應商、倉庫*@
+                <div v-show="TransTpye=='1'" class="form-group col-sm-12">
+                    @*<label for="cboSPPurchase" class="control-label col-sm-1">@BDMall.Resources.Label.SupplierName</label>
+                        <div class="col-sm-4">
+                            <select id="cboSPPurchase" class="form-control" v-model="SPPurchaseID"></select>
+                        </div>*@
+                    <label for="cboWHPurchase" class="control-label col-sm-1"><span style="color:red;">*@BDMall.Resources.Label.WarehouseName</span></label>
+                    <div class="col-sm-4">
+                        <select id="cboWHPurchase" class="form-control" v-model="WHPurchaseID"></select>
+                    </div>
+                </div>
+                @*2、調撥：倉庫（出）、倉庫（入）*@
+                <div v-show="TransTpye=='2'" class="form-group col-sm-12">
+                    <label for="cboWHRelocationFrom" class="control-label col-sm-1"><span style="color:red;">*@BDMall.Resources.Label.WarehouseName</span></label>
+                    <div class="col-sm-4">
+                        <select id="cboWHRelocationFrom" class="form-control" v-model="WHRelocationFromID"></select>
+                    </div>
+                    <label for="cboWHRelocationIn" class="control-label col-sm-1"><span style="color:red;">*@BDMall.Resources.Label.WarehouseName</span></label>
+                    <div class="col-sm-4">
+                        <select id="cboWHRelocationIn" class="form-control" v-model="WHRelocationInID"></select>
+                    </div>
+                </div>
+                @*3、採購退回：倉庫、供應商*@
+                <div v-show="TransTpye=='3'" class="form-group col-sm-12">
+                    <label for="cboWHReturn" class="control-label col-sm-1"><span style="color:red;">*@BDMall.Resources.Label.WarehouseName</span></label>
+                    @*<div class="col-sm-4">
+                            <input type="text" class="form-control" id="txtWHReturn" v-model="WHReturnDesc" readonly>
+                        </div>*@
+                    <div class="col-sm-4">
+                        <select id="cboWHReturn" class="form-control" v-model="WHReturnID"></select>
+                    </div>
+                    @*<label for="txtSPReturn" class="control-label col-sm-1">@BDMall.Resources.Label.SupplierName</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="txtSPReturn" v-model="SPReturnDesc" readonly>
+                        </div>*@
+                </div>
+                @*1、採購\3、採購退回：批號*@
+                <div v-show="TransTpye=='1'||TransTpye=='3'" class="form-group col-sm-12">
+                    <label for="txtBatchNum" class="control-label col-sm-1">
+                        <span style="color:red;" v-show="TransTpye=='1'">*@BDMall.Resources.Label.BatchNo</span>
+                        <span style="color:black;" v-show="TransTpye=='3'">@BDMall.Resources.Label.BatchNo</span>
+                    </label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="txtBatchNum" v-model="Condition.BatchNum">
+                    </div>
+                    <div class="col-sm-2" v-show="TransTpye=='3'">
+                        <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Search" v-on:click="getReturnItems" />
+                    </div>
+                </div>
+                @*備註*@
+                <div class="form-group col-sm-12">
+                    <label for="txtRemarks" class="control-label col-sm-1">@BDMall.Resources.Label.Remarks</label>
+                    <div class="col-sm-9">
+                        <textarea id="txtRemarks" class="form-control" rows="3" placeholder="@BDMall.Resources.Label.Remarks" v-model="Remarks"></textarea>
+                    </div>
+                </div>
+                @*標題：產品資料*@
+                <div v-show="TransTpye=='1'||TransTpye=='2'" class="form-group col-sm-12">
+                    <p class="bg-primary">@BDMall.Resources.Label.PanelNameProdInfo</p>
+                </div>
+                @*1、採購\2、調撥：產品選擇*@
+                <div v-show="TransTpye=='1'||TransTpye=='2'" class="form-group col-sm-12">
+                    <div class="form-group col-sm-12">
+                        <label for="txtProdCode" class="control-label col-sm-1">@BDMall.Resources.Label.ProductCode</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" id="txtProdCode" v-model="Condition.ProdCode">
+                        </div>
+                        <div class="col-sm-2">
+                            <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Confirm" v-on:click="getProdInfoSingle" />
+                            <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Search" v-on:click="selectProductItem" />
+                        </div>
+                    </div>
+                    @*庫存交易明細列表*@
+                    <div class="form-group col-sm-12" v-show="IsShowTransItems">
+                        <table id="tblTransItemsListVue" class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    <th>
+                                        <input type="checkbox" id="cbxSelectAll" v-model="IsCheckAllItems" v-on:change="checkAllItems" />
+                                    </th>
+                                    <th>@BDMall.Resources.Label.ProductName</th>
+                                    <th>@BDMall.Resources.Label.StockAttributeI</th>
+                                    <th>@BDMall.Resources.Label.StockAttributeII</th>
+                                    <th>@BDMall.Resources.Label.StockAttributeIII</th>
+                                    <th>@BDMall.Resources.Label.Qty</th>
+                                    <th>@BDMall.Resources.Label.UnitPrice</th>
+                                    <th>@BDMall.Resources.Label.SubTotal</th>
+                                    <th></th>
+                                </tr>
+                                <tr v-for="(item,index) in Items">
+                                    <td>
+                                        <input type="checkbox" id="cbxChkItem" v-bind:value="index" v-model="item.IsChecked" />
+                                    </td>
+                                    <td>{{item.ProdName}}</td>
+                                    <td>{{item.Attr1Desc}}</td>
+                                    <td>{{item.Attr2Desc}}</td>
+                                    <td>{{item.Attr3Desc}}</td>
+                                    <td>
+                                        <input type="number" v-model="item.TransQty" v-if="item.EditState" min="0" />
+                                        <label v-else="item.EditState">{{item.TransQty}}</label>
+                                    </td>
+                                    <td>
+                                        <input type="number" v-model="item.UnitPrice" v-if="item.EditState" min="0" />
+                                        <label v-else="item.EditState">{{item.UnitPrice}}</label>
+                                    </td>
+                                    <td>{{item.Subtotal}}</td>
+                                    <td>
+                                        <button id="btnEdit" type="button" class="btn btn-default" v-show="!item.EditState" v-on:click="setItemEditState(index,true)">
+                                            <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+                                        </button>
+                                        <button id="btnSave" type="button" class="btn btn-default" v-show="item.EditState" v-on:click="setItemEditState(index,false)">
+                                            <span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                @*3、採購退回：產品選擇*@
+                <div v-show="TransTpye=='3'" class="form-group col-sm-12">
+                    @*採購退回交易明細*@
+                    <div class="form-group col-sm-12" v-show="IsShowReturnItems">
+                        <table id="tblReturnItemsListVue" class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    <th>
+                                        <input type="checkbox" id="cbxSelectRtnAll" v-model="IsCheckAllRtnItems" v-on:change="checkAllRtnItems" />
+                                    </th>
+                                    <th>@BDMall.Resources.Label.ProductName</th>
+                                    <th>@BDMall.Resources.Label.StockAttributeI</th>
+                                    <th>@BDMall.Resources.Label.StockAttributeII</th>
+                                    <th>@BDMall.Resources.Label.StockAttributeIII</th>
+                                    <th>@BDMall.Resources.Label.SalesReturnQty</th>
+                                    <th>@BDMall.Resources.Label.Qty</th>
+                                    <th>@BDMall.Resources.Label.UnitPrice</th>
+                                    <th>@BDMall.Resources.Label.SubTotal</th>
+                                    <th></th>
+                                </tr>
+                                <tr v-for="(item,index) in ReturnItems">
+                                    <td>
+                                        <input type="checkbox" id="cbxChkRtnItem" v-bind:value="index" v-model="item.IsChecked" />
+                                    </td>
+                                    <td>{{item.ProdName}}</td>
+                                    <td>{{item.Attr1Desc}}</td>
+                                    <td>{{item.Attr2Desc}}</td>
+                                    <td>{{item.Attr3Desc}}</td>
+                                    <td>{{item.SalesQty}}</td>
+                                    <td>
+                                        <input type="number" v-model="item.ReturnQty" v-if="item.EditState" v-bind:max="item.TransQty" min="0" />
+                                        <label v-else="item.EditState">{{item.ReturnQty}}</label>
+                                    </td>
+                                    <td>{{item.UnitPrice}}</td>
+                                    <td>{{item.Subtotal}}</td>
+                                    <td>
+                                        <button id="btnEdit" type="button" class="btn btn-default" v-show="!item.EditState" v-on:click="setRtnItemEditState(index,true)">
+                                            <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+                                        </button>
+                                        <button id="btnSave" type="button" class="btn btn-default" v-show="item.EditState" v-on:click="setRtnItemEditState(index,false)">
+                                            <span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                @*保存按鈕*@
+                <div class="modal-footer">
+                    <input type="button" class="btn btn-primary btn-action-default" value="@BDMall.Resources.Action.Save" v-on:click="saveTransItems" v-bind:disabled="!IsShowTransItems && !IsShowReturnItems" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script src="~/Scripts/admin/vue-component/productCatalog.js"></script>
+
+    <script type="text/javascript">
+        var empGuid = "00000000-0000-0000-0000-000000000000";
+        var mIsMerchant = @ViewBag.IsMerchant;
+
+        var vm = new Vue({
+            el: "#divMain",
+            data: {
+                TransTpye: 1,
+                HandlerName: "",
+                //SPPurchaseID: empGuid,
+                WHPurchaseID: empGuid,
+                WHRelocationFromID: empGuid,
+                WHRelocationInID: empGuid,
+                WHReturnID: empGuid,
+                WHReturnDesc: "",
+                SPReturnDesc: "",
+                Remarks: "",
+                isMerchant: mIsMerchant,
+                Condition: {
+                    MerchantId: empGuid,
+                    BatchNum: "",
+                    ProdCode: "",
+                    ProdCodeList: [],
+                    Attr1: empGuid,
+                    Attr2: empGuid,
+                    Attr3: empGuid,
+                    WhId: empGuid,
+                },
+                Items: [{
+                    SKU: empGuid,
+                    CatalogId: empGuid,
+                    ProdName: "",
+                    Attr1: empGuid,
+                    Attr2: empGuid,
+                    Attr3: empGuid,
+                    Attr1Desc: "",
+                    Attr2Desc: "",
+                    Attr3Desc: "",
+                    TransQty: 0,
+                    UnitPrice: 0,
+                    Subtotal: 0,
+                    EditState: false,
+                    IsChecked: false
+                }],
+                ReturnItems: [{
+                    TransFrom: empGuid,
+                    TransTo: empGuid,
+                    TransFromDesc: "",
+                    TransToDesc: "",
+                    SKU: empGuid,
+                    CatalogId: empGuid,
+                    ProdName: "",
+                    Attr1: empGuid,
+                    Attr2: empGuid,
+                    Attr3: empGuid,
+                    Attr1Desc: "",
+                    Attr2Desc: "",
+                    Attr3Desc: "",
+                    TransQty: 0,
+                    ReturnQty: 0,
+                    SalesQty: 0,
+                    UnitPrice: 0,
+                    Subtotal: 0,
+                    EditState: false,
+                    IsChecked: false
+                }],
+                IsCheckAllItems: false,
+                IsCheckAllRtnItems: false,
+                IsShowTransItems: false,
+                IsShowReturnItems: false
+            },
+            methods: {
+                checkAllItems: function () {
+                    vm.Items.forEach(function (item, val) {
+                        item.IsChecked = vm.IsCheckAllItems;
+                    });
+                },
+                checkAllRtnItems: function () {
+                    vm.ReturnItems.forEach(function (item, val) {
+                        item.IsChecked = vm.IsCheckAllRtnItems;
+                    });
+                },
+                setItemEditState: function (index, state) {
+                    var transQty = vm.Items[index].TransQty;
+                    var unitPrice = vm.Items[index].UnitPrice;
+                    if (transQty < 0) {
+                        vm.Items[index].TransQty = 0;
+                    }
+                    if (unitPrice < 0) {
+                        vm.Items[index].UnitPrice = 0;
+                    }
+                    vm.Items[index].Subtotal = transQty * unitPrice;
+                    vm.Items[index].EditState = state;
+                    if (vm.Items[index].Subtotal > 0) {
+                        if (vm.Items[index].IsChecked == false) {
+                            vm.Items[index].IsChecked = true;
+                        }
+                    }
+                    else {
+                        vm.Items[index].IsChecked = false;
+                    }
+
+                    Vue.set(vm.Items, index, vm.Items[index]);
+                },
+                setRtnItemEditState: function (index, state) {
+                    var rtnQty = vm.ReturnItems[index].ReturnQty;
+                    var unitPrice = vm.ReturnItems[index].UnitPrice;
+                    if (rtnQty < 0) {
+                        vm.ReturnItems[index].ReturnQty = 0;
+                    }
+                    if (unitPrice < 0) {
+                        vm.ReturnItems[index].UnitPrice = 0;
+                    }
+                    vm.ReturnItems[index].Subtotal = rtnQty * unitPrice;
+                    vm.ReturnItems[index].EditState = state;
+                    if (vm.ReturnItems[index].Subtotal > 0) {
+                        if (vm.ReturnItems[index].IsChecked == false) {
+                            vm.ReturnItems[index].IsChecked = true;
+                        }
+                        else {
+                            vm.ReturnItems[index].IsChecked = false;
+                        }
+                    }
+
+                    Vue.set(vm.ReturnItems, index, vm.ReturnItems[index]);
+                },
+                //獲取採購產品信息
+                getProdInfo: function () {
+                    vm.IsShowReturnItems = false;
+
+                    if (vm.Condition.ProdCodeList.length > 0) {
+                        var data = new Object();
+                        data.Condition = vm.Condition;
+                        WS.AjaxP("post", "/AdminAPI/Inventory/GetPurchaseItmLst", data,
+                            function (response) {
+                                vm.Items = response;
+                                if (vm.Items.length > 0) {
+                                    vm.IsShowTransItems = true;
+
+                                    vm.Items.forEach(function (item, val) {
+                                        item.IsChecked = false;
+                                        item.EditState = false;
+                                        item.Subtotal = 0;
+                                    });
+
+                                    var data = new Object();
+                                    data.CatalogId = vm.Items[0].CatalogId;
+                                    vm.getCurrentAttrList(data);
+                                }
+                                else {
+                                    vm.IsShowTransItems = false;
+                                }
+                            }, function () {
+                        });
+                    }
+                },
+                //獲取採購產品信息
+                getProdInfoSingle: function () {
+                    vm.IsShowReturnItems = false;
+
+                    vm.Condition.ProdCodeList = [];
+                    if (vm.Condition.ProdCode.length > 0) {
+                        vm.Condition.ProdCodeList.push(vm.Condition.ProdCode);
+                    }
+
+                    if (vm.Condition.ProdCodeList.length > 0) {
+                        var data = new Object();
+                        data.Condition = vm.Condition;
+                        WS.AjaxP("post", "/AdminAPI/Inventory/GetPurchaseItmLst", data,
+                            function (response) {
+                                vm.Items = response;
+                                if (vm.Items.length > 0) {
+                                    vm.IsShowTransItems = true;
+
+                                    vm.Items.forEach(function (item, val) {
+                                        item.IsChecked = false;
+                                        item.EditState = false;
+                                        item.Subtotal = 0;
+                                    });
+
+                                    var data = new Object();
+                                    data.CatalogId = vm.Items[0].CatalogId;
+                                    vm.getCurrentAttrList(data);
+                                }
+                                else {
+                                    vm.IsShowTransItems = false;
+                                }
+                            }, function () {
+                            });
+                    }
+                },
+                //獲取採購退回的庫存交易明細
+                getReturnItems: function () {
+                    vm.IsShowTransItems = false;
+
+                    var data = new Object();
+                    data.Condition = vm.Condition;
+                    vm.Condition.WhId = vm.WHReturnID;
+                    WS.AjaxP("post", "/AdminAPI/Inventory/GetPurReturnTransItmLst", data, function (response) {
+                        vm.ReturnItems = response;
+                        if (vm.ReturnItems.length > 0) {
+                            vm.WHReturnDesc = response[0].TransFromDesc;
+                            vm.SPReturnDesc = response[0].TransToDesc;
+                            vm.IsShowReturnItems = true;
+
+                            vm.ReturnItems.forEach(function (item, val) {
+
+                                item.IsChecked = false;
+                                item.EditState = false;
+                                item.ReturnQty = 0,
+                                item.Subtotal = 0;
+                            });
+
+                            var data = new Object();
+                            data.CatalogId = vm.ReturnItems[0].CatalogId;
+                            vm.getCurrentAttrList(data);
+                        }
+                        else {
+                            vm.WHReturnDesc = "";
+                            vm.SPReturnDesc = "";
+                            vm.IsShowReturnItems = false;
+                        }
+                    }, function () {
+                    });
+                },
+                getCurrentAttrList: function (data) {
+                    var dataAjaxP = new Object();
+                    dataAjaxP.CatID = data.CatalogId;
+                    //清空屬性下拉框的資料
+                    //$("#cboAttrI").empty();
+                    //vm.Condition.Attr1 = empGuid;
+                    //$("#cboAttrII").empty();
+                    //$("#cboAttrIII").empty();
+                    //獲取選中目錄關聯的自定義屬性
+                    WS.AjaxP("get", "/AdminAPI/Inventory/GetInvAttrLstCaches", dataAjaxP, function (response) {
+                        InitNormalSelectByData("cboAttrI", response.AttrIList);
+                        $("#cboAttrI").val(vm.Condition.Attr1);
+                        InitNormalSelectByData("cboAttrII", response.AttrIIList);
+                        $("#cboAttrII").val(vm.Condition.Attr2);
+                        InitNormalSelectByData("cboAttrIII", response.AttrIIIList);
+                        $("#cboAttrIII").val(vm.Condition.Attr3);
+                    }, function () {
+                    });
+                },
+                saveTransItems: function () {
+                    var strTransDate = $("#txtTransDate").val();
+                    if (strTransDate == "" || strTransDate == undefined) {
+                        //日期不能為空
+                        showWarn('@BDMall.Resources.Message.DateRequire');
+                        return;
+                    }
+                    else {
+                        if (vm.TransTpye == "1") {
+                            @*if (vm.SPPurchaseID == empGuid || vm.SPPurchaseID == "-1" || vm.SPPurchaseID == undefined) {
+                                //需要選擇供應商
+                                showWarn('@BDMall.Resources.Message.PleaseSelectSupplier');
+                                return;
+                            }*@
+                            if (vm.WHPurchaseID == empGuid || vm.WHPurchaseID == "-1" || vm.WHPurchaseID == undefined) {
+                                //需要選擇倉庫
+                                showWarn('@BDMall.Resources.Message.PleaseSelectWarehouse');
+                                return;
+                            }
+                            if (vm.Condition.BatchNum == "" || vm.Condition.BatchNum == undefined) {
+                                //需要輸入批號
+                                showWarn('@BDMall.Resources.Message.BatchNumRequire');
+                                return;
+                            }
+                        }
+                        else if (vm.TransTpye == "2") {
+                            if (vm.WHRelocationFromID == empGuid || vm.WHRelocationFromID == "-1" || vm.WHRelocationFromID == undefined) {
+                                //需要選擇倉庫
+                                showWarn('@BDMall.Resources.Message.PleaseSelectWarehouse');
+                                return;
+                            }
+                            if (vm.WHRelocationInID == empGuid || vm.WHRelocationInID == "-1" || vm.WHRelocationInID == undefined) {
+                                //需要選擇倉庫
+                                showWarn('@BDMall.Resources.Message.PleaseSelectWarehouse');
+                                return;
+                            }
+                            if (vm.WHRelocationFromID == vm.WHRelocationInID) {
+                                //進出倉需不一樣
+                                showWarn('@BDMall.Resources.Message.PleaseSelectDiffWarehouse');
+                                return;
+                            }
+                        }
+                        else if (vm.TransTpye == "3") {
+                            if (vm.Condition.BatchNum == "" || vm.Condition.BatchNum == undefined) {
+                                //需要輸入批號
+                                showWarn('@BDMall.Resources.Message.BatchNumRequire');
+                                return;
+                            }
+                        }
+                        else {
+                            return;
+                        }
+
+                        var objSaveData = new Object();
+                        objSaveData.TransType = vm.TransTpye;
+                        objSaveData.TransDate = strTransDate;
+                        objSaveData.Handler = vm.HandlerName;
+                        objSaveData.BatchNum = vm.Condition.BatchNum;
+                        objSaveData.Remarks = vm.Remarks;
+
+                        if (vm.TransTpye == "1" || vm.TransTpye == "2") {
+                            var iQtyChecked = 0;//選中項數量
+                            var iQtyEditing = 0;//編輯中的項數量
+                            var iQtyZero = 0;//選中且交易數量為零的項數量
+
+                            vm.Items.forEach(function (item, val) {
+                                if (item.IsChecked) {
+                                    iQtyChecked = iQtyChecked + 1;
+                                    if (item.TransQty <= 0) {
+                                        iQtyZero = iQtyZero + 1;
+                                    }
+                                }
+                                if (item.EditState) {
+                                    iQtyEditing = iQtyEditing + 1;
+                                }
+                            });
+
+                            if (iQtyChecked < 1) {
+                                showWarn('@BDMall.Resources.Message.OneSelect');
+                                return;
+                            }
+                            if (iQtyEditing > 0) {
+                                showWarn('@BDMall.Resources.Message.PleaseCancelEditStatus');
+                                return;
+                            }
+                            if (iQtyZero > 0) {
+                                showWarn('@BDMall.Resources.Message.SalesReturnQtySufficient');
+                                return;
+                            }
+
+                            if (vm.TransTpye == "1") {
+                                //objSaveData.TransFrom = vm.SPPurchaseID;
+                                objSaveData.TransFrom = empGuid;
+                                objSaveData.TransTo = vm.WHPurchaseID;
+                            }
+                            else if (vm.TransTpye == "2") {
+                                objSaveData.TransFrom = vm.WHRelocationFromID;
+                                objSaveData.TransTo = vm.WHRelocationInID;
+                            }
+
+                            objSaveData.TransactionItemList = vm.Items;
+                        }
+                        else {
+                            var iQtyChecked = 0;//選中項數量
+                            var iQtyEditing = 0;//編輯中的項數量
+                            var iQtyZeroReturn = 0;//選中且退回數量為零的項數量
+                            //var iQtyOverrunReturn = 0;//選中且退回數量大於交易數的項數量
+                            var iQtyOverrunSalesQty = 0;//選中且退回數量大於可銷售數的項數量
+                            vm.ReturnItems.forEach(function (item, val) {
+                                if (item.IsChecked) {
+                                    iQtyChecked = iQtyChecked + 1;
+                                    if (item.ReturnQty <= 0) {
+                                        iQtyZeroReturn = iQtyZeroReturn + 1;
+                                    }
+                                    //else if (item.ReturnQty > item.TransQty) {
+                                    //    iQtyOverrunReturn = iQtyOverrunReturn + 1;
+                                    //}
+                                    else if (item.ReturnQty > item.SalesQty) {
+                                        iQtyOverrunSalesQty = iQtyOverrunSalesQty + 1;
+                                    }
+                                }
+                                if (item.EditState) {
+                                    iQtyEditing = iQtyEditing + 1;
+                                }
+                            });
+
+                            if (iQtyChecked < 1) {
+                                showWarn('@BDMall.Resources.Message.OneSelect');
+                                return;
+                            }
+                            if (iQtyEditing > 0) {
+                                showWarn('@BDMall.Resources.Message.PleaseCancelEditStatus');
+                                return;
+                            }
+                            if (iQtyZeroReturn > 0) {
+                                showWarn('@BDMall.Resources.Message.SalesReturnQtySufficient');
+                                return;
+                            }
+                            @*if (iQtyOverrunReturn > 0) {
+                                showWarn('@BDMall.Resources.Message.SalesReturnQtyOverrun');
+                                return;
+                            }*@
+                            if (iQtyOverrunSalesQty > 0) {
+                                showWarn('@BDMall.Resources.Message.SalseReturnQtyOverSalesQty');
+                                return;
+                            }
+
+                            objSaveData.TransFrom = vm.ReturnItems[0].TransTo;
+                            objSaveData.TransTo = vm.ReturnItems[0].TransFrom;
+                            objSaveData.TransactionItemList = vm.ReturnItems;
+                        }
+
+                        WS.AjaxP("post", "/adminapi/Inventory/InsertInvTransRec", objSaveData, function (response) {
+                            if (response.Succeeded == true) {
+
+                                resetVueData();
+
+                                showInfo('@BDMall.Resources.Message.SaveSuccess');
+                            }
+                            else {
+                                showWarn('@BDMall.Resources.Message.SaveFail' + "\n\n" + response.Message);
+                            }
+                        }, function () { })
+                    }
+                },
+                selectProductItem: function () {
+                    var mercahntId= vm.Condition.MerchantId;
+                    OpenDialog("@BDMall.Resources.Label.SelectProduct", 1000, 700, "/Product/SelectProduct/0/" + mercahntId+"/0", null, function (data) {
+                        if (data && data.results && data.results.length > 0) {
+                            //vm.Condition.ProdCode = data.results[0].Code;
+                            vm.Condition.ProdCode = "";
+                            vm.Condition.ProdCodeList = [];
+                            for (var i = 0; i < data.results.length; i++) {
+                                vm.Condition.ProdCodeList.push(data.results[i].Code);
+                            }
+                            vm.getProdInfo();
+                        }
+                    });
+                },
+            },
+            mounted: function () {
+                if (mIsMerchant) {
+                    InitBootstrapSelect("cboMerchant", "/adminapi/Dict/GetMerchantCboSrc", 1, false, false, null, function () {
+                        var merchantVal = $("#cboMerchant").val();
+                        getInventoryTransCaches(merchantVal);
+                        vm.Condition.MerchantId = merchantVal;
+                    });
+                }
+                else {
+                    InitBootstrapSelect("cboMerchant", "/adminapi/Dict/GetMerchantCboSrc", 1, true, true, null, function () { });
+                }
+            }
+        });
+
+        //重置Vue模型的數據
+        function resetVueData() {
+
+            var nowDay = getNowFormatDate();
+            $("#txtTransDate").val(nowDay);
+            vm.TransTpye = 1;
+            //vm.SPPurchaseID = empGuid;
+            //vm.WHPurchaseID = empGuid;
+            //vm.WHRelocationFromID = empGuid;
+            //vm.WHRelocationInID = empGuid;
+            vm.WHReturnDesc = "";
+            vm.SPReturnDesc = "";
+            vm.Remarks = "";
+            vm.Condition.BatchNum = "";
+            vm.Condition.ProdCode = "";
+            vm.Condition.ProdCodeList = [];
+            vm.Condition.Attr1 = empGuid;
+            vm.Condition.Attr2 = empGuid;
+            vm.Condition.Attr3 = empGuid;
+            vm.IsCheckAllItems = false;
+            vm.IsCheckAllRtnItems = false;
+            vm.IsShowTransItems = false;
+            vm.IsShowReturnItems = false;
+        }
+
+        //获取当前时间，格式YYYY-MM-DD
+        function getNowFormatDate() {
+            var date = new Date();
+            var seperator1 = "-";
+            var year = date.getFullYear();
+            var month = date.getMonth() + 1;
+            var strDate = date.getDate();
+            if (month >= 1 && month <= 9) {
+                month = "0" + month;
+            }
+            if (strDate >= 0 && strDate <= 9) {
+                strDate = "0" + strDate;
+            }
+            var currentdate = year + seperator1 + month + seperator1 + strDate;
+            return currentdate;
+        }
+
+        function onChangeMerchantId() {
+            resetVueData();
+
+            var merchantVal = $("#cboMerchant").val();
+            if (merchantVal != "-1") {
+                getInventoryTransCaches(merchantVal);
+                vm.Condition.MerchantId = merchantVal;
+            }
+            else {
+                vm.Condition.MerchantId = empGuid;
+            }
+        }
+
+        //獲取頁面的初始緩存數據
+        function getInventoryTransCaches(merchantVal) {
+            var data = new Object();
+            data.merchantId = merchantVal;
+            WS.AjaxP("get", "/AdminAPI/Inventory/GetInvTransPageCaches", data, function (response) {
+                vm.HandlerName = response.CurrentUser;
+                InitNormalSelectByDataOnly("cboTransType", response.TransTypeList);
+                //InitNormalSelectByData("cboSPPurchase", response.SupplierList);
+
+                if (response.WarehouseList != undefined && response.WarehouseList.length > 0) {
+                    var firstWhId = response.WarehouseList[0].Id;
+                    vm.WHPurchaseID = firstWhId;
+                    vm.WHRelocationFromID = firstWhId;
+                    vm.WHRelocationInID = firstWhId;
+                    vm.WHReturnID = firstWhId;
+                }
+                InitNormalSelectByDataOnly("cboWHPurchase", response.WarehouseList);
+                InitNormalSelectByDataOnly("cboWHRelocationFrom", response.WarehouseList);
+                InitNormalSelectByDataOnly("cboWHRelocationIn", response.WarehouseList);
+                InitNormalSelectByDataOnly("cboWHReturn", response.WarehouseList);
+            }, function () {
+            });
+        }
+
+        $(document).ready(function () {
+
+            InitDateTimePicker();
+
+            resetVueData();
+        });
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+    </script>
+}
+

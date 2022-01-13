@@ -8,8 +8,9 @@ using Web.Framework;
 
 namespace BDMall.Domain
 {
-    public class ProdSearchCond :PageInfo
+    public class ProdSearchCond  
     {
+        public PageInfo PageInfo { get; set; }
 
         public Language Language { get; set; }
 

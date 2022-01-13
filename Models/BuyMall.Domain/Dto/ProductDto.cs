@@ -9,6 +9,8 @@ namespace BDMall.Domain
 {
     public class ProductDto
     {
+        public Guid Id { get; set; }
+
         public Guid MerchantId { get; set; }
 
         public string MerchantName { get; set; }

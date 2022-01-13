@@ -1,0 +1,286 @@
+﻿
+@{
+    ViewBag.Title = "SupplierEdit";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="divMain" v-cloak>
+    <div id="divEmptyTop" class="form-group"></div>
+    <div id="divContent" class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">@BDMall.Resources.Label.SupplierView</h3>
+        </div>
+        <div class="panel-body">
+            <input type="hidden" id="hidID" v-model="spItem.Id" />
+            <form id="frmInput" class="form-horizontal">
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-8">
+                        <multilang-bar v-bind:data="spItem.NameList" ref="langbar" v-bind:selectlanguage="selectLanguage"></multilang-bar>
+                    </div>
+                </div>
+                <div class="form-group col-sm-12">
+                    <div v-for="sItem in spItem.NameList" v-show="sItem.Lang.Code==languageType">
+                        <label class="col-sm-2 control-label text-danger">*@BDMall.Resources.Label.SupplierName</label>
+                        <div class="col-sm-8">
+                            <input type="text" v-bind:name="'spName_'+sItem.Lang.Code" v-bind:id="'spName_'+sItem.Lang.Code" class="form-control" v-model="sItem.Desc" v-bind:readonly="spId!='00000000-0000-0000-0000-000000000000'&&editType=='Readonly'" />
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group col-sm-12">
+                    <label for="cboMerchant" class="control-label col-sm-2 text-danger">*@BDMall.Resources.Label.MerchantName</label>
+                    <div class="col-sm-8">
+                        <div v-show="editType!='Readonly'">
+                            <select id="cboMerchant" class="form-control selectpicker show-tick" name="merchantName"></select>
+                        </div>
+                        <div v-show="editType=='Readonly'">
+                            <input type="text" class="form-control" id="txtMerchant" v-model="spItem.MerchantName" readonly>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group col-sm-12">
+                    <label for="txtContact" class="col-sm-2 control-label">@BDMall.Resources.Label.Contact</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" id="txtContact" name="Contact" placeholder="@BDMall.Resources.Label.Contact" v-model="spItem.Contact" v-bind:readonly="spId!='00000000-0000-0000-0000-000000000000'&&editType=='Readonly'">
+                    </div>
+                </div>
+                <div class="form-group col-sm-12">
+                    <label for="txtPhoneNum" class="col-sm-2 control-label">@BDMall.Resources.Label.Phone</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" id="txtPhoneNum" name="PhoneNum" placeholder="@BDMall.Resources.Label.Phone" v-model="spItem.PhoneNum" v-bind:readonly="spId!='00000000-0000-0000-0000-000000000000'&&editType=='Readonly'">
+                    </div>
+                </div>
+                <div class="form-group col-sm-12">
+                    <label for="txtFaxNum" class="col-sm-2 control-label">@BDMall.Resources.Label.Fax</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" id="txtFaxnum" name="FaxNum" placeholder="@BDMall.Resources.Label.Fax" v-model="spItem.FaxNum" v-bind:readonly="spId!='00000000-0000-0000-0000-000000000000'&&editType=='Readonly'">
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <input type="button" class="btn btn-default btn-action-default" value="@BDMall.Resources.Action.Close" v-on:click="closeTab" />
+        <input id="btnEdit" type="button" class="btn btn-default btn-action-default" value="@BDMall.Resources.Action.Edit" v-if="isReadonly&&isMerchant" v-on:click="setModifyState" />
+        <input id="btnModiy" type="button" class="btn btn-primary btn-action-default" value="@BDMall.Resources.Action.Save" v-if="!isReadonly" v-on:click="saveCheck" />
+        <input id="btnCancelModify" type="button" class="btn btn-default btn-action-default" value="@BDMall.Resources.Action.Cancel" v-if="!isReadonly&&editType=='Modify'" v-on:click="cancelSave" />
+    </div>
+</div>
+
+@section scripts{
+    <script src="~/Scripts/admin/vue-component/multilangbar.js"></script>
+
+    <script type="text/javascript">
+        var mLanguage = (window.parent.$.cookie("Language")==undefined?"E":window.parent.$.cookie("Language"));
+        var mId = '@ViewBag.ID';
+        var mEditType = '@ViewBag.EditType';
+        var mIsMerchant = @ViewBag.IsMerchant;
+        var eptGuid = "00000000-0000-0000-0000-000000000000";
+
+        var vm = new Vue({
+            el:"#divMain",
+            data:{
+                spId :mId,
+                editType:mEditType,
+                isReadonly: false,
+                languageType:"",
+                language: "",
+                isMerchant: mIsMerchant,
+                merchantName: "",
+                spItem:{
+                    Id: eptGuid,
+                    MerchantId: "",
+                    NameList: [{ Lang: { Code: "", Text: "" }, Desc: "" }],
+                    Contact:"",
+                    PhoneNum:"",
+                    FaxNum:"",
+                    IsModify: false,
+                    MerchantName: "",
+                }
+            },
+            methods:{
+                getSupplierItem:function(){
+                    var data =  new Object();
+                    data.Id = vm.spId;
+                    WS.AjaxP("get","/adminapi/Inventory/GetSupplierInfo",data,function(response){
+                        vm.spItem = response;
+
+                        vm.$nextTick(function () {
+                            vm.setDefaultLanguage(vm.spItem.NameList);
+                            vm.spItem.NameList.forEach(function (val) {
+                                $("#spName_" + val.Lang.Code).rules('add', { required: true, messages: { required: '@BDMall.Resources.Message.RequiredField' } });
+                            });
+
+                            $("#cboMerchant").selectpicker('val', vm.spItem.MerchantId);
+                        });
+                    },function(){});
+                },
+                selectLanguage:function(obj)
+                {
+                    vm.$refs.langbar.setCurrentLanguage(obj.Lang.Code);
+                    vm.language = obj.Lang.Text;
+                    vm.languageType = obj.Lang.Code;
+                },
+                setDefaultLanguage: function (data) {
+                    if (data.length > 0) {
+                        var defaultLang = data[0].Lang.Code;
+                        vm.$refs.langbar.setCurrentLanguage(defaultLang);
+                        vm.language = data[0].Lang.Text;
+                        vm.languageType = data[0].Lang.Code;
+                    }
+                },
+                saveCheck: function () {
+                    if (spValidate.form()) {
+                        $("#frmInput").submit();
+                    }
+                },
+                save:function(){
+                    if (vm.spItem != undefined) {
+                        if (vm.editType == "Add") {
+                            vm.spItem.IsModify = false;
+                        }
+                        else {
+                            vm.spItem.IsModify = true;
+                        }
+
+                        var merchId = $("#cboMerchant").val();
+                        if (merchId != "-1") {
+                            vm.spItem.MerchantId = $("#cboMerchant").val();
+                        }
+                        else {
+                            vm.spItem.MerchantId = eptGuid;
+                        }
+                    }
+
+                    WS.AjaxP("post", "/adminapi/Inventory/SaveSupplierRec", vm.spItem, function (response) {
+                        if (response.Succeeded == true) {
+                            if (vm.editType == "Add"){
+                                //若當前編輯模式是新增，則更新當前緩存中的記錄ID
+                                vm.spId = response.ReturnValue;
+                                vm.spItem.Id = response.ReturnValue;
+                            }
+                            vm.setModifyState();
+                            showCloseInfo('@BDMall.Resources.Message.SaveSuccess', true);
+                            @*clowWin();*@
+                        }
+                        else {
+                            showWarn('@BDMall.Resources.Message.SaveFail' + "\n\n" + response.Message);
+                        }
+                    }, function () { })
+                },
+                closeTab:function(){
+                    clowWin();
+                },
+                cancelSave:function(){
+                    SystemConfirm('@BDMall.Resources.Message.ConfirmCancel', function () {
+                        vm.setReadonlyState();
+                    });
+                },
+                //設置窗體內容為只讀狀態
+                setReadonlyState:function () {
+                    vm.isReadonly = true;
+                    vm.editType = "Readonly";
+                    //vm.IsModify = false;
+                    vm.getSupplierItem();
+                },
+                //設置窗體內容為修改狀態
+                setModifyState:function () {
+                    vm.isReadonly = false;
+                    //vm.IsModify = true;
+                    vm.editType = "Modify";
+                },
+                //設置窗體內容為新增狀態
+                setAddState:function () {
+                    vm.isReadonly = false;
+                    //vm.IsModify = false;
+                    vm.editType = "Add";
+                }
+            },
+            mounted: function () {
+                //InitBootstrapSelect("cboMerchant", "/adminapi/Merchant/GetMerchantCboSrc", 1, true, false, null, function () { });
+                if (mIsMerchant) {
+                    InitBootstrapSelect("cboMerchant", "/adminapi/Merchant/GetMerchantCboSrc", 1, false, false, null, function () {
+                        var merchantVal = $("#cboMerchant").val();
+                        if (true) {
+
+                        }
+                        vm.spItem.MerchantId = merchantVal;
+                    });
+                }
+                else {
+                    InitBootstrapSelect("cboMerchant", "/adminapi/Merchant/GetMerchantCboSrc", 1, true, true, null, function () { });
+                }
+            }
+        });
+
+        function initSPValidate() {
+
+            spValidate = $("#frmInput").validate({
+                ignore: "",
+                submitHandler: function () {
+                    vm.save();
+                },
+                rules: {
+                    merchantName: {
+                        valueNotEquals: "-1"
+                    }
+                },
+                messages: {
+                    merchantName: "@BDMall.Resources.Message.RequiredField"
+                },
+                success: function (label) {
+                    $(label).parent().removeClass('has-error');
+                },
+                showErrors: function (errorMap, errorList) {
+                    // 遍历错误列表
+                    focusWrongPlace(errorMap, function (lang){
+                        vm.$refs.langbar.setCurrentLanguage(lang);
+                        vm.languageType = lang;
+                    });
+                    // 此处注意，一定要调用默认方法，这样保证提示消息的默认效果
+                    this.defaultShowErrors();
+                }
+            });
+        }
+
+        function valueNotEqualsValidate() {
+            jQuery.validator.addMethod("valueNotEquals", function (value, element, param) {
+                if (value == param || param == "" || param == null || value == null) {
+                    return false;
+                }
+                else {
+                    return true;
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            vm.Id = '@ViewBag.ID';
+            vm.editType = '@ViewBag.EditType';
+
+            if (vm.editType == "Readonly") {
+                vm.setReadonlyState();
+            }
+            else if (vm.editType == "Modify") {
+                vm.setModifyState();
+                vm.getSupplierItem();//填充欄位資料
+            }
+            else if (vm.editType == "Add") {
+                vm.setAddState();
+                vm.getSupplierItem();//填充欄位資料
+            }
+
+            valueNotEqualsValidate();
+            initSPValidate();
+        });
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+    </script>
+}
+

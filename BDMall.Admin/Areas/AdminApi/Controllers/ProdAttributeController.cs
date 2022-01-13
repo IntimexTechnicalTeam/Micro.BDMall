@@ -151,5 +151,17 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
           
             return list;
         }
+
+        /// <summary>
+        /// 通过产品ID获取产品已经配对的属性下拉框对象
+        /// </summary>
+        /// <param name="prodId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public List<AttributeObjectView> GetInvAttributeByProductWithMap(Guid prodId)
+        {
+            List<AttributeObjectView> list =  attributeBLL.GetInvAttributeByProductWithMap(prodId);         
+            return list;
+        }
     }
 }

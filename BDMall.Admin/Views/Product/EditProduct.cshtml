@@ -424,7 +424,7 @@
                                         <tr v-for="item,index in NonInvAttributes">
                                             <td class="col-md-2">{{item.Desc}}</td>
                                             <td class="col-md-10">
-                                                <select v-bind:id="'cboNonInvAttr'+index" multiple data-width="300px"></select>
+                                                <select v-bind:id="'cboNonInvAttr'+item.Id" multiple data-width="300px"></select>
                                                 @*<input type="button" class="btn btn-default" v-on:click="addNonInvAttribute(item.Id,item.Desc)" value="@BDMall.Resources.Action.Add" v-bind:disabled="isEnabled==false" />*@
                                             </td>
 
@@ -781,13 +781,13 @@
                                 });
                                 vm.$nextTick(function () {
                                     response.forEach(function (val, index) {
-                                        InitBootstrapSelectByData("cboNonInvAttr" + index, val.SubItems, 30, true, false, function () {
+                                        InitBootstrapSelectByData("cboNonInvAttr" + val.Id, val.SubItems, 30, true, false, function () {
                                             if (vm.productInfo.InveAttrList.length >= index+1) {
                                                 var attrValues = [];
                                                 vm.productInfo.NonInveAttrList[index].SubItems.forEach(function (val) {
                                                     attrValues.push(val.Id);
                                                 });
-                                                $('#cboNonInvAttr' + index).selectpicker('val', attrValues);
+                                                $('#cboNonInvAttr' + val.Id).selectpicker('val', attrValues);
                                             }
 
                                         });
@@ -826,10 +826,10 @@
                                 vm.NonInvAttributes = response;
                                 vm.$nextTick(function () {
                                     response.forEach(function (val, index) {
-                                        InitBootstrapSelectByData("cboNonInvAttr" + index, val.SubItems, 30, true, true, function () {
+                                        InitBootstrapSelectByData("cboNonInvAttr" + val.Id, val.SubItems, 30, true, false, function () {
                                             if (vm.productInfo.NonInveAttrList.length > 0) {
                                                 var vals = getProductNonInvAttrValues(val.Id);
-                                                $('#cboNonInvAttr' + index).selectpicker('val', vals);
+                                                $('#cboNonInvAttr' + val.Id).selectpicker('val', vals);
                                             }
                                         });
                                     });
@@ -894,9 +894,9 @@
 
                 },
                 save: function () {
-                    vm.productInfo.Specification.Unit = $("#cboUnit").val();
+                    vm.productInfo.Specification.Unit = $("#cboUnit").val() ==null ? 0 : 1;
                     //vm.productInfo.SpecifExtension.PermissionLevel = $("#cboPermission").val();
-                    vm.productInfo.Specification.PackageUnit = $("#cboCtnUnit").val();
+                    vm.productInfo.Specification.PackageUnit = $("#cboCtnUnit").val() ==null ? 0 :1;
                     vm.productInfo.Specification.WeightUnit = $("#cboWeightUnit").val();
                     vm.productInfo.CurrencyCode = $("#cboCurrency").val();
                     vm.productInfo.ActiveTimeFrom = $("#txtActiveFrom").val();
@@ -904,9 +904,10 @@
                     vm.productInfo.SaleTime = $("#txtSaleTime").val();
                     vm.productInfo.SalePrice = vm.productInfo.TimePrice;
                     vm.productInfo.Action = type;
-                    vm.productInfo.CountryIds = $('[name="country"]').val();
+                    vm.productInfo.CountryIds = $('[name="country"]').val() ==null ? [] : $('[name="country"]').val();
                     GetProductDetail();
                     fillProductAttrList();
+                    //console.log(vm.productInfo);                
                     WS.AjaxP("post", "/adminapi/product/Save", vm.productInfo, function (response) {
                         if (response.Succeeded === true) {
                             @*showCloseInfo('@BDMall.Resources.Message.SaveSuccess');*@
@@ -1216,7 +1217,7 @@
                             });
                         }
                     }
-                });
+                });              
             }
             return vals;
         }
@@ -1252,15 +1253,17 @@
             });
 
             vm.productInfo.NonInveAttrList.forEach(function (val, index) {
-                var cboValues = $("#cboNonInvAttr" + index).val();
+            //vm.NonInvAttributes.forEach(function (val, index){
+                var cboValues = $("#cboNonInvAttr" + val.Id).val();
                 if (cboValues) {
                     val.SubItems = [];
                     cboValues.forEach(function (a) {
                         var keyval = {};
                         keyval.Id = val.Id;
                         keyval.Text = a;
-                        val.SubItems.push(keyval);
+                        val.SubItems.push(keyval);                      
                     });
+                     console.log(val.SubItems);
                 }
                 else {
                     val.SubItems = [];

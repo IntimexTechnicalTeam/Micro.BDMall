@@ -52,6 +52,8 @@ namespace BDMall.Domain
 
         public decimal GrossWeight { get; set; }
 
+        public WeightUnit WeightUnit { get; set; }
+
         /// <summary>
         /// SalePrice+附加价钱
         /// </summary>
@@ -117,6 +119,47 @@ namespace BDMall.Domain
 
         public ProductStatus ApproveType { get; set; }
 
+        public string ApproveTypeString
+        {
+            get
+            {
+                string result = "";
+                switch (ApproveType)
+                {
+                    case ProductStatus.Editing:
+                        result = Resources.Value.Editing;
+                        break;
+                    case ProductStatus.WaitingApprove:
+                        result = Resources.Value.WaitingApprove;
+                        break;
+                    case ProductStatus.Reject:
+                        result = Resources.Value.Reject;
+                        break;
+                    case ProductStatus.Pass:
+                        result = Resources.Value.Pass;
+                        break;
+                    case ProductStatus.OnSale:
+                        result = Resources.Value.OnSale;
+                        break;
+                    case ProductStatus.ManualOffSale:
+                        result = Resources.Value.ManualOffSale;
+                        break;
+                    case ProductStatus.AutoOffSale:
+                        result = Resources.Value.OffSale;
+                        break;
+                    case ProductStatus.WaitingOnSale:
+                        result = Resources.Value.WaitingOnSale;
+                        break;
+
+
+                }
+                return result;
+            }
+            set { }
+        }
+
+        public SimpleCurrency Currency { get; set; } = new SimpleCurrency();
+
         /// <summary>
         /// 優惠描述
         /// </summary>
@@ -125,7 +168,7 @@ namespace BDMall.Domain
        
         public string IconLUrl { get; set; }
 
-        public string UpdateDateString { get; set; }
+        public string UpdateDateString =>UpdateDate.Value.ToString("yyyy-MM-dd HH:mm:ss");
         /// <summary>
         /// 是否香港信心產品
         /// </summary>
@@ -140,7 +183,7 @@ namespace BDMall.Domain
         public string PackagingInfo { get; set; }
         public DateTime? CreateDate { get; set; }
 
-        public string CreateDateString { get; set; }
+        public string CreateDateString=> CreateDate.Value.ToString("yyyy-MM-dd HH:mm:ss");
         public DateTime? UpdateDate { get; set; }
 
         public string PromotionRuleTitle { get; set; }
@@ -200,6 +243,23 @@ namespace BDMall.Domain
 
         public string ImgPath { get; set; }
 
-      
+        /// <summary>
+        /// Web版产品图标
+        /// </summary>
+        public ProductType IconType { get; set; }
+
+        /// <summary>
+        /// 右角標類別
+        /// </summary>
+        public ProductType? IconRType { get; set; }
+        /// <summary>
+        /// 右角標路徑
+        /// </summary>
+        public string IconRUrl { get; set; }
+        /// <summary>
+        /// 左角標類別
+        /// </summary>
+        public ProductType? IconLType { get; set; }
+
     }
 }

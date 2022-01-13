@@ -55,7 +55,7 @@ namespace BDMall.BLL
         ///// <returns></returns>
         public virtual async Task UpdateProductWhenOffSale(string key, string Code)
         {
-            key = $"{key}_{Language.C}";
+            key = $"{PreHotType.Hot_Products}_{Language.C}";
             var product = await RedisHelper.HGetAsync<HotProduct>(key, Code);
             if (product != null)
             {
@@ -64,7 +64,7 @@ namespace BDMall.BLL
                 await RedisHelper.HSetAsync(key, Code, product);
             }
 
-            key = $"{key}_{Language.E}";
+            key = $"{PreHotType.Hot_Products}_{Language.E}";
             product = await RedisHelper.HGetAsync<HotProduct>(key, Code);
             if (product != null)
             {
@@ -73,7 +73,7 @@ namespace BDMall.BLL
                 await RedisHelper.HSetAsync(key, Code, product);
             }
 
-            key = $"{key}_{Language.S}";
+            key = $"{PreHotType.Hot_Products}_{Language.S}";
             product = await RedisHelper.HGetAsync<HotProduct>(key, Code);
             if (product != null)
             {

@@ -15,11 +15,12 @@ namespace BDMall.Repository
 {
     public class ProductRepository : PublicBaseRepository ,IProductRepository
     {
-        //public IBaseRepository baseRepository;
+        public ITranslationRepository TranslationRepository;
 
         public ProductRepository(IServiceProvider service) : base(service)
         {
             //baseRepository = this.Services.Resolve<IBaseRepository>();
+            TranslationRepository = service.Resolve<ITranslationRepository>();
         }
 
         public Task UpdateProduct()
@@ -67,17 +68,19 @@ namespace BDMall.Repository
             var baseQuery = GenBaseQuery(cond);
             data.TotalRecord = GetProductCount(baseQuery);
 
-            var fromIndex = ((cond.Page - 1) * cond.PageSize) + 1;
-            var toIndex = cond.Page * cond.PageSize;
+            var fromIndex = ((cond.PageInfo.Page - 1) * cond.PageInfo.PageSize) + 1;
+            var toIndex = cond.PageInfo.Page * cond.PageInfo.PageSize;
             List<SqlParameter> paramList = new List<SqlParameter>();
 
             sb.AppendLine("select ProductId, Name, ApproveType, CatalogId, CatalogName, Code, CreateDate, CurrencyCode, GrossWeight, IconType, IconUrl, IsActive, IsApprove, "); 
             sb.AppendLine("IsGS1, MerchantId, MerchantName, MerchantNameId, SalePrice, OriginalPrice,MarkupPrice, Seq, UpdateDate, WeightUnit, Score, ''as PromotionRuleTitle,IsLimit,IsSalesReturn,NameTransId,PurchaseCounter,IsDeleted,GS1Status");
             sb.AppendLine(" from(");
 
-            if (!cond.SortName.IsEmpty())
+            if (!cond.PageInfo.SortName.IsEmpty())
             {
-                sb.AppendLine($"select ROW_NUMBER() OVER(order by {cond.SortName} {cond.SortOrder}) as rowNum");
+                if (cond.PageInfo.SortName == "ApproveTypeString") cond.PageInfo.SortName = "ApproveType";
+
+                sb.AppendLine($"select ROW_NUMBER() OVER(order by {cond.PageInfo.SortName} {cond.PageInfo.SortOrder}) as rowNum");
             }
             else
             {
@@ -102,6 +105,139 @@ namespace BDMall.Repository
 
             data.Data = result;
             return data;
+        }
+
+        public PageData<Product> SearchRelatedProduct(RelatedProductCond cond)
+        {
+
+            PageData<Product> list = new PageData<Product>();
+
+            var query = from i in baseRepository.GetList<Product>().ToList()
+                        join t in baseRepository.GetList<Translation>().ToList() on i.NameTransId equals t.TransId into tc
+                        from tt in tc.DefaultIfEmpty()
+                        join c in baseRepository.GetList<ProductCatalog>().ToList() on i.CatalogId equals c.Id
+                        orderby i.Code
+                        where i.IsDeleted == false && i.IsActive && i.Status == ProductStatus.OnSale
+                        && !(from r in baseRepository.GetList<ProductRelatedItem>().ToList() where r.ProductId == cond.ProductId && r.IsActive && !r.IsDeleted select r.ItemCode).Contains(i.Code)
+                        select new
+                        {
+                            product = i,
+                            catalog = c,
+                            tran = tt
+                        };
+
+            #region 查询条件
+
+            if (CurrentUser.IsMerchant)
+            {
+                query = query.Where(p => p.product.MerchantId == CurrentUser.MerchantId);
+            }
+
+            if (cond.ProductId != Guid.Empty)
+            {
+                query = query.Where(p => p.product.Id != cond.ProductId);
+            }
+
+            if (!string.IsNullOrEmpty(cond.ProductCode))
+            {
+                query = query.Where(p => p.product.Code == cond.ProductCode);
+            }
+            if (cond.CategoryID != Guid.Empty)
+            {
+                query = query.Where(p => p.catalog.Id == cond.CategoryID);
+            }
+
+            var queryGroup = query.GroupBy(g => g.product).Select(d => new { product = d.Key, trans = d.Select(a => a.tran).ToList() });
+
+            if (!string.IsNullOrEmpty(cond.ProductName))
+            {
+                queryGroup = queryGroup.Where(p => p.trans.Any(a => a.Value.Contains(cond.ProductName)));
+
+            }
+
+            #endregion
+
+            list.TotalRecord = queryGroup.Count();
+
+            List<Product> queryData = new List<Product>();
+
+            if (cond.PageInfo.PageSize > 0)
+            {
+                queryData = queryGroup.OrderBy(o => o.product.Code).Select(d => d.product).Skip(cond.PageInfo.Offset).Take(cond.PageInfo.PageSize).ToList();
+            }
+            else
+            {
+                queryData = queryGroup.OrderBy(o => o.product.Code).Select(d => d.product).ToList();
+            }
+            list.TotalRecord = queryData.Count();
+            list.Data = queryData;
+            return list;
+        }
+
+        public List<Product> GetRelatedProduct(Guid id)
+        {           
+           var list = (from i in baseRepository.GetList<ProductRelatedItem>()
+                    join p in baseRepository.GetList<Product>() on i.ItemCode equals p.Code
+                    where  i.IsDeleted == false && i.IsActive
+                    && i.ProductId == id && p.IsActive && p.IsDeleted == false && p.Status == ProductStatus.OnSale
+                    select p).ToList();
+            return list;
+        }
+
+        public LastVersionProductView GetLastVersionProductByCode(string prodCode)
+        {
+       
+                LastVersionProductView lvProduct = null;
+
+                if (!string.IsNullOrEmpty(prodCode))
+                {
+                    var lvProductList = GetLastVersionProductLstByCode(new List<string>() { prodCode });
+                    lvProduct = lvProductList.FirstOrDefault();
+                }
+
+                return lvProduct;
+           
+        }
+
+        public List<LastVersionProductView> GetLastVersionProductLstByCode(List<string> prodCodeLst)
+        {
+            var lvProductList = new List<LastVersionProductView>();
+
+            if (prodCodeLst != null && prodCodeLst.Any())
+            {
+                var query = (from p in baseRepository.GetList<Product>()
+                             where p.IsActive && p.IsDeleted == false && prodCodeLst.Contains(p.Code)
+                             select p).ToList();
+
+                var queryOnSaleGroup = query.Where(x => x.Status == ProductStatus.OnSale).GroupBy(x => x.Code);
+                var queryNotSaleGroup = query.Where(x => x.Status != ProductStatus.OnSale).GroupBy(x => x.Code);
+
+                foreach (var productGroup in queryOnSaleGroup)
+                {
+                    var product = productGroup.OrderByDescending(x => x.UpdateDate).FirstOrDefault();
+                    if (product != null)
+                    {
+                        var lvProduct = GenLastVerProd(product);
+                        lvProductList.Add(lvProduct);
+                    }
+                }
+
+                foreach (var productGroup in queryNotSaleGroup)
+                {
+                    var onSaleQty = lvProductList.Any(x => x.Code == productGroup.Key);
+                    if (!onSaleQty)
+                    {
+                        var product = productGroup.OrderByDescending(x => x.UpdateDate).FirstOrDefault();
+                        if (product != null)
+                        {
+                            var lvProduct = GenLastVerProd(product);
+                            lvProductList.Add(lvProduct);
+                        }
+                    }
+                }
+            }
+
+            return lvProductList;
         }
 
         private QueryParam GenBaseQuery(ProdSearchCond cond)
@@ -290,6 +426,41 @@ namespace BDMall.Repository
             var result = baseRepository.IntFromSql(sb.ToString(), baseQuery.ParamList.ToArray());
 
             return result;
+        }
+
+        private string GetProdDefaultImgPath(Guid prodId, Guid defaultImgId)
+        {
+            string path = string.Empty;
+            string imgPath = baseRepository.GetList<ProductImageList>(x => x.ImageID == defaultImgId).OrderByDescending(x => x.Size).FirstOrDefault()?.Path ?? string.Empty;
+            string fileServer = string.Empty;
+            if (!string.IsNullOrEmpty(imgPath))
+            {
+                path = fileServer + imgPath;
+            }
+            return path;
+        }
+
+        private LastVersionProductView GenLastVerProd(Product product)
+        {
+            var lvProduct = new LastVersionProductView();
+
+            Guid nameGuid = product.NameTransId;
+            var prodStatics = baseRepository.GetModel<ProductStatistics>(x => x.IsActive && x.IsDeleted == false && x.Code == product.Code);
+            if (prodStatics != null && prodStatics.InternalNameTransId != Guid.Empty)
+            {
+                nameGuid = prodStatics.InternalNameTransId;
+            }
+
+            lvProduct.Id = product.Id;
+            lvProduct.Code = product.Code;
+            lvProduct.Names = TranslationRepository.GetMutiLanguage(nameGuid);
+            lvProduct.Name = lvProduct.Names.FirstOrDefault(x => x.Language == CurrentUser.Lang)?.Desc ?? string.Empty;
+
+            lvProduct.SmallImage = GetProdDefaultImgPath(product.Id, product.DefaultImage);
+            lvProduct.MerchantId = product.MerchantId;
+            lvProduct.CatalogId = product.CatalogId;
+
+            return lvProduct;
         }
     }
 }

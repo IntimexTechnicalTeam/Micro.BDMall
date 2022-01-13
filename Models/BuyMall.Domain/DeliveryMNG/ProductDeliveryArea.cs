@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BDMall.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +13,6 @@ namespace BDMall.Domain
 
         public string Code { get; set; }
 
-        public CountryDto Country { get; set; }
+        public Country Country { get; set; }
     }
 }

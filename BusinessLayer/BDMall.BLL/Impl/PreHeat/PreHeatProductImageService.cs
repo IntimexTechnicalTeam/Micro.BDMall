@@ -12,9 +12,9 @@ using Web.Framework;
 
 namespace BDMall.BLL
 {
-    public class PreProductImageService : AbstractPreHeatService
+    public class PreHeatProductImageService : AbstractPreHeatService
     {
-        public PreProductImageService(IServiceProvider services) : base(services)
+        public PreHeatProductImageService(IServiceProvider services) : base(services)
         {
         }
 

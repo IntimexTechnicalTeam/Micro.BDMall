@@ -18,8 +18,4 @@
     <ProjectReference Include="..\BuyMall.Model\BDMall.Model.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="InventoryMNG\" />
-  </ItemGroup>
-
 </Project>
