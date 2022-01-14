@@ -12,6 +12,9 @@ using Web.MQ;
 
 namespace BDMall.BLL
 {
+    /// <summary>
+    /// 消费者服务类,用于更新ProductQty表
+    /// </summary>
     public class UpdateProductQtyBLL : BaseBLL, IUpdateProductQtyBLL
     {
         public Dictionary<QtyType, Func<TmpProductQty, Task<int>>> dicQtyMethord = new Dictionary<QtyType, Func<TmpProductQty, Task<int>>>();
@@ -124,8 +127,8 @@ namespace BDMall.BLL
         {
             var result = new SystemResult();
 
-            string queue = MQSetting.UpdateQtyQueue;
-            string exchange = MQSetting.UpdateQtyExchange;
+            string queue = MQSetting.WeChatUpdateQtyQueue;
+            string exchange = MQSetting.WeChatUpdateQtyExchange;
 
             var list = await baseRepository.GetListAsync<PushMessage>(x => x.State == MQState.UnDeal && x.QueueName == queue
                           && x.ExchangeName == exchange && x.MsgType == MQType.UpdateInvt);

@@ -23,5 +23,7 @@ namespace BDMall.BLL
         void SetDefaultImage(Guid prodID, Guid imageID);
 
         void DeleteImage(Guid imageID);
+
+        string GetBigImgPath(string smallImgPath);
     }
 }

@@ -220,5 +220,11 @@ namespace BDMall.BLL
             return result;
         }
 
+        public UserDto GetUserInfoById(string UserId)
+        { 
+            var dbModel = baseRepository.GetModel<User>(x=>x.Id == Guid.Parse(UserId));
+            var user = AutoMapperExt.MapTo<UserDto>(dbModel);
+            return user;
+        }
     }
 }

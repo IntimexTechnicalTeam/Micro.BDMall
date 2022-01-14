@@ -20,7 +20,6 @@
     <Content Remove="Views\Product\ProductClickRate.cshtml" />
     <Content Remove="Views\Product\ProductIndex-backup.cshtml" />
     <Content Remove="Views\Product\ProductSearchRate.cshtml" />
-    <Content Remove="Views\Product\SelectProduct.cshtml" />
     <Content Remove="Views\Product\UpdPriceIndex.cshtml" />
   </ItemGroup>
 

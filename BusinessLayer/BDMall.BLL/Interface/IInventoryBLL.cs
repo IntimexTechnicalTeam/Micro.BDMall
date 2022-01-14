@@ -29,8 +29,19 @@ namespace BDMall.BLL
         List<KeyValue> GetSupplierComboSrc();
 
         List<KeyValue> GetInvFlowTypeLstComboSrc();
+
         List<KeyValue> GetInvTransTypeComboSrc();
 
+        List<KeyValue> GetWhseComboSrc(Guid merchantId);
+
         PageData<InvFlowView> GetInvFlowLstByCond(InvFlowSrchCond condition);
+
+        List<InvTransItemView> GetPurchaseItmLst(InvTransSrchCond condition);
+
+        List<InvTransItemView> GetPurReturnItmLst(InvTransSrchCond condition);
+
+        Task<SystemResult> SaveInvTransRec(InvTransView transView);
+
+        SystemResult IsExsitBathNum(InvTransactionDtlDto cond);
     }
 }

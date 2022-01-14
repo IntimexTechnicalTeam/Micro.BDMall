@@ -226,7 +226,7 @@
                 if (mIsMerchant) {
                     InitBootstrapSelect("cboMerchant", "/adminapi/Dict/GetMerchantCboSrc", 1, false, false, null, function () {
                         vm.Condition.MerchantId = $("#cboMerchant").val();
-                        getInventoryTransCaches();
+                        //getInventoryTransCaches();
                     });
                 }
                 else {

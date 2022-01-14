@@ -19,11 +19,11 @@ namespace BDMall.BLL
         Task<SystemResult> UpdateQtyWhenOrderStateChange(UpdateStatusCondition orderStatusInfo);
 
         /// <summary>
-        /// 采购退回，銷售退回，發貨退回时更新库存
+        /// 采购入库,采购退回,采购调拨，銷售退回，發貨退回时更新库存
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
-        Task<SystemResult> UpdateQtyWhenPurchaseOrReturn(List<InvTransactionDtl> list);
+        Task<SystemResult> UpdateQtyWhenPurchaseOrReturn(List<InvTransactionDtlDto> list);
 
         /// <summary>
         /// 加入购物车，进行Hold货时

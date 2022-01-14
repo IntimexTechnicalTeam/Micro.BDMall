@@ -378,6 +378,18 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
             return result;
         }
 
+        /// <summary>
+        /// 用於顯示選擇產品時的列表
+        /// </summary>
+        /// <param name="condition"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [AdminApiAuthorize(Module = ModuleConst.ProductModule, Function = new string[] { FunctionConst.Prod_Search })]
+        public PageData<ProductSummary> SearchProductList([FromBody]ProdSearchCond condition)
+        {
+            PageData<ProductSummary> data =productBLL.SearchProductList(condition);
+            return data;
+        }
     }
 
 }

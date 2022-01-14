@@ -107,11 +107,16 @@ namespace BDMall.Admin.Controllers
         /// <returns></returns>
         public ActionResult SelectProduct(int id, string para2, string para3)
         {
-            //ViewBag.IsSingleSelect = id;
-            //ViewBag.IsMerchant = CurrentUser.IsMerchant ? 1 : 0;
-            //ViewBag.MerchantId = para2 ?? Guid.Empty.ToString();
-            //ViewBag.SearchProductType = para3;
+            ViewBag.IsSingleSelect = id;           
+            ViewBag.MerchantId = para2 ?? Guid.Empty.ToString();
+            ViewBag.SearchProductType = para3;
             ViewBag.Lang = CurrentUser.Lang;
+
+            if (CurrentUser == null)
+                ViewBag.IsMerchant = 0;
+            else
+                ViewBag.IsMerchant = CurrentUser.IsMerchant.ToInt();
+
             return View();
         }
 

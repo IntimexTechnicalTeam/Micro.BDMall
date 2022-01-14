@@ -153,6 +153,12 @@ namespace BDMall.BLL
             return result;
         }
 
+        public PageData<ProductSummary> SearchProductList(ProdSearchCond cond)
+        { 
+            var result  = SearchBackEndProductSummary(cond);
+            return result;
+        }
+
         public ProductEditModel GetProductInfo(Guid id)
         {
             var product = baseRepository.GetModelById<Product>(id);

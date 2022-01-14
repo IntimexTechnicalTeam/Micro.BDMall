@@ -225,5 +225,26 @@ namespace BDMall.BLL
             }
             return new List<CodeMasterDto>();
         }
+
+        public InvTransIOType? GetInvTransIOType(InvTransType type)
+        {
+            switch (type)
+            {
+                case InvTransType.Purchase:
+                    return InvTransIOType.I;
+                case InvTransType.Relocation:
+                    return InvTransIOType.O;
+                case InvTransType.PurchaseReturn:
+                    return InvTransIOType.O;
+                case InvTransType.SalesShipment:
+                    return InvTransIOType.O;
+                case InvTransType.SalesReturn:
+                    return InvTransIOType.I;
+                case InvTransType.DeliveryReturn:
+                    return InvTransIOType.I;
+                default:
+                    return null;
+            }
+        }
     }
 }

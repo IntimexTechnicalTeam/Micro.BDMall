@@ -2,6 +2,7 @@
 using BDMall.BLL;
 using BDMall.Domain;
 using BDMall.Enums;
+using BDMall.Model;
 using Intimex.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -26,13 +27,11 @@ namespace BDMall.App.Areas.AdminAPI.Controllers
     [ApiController] 
     public class InventoryController : BaseApiController
     {
-
+        public IUserBLL UserBLL;
         public IInventoryBLL InventoryBLL;
         public IMerchantBLL MerchantBLL;
         public IAttributeBLL AttributeBLL;
-
         public IProductBLL ProductBLL;
-
         public IDealProductQtyCacheBLL DealProductQtyCacheBLL;
 
         public InventoryController(IComponentContext services) : base(services)
@@ -42,6 +41,7 @@ namespace BDMall.App.Areas.AdminAPI.Controllers
             ProductBLL = Services.Resolve<IProductBLL>();
             DealProductQtyCacheBLL = Services.Resolve<IDealProductQtyCacheBLL>();
             InventoryBLL = Services.Resolve<IInventoryBLL>();
+            UserBLL = Services.Resolve<IUserBLL>();
         }
 
         /// <summary>
@@ -229,26 +229,75 @@ namespace BDMall.App.Areas.AdminAPI.Controllers
             return flowViewList;
         }
 
-        //[HttpGet]
-        //public object GetInvTransPageCaches(Guid merchantId)
-        //{
-        //    var obj = new object();
-          
-        //        var warehouseList = GetWhseComboSrcByMerchId(merchantId);
-        //        //var supplierList = InventoryBLL.GetSupplierComboSrc();
-        //        var transTypeList = InventoryBLL.GetInvTransTypeComboSrc();
-        //        string userName = CurrentUser.Name;
+        /// <summary>
+        /// 读取商家仓库信息
+        /// </summary>
+        /// <param name="merchantId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public object GetInvTransPageCaches(Guid merchantId)
+        {
+            var obj = new object();
 
-        //        obj = new
-        //        {
-        //            CurrentUser = userName,
-        //            WarehouseList = warehouseList,
-        //            //SupplierList = supplierList,
-        //            TransTypeList = transTypeList
-        //        };
-          
+            var warehouseList = InventoryBLL.GetWhseComboSrc(merchantId); 
+            //var supplierList = InventoryBLL.GetSupplierComboSrc();
+            var transTypeList = InventoryBLL.GetInvTransTypeComboSrc();
+            string userName = UserBLL.GetUserInfoById(CurrentUser?.UserId)?.Name ?? "";
 
-        //    return obj;
-        //}
+            obj = new
+            {
+                CurrentUser = userName,
+                WarehouseList = warehouseList,
+                //SupplierList = supplierList,
+                TransTypeList = transTypeList
+            };
+
+
+            return obj;
+        }
+
+        [HttpPost]
+        public List<InvTransItemView> GetPurchaseItmLst([FromForm]InvTransPageInfo pageInfo)
+        {     
+            var condition = pageInfo.Condition;
+            var invTransItmVwLst = InventoryBLL.GetPurchaseItmLst(condition);
+            return invTransItmVwLst;
+        }
+
+        [HttpPost]
+        public List<InvTransItemView> GetPurReturnTransItmLst([FromForm]InvTransPageInfo pageInfo)
+        {            
+            var condition = pageInfo.Condition;
+            var invTransItmViewList = InventoryBLL.GetPurReturnItmLst(condition);
+           
+            return invTransItmViewList;
+        }
+
+        /// <summary>
+        /// 采购，采购退回，调拨
+        /// </summary>
+        /// <param name="transView"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<SystemResult> SaveInvTransRec([FromForm]InvTransView transView)
+        {
+            var result  = new SystemResult();
+            result =await InventoryBLL.SaveInvTransRec(transView);
+
+            if (result.Succeeded)
+            {
+                var list = result.ReturnValue as List<InvTransactionDtlDto>;
+                if (list != null && list.Any())
+                {
+                    ///只处理采购，采购退回
+                    int[] cond = new int[] { InvTransType.Purchase.ToInt(), InvTransType.PurchaseReturn.ToInt() };    
+                    if (cond.Any(x => x == transView.TransType.ToInt()))
+                        result = await DealProductQtyCacheBLL.UpdateQtyWhenPurchaseOrReturn(list);
+                }
+            }
+
+            return result;
+        }
+
     }
 }

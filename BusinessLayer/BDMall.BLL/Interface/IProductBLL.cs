@@ -33,6 +33,8 @@ namespace BDMall.BLL
 
         PageData<ProductSummary> SearchRelatedProduct(RelatedProductCond cond);
 
+        PageData<ProductSummary> SearchProductList(ProdSearchCond cond);
+
         List<ProductSummary> GetRelatedProduct(Guid id);
 
         void AddRelatedProduct(List<string> prodCodes, Guid originalId);

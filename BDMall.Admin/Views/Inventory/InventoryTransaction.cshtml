@@ -608,7 +608,7 @@
                             objSaveData.TransactionItemList = vm.ReturnItems;
                         }
 
-                        WS.AjaxP("post", "/adminapi/Inventory/InsertInvTransRec", objSaveData, function (response) {
+                        WS.AjaxP("post", "/adminapi/Inventory/SaveInvTransRec", objSaveData, function (response) {
                             if (response.Succeeded == true) {
 
                                 resetVueData();
@@ -628,6 +628,7 @@
                             //vm.Condition.ProdCode = data.results[0].Code;
                             vm.Condition.ProdCode = "";
                             vm.Condition.ProdCodeList = [];
+                            vm.Condition.WhId=$("#cboWHPurchase").val();
                             for (var i = 0; i < data.results.length; i++) {
                                 vm.Condition.ProdCodeList.push(data.results[i].Code);
                             }

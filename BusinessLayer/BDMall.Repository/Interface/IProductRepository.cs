@@ -25,5 +25,7 @@ namespace BDMall.Repository
         List<Product> GetRelatedProduct(Guid id);
 
         LastVersionProductView GetLastVersionProductByCode(string prodCode);
+
+        List<LastVersionProductView> GetLastVersionProductLstByCode(List<string> prodCodeLst);
     }
 }

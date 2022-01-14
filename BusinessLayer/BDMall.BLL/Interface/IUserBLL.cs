@@ -19,5 +19,7 @@ namespace BDMall.BLL
         SystemResult CreateAccountForMerchant(string Ids);
 
         SystemResult Save(UserDto model);
+
+        UserDto GetUserInfoById(string UserId);
     }
 }

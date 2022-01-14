@@ -24,6 +24,7 @@ namespace BDMall.BLL
         public ISettingBLL SettingBLL;
         public IInvTransactionDtlRepository InvTransactionDtlRepository;
         public IProductBLL ProductBLL;
+        public IUpdateInventoryBLL UpdateInventoryBLL;
 
         public InventoryBLL(IServiceProvider services) : base(services)
         {
@@ -38,6 +39,7 @@ namespace BDMall.BLL
             InvTransactionDtlRepository = Services.Resolve<IInvTransactionDtlRepository>();
 
             ProductBLL = Services.Resolve<IProductBLL>();
+            UpdateInventoryBLL = Services.Resolve<IUpdateInventoryBLL>();
         }
 
         public List<WarehouseDto> GetWarehouseLstByCond(WarehouseDto cond)
@@ -417,9 +419,17 @@ namespace BDMall.BLL
 
         public List<KeyValue> GetInvTransTypeComboSrc()
         {
-            
-            var transTypeList = GetInvFlowTypeLstComboSrc().Where(x=>x.Id=="1" ).ToList();
+            var Ids = new string[] { InvTransType.Purchase.ToInt().ToString(), InvTransType.Relocation.ToInt().ToString(), InvTransType.PurchaseReturn.ToInt().ToString() };
+
+            var transTypeList = GetInvFlowTypeLstComboSrc().Where(x=>Ids.Contains(x.Id)).ToList();
             return transTypeList;
+        }
+
+        public List<KeyValue> GetWhseComboSrc(Guid merchantId)
+        {
+            var warehouseLst = GetWarehouseLstByCond(new WarehouseDto()).Where(p=>p.MerchantId== merchantId).ToList();
+            var keyValList = warehouseLst.Select(s => new KeyValue { Id = s.Id.ToString(), Text = s.Name }).ToList();
+            return keyValList;
         }
 
         /// <summary>
@@ -458,8 +468,148 @@ namespace BDMall.BLL
             return result;
         }
 
+        /// <summary>
+        /// 獲取指定條件的供應商信息列表
+        /// </summary>
+        /// <param name="cond">搜尋條件</param>
+        /// <returns>供應商信息列表</returns>
+        public List<SupplierDto> GetSupplierLstByCond(SupplierDto cond)
+        {
+            var supplierLst = new List<SupplierDto>();
 
+            var searchData = AutoMapperExt.MapTo<Supplier>(cond);
 
+            var supplierFullLst = SupplierRepository.GetSupplierList(searchData);
+            if (supplierFullLst != null && supplierFullLst.Any())
+            {
+                supplierLst = AutoMapperExt.MapTo<List<SupplierDto>>(supplierFullLst);
+
+                foreach (var item in supplierLst)
+                {
+                    item.NameList = TranslationRepository.GetMutiLanguage(item.NameTransId);
+                    item.Name = item.NameList.FirstOrDefault(x => x.Language == CurrentUser.Lang)?.Desc ?? "";
+                }
+
+                if (!cond.Name.IsEmpty())
+                    supplierLst = supplierLst.Where(x => x.NameList.Select(s => s.Desc).Contains(cond.Name)).ToList();
+            }
+
+            supplierLst = supplierLst.OrderBy(x => x.Name).ToList();
+            return supplierLst;
+        }
+
+        public List<InvTransItemView> GetPurchaseItmLst(InvTransSrchCond condition)
+        {
+            var invtTransItemVwList = InvTransactionDtlRepository.GetPurchaseItmLst(condition);
+            return invtTransItemVwList;
+        }
+
+        public List<InvTransItemView> GetPurReturnItmLst(InvTransSrchCond condition)
+        {
+            var invtTransItemVwList = InvTransactionDtlRepository.GetPurchaseReturnItmLst(condition);
+            return invtTransItemVwList;
+
+        }
+
+        public async Task<SystemResult> SaveInvTransRec(InvTransView transView)
+        { 
+            var result = new SystemResult();
+
+            transView.TransactionItemList = transView.TransactionItemList.Where(x => x.IsChecked).ToList();
+
+            #region 检查采购批号
+            if (transView.TransType == InvTransType.Purchase)
+            {
+                foreach (var item in transView.TransactionItemList)
+                {
+                    var batchNumChkCond = new InvTransactionDtlDto()
+                    {
+                        BatchNum = transView.BatchNum,
+                        WHId = transView.TransTo,
+                        Sku = item.Sku,
+                    };
+                    var chkRslt = IsExsitBathNum(batchNumChkCond);
+                    if (chkRslt.Succeeded)
+                    {
+                        bool res = (bool)chkRslt.ReturnValue;
+                        if (res)
+                        {
+                            result.Message = chkRslt.Message + " [" + item.ProdCode + "]";
+                            return result;
+                        }
+                    }
+                }
+            }
+
+            if (!transView.TransactionItemList.Any())
+            {
+                result.ReturnValue = false;
+                result.Message = "";
+                return result;
+            }
+
+            #endregion
+
+            var transDtlList = transView.TransactionItemList.Select(transItemVw => new InvTransactionDtlDto
+            {
+                Sku = transItemVw.Sku,
+                TransDate = transView.TransDate,
+                BatchNum = transView.BatchNum,
+                UnitPrice = transItemVw.UnitPrice,
+                TransType = transView.TransType,
+                Remarks = transView.Remarks,
+                TransQty = transView.TransType == InvTransType.PurchaseReturn ? transItemVw.ReturnQty : transItemVw.TransQty,
+                FromId = transView.TransType == InvTransType.PurchaseReturn ? transView.TransTo : transView.TransFrom,
+                ToId = transView.TransType == InvTransType.PurchaseReturn ? transView.TransFrom : transView.TransTo,
+            }).ToList();
+
+            //var dbTranDtlList = AutoMapperExt.MapTo<List<InvTransactionDtl>>(transDtlList);
+            result =await InsertInvTransList(transView.TransType, transDtlList);
+            return result;
+        }
+
+        /// <summary>
+        /// 新增庫存交易記錄
+        /// </summary>
+        /// <param name="transTyp">庫存交易類型</param>
+        /// <param name="insertLst">庫存交易記錄</param>
+        /// <returns>操作結果</returns>
+        public async Task<SystemResult> InsertInvTransList(InvTransType transTyp, List<InvTransactionDtlDto> insertLst)
+        {
+            var sysRslt = new SystemResult();         
+            sysRslt =await InsertInvTransListWithSign(transTyp, insertLst, true);
+            return sysRslt;
+        }
+
+        /// <summary>
+        /// 检查采购批号
+        /// </summary>
+        /// <param name="cond"></param>
+        /// <returns></returns>
+        public SystemResult IsExsitBathNum(InvTransactionDtlDto cond)
+        {
+            var sysRslt = new SystemResult();
+
+            var query = from po in baseRepository.GetList<PurchaseOrder>()
+                        join pod in baseRepository.GetList<PurchaseOrderDetail>() on po.Id equals pod.POId
+                        where po.IsActive && !po.IsDeleted && po.BatchNum == cond.BatchNum
+                        && po.WHId == cond.WHId && pod.Sku == cond.Sku
+                        select 1;
+
+            if (query != null && query.Any())
+            {
+                sysRslt.ReturnValue = true;
+                sysRslt.Message = BDMall.Resources.Message.BatchNumExsit;
+            }
+            else
+            {
+                sysRslt.ReturnValue = false;
+                sysRslt.Message = string.Empty;
+            }
+            sysRslt.Succeeded = true;
+
+            return sysRslt;
+        }
 
         string GetImage(Guid ProductId)
         {
@@ -563,34 +713,213 @@ namespace BDMall.BLL
             return warehouse;
         }
 
-        /// <summary>
-        /// 獲取指定條件的供應商信息列表
-        /// </summary>
-        /// <param name="cond">搜尋條件</param>
-        /// <returns>供應商信息列表</returns>
-        public List<SupplierDto> GetSupplierLstByCond(SupplierDto cond)
+        private async Task<SystemResult> InsertInvTransListWithSign(InvTransType transTyp, List<InvTransactionDtlDto> insertLst, bool whetherCommit)
         {
-            var supplierLst = new List<SupplierDto>();
+            var sysRslt = new SystemResult();
 
-            var searchData = AutoMapperExt.MapTo<Supplier>(cond);
+            InvTransIOType? transIOTyp = SettingBLL.GetInvTransIOType(transTyp);
+            if (transIOTyp == null) throw new BLException(InventoryErrorEnum.InvTransIOTypeNotExsit.ToString());
+             
+            #region 生成單據
 
-            var supplierFullLst = SupplierRepository.GetSupplierList(searchData);
-            if (supplierFullLst!= null && supplierFullLst.Any())
-            {             
-                supplierLst = AutoMapperExt.MapTo<List<SupplierDto>>(supplierFullLst);
-
-                foreach (var item in supplierLst)
-                {
-                    item.NameList = TranslationRepository.GetMutiLanguage(item.NameTransId);
-                    item.Name = item.NameList.FirstOrDefault(x=>x.Language == CurrentUser.Lang)?.Desc ?? "";
-                }
-
-                if (!cond.Name.IsEmpty())
-                    supplierLst = supplierLst.Where(x=>x.NameList.Select(s=>s.Desc).Contains(cond.Name)).ToList();    
+            UnitOfWork.IsUnitSubmit = true;
+            switch (transTyp)
+            {
+                case InvTransType.Purchase:sysRslt = CreatePurchaseOrder(insertLst); break;
+                case InvTransType.Relocation:sysRslt= CreateRelocationOrder(insertLst); break;                  
+                case InvTransType.PurchaseReturn:sysRslt = CreatePurchaseReturnOrder(insertLst); break;                    
+                case InvTransType.SalesReturn:sysRslt = CreateSalesReturnOrder(insertLst);break;                 
+                default: break;
             }
 
-            supplierLst = supplierLst.OrderBy(x => x.Name).ToList();
-            return supplierLst;
+            sysRslt = await UpdateInventoryBLL.DealProductInventory(insertLst, transIOTyp, transTyp);
+
+            UnitOfWork.Submit();
+            #endregion
+
+            if (sysRslt.Succeeded)
+            {
+                sysRslt.ReturnValue = insertLst;  //返回集合，在Controller做发布订阅
+                sysRslt.Succeeded = true;
+            }
+
+            return sysRslt;
+        }
+
+        /// <summary>
+        /// 创建采购单
+        /// </summary>
+        /// <param name="insertLst"></param>
+        /// <returns></returns>
+        SystemResult CreatePurchaseOrder(List<InvTransactionDtlDto> insertLst)
+        {
+            var sysRslt = new SystemResult();
+
+            var order = new PurchaseOrder()
+            {
+                Id = Guid.NewGuid(),
+                InDate = DateTime.Now,
+                OrderNo = AutoGenerateNumber("PO"),
+                SupplierId = insertLst.FirstOrDefault().ToId,
+                WHId = insertLst.FirstOrDefault().ToId,
+                Remarks = insertLst.FirstOrDefault().Remarks ?? string.Empty,
+                BatchNum = insertLst.FirstOrDefault().BatchNum ?? string.Empty
+            };
+            baseRepository.Insert(order);
+
+            var poDtlList = new List<PurchaseOrderDetail>();
+            foreach (var item in insertLst)
+            {
+                PurchaseOrderDetail orderDtl = new PurchaseOrderDetail()
+                {
+                    Id = Guid.NewGuid(),
+                    POId = order.Id,
+                    Sku = item.Sku,
+                    OrderQty = item.TransQty,
+                    UnitPrice = item.UnitPrice
+                };
+                poDtlList.Add(orderDtl);
+
+                item.BizId = orderDtl.Id;
+            }
+            baseRepository.Insert(poDtlList);
+
+            sysRslt.Succeeded = true;
+            return sysRslt;
+        }
+
+        /// <summary>
+        /// 创建调拨单
+        /// </summary>
+        /// <param name="insertLst"></param>
+        /// <returns></returns>
+        SystemResult CreateRelocationOrder(List<InvTransactionDtlDto> insertLst)
+        {
+            var sysRslt = new SystemResult();
+            Guid fromId = insertLst.FirstOrDefault().FromId;
+            Guid toId = insertLst.FirstOrDefault().ToId;
+            if (fromId == toId)//出入庫不能相同
+            {              
+                sysRslt.Message = Resources.Message.PleaseSelectDiffWarehouse;
+                return sysRslt;
+            }
+
+            var order = new RelocationOrder()
+            {
+                Id = Guid.NewGuid(),
+                OrderNo = AutoGenerateNumber("RO"),
+                ExportWHId = fromId,
+                ImportWHId = toId,
+                RelocateDate = DateTime.Now,
+                Remarks = insertLst.FirstOrDefault().Remarks ?? string.Empty
+            };
+            baseRepository.Insert(order);
+
+            var roDtlList = new List<RelocationOrderDetail>();
+            foreach (var item in insertLst)
+            {
+                var orderDtl = new RelocationOrderDetail()
+                {
+                    Id = Guid.NewGuid(),                   
+                    ROId = order.Id,
+                    Sku = item.Sku,
+                    OrderQty = item.TransQty
+                };
+                roDtlList.Add(orderDtl);
+
+                item.BizId = orderDtl.Id;
+            }
+            baseRepository.Insert(roDtlList);
+
+            sysRslt.Succeeded = true;
+            return sysRslt;
+        }
+
+        /// <summary>
+        /// 创建采购退回单
+        /// </summary>
+        /// <param name="insertLst"></param>
+        /// <returns></returns>
+        SystemResult CreatePurchaseReturnOrder(List<InvTransactionDtlDto> insertLst)
+        {
+            var sysRslt = new SystemResult();
+
+            var order = new PurchaseReturnOrder()
+            {
+                Id = Guid.NewGuid(),            
+                OutDate = DateTime.Now,
+                OrderNo = AutoGenerateNumber("PRO"),
+                WHId = insertLst.FirstOrDefault().FromId,
+                SupplierId = insertLst.FirstOrDefault().ToId,
+                BatchNum = insertLst.FirstOrDefault().BatchNum ?? string.Empty,
+                Remarks = insertLst.FirstOrDefault().Remarks ?? string.Empty,
+            };
+            baseRepository.Insert(order);
+
+            var dtlList = new List<PurchaseReturnOrderDetail>();
+            foreach (var item in insertLst)
+            {
+                PurchaseReturnOrderDetail orderDtl = new PurchaseReturnOrderDetail()
+                {
+                    Id = Guid.NewGuid(),
+                   
+                    OrderQty = item.TransQty,
+                    PROId = order.Id,
+                    Sku = item.Sku,
+                    UnitPrice = item.UnitPrice
+                };
+                dtlList.Add(orderDtl);
+
+                item.BizId = orderDtl.Id;
+            }
+            baseRepository.Insert(dtlList);
+
+            sysRslt.Succeeded = true;
+            return sysRslt;
+        }
+
+        /// <summary>
+        /// 创建销售退回单
+        /// </summary>
+        /// <param name="insertLst"></param>
+        /// <returns></returns>
+        SystemResult CreateSalesReturnOrder(List<InvTransactionDtlDto> insertLst)
+        {
+            var sysRslt = new SystemResult();
+
+            Guid fromId = insertLst[0].FromId;
+            Guid toId = insertLst[0].ToId;
+            Guid soId = insertLst[0].SOId ?? Guid.Empty;
+
+            var order = new SalesReturnOrder()
+            {
+                Id = Guid.NewGuid(),
+                ReturnDate = DateTime.Now,
+                OrderNo = AutoGenerateNumber("SRO"),
+                //WHId = toId,
+                SOId = soId
+            };
+            baseRepository.Insert(order);
+
+            var dtlList = new List<SalesReturnOrderDetail>();
+            foreach (var item in insertLst)
+            {
+                var orderDtl = new SalesReturnOrderDetail()
+                {
+                    Id = Guid.NewGuid(),                
+                    SROId = order.Id,                  
+                    Sku = item.Sku,
+                    UnitPrice = item.UnitPrice,
+                    ReturnQty = item.TransQty
+                };
+                dtlList.Add(orderDtl);
+
+                item.BizId = orderDtl.Id;
+            }
+            baseRepository.Insert(dtlList);
+
+            sysRslt.Succeeded = true;
+            return sysRslt;
         }
 
     }

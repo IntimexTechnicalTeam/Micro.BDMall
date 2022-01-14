@@ -105,7 +105,7 @@ namespace BDMall.BLL
         ///// </summary>
         ///// <param name="typ">庫存交易類型</param>
         ///// <returns></returns>
-        //InvTransIOType? GetInvTransIOType(InvTransType typ);
+        InvTransIOType? GetInvTransIOType(InvTransType typ);
 
         ///// <summary>
         ///// 獲取庫存交易類型列表

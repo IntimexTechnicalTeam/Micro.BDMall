@@ -47,7 +47,7 @@ namespace Domain
             ConfigMap<Supplier, SupplierDto>();
             ConfigMap<InvFlow,InvFlowView>();
 
-
+            ConfigMap<InvTransactionDtl, InvTransactionDtlDto>();
             ConfigMap<PaymentMethodDto, PaymentMethod>();
             
         }
