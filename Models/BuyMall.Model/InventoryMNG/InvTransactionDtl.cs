@@ -8,7 +8,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace BDMall.Model
 {
     /// <summary>
-    /// 庫存交易詳細項資料
+    /// 庫存交易詳細項資料123412
     /// </summary>
     public class InvTransactionDtl : BaseEntity<Guid>
     {
