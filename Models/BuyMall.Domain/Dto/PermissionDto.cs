@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace BDMall.Domain
 {
 
-    public class PermissionDto
+    public class PermissionDto:BaseDto
     {
         public PermissionDto()
         {
@@ -21,17 +21,13 @@ namespace BDMall.Domain
         /// <summary>
         /// 模塊
         /// </summary>
-        [Required]
-        [MaxLength(50)]
-        [Column(TypeName = "varchar")]
+       
         public string Module { get; set; }
 
         /// <summary>
         /// 功能
         /// </summary>
 
-        [MaxLength(50)]
-        [Column(TypeName = "varchar")]
         public string Function { get; set; }
 
         /// <summary>

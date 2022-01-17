@@ -49,7 +49,7 @@ namespace Domain
 
             ConfigMap<InvTransactionDtl, InvTransactionDtlDto>();
             ConfigMap<PaymentMethodDto, PaymentMethod>();
-            
+            ConfigMap<RolePermission,RolePermissionDto>();
         }
         void ConfigMap<TSource, TDestination>()
         {

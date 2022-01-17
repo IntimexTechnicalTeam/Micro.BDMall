@@ -50,5 +50,9 @@ namespace BDMall.BLL
         SystemResult ApplyApprove(Guid id);
 
         Task TurndownProduct(Guid prodID, string reason);
+
+        ProductSummary GetProductSummary(Guid id, Guid skuId);
+
+        ProductSkuDto GetProductSku(Guid skuId);
     }
 }

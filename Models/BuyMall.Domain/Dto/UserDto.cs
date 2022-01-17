@@ -82,5 +82,13 @@ namespace BDMall.Domain
         public DateTime LastAccessTime { get; set; }
 
         public string Token { get; set; }
+
+        public bool IsActive { get; set; }
+
+        public bool IsDeleted { get; set; }
+
+        public DateTime CreateDate { get; set; }
+
+        public DateTime UpdateDate { get; set; }
     }
 }

@@ -284,17 +284,17 @@ namespace BDMall.App.Areas.AdminAPI.Controllers
             var result  = new SystemResult();
             result =await InventoryBLL.SaveInvTransRec(transView);
 
-            if (result.Succeeded)
-            {
-                var list = result.ReturnValue as List<InvTransactionDtlDto>;
-                if (list != null && list.Any())
-                {
-                    ///只处理采购，采购退回
-                    int[] cond = new int[] { InvTransType.Purchase.ToInt(), InvTransType.PurchaseReturn.ToInt() };    
-                    if (cond.Any(x => x == transView.TransType.ToInt()))
-                        result = await DealProductQtyCacheBLL.UpdateQtyWhenPurchaseOrReturn(list);
-                }
-            }
+            //if (result.Succeeded)
+            //{
+            //    var list = result.ReturnValue as List<InvTransactionDtlDto>;
+            //    if (list != null && list.Any())
+            //    {
+            //        ///只处理采购，采购退回
+            //        int[] cond = new int[] { InvTransType.Purchase.ToInt(), InvTransType.PurchaseReturn.ToInt() };    
+            //        if (cond.Any(x => x == transView.TransType.ToInt()))
+            //            result = await DealProductQtyCacheBLL.UpdateQtyWhenPurchaseOrReturn(list);
+            //    }
+            //}
 
             return result;
         }

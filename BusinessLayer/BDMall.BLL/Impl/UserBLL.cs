@@ -2,6 +2,7 @@
 using BDMall.Enums;
 using BDMall.Model;
 using BDMall.Repository;
+using BDMall.Utility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -165,19 +166,18 @@ namespace BDMall.BLL
             return new Tuple<User, List<UserRole>>(user,userRoles);
         }
 
-
         public SystemResult Save(UserDto model)
         {
             SystemResult result = new SystemResult();
             
             #region checking
             var checkAccount = baseRepository.Any<User>(d => d.Account == model.Account && !d.IsDeleted);
-            if (!checkAccount)
+            if (checkAccount)
             {
                 throw new BLException(Resources.Message.AccountExist + ":" + model.Account);
             }
             checkAccount = baseRepository.Any<User>(d => d.Email == model.Email && !d.IsDeleted);
-            if (!checkAccount)
+            if (checkAccount)
             {
                 throw new BLException(Resources.Message.EmailExist + ":" + model.Email);
             }
@@ -225,6 +225,226 @@ namespace BDMall.BLL
             var dbModel = baseRepository.GetModel<User>(x=>x.Id == Guid.Parse(UserId));
             var user = AutoMapperExt.MapTo<UserDto>(dbModel);
             return user;
+        }
+
+        public PageData<UserDto> Search(UserCondition condition)
+        {
+            var query = from u in UnitOfWork.DataContext.Users
+                        join m in UnitOfWork.DataContext.Merchants on u.MerchantId equals m.Id into ums
+                        from um in ums.DefaultIfEmpty()
+                        join t in UnitOfWork.DataContext.Translations on um.NameTransId equals t.TransId into uts
+                        from ut in uts.DefaultIfEmpty()
+                        where (ut == null || ut.Lang == CurrentUser.Lang)
+                        select new UserDto
+                        {
+                            Id = u.Id,                           
+                            MerchantId = u.MerchantId,
+                            Name = u.Name,
+                            // Mobile = u.Mobile,                            
+                            MerchantName = ut.Value,
+                            Account = u.Account,
+                            Email = u.Email,
+                            DateTimeFormat = u.DateTimeFormat,
+                            //FirstName = u.FirstName,
+                            //LastName = u.LastName,
+                            LastLogin = u.LastLogin,
+                            IsActive = u.IsActive,
+                            IsDeleted = u.IsDeleted,
+                            CreateDate = u.CreateDate,
+                            UpdateDate = u.UpdateDate.Value
+                        };
+
+
+            #region query condition
+            if (condition.IsActive.HasValue)
+            {
+                query = query.Where(d => d.IsActive == condition.IsActive.Value);
+            }
+            if (condition.IsDeleted.HasValue)
+            {
+                query = query.Where(d => d.IsDeleted == condition.IsDeleted.Value);
+            }
+
+            if (!string.IsNullOrEmpty(condition.Email))
+            {
+                query = query.Where(d => d.Email.Contains(condition.Email));
+            }
+
+            if (!string.IsNullOrEmpty(condition.UserName))
+            {
+                query = query.Where(d => d.Account.Contains(condition.UserName));
+            }
+         
+            #endregion
+            var result = new PageData<UserDto>(condition.PageInfo);
+            result.TotalRecord = query.Select(d => d.Id).Count();
+
+            var list = query.OrderBy(d => d.Account).Skip(condition.PageInfo.Offset).Take(condition.PageInfo.PageSize).ToList();
+
+            foreach (var item in list)
+            {               
+                var roles = userRoleRepository.GetUserRoles(item.Id);
+                item.Roles = AutoMapperExt.MapTo<List<RoleDto>>(roles);
+
+                foreach (var role in item.Roles)
+                {
+                    role.DisplayName = translationRepository.GetDescForLang(role.FullNameTransId, CurrentUser.Lang) ?? "";
+                }
+            }
+            result.Data = list;
+            return result;
+        }
+
+        public UserDto GetById(Guid userId)
+        {
+            var user = new UserDto();
+            var dbuser = baseRepository.GetModelById<User>(userId);
+            if (dbuser != null)
+            {
+                user = AutoMapperExt.MapTo<UserDto>(dbuser);
+                var roles = userRoleRepository.GetUserRoles(userId);
+                user.Roles = AutoMapperExt.MapTo<List<RoleDto>>(roles);
+            }
+            user.Password = "";
+            return user;
+        }
+
+        public SystemResult Remove(Guid Id)
+        {
+            var result = new SystemResult();
+            var user =baseRepository.GetModelById<User>(Id);
+
+            if (user == null)
+            {
+                result.Message = BDMall.Resources.Message.UserNotExist;
+                return result;
+            }
+            user.IsDeleted = true;
+            baseRepository.Update(user);
+            result.Succeeded = true;
+            result.Message = BDMall.Resources.Message.DeleteSucceeded;
+
+            return result;
+        }
+
+        public SystemResult PhysicalDelete(UserDto model)
+        {
+            SystemResult result = new SystemResult();
+            UnitOfWork.IsUnitSubmit = true;
+
+            var entity = baseRepository.GetModelById<User>(model.Id);
+            if (entity == null)
+            {
+                result.Message = Resources.Message.UserNotExist;
+                return result;
+            }
+                  
+            var userRoles = baseRepository.GetList<UserRole>(d => d.UserId == entity.Id && d.IsActive && !d.IsDeleted).ToList();
+
+            baseRepository.Delete(userRoles);
+            baseRepository.Delete(entity);
+
+            UnitOfWork.Submit();
+
+            result.Succeeded = true;
+            result.Message = BDMall.Resources.Message.DeleteSucceeded;
+            return result;
+
+        }
+
+        public SystemResult ResetPassword(Guid id)
+        {
+            SystemResult result = new SystemResult();
+            var user = GetById(id);
+            if (user == null)
+            {
+                result.Message = BDMall.Resources.Message.UserNotExist;
+                return result;
+            }
+
+            var password = "888888";
+            user.Password = ToolUtil.Md5Encrypt(password);
+            baseRepository.Update(user);
+
+            //user.Password = password;
+            //MessageBLL.SendTempPwdToUser(user);   //发送邮件
+
+            result.Message = BDMall.Resources.Message.SaveSuccess;
+            result.Succeeded = true;
+
+            return result;
+        }
+
+        public SystemResult Update(UserDto model)
+        {
+            SystemResult result = new SystemResult();
+            UnitOfWork.IsUnitSubmit = true;
+           
+            #region check data
+            if (string.IsNullOrEmpty(model.Account)) throw new BLException("Account is required");        
+            if (string.IsNullOrEmpty(model.Email)) throw new BLException("Email is required");
+            
+            var entity = baseRepository.GetModelById<User>(model.Id);
+            if (entity == null || entity.IsDeleted) throw new BLException(BDMall.Resources.Message.UserNotExist);           
+            
+            if (model.Account != entity.Account)
+            {
+                var existSameName = baseRepository.Any<User>(d => d.Id != model.Id && d.Account == model.Account && !d.IsDeleted);
+                if (existSameName) throw new BLException(BDMall.Resources.Message.AccountExist);
+            }
+
+            if (model.Email != entity.Email)
+            {
+                var existSameEmail = baseRepository.Any<User>(d => d.Id != model.Id && d.Email == model.Email && !d.IsDeleted);
+                if (existSameEmail) throw new BLException(BDMall.Resources.Message.EmailExist);
+            }
+            #endregion
+
+            entity.Account = model.Account;
+            entity.Name = model.Name ?? "";
+
+            if (entity.MerchantId != model.MerchantId)
+            {             
+                var oldMerchantUser = baseRepository.Any<User>(p => p.MerchantId == entity.MerchantId && p.Id != entity.Id);
+                if (!oldMerchantUser) throw new BLException(BDMall.Resources.Message.OldMerchantMbrEmpty);              
+            }
+
+            entity.Email = model.Email;
+            entity.IsActive = model.IsActive;
+            entity.Language = model.Language;
+            entity.MerchantId = model.MerchantId;
+            //entity.IsDeleted = model.IsDeleted; 更新用戶資料，不能在此更新刪除狀態 
+            if (!string.IsNullOrEmpty(model.Password))
+            {
+                entity.Password = ToolUtil.Md5Encrypt(model.Password);
+            }
+            baseRepository.Update(entity);
+
+            #region user role relationship
+            if (model.Id.ToString() != CurrentUser.UserId)
+            {
+                if (model.Roles?.Any() ?? false)
+                {
+                    var oldUserRole = baseRepository.GetList<UserRole>(d => d.UserId == model.Id && d.IsActive && !d.IsDeleted).ToList();
+                    baseRepository.Delete(oldUserRole);
+
+                    foreach (var r in model.Roles)
+                    {
+                        UserRole userRole = new UserRole();
+                        userRole.Id = Guid.NewGuid();
+                        userRole.UserId = model.Id;
+                        userRole.RoleId = r.Id;
+                        baseRepository.Insert(userRole);
+                    }
+                }
+            }
+            #endregion
+
+            UnitOfWork.Submit();
+            result.Succeeded = true;
+            result.Message = BDMall.Resources.Message.SaveSuccess;
+             
+            return result;
         }
     }
 }

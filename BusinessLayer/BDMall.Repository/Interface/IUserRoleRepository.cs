@@ -13,5 +13,8 @@ namespace BDMall.Repository
         List<Role> GetUserRoles(Guid userId);
 
         bool CheckMerchantAccountExist(Guid merchantId);
+
+        List<Permission> GetUserPermissionByRoleId(Guid RoleId);
+
     }
 }

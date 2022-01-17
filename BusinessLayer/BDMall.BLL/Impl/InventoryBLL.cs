@@ -25,6 +25,7 @@ namespace BDMall.BLL
         public IInvTransactionDtlRepository InvTransactionDtlRepository;
         public IProductBLL ProductBLL;
         public IUpdateInventoryBLL UpdateInventoryBLL;
+        public IDealProductQtyCacheBLL DealProductQtyCacheBLL;
 
         public InventoryBLL(IServiceProvider services) : base(services)
         {
@@ -40,6 +41,7 @@ namespace BDMall.BLL
 
             ProductBLL = Services.Resolve<IProductBLL>();
             UpdateInventoryBLL = Services.Resolve<IUpdateInventoryBLL>();
+            DealProductQtyCacheBLL = Services.Resolve<IDealProductQtyCacheBLL>();
         }
 
         public List<WarehouseDto> GetWarehouseLstByCond(WarehouseDto cond)
@@ -731,15 +733,19 @@ namespace BDMall.BLL
                 case InvTransType.SalesReturn:sysRslt = CreateSalesReturnOrder(insertLst);break;                 
                 default: break;
             }
-
-            sysRslt = await UpdateInventoryBLL.DealProductInventory(insertLst, transIOTyp, transTyp);
-
-            UnitOfWork.Submit();
             #endregion
 
+            //处理Inventory表
+            sysRslt = await UpdateInventoryBLL.DealProductInventory(insertLst, transIOTyp, transTyp);
+            UnitOfWork.Submit();
+
+            //到货通知，消息处理请在这里实现
             if (sysRslt.Succeeded)
             {
-                sysRslt.ReturnValue = insertLst;  //返回集合，在Controller做发布订阅
+                ///只处理采购，采购退回
+                int[] cond = new int[] { InvTransType.Purchase.ToInt(), InvTransType.PurchaseReturn.ToInt() };
+                if (cond.Any(x => x == transTyp.ToInt()))
+                    sysRslt = await DealProductQtyCacheBLL.UpdateQtyWhenPurchaseOrReturn(insertLst);
                 sysRslt.Succeeded = true;
             }
 

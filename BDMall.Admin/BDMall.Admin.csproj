@@ -5,6 +5,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Views\Order\ConfirmOrderDetailList.cshtml" />
+    <Content Remove="Views\Order\DeliveryECShipLabel.cshtml" />
+    <Content Remove="Views\Order\ECShipLabelDetail.cshtml" />
+    <Content Remove="Views\Order\Edit.cshtml" />
+    <Content Remove="Views\Order\MassProcessFlow.cshtml" />
+    <Content Remove="Views\Order\OldEdit.cshtml" />
+    <Content Remove="Views\Order\OldOrders.cshtml" />
     <Content Remove="Views\Product\AccessoriesProduct.cshtml" />
     <Content Remove="Views\Product\ApproveProductDetail.cshtml" />
     <Content Remove="Views\Product\ApproveProductHistory.cshtml" />

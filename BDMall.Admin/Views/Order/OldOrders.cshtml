@@ -1,0 +1,311 @@
+﻿
+@{
+    ViewBag.Title = "OldOrders";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="app" class="col-md-12" v-cloak>
+    <table class="table table-condensed">
+        <tr>
+            <td class="col-md-2">
+                @BDMall.Resources.Label.OrderNO
+            </td>
+            <td class="col-md-4">
+                <div class="form-inline">
+                    <input type="text" class="form-control" style="width:150px;" v-model="condition.OrderNo" />
+                    
+                </div>
+            </td>
+            <td class="col-md-2">
+                @BDMall.Resources.Label.OrderStatus
+            </td>
+            <td class="col-md-4">
+                <select id="cboOrderStatus" class="form-control" style="width:300px;" v-model="condition.StatusName" v-bind:disabled="IsSelectable">
+                    <option value="">@BDMall.Resources.Label.PleaseSelect</option>
+                    <option value="Abort">Abort</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Waiting">Waiting</option>
+                    <option value="Refund">Refund</option>
+                    <option value="Void">Void</option>
+                    <option value="Fail">Fail</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            @*<td class="col-md-2">
+                @BDMall.Resources.Label.PaymentMethod
+            </td>
+            <td class="col-md-4">
+
+                <select id="cboPaymentMethod" class="form-control" data-width="300px"></select>
+
+            </td>*@
+            <td class="col-md-2">
+                @BDMall.Resources.Label.MerchantName
+            </td>
+            <td colspan="3" class="col-md-4">
+                <div class="form-inline">
+                    <select id="cboMerchantId" class="form-control" data-width="300px" v-model="condition.MerchantId"></select>
+                </div>
+            </td>
+        </tr>
+        @*<tr>
+                <td colspan="2" class="text-right">
+
+                </td>
+            </tr>*@
+    </table>
+    <div id="collapseOne" class="panel-collapse collapse">
+        <table class="table table-condensed">
+            <tr>
+                <td class="col-md-2">
+                    @BDMall.Resources.Label.OrderDate
+                </td>
+                <td colspan="3" class="col-md-10">
+                    <div class="form-inline">
+                        <input type="text" name="DateTimePicker" class="form-control" style="width:300px;" id="dtOrderDateFrom" />
+                        @BDMall.Resources.Label.To
+                        <input type="text" name="DateTimePicker" class="form-control" style="width:300px;" id="dtOrderDateTo" />
+                    </div>
+                </td>
+            </tr>
+            @*<tr>
+                    <td class="col-md-2">
+                        @BDMall.Resources.Label.OrderNO
+                    </td>
+                    <td colspan="3" class="col-md-10">
+                        <div class="form-inline">
+                            <input type="text" class="form-control" style="width:300px;" v-model="condition.OrderNoFrom" />
+                            @BDMall.Resources.Label.To
+                            <input type="text" class="form-control" style="width:300px;" v-model="condition.OrderNoTo" />
+                        </div>
+                    </td>
+
+                </tr>*@
+
+        </table>
+    </div>
+    <div class="text-right">
+        <input type="button" class="btn btn-info" value="@BDMall.Resources.Action.Search" onclick="search();" />
+        <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.ExtraCondition" data-target="#collapseOne" data-toggle="collapse" />
+    </div>
+
+    <div class="panel-body">
+        <div id="toolbar" class="btn-group">
+            @*<button id="btn_delete" type="button" class="btn btn-default" v-on:click="deleteOrder">
+                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>@BDMall.Resources.Action.Delete
+                </button>*@
+        </div>
+        <table id="tblOrderList"></table>
+    </div>
+
+</div>
+
+
+@section scripts {
+    <script type="text/javascript">
+        layui.use(['miniTab'], function () {
+            var layer = layui.layer,
+                miniTab = layui.miniTab;
+        });
+        var orderStatus = @ViewBag.Status;
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                condition:
+                {
+                    OrderId: "",
+                    InvoiceNo:"",
+                    PayRef: "",
+                    CreateDateFrom: "",
+                    CreateDateTo: "",
+                    InvoiceNoFrom: "",
+                    InvoiceNoTo: "",
+                    OrderNo: "",
+                    ExpressId: WS.GuidEmpty,
+                    PaymentMethod: WS.GuidEmpty,
+                    StatusCode: -1,
+                    MerchantId: "",
+                    MerchantName:"",
+                    PageInfo: {
+                        Page: 1,
+                        PageSize: 10,
+                        SortName: "",
+                        SortOrder: ""
+                    }
+                },
+                IsSelectable:false
+            },
+            methods: {
+                //searhOrder: function () {
+                //    $("#tblOrderList").bootstrapTable("refresh", { "url": "/adminapi/Order/GetOrderList" });
+                //},
+                
+                setButtonState: function () { },
+            }
+        });
+
+
+
+        var orderTableInit = function () {
+
+            var oTableInit = new Object();
+            oTableInit.Init = function () {
+
+                $("#tblOrderList").bootstrapTable({
+                    method: 'post',                      //请求方式（*）
+                    //url: '/adminapi/Product/SearchTableData',         //请求后台的URL（*）
+                    queryParams: oTableInit.queryParams,//传递参数（*）
+                    //queryParamsType:'limit',
+                    toolbar: '#toolbar',                //工具按钮用哪个容器
+                    striped: true,                      //是否显示行间隔色
+                    cache: true,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                    sortable: false,                     //是否启用排序
+                    sortOrder: "asc",                   //排序方式
+                    sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+                    pageNumber: 1,                       //初始化加载第一页，默认第一页
+                    pageSize: 10,                       //每页的记录行数（*）
+                    pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                    smartDisplay: false,
+                    showRefresh: true,                  //是否显示刷新按钮
+                    clickToSelect: false,                //是否启用点击选中行
+                    //height: 750,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+                    uniqueId: "Id",                     //每一行的唯一标识，一般为主键列
+                    cardView: false,                    //是否显示详细视图
+                    detailView: false,                   //是否显示父子表
+                    pagination: true,                   //是否显示分页（*）
+                    ajaxOptions: {
+                        beforeSend: function (request) {
+                            var access_token = $.cookie("access_token");
+                            request.setRequestHeader("Authorization", "Bearer " + access_token);
+                        }
+                    },
+                    onLoadSuccess: function () {
+                        vm.setButtonState();
+                    },
+                    onCheck: function (row) {
+                        vm.setButtonState();
+                    },
+                    onUncheck: function (row) {
+                        vm.setButtonState();
+                    },
+                    onCheckAll: function (rows) {
+                        vm.setButtonState();
+                    },
+                    onUncheckAll: function (rows) {
+                        vm.setButtonState();
+                    },
+                    columns: [{
+                        checkbox: true
+                    }, {
+                        field: 'Id',
+                        title: 'Id',
+                        visible: false
+                    }, {
+                        field: 'OrderNo',
+                        title: '@BDMall.Resources.Label.OrderNO',
+                        formatter: function (value, row, index) {
+                            return '<a href="#" onclick="AdjustOrder(\'' + row.Id + '\' ,\'' + value + '\');">' + value + '</a>';
+                        }
+                    }, {
+                        field: 'MemberName',
+                        title: '@BDMall.Resources.Label.MemberName'
+                    }, {
+                        field: 'DiscountTotalAmount',
+                        title: '@BDMall.Resources.Model.TotalAmount'
+                    }
+                        , {
+                        field: 'PaymentMethod',
+                        title: '@BDMall.Resources.Label.PaymentMethod'
+                    },
+                    {
+                        field: 'Status',
+                        title: '@BDMall.Resources.Label.OrderStatus'
+                    },
+                    {
+                        field: 'UpdateDateString',
+                        title: '@BDMall.Resources.Label.UpdateDate'
+                    },
+                    {
+                        field: 'CreateDateString',
+                        title: '@BDMall.Resources.Label.OrderCreateDate'
+                    }]
+
+                });
+            };
+
+            oTableInit.queryParams = function (params) {
+                var page = 1;
+                if (params.offset > 0) {
+                    page = parseInt(params.offset / params.limit) + 1;
+                }
+
+
+                vm.condition.CreateDateFrom = $("#dtOrderDateFrom").val();
+                vm.condition.CreateDateTo = $("#dtOrderDateTo").val();
+                //vm.condition.ExpressId = $("#cboLogisticMethod").val();
+                vm.condition.PaymentMethod = $("#cboPaymentMethod").val();
+                if(orderStatus>-1)
+                {
+                    vm.condition.StatusCode=orderStatus;
+                }
+                else
+                {
+                    vm.condition.StatusCode = $("#cboOrderStatus").val();
+                }
+
+
+                vm.condition.PageInfo.Page = page;
+                vm.condition.PageInfo.PageSize = params.limit;
+                return vm.condition;
+
+            }
+            return oTableInit;
+        }
+
+        function AdjustOrder(id, invoice) {
+            console.log(id);
+            var tabId = self.frameElement.parentElement.id;
+            miniTab.openNewTabByIframe({
+                href: "/Order/OldEdit/" + id,
+                title: '@BDMall.Resources.Action.Modify' + "-" + invoice,
+                callback: search
+            });
+        }
+
+        function search() {
+            //$("#tblOrderList").bootstrapTable("refresh", { "url": "/adminapi/Order/Search"});
+            $("#tblOrderList").bootstrapTable("refresh", { url: "/adminapi/Order/SearchOldOrders", pageNumber: 1 });
+        }
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+
+        $(document).ready(function () {
+            var oTable = new orderTableInit();
+            oTable.Init();
+            InitDateTimePicker();
+            //InitBootstrapSelect("cboLogisticMethod", "/adminapi/Dict/GetSendProductMethod", 1, false, true, null, function () { }, true);
+            InitBootstrapSelect("cboPaymentMethod", "/adminapi/Dict/GetPaymentMethod", 1, false, true, null, function () { }, true);
+            InitBootstrapSelect("cboMerchantId", "/adminapi/Merchant/GetMerchantOptions", 1, false, true, null, function () { }, true);
+
+            if(orderStatus>-1){
+                vm.IsSelectable=true;
+            }
+            search();
+            //InitBootstrapSelect("cboOrderStatus", "/adminapi/Dict/GetOrderStatus", 1, false, true, null, function () {
+            //    $('#cboOrderStatus').selectpicker('val', orderStatus);
+            //    vm.condition.StatusCode = orderStatus;
+            //    search();
+            //}, false);
+
+        });
+    </script>
+}
+
+
+
+

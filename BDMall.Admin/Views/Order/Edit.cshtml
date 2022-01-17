@@ -1,0 +1,881 @@
+﻿
+@{
+    ViewBag.Title = "EditOrder";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="col-md-12" id="app" v-cloak>
+    <div>
+        <table class="table">
+            <tr>
+                <td class="col-md-2">@BDMall.Resources.Label.OrderNoWithSymbol</td>
+                <td class="col-md-10"><label style="color:red">{{OrderInfo.OrderNO}}</label></td>
+            </tr>
+            <tr>
+                <td class="col-md-2">@BDMall.Resources.Label.OrderDateWithSymbol</td>
+                <td class="col-md-10">{{OrderInfo.CreateAt}}</td>
+            </tr>
+            <tr v-show="OrderInfo.IsMerchant==false">
+                <td class="col-md-2">@BDMall.Resources.Label.StateWithSymbol</td>
+                <td class="col-md-10"><label style="color:red">{{OrderInfo.StatusName}}</label></td>
+            </tr>
+            <tr>
+                <td class="col-md-2">@BDMall.Resources.Label.PaymentMethodWithSymbol</td>
+                <td class="col-md-10">{{OrderInfo.PaymentMethod}}</td>
+            </tr>
+            <tr>
+                <td class="col-md-12" colspan="2">{{OrderInfo.EventRewardTips}}</td>
+            </tr>
+        </table>
+
+    </div>
+
+
+
+
+    <div id="divOrderInfo">
+        <ul id="myTab" class="nav nav-tabs">
+            <li class="active">
+                <a href="#ProductInfo" data-toggle="tab">@BDMall.Resources.Label.OrderProductInformation</a>
+            </li>
+            <li >
+                <a href="#DeliveryInfo" data-toggle="tab">@BDMall.Resources.Label.DeliveryInformation</a>
+            </li>
+            <li>
+                <a href="#BillInfo" data-toggle="tab">@BDMall.Resources.Label.BillingInformation</a>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+
+            <div class="tab-pane fade" id="DeliveryInfo">
+                <div class="panel-body">
+                    <div class="panel panel-default" v-for="delivery,index in OrderInfo.Deliveries">
+                        <div class="panel-body">
+                            <table class="table">
+                                <tr>
+                                    <td class="col-md-1">
+                                        @BDMall.Resources.Label.DeliveryStatusWithSymbol
+                                    </td>
+                                    <td class="col-md-5">
+                                        <label v-show="delivery.CalmeDateCaption==''" style="color:red">{{delivery.StatusName}}</label>
+                                        <label v-show="delivery.CalmeDateCaption!=''" style="color:red">{{delivery.StatusName}}--{{delivery.CalmeDateCaption}}</label>
+                                    </td>
+                                    <td class="col-md-1">@BDMall.Resources.Label.MerchantName :</td>
+                                    <td class="col-md-4">{{delivery.MerchantName}}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4">
+                                        <div id="divStatusControl">
+                                            <div v-show="delivery.StatusCode=='0'">
+                                                <div class="form-group">
+                                                    <input type="button" class="btn btn-primary" value="@BDMall.Resources.Action.Proceed" v-on:click="updateStatus(1,delivery)" v-if="OrderInfo.IsMerchant==false" />
+                                                    <input type="button" class="btn btn-warning" value="@BDMall.Resources.Action.CancelOrder" v-on:click="cancelOrder(5,delivery)" v-if="OrderInfo.IsMerchant==false" />
+                                                </div>
+                                            </div>
+                                            <div v-show="delivery.StatusCode=='1'">
+                                                <div class="form-group">
+                                                    <input type="button" class="btn btn-primary" value="@BDMall.Resources.Action.Proceed" v-on:click="updateStatus(2,delivery)" />
+                                                    <input type="button" class="btn btn-warning" value="@BDMall.Resources.Action.CancelOrder" v-on:click="cancelOrder(5,delivery)" v-if="OrderInfo.IsMerchant==false" />
+                                                </div>
+                                            </div>
+                                            <div v-show="delivery.StatusCode=='2'">
+
+                                                <div class="form-group">
+                                                    <div class="form-inline">
+                                                        @BDMall.Resources.Label.LocationWithSymbol
+                                                        <select v-bind:id="'cboLocation'+index" class="form-control" data-width="150px" v-model="delivery.LocationId" v-on:change="checkIsProceed(delivery)" v-bind:disabled="delivery.SendBackCount>0"></select>
+                                                        @BDMall.Resources.Label.DeliveryNoWithSymbol
+                                                        {{delivery.DeliveryNo}}
+                                                        <span v-show="delivery.ExpressCode!='LC'||  (delivery.ExpressCode=='LC' && delivery.TrackingNo!='' )">@BDMall.Resources.Label.TrackingNoWithSymbol</span>
+                                                        <input type="text" class="form-control" style="width:300px;" v-model="delivery.TrackingNo" v-on:blur="checkIsProceed(delivery)" v-show="delivery.ExpressCode!='LC'||  (delivery.ExpressCode=='LC' && delivery.TrackingNo!='' )" v-bind:disabled="delivery.ExpressCode=='ECS' || delivery.ExpressCode=='LC'" />
+                                                        <input type="button" class="btn btn-primary" value="@BDMall.Resources.Action.ECShipOrder" v-on:click="ecShipPostOrder(delivery)" v-show="(delivery.ExpressCode=='ECS'  || delivery.ExpressCode=='SPGDE' || delivery.ExpressCode=='SPGDEE')" />
+                                                        <input type="button" class="btn btn-primary"  value="@BDMall.Resources.Action.GenExpNo" v-show="delivery.ExpressCode=='SF'&&delivery.TrackingNo==''" v-on:click="genSFWayBillNo(delivery)" />
+                                                    </div>
+                                                    <div class="form-inline">
+                                                        <div class="col-md-2">
+                                                            <input type="button" class="btn btn-primary" value="@BDMall.Resources.Action.Proceed" v-on:click="updateStatus(3,delivery)" v-bind:disabled="(isProceed==false || delivery.TrackingNo=='') && delivery.ExpressCode!='LC'" />
+
+                                                            <input v-if="delivery.SendBackCount==0" type="button" class="btn btn-warning" value="@BDMall.Resources.Action.CancelOrder" v-on:click="cancelOrder(5,delivery)" v-show="OrderInfo.IsMerchant==false" />
+                                                            <input v-else type="button" class="btn btn-warning" value="@BDMall.Resources.Action.CancelOrder" v-on:click="salesReturn(delivery)" v-show="OrderInfo.IsMerchant==false" />
+                                                        </div>
+                                                        <div class="col-md-10" v-if="delivery.IsShowECShipStatus==true">
+                                                            @BDMall.Resources.Label.ECShipStatus:
+                                                            <input type="text" class="form-control" style="width:150px;" v-model="delivery.ECShipStatusString" disabled="disabled" />
+                                                            <label class="text-danger" v-if="delivery.ECShipStatus==2">{{delivery.ECShipMessage}}</label>&nbsp;&nbsp;
+                                                            @*<input v-if="delivery.ECShipStatus==2" type="button" class="btn btn-primary" value="@BDMall.Resources.Action.Waitting" v-on:click="changeECShipStatus(delivery.Id,0)" />*@
+                                                            @* waiting or failed can change to stop *@
+                                                            <input v-if="delivery.ECShipStatus==0||delivery.ECShipStatus==2" type="button" class="btn btn-primary" value="@BDMall.Resources.Action.Stop" v-on:click="changeECShipStatus(delivery.Id,3)" />
+                                                            <input v-if="delivery.ECShipStatus==1" type="button" class="btn btn-primary" value="@BDMall.Resources.Action.ReSend" v-on:click="changeECShipStatus(delivery.Id,0)" />
+
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div v-show="delivery.StatusCode=='3'">
+
+                                                <div class="form-inline">
+                                                    @BDMall.Resources.Label.DeliveryNoWithSymbol
+                                                    {{delivery.DeliveryNo}}
+                                                    @BDMall.Resources.Label.TrackingNoWithSymbol
+                                                    <input type="text" class="form-control" style="width:300px;" v-model="delivery.TrackingNo" v-on:blur="checkIsProceed(delivery)" v-bind:disabled="delivery.ExpressCode=='ECS'" />
+                                                    <input type="button" class="btn btn-primary" value="@BDMall.Resources.Action.ShowECShipLabel" v-on:click="showECShipLabel(delivery.Id)" v-show="(delivery.ExpressCode=='ECS' || delivery.ExpressCode=='SPGDE' || delivery.ExpressCode=='SPGDEE')" />
+                                                    <input type="button" class="btn btn-primary" value="@BDMall.Resources.Action.DownloadECShipLabel" v-on:click="downloadECShipLabel(delivery.Id)" v-show="(delivery.ExpressCode=='ECS' || delivery.ExpressCode=='SPGDE' || delivery.ExpressCode=='SPGDEE')" />
+                                                    <input type="button" class="btn btn-primary" value="@BDMall.Resources.Action.ShowShipLabel" v-on:click="showShipLabel(delivery.Id)" v-show="delivery.ExpressCode!='ECS' && delivery.ExpressCode!='SPGDE' && delivery.ExpressCode!='SPGDEE'" />
+                                                    <input type="button" class="btn btn-primary" value="@BDMall.Resources.Action.DownloadhipLabel" v-on:click="downLoadShipLabel(delivery.Id)" v-show="delivery.ExpressCode!='ECS' && delivery.ExpressCode!='SPGDE' && delivery.ExpressCode!='SPGDEE'" />
+                                                    @*<input type="button" class="btn btn-primary" value="@BDMall.Resources.Action.MailTracking" v-on:click="showMailTracking(delivery.TrackingNo,index)" />
+                                                        <label v-bind:id="'spnTrackingInfo_'+index"></label>*@
+
+                                                </div>
+
+                                            </div>
+                                            <div v-show="delivery.StatusCode=='3'">
+                                                @*v-show="OrderInfo.IsMerchant==false"*@
+                                                <input type="button" class="btn btn-primary btn-action-large" value="@BDMall.Resources.Action.CompleteOrder" v-on:click="updateStatus(4,delivery)" />
+                                                <input type="button" class="btn btn-warning" value="@BDMall.Resources.Action.SendBack" v-on:click="sendBack(delivery)" />
+                                                <input type="button" class="btn btn-warning" value="@BDMall.Resources.Action.CancelOrder" v-on:click="salesReturn(delivery)" v-show="OrderInfo.IsMerchant==false" />
+                                            </div>
+
+                                            <div v-show="delivery.StatusCode=='4'||delivery.StatusCode=='5'">
+                                                <div class="form-inline">
+                                                    @BDMall.Resources.Label.DeliveryNoWithSymbol
+                                                    {{delivery.DeliveryNo}}
+                                                    @BDMall.Resources.Label.TrackingNoWithSymbol
+                                                    <input type="text" class="form-control" style="width:300px;" v-model="delivery.TrackingNo" disabled="disabled" />
+                                                    <input type="button" class="btn btn-primary" value="@BDMall.Resources.Action.MailTracking" v-on:click="showCompleteMailTracking(delivery.TrackingNo,index)" />
+                                                    <label v-bind:id="'spnCompleteTrackingInfo_'+index"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr v-if="(delivery.StatusCode=='3'||delivery.StatusCode=='4'||delivery.StatusCode=='5')&&delivery.ExpressCode=='SF'">
+                                    <td>
+                                        @BDMall.Resources.Label.ShipMethod
+                                    </td>
+                                    <td v-if="delivery.RouteResp!=null">
+                                        {{delivery.RouteResp.mailNo}}
+                                        <ul>
+                                            <li v-for="route in delivery.RouteResp.routes">
+                                                {{route.acceptTime}}
+                                                -
+                                                {{route.acceptAddress}}
+                                                -
+                                                {{route.remark}}
+
+                                            </li>
+                                        </ul>
+                                    </td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        @BDMall.Resources.Label.DeliveryNoWithSymbol
+                                    </td>
+                                    <td>
+                                        {{delivery.DeliveryNo}}
+                                    </td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        @BDMall.Resources.Label.CountryWithSymbol
+                                    </td>
+                                    <td>
+                                        {{delivery.Country}}
+                                    </td>
+                                    <td>@BDMall.Resources.Label.ProvinceWithSymbol</td>
+                                    <td>
+                                        {{delivery.Province}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>@BDMall.Resources.Label.CityWithSymbol</td>
+                                    <td>
+                                        <div v-if="delivery.StatusCode<='2'">
+                                            <input type="text" class="form-control" v-model="delivery.City" maxlength="200" />
+                                        </div>
+                                        <div v-else>
+                                            {{delivery.City}}
+                                        </div>
+                                    </td>
+                                    <td>@BDMall.Resources.Label.PostalCodeWithSymbol</td>
+                                    <td>
+                                        <div v-if="delivery.StatusCode<='2'">
+                                            <input type="text" class="form-control" v-model="delivery.PostCode" maxlength="15" />
+                                        </div>
+                                        <div v-else>
+                                            {{delivery.PostCode}}
+                                        </div>
+                                    </td>
+
+                                </tr>
+                                <tr>
+                                    <td>@BDMall.Resources.Label.Address1WithSymbol</td>
+                                    <td>
+                                        <div v-if="delivery.StatusCode<='2'">
+                                            <input type="text" class="form-control" v-model="delivery.Address" maxlength="200" />
+                                        </div>
+                                        <div v-else>
+                                            {{delivery.Address}}
+                                        </div>
+                                    </td>
+                                    <td>@BDMall.Resources.Label.Address2WithSymbol</td>
+                                    <td>
+                                        <div v-if="delivery.StatusCode<='2'">
+                                            <input type="text" class="form-control" v-model="delivery.Address1" maxlength="200" />
+                                        </div>
+                                        <div v-else>
+                                            {{delivery.Address1}}
+                                        </div>
+                                    </td>
+
+                                </tr>
+                                <tr>
+                                    <td>@BDMall.Resources.Label.Address3WithSymbol</td>
+                                    <td>
+                                        <div v-if="delivery.StatusCode<='2'">
+                                            <input type="text" class="form-control" v-model="delivery.Address2" maxlength="200" />
+                                        </div>
+                                        <div v-else>
+                                            {{delivery.Address2}}
+                                        </div>
+                                    </td>
+                                    <td>@BDMall.Resources.Label.Address4WithSymbol</td>
+                                    <td>
+                                        <div v-if="delivery.StatusCode<='2'">
+                                            <input type="text" class="form-control" v-model="delivery.Address3" maxlength="200" />
+                                        </div>
+                                        <div v-else>
+                                            {{delivery.Address3}}
+                                        </div>
+                                    </td>
+
+                                </tr>
+                                <tr>
+                                    <td>@BDMall.Resources.Label.NameWithSymbol</td>
+                                    <td>
+                                        <div v-if="delivery.StatusCode<='2'">
+                                            <input type="text" class="form-control" v-model="delivery.ConactName" maxlength="200" />
+                                        </div>
+                                        <div v-else>
+                                            {{delivery.ConactName}}
+                                        </div>
+                                    </td>
+                                    <td>@BDMall.Resources.Label.MobileWithSymbol</td>
+                                    <td>
+                                        <div v-if="delivery.StatusCode<='2'">
+                                            <input type="text" class="form-control" v-model="delivery.ConactPhone" maxlength="200" />
+                                        </div>
+                                        <div v-else>
+                                            {{delivery.ConactPhone}}
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>@BDMall.Resources.Label.EmailWithSymbol</td>
+                                    <td>
+                                        <div v-if="delivery.StatusCode<='2'">
+                                            <input type="email" class="form-control" v-model="delivery.ConactMail" maxlength="200" />
+                                        </div>
+                                        <div v-else>
+                                            {{delivery.ConactMail}}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @BDMall.Resources.Label.DeliveryTypeName:
+                                    </td>
+                                    <td>
+                                        {{delivery.ExpressServiceName}}, {{delivery.DeliveryTypeName}},{{delivery.MCNCode}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        @BDMall.Resources.Label.RemarksWithSymbol
+                                    </td>
+                                    <td colspan="3">
+                                        <textarea class="form-control" rows="3" v-model="delivery.Remark"></textarea>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4" class="text-right">
+                                        <input type="button" value="@BDMall.Resources.Action.Save" v-on:click="updateDeliveryInfo(delivery)" class="btn btn-primary" style="width:150px;" v-show="delivery.StatusCode<='2'" />
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <table class="table table-bordered table-condensed">
+                                <tr>
+                                    <th>@BDMall.Resources.Label.Img</th>
+                                    <th>@BDMall.Resources.Label.ProductCode</th>
+                                    <th>@BDMall.Resources.Label.ProductName</th>
+                                    <th>@BDMall.Resources.Label.UnitPrice ({{OrderInfo.Currency.Name}})</th>
+                                    <th>@BDMall.Resources.Label.InvAttribute</th>
+                                    <th>@BDMall.Resources.Label.Qty</th>
+                                    <th>@BDMall.Resources.Label.SubTotal</th>
+                                </tr>
+                                <tr v-if="item.Product!=null" v-for="item in delivery.DeliveryItems">
+                                    <td>
+                                        <img v-bind:src="item.Product.Imgs[0]" width="64">
+                                    </td>
+                                    <td>
+                                        {{item.Product.Code}}
+                                    </td>
+                                    <td>
+                                        {{item.Product.Name}}
+                                    </td>
+                                    <td>
+                                        {{item.UnitPrice}}
+                                    </td>
+                                    <td>
+                                        <div v-for="i in item.Product.AttrValues">
+                                            {{i.Desc}}:{{i.AddPrice}}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {{item.Qty}}
+                                    </td>
+                                    <td>
+                                        {{(item.Product.TotalPrice*item.Qty).toFixed(2)}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="6" class="text-right">@BDMall.Resources.Label.TotalQtyWithSymbol</td>
+                                    <td>{{delivery.TotalQty}}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="6" class="text-right">@BDMall.Resources.Label.TotalAmountWithSymbol ({{OrderInfo.Currency.Name}})</td>
+                                    <td>{{delivery.TotalPrice.toFixed(2)}}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="6" class="text-right">@BDMall.Resources.Label.ChargeWithSymbol ({{OrderInfo.Currency.Name}})</td>
+                                    <td>{{(delivery.Freight+delivery.FreightDiscount).toFixed(2)}}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="6" class="text-right">@BDMall.Resources.Label.ChargeDiscountWithSymbol ({{OrderInfo.Currency.Name}})</td>
+                                    <td>
+                                        -{{delivery.FreightDiscount.toFixed(2)}}
+                                    </td>
+                                </tr>
+                                <tr v-for="discount in delivery.Discounts">
+                                    <td colspan="6" class="text-right">{{discount.DiscountTypeName}}({{OrderInfo.Currency.Name}})</td>
+                                    <td>
+                                        -{{discount.DiscountPrice.toFixed(2)}}({{discount.Code}})
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="6" class="text-right">@BDMall.Resources.Label.GrandTotalWithSymbol ({{OrderInfo.Currency.Name}})</td>
+                                    <td>{{delivery.DiscountTotalAmount.toFixed(2)}}</td>
+                                </tr>
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+            <div class="tab-pane fade in active" id="ProductInfo">
+                <div class="panel-body">
+                    <table class="table table-bordered table-condensed" id="tblOrderProduct">
+                        <tr>
+                            <th>@BDMall.Resources.Label.Img</th>
+                            <th>@BDMall.Resources.Label.ProductCode</th>
+                            <th>@BDMall.Resources.Label.ProductName</th>
+                            <th>@BDMall.Resources.Label.UnitPrice ({{OrderInfo.Currency.Name}})</th>
+                            <th>@BDMall.Resources.Label.InvAttribute</th>
+                            <th>@BDMall.Resources.Label.Qty</th>
+                            <th>@BDMall.Resources.Label.SubTotal</th>
+                        </tr>
+                        <tr v-if="item.Product!=null" v-for="item in OrderInfo.OrderItems">
+                            <td>
+                                <img v-bind:src="item.Product.Imgs[0]" width="64">
+                            </td>
+                            <td>
+                                {{item.Product.Code}}
+                            </td>
+                            <td>
+                                {{item.Product.Name}}
+                            </td>
+                            <td>
+                                {{item.UnitPrice}}
+                            </td>
+                            <td>
+                                <div v-for="i in item.Product.AttrValues">
+                                    {{i.Desc}}:{{i.AddPrice}}
+                                </div>
+                            </td>
+                            <td>
+                                {{item.Qty}}
+                            </td>
+                            <td>
+                                {{(item.Product.TotalPrice*item.Qty).toFixed(2)}}
+                            </td>
+                        </tr>
+                        <tr v-else>
+                            <td colspan="7" class="text-center">@BDMall.Resources.Message.NoRecord</td>
+                        </tr>
+                        <tr>
+                            <td colspan="6" class="text-right">@BDMall.Resources.Label.TotalQtyWithSymbol</td>
+                            <td>{{OrderSummary.TotalQty}}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="6" class="text-right">@BDMall.Resources.Label.TotalAmountWithSymbol ({{OrderInfo.Currency.Name}})</td>
+                            <td>{{OrderSummary.ItemsAmount.toFixed(2)}}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="6" class="text-right">@BDMall.Resources.Label.ChargeWithSymbol ({{OrderInfo.Currency.Name}})</td>
+                            <td>{{OrderSummary.DeliveryCharge.toFixed(2)}}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="6" class="text-right">@BDMall.Resources.Label.ChargeDiscountWithSymbol ({{OrderInfo.Currency.Name}})</td>
+                            <td>
+                                -{{OrderSummary.DeliveryDiscount.toFixed(2)}}
+                            </td>
+                        </tr>
+                        <tr v-for="discount in OrderTotalDiscount">
+                            <td colspan="6" class="text-right">{{discount.DiscountTypeName}}({{OrderInfo.Currency.Name}})</td>
+                            <td>
+                                -{{discount.DiscountPrice.toFixed(2)}}({{discount.Code}})
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="6" class="text-right">@BDMall.Resources.Label.GrandTotalWithSymbol ({{OrderInfo.Currency.Name}})</td>
+                            <td>{{OrderSummary.DiscountTotalAmount.toFixed(2)}}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="BillInfo">
+                <table class="table">
+                    <tr>
+                        <td class="col-md-2">@BDMall.Resources.Label.FirstNameWithSymbol</td>
+                        <td class="col-md-10">{{OrderInfo.Member.FirstName}}</td>
+                    </tr>
+                    <tr>
+                        <td class="col-md-2">@BDMall.Resources.Label.LastNameWithSymbol</td>
+                        <td class="col-md-10">{{OrderInfo.Member.LastName}}</td>
+                    </tr>
+                    @*<tr>
+                            <td class="col-md-2">@BDMall.Resources.Label.GenderWithSymbol</td>
+                            <td class="col-md-10">{{OrderInfo.Member.Gender}}</td>
+                        </tr>*@
+
+                    <tr>
+                        <td class="col-md-2">@BDMall.Resources.Label.PhoneWithSymbol</td>
+                        <td class="col-md-10">{{OrderInfo.Member.Mobile}}</td>
+                    </tr>
+                    <tr>
+                        <td class="col-md-2">@BDMall.Resources.Label.EmailAddressWithSymbol</td>
+                        <td class="col-md-10">{{OrderInfo.Member.Email}}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <a download="" id="exportLink" href="" target="_blank" hidden></a>
+</div>
+@section scripts{
+    <script type="text/javascript">
+        var orderId = "@ViewBag.OrderId";
+        var lang = $.cookie('Language');
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                isProceed: false,
+                OrderInfo: {
+                    IsMerchant: false,
+                    OrderId: orderId,
+                    InvoiceNO: "",
+                    PaymentMethod: "",
+                    CreateAt: "",
+                    Currency: {},
+                    OrderItems: [],
+                    Deliveries: [],
+                    BillInfo: {},
+                    Remark: "",
+                    StatusCode: 0,
+                    StatusName: "",
+                    PickupDate: "",
+                    PickupTime: "",
+                    DeliveryCharge: 0,
+                    ItemsAmount: 0,
+                    TotalAmount: 0,
+                    Member: {},
+                    Discounts:[]
+                },
+                OrderStatus: {
+                    RecevedOrder: {},
+                    PaymentConfirmed: {},
+                    Processing: {},
+                    DeliveryArranged: {},
+                    OrderCompleted: {},
+                    OrderCancelled: {},
+                },
+                UpdateStatusCondition: {
+                    CurrentStatus:0,
+                    OrderId: 0,
+                    Status: 0,
+                    LocationId: -1,
+                    DeliveryTrackingInfo: [],
+                    IsMassProcessRecord:false
+                },
+                MailTrackingInfo: {
+
+                },
+                OrderSummary: {
+                    TotalQty: 0,
+                    ItemsAmount: 0,
+                    DeliveryCharge: 0,
+                    DeliveryDiscount: 0,
+                    DiscountTotalAmount:0
+
+                },
+                OrderTotalDiscount: [{ DiscountPrice: 0, DiscountTypeName: "", Code: "" }],
+                TotalQty: 0,
+            },
+            methods: {
+                getOrderInfo: function () {
+                    var data = new Object();
+                    data.orderId = orderId;
+                    WS.AjaxP("get", "/adminapi/Order/GetById", data, function (response) {
+                        vm.OrderInfo = response;
+
+                        vm.getOrderTotalDiscount();
+
+                        vm.getOrderSummary();
+
+                        vm.$nextTick(function () {
+                            vm.OrderInfo.Deliveries.forEach(function (val, index) {
+                                InitBootstrapSelect("cboLocation" + index, "/adminapi/dict/GetWhseComboSrcByMerchant", 1, false, false, { merchantId: val.MerchantId }, function () {
+                                    if (val.LocationId != WS.GuidEmpty) {
+                                        $("#cboLocation" + index).selectpicker('val', val.LocationId);
+                                    }
+                                    else
+                                    {
+                                        val.LocationId = $("#cboLocation" + index).val();
+                                    }
+
+                                    vm.checkIsProceed(val);
+                                });
+
+                            })
+
+                        });
+                        vm.getTotalCountInfo();
+                    }, function () { })
+                },
+                getOrderSummary: function ()
+                {
+                    vm.OrderSummary.TotalQty = 0;
+                    vm.OrderSummary.ItemsAmount = 0;
+                    vm.OrderSummary.DeliveryCharge = 0;
+                    vm.OrderSummary.DeliveryDiscount = 0;
+                    vm.OrderSummary.DiscountTotalAmount = 0;
+                    vm.OrderInfo.Deliveries.forEach(function (val) {
+                        vm.OrderSummary.TotalQty += val.TotalQty;
+                        vm.OrderSummary.ItemsAmount += val.TotalPrice;
+                        vm.OrderSummary.DeliveryCharge += (val.Freight + val.FreightDiscount);
+                        vm.OrderSummary.DeliveryDiscount += val.FreightDiscount;
+                        vm.OrderSummary.DiscountTotalAmount += val.DiscountTotalAmount;
+
+                    });
+
+                    var discout = 0;
+                    vm.OrderInfo.Discounts.forEach(function (val) {
+                        discout += val.DiscountPrice;
+                    });
+                    vm.OrderSummary.DiscountTotalAmount-=discout;
+
+                },
+                getOrderTotalDiscount: function ()
+                {
+                    vm.OrderTotalDiscount = [];
+
+                    if (vm.OrderInfo.Discounts)
+                    {
+                        vm.OrderInfo.Discounts.forEach(function (val) {
+                            var discount = {};
+                            discount.DiscountPrice = val.DiscountPrice;
+                            discount.DiscountTypeName = val.DiscountTypeName;
+                            discount.Code = val.Code;
+                            if (vm.OrderTotalDiscount.length == 0) {
+                                vm.OrderTotalDiscount.push(discount);
+                            }
+                            else {
+                                var isExist = false;
+                                vm.OrderTotalDiscount.forEach(function (totalDis) {
+                                    if (totalDis.DiscountTypeName == discount.DiscountTypeName) {
+                                        totalDis.DiscountPrice += discount.DiscountPrice;
+                                        isExist = true;
+                                    }
+                                });
+                                if (isExist == false) {
+                                    vm.OrderTotalDiscount.push(discount);
+                                }
+                            }
+                        });
+                    }
+
+                    vm.OrderInfo.Deliveries.forEach(function (val) {
+                        if (val.Discounts)
+                        {
+                            val.Discounts.forEach(function (dis) {
+                                var discount = {};
+                                discount.DiscountPrice = dis.DiscountPrice;
+                                discount.DiscountTypeName = dis.DiscountTypeName;
+                                discount.Code = dis.Code;
+                                if (vm.OrderTotalDiscount.length == 0) {
+                                    vm.OrderTotalDiscount.push(discount);
+                                }
+                                else {
+                                    var isExist = false;
+                                    vm.OrderTotalDiscount.forEach(function (totalDis) {
+                                        if (totalDis.DiscountTypeName == discount.DiscountTypeName)
+                                        {
+                                            totalDis.DiscountPrice += discount.DiscountPrice;
+                                            isExist = true;
+                                        }
+                                    });
+                                    if (isExist == false)
+                                    {
+                                        vm.OrderTotalDiscount.push(discount);
+                                    }
+                                }
+                            });
+                        }
+
+                    });
+
+                },
+                updateStatus: function (status,delivery) {
+                    vm.UpdateStatusCondition.CurrentStatus = delivery.StatusCode;
+                    vm.UpdateStatusCondition.OrderId = orderId;
+                    vm.UpdateStatusCondition.Status = status;
+                    //vm.UpdateStatusCondition.LocationId = $("#cboLocation").val();
+                    vm.UpdateStatusCondition.DeliveryTrackingInfo = [];
+                    if (delivery.IsShowECShipStatus == true) {
+                        vm.UpdateStatusCondition.IsMassProcessRecord = true;
+                    }
+                    else
+                    {
+                        vm.UpdateStatusCondition.IsMassProcessRecord = false;
+                    }
+
+                    //vm.OrderInfo.Deliveries.forEach(function (val) {
+                    if (delivery)
+                    {
+                        var trackingInfo = {};
+                        trackingInfo.Id = delivery.Id;
+                        trackingInfo.TrackingNo = delivery.TrackingNo;
+                        trackingInfo.LocationId = delivery.LocationId;
+                        trackingInfo.ECShipNo = delivery.ECShipNo;
+                        trackingInfo.ECShipDocNo = delivery.ECShipDocNo;
+                        vm.UpdateStatusCondition.DeliveryTrackingInfo.push(trackingInfo);
+                    }
+
+                    //});
+
+                    var _this = this;
+                    WS.AjaxP("post", "/adminapi/Order/UpdateOrderStatus", vm.UpdateStatusCondition, function (response) {
+                        if (response.Succeeded == true) {
+                            //vm.OrderInfo.StatusCode = status;
+                            _this.getOrderInfo(orderId);
+
+                        }
+                        else {
+                            _this.getOrderInfo(orderId);
+                            showWarn(response.Message);
+                        }
+
+                    }, function () { })
+
+                },
+                cancelOrder: function (type,obj) {
+                    SystemConfirm("@BDMall.Resources.Message.AreYouSureToCancelOrder", function () {
+                        vm.updateStatus(type, obj);
+                    });
+                },
+                genSFWayBillNo: function (delivery) {                    
+                    WS.AjaxP("post", "/adminapi/Order/CreateSFOrder", delivery, function (response) {
+                       
+                        if (response.Succeeded) {
+                            vm.getOrderInfo();
+                        }
+                        else {
+                            showWarn(response.Message);
+                        }
+                    }, function () { })
+                },
+                getOrderStatus: function () {
+                    WS.AjaxP("get", "/adminapi/Order/GetOrderStatus", null, function (response) {
+                        vm.OrderStatus = response;
+                    }, function () { })
+                },
+                getTotalCountInfo: function () {
+                    var itemsAmount = 0;
+                    var totalQty = 0;
+
+                    vm.OrderInfo.OrderItems.forEach(function (val) {
+                        totalQty += parseInt(val.Qty);
+                        itemsAmount += val.UnitPrice * val.Qty;
+                    });
+
+                    vm.TotalQty = parseInt(totalQty);
+                    vm.OrderInfo.ItemsAmount = itemsAmount.toFixed(2);
+                    vm.OrderInfo.TotalAmount = parseFloat(vm.OrderInfo.ItemsAmount) + parseFloat(vm.OrderInfo.DeliveryCharge);
+
+                },
+                ecShipPostOrder: function (delivery) {
+                    WS.AjaxP("post", "/adminapi/order/CreateECShipOrder", delivery, function (response) {
+                        if (response.Status == "0" || response.Status == "200") {
+                            delivery.TrackingNo = response.ExpressNo;
+                            delivery.ECShipNo = response.ECShipNo;
+                            delivery.ECShipDocNo = response.AdditionalDocument;
+                            vm.checkIsProceed(delivery);
+                        }
+                        else {
+                            showWarn(response.ErrMessage);
+                        }
+                    }, function () { });
+                },
+                checkIsProceed: function (delivery) {
+                    var trackingFlag = false;
+
+                    if (delivery.TrackingNo != "" && delivery.LocationId != -1 && delivery.LocationId != WS.GuidEmpty) {
+                        trackingFlag = true;
+                    } else {
+                        trackingFlag = false;
+                    }
+
+                    vm.isProceed = trackingFlag;
+                    //return trackingFlag;
+
+                },
+                showECShipLabel: function (id) {
+                    window.open('/Order/ECShipLabelDetail/' + id, 'newwindow', 'height=800,width=1000,top=0,left=0,toolbar=no,menubar=no,scrollbars=yes, resizable=no,location=no, status=no');
+                },
+                downloadECShipLabel: function (id) {
+                    WS.AjaxP("get", "/adminapi/order/GetECShipLabel", { deliveryId: id }, function (response) {
+                        if (response.Succeeded == true) {
+                            vm.ECShipLabel = response.ReturnValue;
+                            vm.ECShipLabel.Labels.forEach(function (val, indxe) {
+                                //用HTML5的方式下載PDF
+                                $("#exportLink").attr("href", val.LabelNetPath);
+                                $("#exportLink").attr("download", val.LabelName);
+                                document.getElementById("exportLink").click();
+                            });
+                        }
+                        else {
+                            showWarn(response.Message);
+                        }
+                    }, function () { });
+                },
+                showShipLabel: function (id) {
+                    window.open('../../ShipLabel/ShipLabel.aspx?DeliveryId=' + id + '&Lang=' + lang +"&IsDownload=0", 'newwindow', 'height=800,width=1000,top=0,left=0,toolbar=no,menubar=no,scrollbars=yes, resizable=no,location=no, status=no');
+                },
+                downLoadShipLabel: function (id) {
+                    window.open('../../ShipLabel/ShipLabel.aspx?DeliveryId=' + id + '&Lang=' + lang +"&IsDownload=1", 'newwindow', 'height=800,width=1000,top=0,left=0,toolbar=no,menubar=no,scrollbars=yes, resizable=no,location=no, status=no');
+                },
+                showMailTracking: function (trackingNo,index) {
+                    WS.AjaxP("get", "/adminapi/order/GetOrderMailTrackingInfo", { trackingNo: trackingNo }, function (response) {
+                        if (response.Succeeded == true) {
+                            vm.MailTrackingInfo = response.ReturnValue;
+                            $("#spnTrackingInfo_" + index).html(vm.MailTrackingInfo.Details[0].Message + " -- " + vm.MailTrackingInfo.Details[0].MessageTime);
+                        }
+                        else {
+                            showWarn(response.Message);
+                        }
+                    }, function () { });
+                },
+                showCompleteMailTracking: function (trackingNo, index) {
+                    WS.AjaxP("get", "/adminapi/order/GetOrderMailTrackingInfo", { trackingNo: trackingNo }, function (response) {
+                        if (response.Succeeded == true) {
+                            vm.MailTrackingInfo = response.ReturnValue;
+                            $("#spnCompleteTrackingInfo_" + index).html(vm.MailTrackingInfo.Details[0].Message + " -- " + vm.MailTrackingInfo.Details[0].MessageTime);
+                        }
+                        else {
+                            showWarn(response.Message);
+                        }
+                    }, function () { });
+                },
+
+                updateDeliveryInfo: function (delivery)
+                {
+                    if (delivery.ConactName == '' || delivery.ConactPhone == '') {
+                        showWarn('@BDMall.Resources.Message.NameAndPhoneNotAllowedEmpty');
+                    }
+                    else
+                    {
+                        WS.AjaxP("post", "/adminapi/order/UpdateDeliveryInfo", delivery, function (response) {
+                            if (response.Succeeded == true) {
+                                showInfo(response.Message);
+                            }
+                            else {
+                                showWarn(response.Message);
+                            }
+                        }, function () { });
+                    }
+
+                },
+                sendBack: function (delivery) {
+                    SystemConfirm("@BDMall.Resources.Message.AreYouSureToSendBack", function () {
+                        WS.AjaxP("get", "/adminapi/order/DeliverySendBack", { id: delivery.Id }, function (response) {
+                            if (response.Succeeded == true) {
+                                vm.getOrderInfo();
+                            }
+                            else {
+                                showWarn(response.Message);
+                            }
+                        }, function () { });
+                    });
+
+                },
+                salesReturn: function (delivery) {
+                    SystemConfirm("@BDMall.Resources.Message.AreYouSureToCancelOrder", function () {
+                        WS.AjaxP("get", "/adminapi/order/DeliverySalesReturn", { id: delivery.Id }, function (response) {
+                            if (response.Succeeded == true) {
+                                vm.getOrderInfo();
+                            }
+                            else {
+                                showWarn(response.Message);
+                            }
+                        }, function () { });
+                    });
+
+                },
+                changeECShipStatus: function (deliveryId, status)
+                {
+                    SystemConfirm("@BDMall.Resources.Message.AreYouSureToChangeECShipStatus", function () {
+                        WS.AjaxP("get", "/adminapi/order/ChagneECShipStatus", { id: deliveryId, status: status }, function (response) {
+                            if (response.Succeeded == true) {
+                                vm.getOrderInfo();
+                            }
+                            else {
+                                showWarn(response.Message);
+                            }
+                        }, function () { });
+                    });
+                }
+            }
+        });
+
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+        $(document).ready(function(){
+            vm.getOrderInfo();
+            vm.getOrderStatus();
+
+        });
+    </script>
+}
+

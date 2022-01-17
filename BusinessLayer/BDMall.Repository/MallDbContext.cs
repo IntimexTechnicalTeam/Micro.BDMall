@@ -179,7 +179,7 @@ namespace BDMall.Repository
         public DbSet<SalesReturnOrder> SalesReturnOrders { get; set; }
         public DbSet<SalesReturnOrderDetail> SalesReturnOrderDetails { get; set; }
 
-
+        public DbSet<OrderDiscount> OrderDiscounts { get; set; }
 
 
 

@@ -1,0 +1,253 @@
+﻿
+@{
+    ViewBag.Title = "DeliveryECShipLabel";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="app" class="col-md-12" v-cloak>
+    <table class="table table-condensed">
+        <tr>
+            <td class="col-md-2">
+                @BDMall.Resources.Label.OrderNO
+            </td>
+            <td colspan="3" class="col-md-10">
+                <div class="form-inline">
+                    <input type="text" class="form-control" style="width:300px;" v-model="condition.OrderNo" />
+                </div>
+            </td>
+
+        </tr>
+        <tr>
+            <td class="col-md-2">
+                @BDMall.Resources.Label.DeliveryNO
+            </td>
+            <td colspan="3" class="col-md-10">
+                <div class="form-inline">
+                    <input type="text" class="form-control" style="width:300px;" v-model="condition.DeliveryNoFrom" />
+                    @BDMall.Resources.Label.To
+                    <input type="text" class="form-control" style="width:300px;" v-model="condition.DeliveryNoTo" />
+                </div>
+            </td>
+
+        </tr>
+    </table>
+    <div class="text-right">
+        <input type="button" class="btn btn-info" value="@BDMall.Resources.Action.Search" onclick="search();" />
+    </div>
+
+    <div class="panel-body">
+        @*<div id="toolbar" class="btn-group">
+                <button id="btn_delete" type="button" class="btn btn-default" v-on:click="deleteOrder">
+                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>@BDMall.Resources.Action.Delete
+                </button>
+            </div>*@
+        <table id="tblDeliveryList"></table>
+    </div>
+    <a download="" id="exportLink" href="" target="_blank" hidden></a>
+
+
+    <div id="myModal2" style="display:none; padding:5px;">
+        <form id="attributeValueForm">
+            <div class="modal-header">
+                <span>@BDMall.Resources.Action.ShowECShipLabel</span>
+            </div>
+            <div>
+                <iframe id="ECShipLabel" src="" width="100%" height="500" frameborder="0"></iframe>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" v-on:click="subClose">@BDMall.Resources.Action.Close</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+@section scripts {
+    <script type="text/javascript">
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                condition:
+                {
+                    OrderId: "",
+                    InvoiceNo:"",
+                    PayRef: "",
+                    CreateDateFrom: "",
+                    CreateDateTo: "",
+                    InvoiceNoFrom: "",
+                    InvoiceNoTo: "",
+                    OrderNo: "",
+                    ExpressId: WS.GuidEmpty,
+                    PaymentMethod: WS.GuidEmpty,
+                    StatusCode: -1,
+                    PageInfo: {
+                        Page: 1,
+                        PageSize: 10,
+                        SortName: "",
+                        SortOrder: ""
+                    }
+                },
+                IsSelectable: false,
+                ECShipLabel: [{
+                    OrderId: WS.GuidEmpty,
+                    OrderNo: "",
+                    Labels: []
+                }]
+            },
+            methods: {
+                subClose: function () {
+                    $('#app').unblock();
+                },
+            }
+        });
+
+
+
+        var orderTableInit = function () {
+
+            var oTableInit = new Object();
+            oTableInit.Init = function () {
+
+                $("#tblDeliveryList").bootstrapTable({
+                    method: 'post',                      //请求方式（*）
+                    //url: '/adminapi/Product/SearchTableData',         //请求后台的URL（*）
+                    queryParams: oTableInit.queryParams,//传递参数（*）
+                    //queryParamsType:'limit',
+                    //toolbar: '#toolbar',                //工具按钮用哪个容器
+                    striped: true,                      //是否显示行间隔色
+                    cache: true,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                    sortable: true,                     //是否启用排序
+                    sortOrder: "asc",                   //排序方式
+                    sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+                    pageNumber: 1,                       //初始化加载第一页，默认第一页
+                    pageSize: 10,                       //每页的记录行数（*）
+                    pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                    smartDisplay: false,
+                    showRefresh: true,                  //是否显示刷新按钮
+                    clickToSelect: false,                //是否启用点击选中行
+                    //height: 750,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+                    uniqueId: "Id",                     //每一行的唯一标识，一般为主键列
+                    cardView: false,                    //是否显示详细视图
+                    detailView: false,                   //是否显示父子表
+                    pagination: true,                   //是否显示分页（*）
+                    dataField: "Data",
+                    totalField: "TotalRecord",
+                    ajaxOptions: {
+                        beforeSend: function (request) {
+                            var access_token = $.cookie("access_token");
+                            request.setRequestHeader("Authorization", "Bearer " + access_token);
+                        }
+                    },
+                    columns: [
+                        //{
+                        //checkbox: true
+                        //},
+                        {
+                        field: 'Id',
+                        title: 'Id',
+                        visible: false
+                    }, {
+                        field: 'OrderNo',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.OrderNO'
+                    }, {
+                        field: 'DeliveryNo',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.DeliveryNO'
+                    }, {
+                        field: 'TrackingNo',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.TrackingNo'
+                    }
+                    ,{
+                        field: '',
+                        title: '@BDMall.Resources.Label.Action',
+                        formatter: function (value, row, index) {
+                            return '<input type="button" class="btn btn-default" value="@BDMall.Resources.Action.ShowECShipLabel" onClick="showECShipLabel(\'' + row.Id + '\')"></input><input type="button" class="btn btn-default" value="@BDMall.Resources.Action.DownloadECShipLabel" onClick="downloadECShipLabel(\'' + row.Id + '\')"></input>'
+                        }
+
+                    }]
+
+                });
+            };
+
+            oTableInit.queryParams = function (params) {
+                var page = 1;
+                if (params.offset > 0) {
+                    page = parseInt(params.offset / params.limit) + 1;
+                }
+
+                var sortedBy = params.sort;
+                var sorted = params.order;
+
+                vm.condition.StatusCode = 3;
+
+                vm.condition.PageInfo.Page = page;
+                vm.condition.PageInfo.PageSize = params.limit;
+                vm.condition.PageInfo.SortName = sortedBy;
+                vm.condition.PageInfo.SortOrder = sorted;
+                return vm.condition;
+
+            }
+            return oTableInit;
+        }
+
+
+        function search() {
+            //$("#tblOrderList").bootstrapTable("refresh", { "url": "/adminapi/Order/Search"});
+            $("#tblDeliveryList").bootstrapTable("refresh", { url: "/adminapi/Order/GetOrderDeliveryWithECS", pageNumber: 1 });
+        }
+
+
+
+        function show2Modal() {
+            $("#app").block({
+                message: $('#myModal2'),
+                css: {
+                    'width': '800px',
+                    'border': '1px',
+                    'border-radius': '6px',
+                    'box-shadow': '0 5px 15px rgba(0,0,0,.5)',
+                    'cursor': 'default'
+                },
+                overlayCSS: { backgroundColor: '#000', opacity: '0.6', cursor: 'defalut' }
+            });
+        }
+
+        function showECShipLabel(id) {
+            window.open('/Order/ECShipLabelDetail/' + id, 'newwindow', 'height=800,width=1000,top=0,left=0,toolbar=no,menubar=no,scrollbars=yes, resizable=no,location=no, status=no');
+        }
+        function downloadECShipLabel(id) {
+            WS.AjaxP("get", "/adminapi/order/GetECShipLabel", { deliveryId: id }, function (response) {
+                if (response.Succeeded == true) {
+                    vm.ECShipLabel = response.ReturnValue;
+                    vm.ECShipLabel.Labels.forEach(function (val, indxe) {
+                        //用HTML5的方式下載PDF
+                        $("#exportLink").attr("href", val.LabelPath);
+                        $("#exportLink").attr("download", val.LabelName);
+                        document.getElementById("exportLink").click();
+                    });
+                }
+                else {
+                    showWarn(response.Message);
+                }
+            }, function () { });
+        }
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+
+        $(document).ready(function () {
+            var oTable = new orderTableInit();
+            oTable.Init();
+
+            search();
+        });
+    </script>
+}
+

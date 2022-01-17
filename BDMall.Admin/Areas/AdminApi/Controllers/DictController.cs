@@ -27,6 +27,7 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
         public IMerchantBLL merchantBLL;
         public IAttributeBLL attributeBLL;
         public ICountryBLL countryBLL;
+        public IPaymentBLL paymentBLL;
 
         public DictController(IComponentContext services) : base(services)
         {
@@ -35,6 +36,7 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
             merchantBLL = Services.Resolve<IMerchantBLL>();
             attributeBLL = Services.Resolve<IAttributeBLL>();
             countryBLL = Services.Resolve<ICountryBLL>();
+            paymentBLL = Services.Resolve<IPaymentBLL>();
         }
 
         /// <summary>
@@ -206,25 +208,6 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
         }
 
         /// <summary>
-        /// 獲取付款方式
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet]
-        public async Task<List<KeyValue>> GetPaymentMethod()
-        {
-            return new List<KeyValue>();
-        }
-        /// <summary>
-        /// 獲取訂單狀態
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet]
-        public async Task<List<KeyValue>> GetOrderStatus()
-        {
-            return new List<KeyValue>();
-        }
-
-        /// <summary>
         /// 獲取SearchKeyType
         /// </summary>
         /// <returns></returns>
@@ -358,6 +341,44 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
             var masters = codeMasterBLL.GetCodeMasters(CodeMasterModule.Setting, CodeMasterFunction.WeightUnit);
             list = masters.Select(s => new KeyValue { Id = s.Value, Text = s.Description }).ToList();
             return list;
+        }
+
+        /// <summary>
+        /// 獲取支付方式列表
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public List<KeyValue> GetPaymentMethod()
+        {
+            //SystemResult result = new SystemResult();
+            List<PaymentMethodDto> list = paymentBLL.GetPaymentMenthods();
+ 
+            var result = list.Select(s => new KeyValue
+            {
+                Id = s.Id.ToString(),
+                Text = s.Names.FirstOrDefault(e => e.Language == CurrentUser.Lang)?.Desc
+            }).ToList();
+
+            return result;
+        }
+
+        /// <summary>
+        /// 獲取訂單狀態
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public List<KeyValue> GetOrderStatus()
+        {
+            var codeMasters = codeMasterBLL.GetCodeMasters(CodeMasterModule.System, CodeMasterFunction.OrderStatus);
+            var result = codeMasters.Select(s => new KeyValue
+            {
+
+                Id = s.Value,
+                Text = s.Description,
+            }).ToList();
+            
+
+            return result;
         }
 
     }

@@ -39,30 +39,6 @@ namespace BDMall.BLL
                 transDtl.IsDeleted = false;
                 transDtl.CreateBy = Guid.Parse(CurrentUser.UserId);
 
-                if (transDtl.TransType == InvTransType.Purchase)
-                {
-                    transDtl.WHId = transDtl.ToId;
-                }
-                else if (transDtl.TransType == InvTransType.Relocation)
-                {
-                    var toTransDtl = new InvTransactionDtl()
-                    {
-                        Id = Guid.NewGuid(),
-                        
-                        IOType = InvTransIOType.I,
-                        WHId = transDtl.ToId,
-                        BizId = transDtl.BizId,
-                        TransDate = transDtl.TransDate,
-                        TransQty = transDtl.TransQty,
-                        TransType = transDtl.TransType,
-                        Sku = transDtl.Sku,
-                        IsActive = true,
-                        IsDeleted = false,
-                        CreateBy = Guid.Parse(CurrentUser.UserId),
-                    };
-
-                    baseRepository.Insert(toTransDtl);//轉倉操作需要增加一條相對的入倉記錄
-                }
                 var dbTransDtl = AutoMapperExt.MapTo<InvTransactionDtl>(transDtl);
                 baseRepository.Insert(dbTransDtl);//新增庫存詳細記錄                            
 
@@ -80,8 +56,6 @@ namespace BDMall.BLL
                 }
 
                 #endregion
-
-                //NoticeUpdateForAppInvt(transDtl.Sku);
             }
 
             result.Succeeded = true;
@@ -153,33 +127,6 @@ namespace BDMall.BLL
 
             #endregion
 
-            #region 清空以往庫存量低以及售罄通知記錄的歷史狀態
-
-            //try
-            //{
-            //    var changeNotifyRes = InventoryChangeNotifyBLL.FinishInventoryChangeNotify(new InventoryChangeNotify() { SkuId = transDtl.Sku });
-            //}
-            //catch (Exception ex)
-            //{
-            //    SaveError(GetType().FullName, ClassUtility.GetMethodName(), "Send  InventoryChangeNotify Fail", ex.Message);
-            //}
-
-            #endregion
-
-            #region 到貨通知
-
-            //try
-            //{
-            //    var notifyResult = ArrivalNotifyBLL.PushAllArrivalNotify(transDtl.Sku, false);
-            //}
-            //catch (Exception ex)
-            //{
-            //    SaveError(GetType().FullName, ClassUtility.GetMethodName(), "Send ArrivalNotify Fail", ex.Message);
-            //}
-
-
-            #endregion
-
             result.Succeeded = true;
             return result;
         }
@@ -228,6 +175,24 @@ namespace BDMall.BLL
                 baseRepository.Insert(inventory);
             }
             #endregion
+
+            //轉倉操作需要增加一條相對的入倉記錄
+            var toTransDtl = new InvTransactionDtl()
+            {
+                Id = Guid.NewGuid(),
+
+                IOType = InvTransIOType.I,
+                WHId = transDtl.ToId,
+                BizId = transDtl.BizId,
+                TransDate = transDtl.TransDate,
+                TransQty = transDtl.TransQty,
+                TransType = transDtl.TransType,
+                Sku = transDtl.Sku,
+                IsActive = true,
+                IsDeleted = false,
+                CreateBy = Guid.Parse(CurrentUser.UserId),
+            };
+            baseRepository.Insert(toTransDtl);
 
             result.Succeeded = true;
             return result;

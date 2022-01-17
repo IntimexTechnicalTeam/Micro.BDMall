@@ -43,7 +43,7 @@ namespace BDMall.BLL
         }
 
         /// <summary>
-        /// 采购入库,采购退回,銷售退回，發貨退回时更新库存
+        /// 采购入库,采购退回,銷售退回，發貨退回时更新库存(ProductQty)
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>

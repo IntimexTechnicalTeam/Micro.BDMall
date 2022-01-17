@@ -1,0 +1,99 @@
+﻿
+@{
+    ViewBag.Title = "ECShipLabelDetail";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="app" v-cloak class="col-md-12">
+
+    @BDMall.Resources.Label.OrderNO:{{ECShipLabel.OrderNo}}
+    <ul id="myTab" class="nav nav-tabs">
+        <li v-for="item,index in ECShipLabel.Labels" v-on:click="tabClick(index)">
+            <a v-bind:name="'label'+index" v-bind:href="'#label'+index">{{item.LabelName}}</a>
+        </li>
+    </ul>
+    <div id="divContent" class="tab-content">
+        <div class="tab-pane fade " v-for="item,index in ECShipLabel.Labels" v-bind:id="'label'+index">
+            <iframe v-bind:id="'labelFrame'+index"src="" width="100%" height="700" frameborder="0"></iframe>
+        </div>
+    </div>
+
+    @*<div v-for="item,index in ECShipLabel.Labels">
+            <iframe v-bind:id="'labelFrame'+index" src="" width="100%" height="500" frameborder="0"></iframe>
+        </div>
+        <a download="" id="exportLink" href="" target="_blank" hidden></a>*@
+</div>
+
+@section scripts {
+    <script type="text/javascript">
+        var id = '@ViewBag.Id';
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                ECShipLabel: [{
+                    OrderId: WS.GuidEmpty,
+                    OrderNo: "",
+                    Labels: []
+                }]
+            },
+            methods: {
+                tabClick: function (index) {
+                    $("#labelFrame" + index).attr("src", vm.ECShipLabel.Labels[index].LabelNetPath);
+                    //vm.ECShipLabel.Labels.forEach(function (val, indxe) {
+                        
+                    //});
+                }
+            }
+        });
+
+
+        function showECShipLabel(id) {
+            WS.AjaxP("get", "/adminapi/order/GetECShipLabel", { deliveryId: id }, function (response) {
+                if (response.Succeeded == true) {
+                    vm.ECShipLabel = response.ReturnValue;
+
+                    vm.$nextTick(function () {
+                        $("#myTab a").click(function (e) {
+                            $(this).tab('show');
+                        })
+                        $("li:first").addClass("active");
+                        $("#divContent div:first").addClass("in active");
+                        vm.tabClick(0);
+                    })
+                }
+                else {
+                    showWarn(response.Message);
+                }
+            }, function () { });
+        }
+
+        function downloadECShipLabel(id) {
+            WS.AjaxP("get", "/adminapi/order/GetECShipLabel", { deliveryId: id }, function (response) {
+                if (response.Succeeded == true) {
+                    vm.ECShipLabel.Labels.forEach(function (val, indxe) {
+                        //用HTML5的方式下載PDF
+                        $("#exportLink").attr("href", val.LabelNetPath);
+                        $("#exportLink").attr("download", val.LabelName);
+                        document.getElementById("exportLink").click();
+                    });
+
+
+                }
+                else {
+                    showWarn(response.Message);
+                }
+            }, function () { });
+        }
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+        $(document).ready(function () {
+            showECShipLabel(id);
+            
+        })
+    </script>
+}
+
