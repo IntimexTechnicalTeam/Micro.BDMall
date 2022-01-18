@@ -196,9 +196,6 @@ namespace BDMall.Repository
         public DbSet<ExpressZoneProvince> ExpressZoneProvinces { get; set; }
         public DbSet<InventoryHold> InventoryHolds { get; set; }
 
-
-        public DbSet<PaymentMethod> PaymentMethods { get; set; }
-
         public DbSet<City> Cities { get; set; }
         public DbSet<DeliveryAddress> DeliveryAddresses { get; set; }
         

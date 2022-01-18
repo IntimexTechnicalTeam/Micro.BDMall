@@ -18,7 +18,7 @@ namespace BDMall.Repository
 
         }
 
-        public void Insert(DeliveryAddress model)
+        public void Insert(DeliveryAddressDto model)
         {
 
 

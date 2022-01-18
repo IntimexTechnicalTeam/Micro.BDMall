@@ -41,7 +41,6 @@ namespace BDMall.Repository
                       {
                           Id = e.Id,
                           Code = e.Code,
-                          Discount = e.Discount,
                           Name = tt == null ? "" : tt.Value,
                           NameTransId = e.NameTransId,
                       }).ToList();
