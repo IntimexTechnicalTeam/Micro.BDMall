@@ -26,6 +26,7 @@ namespace BDMall.BLL
         public IProductBLL ProductBLL;
         public IUpdateInventoryBLL UpdateInventoryBLL;
         public IDealProductQtyCacheBLL DealProductQtyCacheBLL;
+        public IInvReservedRepository InvReservedRepository;
 
         public InventoryBLL(IServiceProvider services) : base(services)
         {
@@ -42,6 +43,7 @@ namespace BDMall.BLL
             ProductBLL = Services.Resolve<IProductBLL>();
             UpdateInventoryBLL = Services.Resolve<IUpdateInventoryBLL>();
             DealProductQtyCacheBLL = Services.Resolve<IDealProductQtyCacheBLL>();
+            InvReservedRepository = Services.Resolve<IInvReservedRepository>();
         }
 
         public List<WarehouseDto> GetWarehouseLstByCond(WarehouseDto cond)
@@ -613,6 +615,111 @@ namespace BDMall.BLL
             return sysRslt;
         }
 
+        /// <summary>
+        /// 新增或更新庫存保留記錄
+        /// </summary>
+        /// <param name="insRec">庫存保留資料</param>
+        public SystemResult InsertInventoryHold(InventoryHold insRec)
+        {
+            var sysRslt = new SystemResult();
+          
+                Guid skuId = insRec.SkuId;
+                if (skuId == Guid.Empty)
+                {
+                    throw new BLException("skuId不能為空值");
+                }
+                Guid memberId = insRec.MemberId;
+                if (memberId == Guid.Empty)
+                {
+                    throw new BLException("memberId不能為空值");
+                }
+
+                var invtHold = baseRepository.GetModel<InventoryHold>(x => x.SkuId == skuId && x.MemberId == memberId && x.IsActive && !x.IsDeleted);
+
+                if (invtHold != null)
+                {
+                    //存在原記錄，更新
+                    invtHold.Qty = insRec.Qty;
+                    baseRepository.Update(invtHold);
+                    sysRslt.Succeeded = true;
+                }
+                else
+                {
+                    //不存在原記錄，新增
+                    invtHold = new InventoryHold()
+                    {
+                        Id = Guid.NewGuid(),
+                        SkuId = insRec.SkuId,
+                        MemberId = insRec.MemberId,
+                        Qty = insRec.Qty,
+                    };
+                    baseRepository.Insert(invtHold);
+
+                    sysRslt.Succeeded = true;
+                }
+           
+            return sysRslt;
+        }
+
+        public SystemResult DeleteInventoryHold(InventoryHold delRec)
+        {
+            var sysRslt = new SystemResult();
+
+            Guid skuId = delRec.SkuId;
+            Guid memberId = delRec.MemberId;
+
+            var invtHolds = baseRepository.GetList<InventoryHold>(x => x.SkuId == skuId && x.MemberId == memberId && x.IsActive && !x.IsDeleted).ToList();
+            baseRepository.Delete(invtHolds);
+            sysRslt.Succeeded = true;
+            return sysRslt;
+        }
+
+        /// <summary>
+        /// 獲取總的可用庫存數量
+        /// </summary>
+        /// <param name="uniqueProp">庫存產品唯一標識</param>
+        /// <returns>可用的庫存數量</returns>
+        public decimal GetTotAvailableInvQty(InventoryReserved uniqueProp)
+        {
+            decimal invtQty = decimal.Zero;
+
+            //產品庫存記錄（各個倉庫）
+            var currentInvtList = InvRepository.GetInventoryList(new InventoryDto()
+            {
+                Sku = uniqueProp.Sku,
+            });
+
+            //庫存預留記錄
+            var reservedDtlList = InvReservedRepository.GetInvReservedLst(new InventoryReserved()
+            {
+                Sku = uniqueProp.Sku,
+                ProcessState = InvReservedState.RESERVED
+            });
+
+            //庫存留貨記錄
+            var holdDtlList = baseRepository.GetList<InventoryHold>(x => x.SkuId == uniqueProp.Sku && x.IsActive && !x.IsDeleted).ToList();
+
+            decimal actualInvtQty = decimal.Zero;
+            decimal reservedQty = decimal.Zero;
+            decimal holdQty = decimal.Zero;
+            if (currentInvtList != null)
+            {
+                actualInvtQty = currentInvtList.Sum(x => x.Quantity);
+            }
+            if (reservedDtlList != null)
+            {
+                reservedQty = reservedDtlList.Sum(x => x.ReservedQty);
+            }
+            if (holdDtlList != null)
+            {
+                holdQty = holdDtlList.Sum(x => x.Qty);
+            }
+
+            invtQty = actualInvtQty - reservedQty - holdQty;
+            return invtQty;
+        }
+
+
         string GetImage(Guid ProductId)
         {
             var images = ProductBLL.GetProductImages(ProductId);
@@ -927,6 +1034,7 @@ namespace BDMall.BLL
             sysRslt.Succeeded = true;
             return sysRslt;
         }
+
 
     }
 }

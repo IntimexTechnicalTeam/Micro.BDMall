@@ -21,5 +21,10 @@ namespace BDMall.Runtime
         /// 短日期格式
         /// </summary>
         public static readonly string ShortDateFormat = "yyyy-MM-dd";
+
+        /// <summary>
+        /// 购买上限
+        /// </summary>
+        public static int PurchaseLimit = 999;
     }
 }

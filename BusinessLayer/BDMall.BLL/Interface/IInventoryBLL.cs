@@ -1,5 +1,6 @@
 ﻿using BDMall.Domain;
 using BDMall.Enums;
+using BDMall.Model;
 using Intimex.Common;
 using System;
 using System.Collections.Generic;
@@ -43,5 +44,11 @@ namespace BDMall.BLL
         Task<SystemResult> SaveInvTransRec(InvTransView transView);
 
         SystemResult IsExsitBathNum(InvTransactionDtlDto cond);
+
+        SystemResult InsertInventoryHold(InventoryHold insRec);
+
+        SystemResult DeleteInventoryHold(InventoryHold delRec);
+
+        decimal GetTotAvailableInvQty(InventoryReserved uniqueProp);
     }
 }

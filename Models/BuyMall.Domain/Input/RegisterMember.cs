@@ -32,6 +32,28 @@ namespace BDMall.Domain
         [Required(ErrorMessage = "Password不能为空")]
         public string Password { get; set; }
 
+        /// <summary>
+        /// 生日
+        /// </summary>
+        [DataMember]
+        public DateTime BirthDate { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [DataMember]
+        [Required(ErrorMessage = "FirstName不能为空")]
+        public string FirstName { get; set; } = "";
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [DataMember]
+        [Required(ErrorMessage = "LastName不能为空")]
+        public string LastName { get; set; } = "";
+
+        public bool OptOutPromotion { get; set; }  = false;
+
         public virtual void Validate()
         {
             if (this.Password.Length < 6 || this.Password.Length > 20)

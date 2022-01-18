@@ -22,35 +22,19 @@ namespace BDMall.WebApi.Controllers
             memberBll = this.Services.Resolve<IMemberBLL>();
         }
 
-        /// <summary>
-        ///  查询会员列表
-        /// </summary>
-        /// <param name="condition"></param>
-        /// <returns></returns>
-        [HttpPost("Search")]
-        [ProducesResponseType(typeof(SystemResult), 200)]
-        public SystemResult Search([FromBody] MbrSearchCond condition)
-        {
-            var result = new SystemResult() { Succeeded =true };
-
-            var testUser = CurrentUser;
-
-            result.ReturnValue = memberBll.SearchMember(condition);
-            return result;
-        }
+       
 
         /// <summary>
         /// 创建会员
         /// </summary>
         /// <param name="member"></param>
         /// <returns></returns>
-        [HttpPost("CreateMember")]
+        [HttpPost("Register")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(SystemResult), 200)]
-        public SystemResult CreateMember([FromBody]RegisterMember member)
+        public SystemResult Register([FromBody]RegisterMember member)
         {           
-            var result = memberBll.CreateMember(member);
-            var cur = this.CurrentUser;
+            var result = memberBll.Register(member);           
             return result;
         }
     }

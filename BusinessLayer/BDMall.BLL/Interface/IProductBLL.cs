@@ -54,5 +54,11 @@ namespace BDMall.BLL
         ProductSummary GetProductSummary(Guid id, Guid skuId);
 
         ProductSkuDto GetProductSku(Guid skuId);
+
+        /// <summary>
+        /// 获取SaleQty<0的数据
+        /// </summary>
+        /// <returns></returns>
+        Task<List<string>> GetSelloutSkus();
     }
 }

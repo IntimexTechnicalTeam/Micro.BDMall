@@ -1203,6 +1203,26 @@ namespace BDMall.BLL
             return result;
         }
 
+        /// <summary>
+        /// 获取SaleQty<0的数据
+        /// </summary>
+        /// <returns></returns>
+        public async Task<List<string>> GetSelloutSkus()
+        {
+            string SalesQtyKey = $"{CacheKey.SalesQty}";
+            //优先读缓存
+            var cacheData =  await RedisHelper.ZRangeByScoreAsync(SalesQtyKey, "-inf", "0");   //取小于等于0           
+            if (cacheData?.Any() ?? false)
+            {
+                var query = from q in UnitOfWork.DataContext.ProductSkus
+                            join s in UnitOfWork.DataContext.ProductQties on q.Id equals s.SkuId into qss
+                            from qs in qss.DefaultIfEmpty()
+                            where qs == null || (q.IsActive && q.IsDeleted == false && qs.SalesQty <= 0)
+                            select q.Id;
+                cacheData = query.Select(d => d.ToString()).ToArray();
+            }
+            return cacheData.ToList();
+        }
 
         private Product GenProduct(Product dbProduct, ProductEditModel viewProduct)
         {
