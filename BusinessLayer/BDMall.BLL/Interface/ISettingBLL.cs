@@ -9,6 +9,7 @@ using Web.Framework;
 using BDMall.Enums;
 using System.Net;
 using Intimex.Common;
+using BDMall.ECShip.Model;
 
 namespace BDMall.BLL
 {
@@ -179,11 +180,11 @@ namespace BDMall.BLL
         ///// <returns></returns>
         //bool CheckBuyNeedLogin();
 
-        ///// <summary>
-        ///// 获取ECShip的账号信息
-        ///// </summary>
-        ///// <returns></returns>
-        //ECShipAccountInfo GetECShipAccountInfo();
+        /// <summary>
+        /// 获取ECShip的账号信息
+        /// </summary>
+        /// <returns></returns>
+        ECShipAccountInfo GetECShipAccountInfo();
 
         ///// <summary>
         ///// 生成Ship label時用這套賬號密碼

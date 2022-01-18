@@ -199,6 +199,16 @@ namespace BDMall.Repository
            
         }
 
+        public Guid? GetOnSaleProductId(string prodCode)
+        {
+            var obj = baseRepository.GetModel<Product>(d => d.Code == prodCode && d.IsActive && d.Status == ProductStatus.OnSale && d.IsDeleted == false);
+            if (obj != null)
+            {
+                return obj.Id;
+            }
+            return null;
+        }
+
         public List<LastVersionProductView> GetLastVersionProductLstByCode(List<string> prodCodeLst)
         {
             var lvProductList = new List<LastVersionProductView>();

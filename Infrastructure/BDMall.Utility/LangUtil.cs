@@ -4,6 +4,7 @@ using BDMall.Enums;
 using BDMall.Model;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace BDMall.Utility
 {
@@ -94,6 +95,73 @@ namespace BDMall.Utility
                         list.Add(new MutiLanguage { Desc = "", Lang = supportLang });
                     }
                 }
+            }
+
+            return list;
+        }
+
+        /// <summary>
+        /// 獲取多種語言
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="entity"></param>
+        /// <param name="namePrefix"></param>
+        /// <param name="systenLangs">系统支持的语言</param>
+        /// <returns></returns>
+        public static List<MutiLanguage> GetMutiLang<T>(T entity, string namePrefix, List<SystemLang> systenLangs)
+        {
+            List<MutiLanguage> list = new List<MutiLanguage>();
+
+            try
+            {
+                if (entity != null)
+                {
+                    Type t = entity.GetType();
+                    foreach (SystemLang item in systenLangs)
+                    {
+                        MutiLanguage mutiLanguage = new MutiLanguage();
+                        var columnName = namePrefix + "_" + item.Code.ToString().ToLower();
+                        PropertyInfo info = t.GetProperty(columnName);
+                        if (info != null)
+                        {
+                            object value = info.GetValue(entity, null);
+                            if (value == null)
+                            {
+                                mutiLanguage.Desc = "";
+                            }
+                            else
+                            {
+                                mutiLanguage.Desc = value.ToString();
+                            }
+                        }
+                        else
+                        {
+                            mutiLanguage.Desc = "";
+                        }
+
+                        mutiLanguage.Lang = item;
+
+                        list.Add(mutiLanguage);
+
+                    }
+                }
+                else
+                {
+                    foreach (SystemLang item in systenLangs)
+                    {
+                        MutiLanguage mutiLanguage = new MutiLanguage();
+
+                        mutiLanguage.Lang = item;
+                        mutiLanguage.Desc = "";
+
+                        list.Add(mutiLanguage);
+
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
 
             return list;

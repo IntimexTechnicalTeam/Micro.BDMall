@@ -1,4 +1,5 @@
 ﻿using BDMall.Domain;
+using BDMall.ECShip.Model;
 using BDMall.Enums;
 using BDMall.Model;
 using BDMall.Repository;
@@ -9,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Web.Framework;
+using WS.ECShip.Model;
 
 namespace BDMall.BLL
 {
@@ -134,10 +136,10 @@ namespace BDMall.BLL
         public List<ImageSize> GetProductImageSize()
         {
             List<ImageSize> list = new List<ImageSize>();
-     
+
             var vals = _codeMasterRepo.GetCodeMasters(CodeMasterModule.Setting.ToString(), CodeMasterFunction.ProductImgSize.ToString())
                                     .OrderBy(o => o.Key).ThenBy(o => int.Parse(o.Value)).ToList();
-            
+
             if (vals == null || !vals.Any())
             {
                 for (var i = 1; i <= 8; i++)
@@ -224,6 +226,56 @@ namespace BDMall.BLL
                 return settingLst;
             }
             return new List<CodeMasterDto>();
+        }
+
+        public ECShipAccountInfo GetECShipAccountInfo()
+        {
+
+            ECShipAccountInfo result = new ECShipAccountInfo();
+            var ecshipInfos = _codeMasterRepo.GetCodeMasters(CodeMasterModule.System, CodeMasterFunction.ECShip);
+            //var merchantShipCount = MerchantShipInfoRepository.GetByKey(merchId);
+
+
+            result.ECShipEmail = ecshipInfos.FirstOrDefault(p => p.Key == "MerchantShipCount")?.Value ?? "";// string.IsNullOrEmpty(merchantShipCount?.ECShipEmail) ? "eric_ml_chan@hkpo.gov.hk" : merchantShipCount?.ECShipEmail.Trim();
+            result.IntegratorUserName = ecshipInfos.FirstOrDefault(p => p.Key == "IntegratorUserName")?.Value ?? "";// string.IsNullOrEmpty(merchantShipCount?.ECShipIntegraterName) ? ecshipInfos.FirstOrDefault(p => p.Key == "IntegratorUserName")?.Value ?? "" : merchantShipCount?.ECShipIntegraterName.Trim();// "techptxhk";// 
+            result.ECShipName = ecshipInfos.FirstOrDefault(p => p.Key == "ECShipName")?.Value ?? "";// string.IsNullOrEmpty(merchantShipCount?.ECShipName) ? ecshipInfos.FirstOrDefault(p => p.Key == "ECShipName")?.Value ?? "" : merchantShipCount?.ECShipName.Trim();//"ttechptxhk";// 
+            result.Password = ecshipInfos.FirstOrDefault(p => p.Key == "Password")?.Value ?? "";// string.IsNullOrEmpty(merchantShipCount?.ECShipPassword) ? ecshipInfos.FirstOrDefault(p => p.Key == "Password")?.Value ?? "" : merchantShipCount?.ECShipPassword.Trim();//"17924f27-5009-47a7-92b4-434b056ce50b";//
+            result.Url = ecshipInfos.FirstOrDefault(p => p.Key == "Url")?.Value ?? "";//"17924f27-5009-47a7-92b4-434b056ce50b";//
+            return result;
+
+
+        }
+
+        public ECShipAccountInfo GetECSSoazAccountInfo()
+        {
+
+            ECShipAccountInfo result = new ECShipAccountInfo();
+            var ecshipInfos = _codeMasterRepo.GetCodeMasters(CodeMasterModule.System, CodeMasterFunction.ECShip);
+
+            //var merchantShipCount = MerchantShipInfoRepository.GetByKey(merchId);
+
+
+            result.ECShipEmail = "";
+            result.IntegratorUserName = ecshipInfos.FirstOrDefault(p => p.Key == "SPIntegratorUserName")?.Value ?? "";// string.IsNullOrEmpty(merchantShipCount?.SPIntegraterName) ? ecshipInfos.FirstOrDefault(p => p.Key == "IntegratorUserName")?.Value ?? "" : merchantShipCount?.SPIntegraterName.Trim();// "techptxhk";// 
+            result.ECShipName = ecshipInfos.FirstOrDefault(p => p.Key == "SPECShipName")?.Value ?? ""; //string.IsNullOrEmpty(merchantShipCount?.SPName) ? ecshipInfos.FirstOrDefault(p => p.Key == "ECShipName")?.Value ?? "" : merchantShipCount?.SPName.Trim();//"ttechptxhk";// 
+            result.Password = ecshipInfos.FirstOrDefault(p => p.Key == "SPPassword")?.Value ?? ""; //string.IsNullOrEmpty(merchantShipCount?.SPPassword) ? ecshipInfos.FirstOrDefault(p => p.Key == "Password")?.Value ?? "" : merchantShipCount?.SPPassword.Trim();//"17924f27-5009-47a7-92b4-434b056ce50b";//
+            result.Url = ecshipInfos.FirstOrDefault(p => p.Key == "Url")?.Value ?? "";//"17924f27-5009-47a7-92b4-434b056ce50b";//
+            return result;
+
+
+        }
+
+        public MailTrackingAccountInfo GetMailTrackingAccountInfo()
+        {
+            //ICodeMasterBLL masterBLL = BLLFactory.Create(CurrentWebStore).CreateCodeMasterBLL();
+
+            MailTrackingAccountInfo result = new MailTrackingAccountInfo();
+            var ecshipInfos = _codeMasterRepo.GetCodeMasters(CodeMasterModule.System, CodeMasterFunction.MailTracking);
+            result.ACId = ecshipInfos.FirstOrDefault(p => p.Key == "ACId")?.Value ?? "";// "techptxhk";// 
+            result.ACPassword = ecshipInfos.FirstOrDefault(p => p.Key == "Password")?.Value ?? "";//"ttechptxhk";// 
+            result.SystemCode = ecshipInfos.FirstOrDefault(p => p.Key == "SystemCode")?.Value ?? "";//"17924f27-5009-47a7-92b4-434b056ce50b";//
+            result.Url = ecshipInfos.FirstOrDefault(p => p.Key == "Url")?.Value ?? "";//"17924f27-5009-47a7-92b4-434b056ce50b";//
+            return result;
         }
     }
 }

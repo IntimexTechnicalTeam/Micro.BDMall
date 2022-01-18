@@ -25,5 +25,12 @@ namespace BDMall.Repository
         List<Product> GetRelatedProduct(Guid id);
 
         LastVersionProductView GetLastVersionProductByCode(string prodCode);
+
+        /// <summary>
+        /// 根據產品編號的獲取當前產品的有效id
+        /// </summary>
+        /// <param name="prodCode"></param>
+        /// <returns></returns>
+        Guid? GetOnSaleProductId(string prodCode);
     }
 }

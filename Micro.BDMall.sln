@@ -59,7 +59,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BDMall.Utility", "Infrastru
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UEditorNetCore", "Infrastructure\UEditorNetCore\UEditorNetCore.csproj", "{965A19A2-BF79-4199-A9F4-27DDBA54A9E0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BDMall.Runtime", "Infrastructure\BDMall.Runtime\BDMall.Runtime.csproj", "{4F9AAEF1-6D27-4128-BD15-89EC92178FC8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BDMall.Runtime", "Infrastructure\BDMall.Runtime\BDMall.Runtime.csproj", "{4F9AAEF1-6D27-4128-BD15-89EC92178FC8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

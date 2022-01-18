@@ -145,7 +145,7 @@ namespace BDMall.Repository
         public DbSet<EmailTemplate> EmailTemplates { get; set; }
         public DbSet<EmailTempItem> EmailTempItems { get; set; }
         public DbSet<EmailTypeTempItem> EmailTypeTempItems { get; set; }
-        
+
         public DbSet<ProductRelatedItem> ProductRelatedItems { get; set; }
 
         public DbSet<ProductDetail> ProductDetails { get; set; }
@@ -158,7 +158,7 @@ namespace BDMall.Repository
 
         public DbSet<ProductImage> ProductImages { get; set; }
 
-        public DbSet<ProductImageList> ProductImageLists { get; set; }  
+        public DbSet<ProductImageList> ProductImageLists { get; set; }
 
         public DbSet<Warehouse> Warehouses { get; set; }
 
@@ -179,16 +179,22 @@ namespace BDMall.Repository
         public DbSet<SalesReturnOrder> SalesReturnOrders { get; set; }
         public DbSet<SalesReturnOrderDetail> SalesReturnOrderDetails { get; set; }
 
-
-
-
-
-
-
-
         public DbSet<PaymentMethod> PaymentMethods { get; set; }
 
         public DbSet<Customization> Customizations { get; set; }
+
+        public DbSet<ExpressDiscount> ExpressDiscounts { get; set; }
+        public DbSet<ExpressPrice> ExpressPrices { get; set; }
+        public DbSet<ExpressRule> ExpressRules { get; set; }
+        public DbSet<ExpressZone> ExpressZones { get; set; }
+
+        public DbSet<ExpressCountry> ExpressCountries { get; set; }
+
+        public DbSet<ExpressZoneCountry> ExpressZoneCountries { get; set; }
+        public DbSet<ExpressZoneProvince> ExpressZoneProvinces { get; set; }
+
+        public DbSet<City> Cities { get; set; }
+        public DbSet<DeliveryAddress> DeliveryAddresses { get; set; }
         
     }
 }

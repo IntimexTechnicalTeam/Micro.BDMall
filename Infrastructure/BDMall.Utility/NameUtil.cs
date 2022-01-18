@@ -1,4 +1,5 @@
-﻿using BDMall.Enums;
+﻿using BDMall.Domain;
+using BDMall.Enums;
 using BDMall.Model;
 using System;
 using System.Collections.Generic;
@@ -24,7 +25,30 @@ namespace BDMall.Utility
                 //throw;
             }
         }
+        public static string GetCityName(string language, CityDto city)
+        {
+            if (city == null)
+            {
+                return "";
+            }
 
+            switch (language.ToUpper())
+            {
+                case "E":
+                    return city.Name_e;
+
+                case "C":
+                    return city.Name_c;
+                case "S":
+                    return city.Name_s;
+                case "J":
+                    return city.Name_j;
+                case "P":
+                    return city.Name_j;
+                default:
+                    return string.Empty;
+            }
+        }
         public static string GetCountryName(string language, Country country)
         {
             if (country == null)
@@ -50,7 +74,7 @@ namespace BDMall.Utility
             }
         }
 
-        public static string GetProviceName(string language, Province province)
+        public static string GetProviceName(string language, ProvinceDto province)
         {
             if (province == null)
             {

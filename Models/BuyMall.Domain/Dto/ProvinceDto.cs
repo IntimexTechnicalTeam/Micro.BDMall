@@ -10,7 +10,7 @@ using Web.Framework;
 
 namespace BDMall.Domain
 {
-    public class Province
+    public class ProvinceDto
     {
         public int Id { get; set; }
         public string Code { get; set; }
@@ -25,5 +25,7 @@ namespace BDMall.Domain
 
 
         public List<MutiLanguage> Names { get; set; }
+
+        public List<CityDto> Cities { get; set; }
     }
 }

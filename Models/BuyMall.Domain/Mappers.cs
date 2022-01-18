@@ -49,7 +49,13 @@ namespace Domain
 
 
             ConfigMap<PaymentMethodDto, PaymentMethod>();
+            ConfigMap<CountryDto, Country>();
+            ConfigMap<ProvinceDto, Province>();
+            ConfigMap<CityDto, City>();
+
+            ConfigMap<DeliveryAddressDto, DeliveryAddress>();
             
+
         }
         void ConfigMap<TSource, TDestination>()
         {
