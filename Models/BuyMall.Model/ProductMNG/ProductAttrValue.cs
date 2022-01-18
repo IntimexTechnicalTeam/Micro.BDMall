@@ -35,6 +35,8 @@ namespace BDMall.Model
 
         public decimal AdditionalPrice { get; set; }
 
+
+
         //[ForeignKey("ProdAttrId")]
         //public virtual ProductAttr ProdAttr { get; set; }
 

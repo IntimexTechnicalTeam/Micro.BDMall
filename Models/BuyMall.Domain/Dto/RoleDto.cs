@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace BDMall.Domain
 {
-    public class RoleDto
+    public class RoleDto:BaseDto
     {
         public Guid Id { get; set; }
 
@@ -18,10 +18,10 @@ namespace BDMall.Domain
     
         public string Remark { get; set; }
 
-        public List<MutiLanguage> FullNames { get; set; }
+        public List<MutiLanguage> FullNames { get; set; } = new List<MutiLanguage>();   
 
 
-        public List<MutiLanguage> Remarks { get; set; }
+        public List<MutiLanguage> Remarks { get; set; } = new List<MutiLanguage>();
 
         public Guid FullNameTransId { get; set; }
 
@@ -29,6 +29,8 @@ namespace BDMall.Domain
 
         public bool IsSystem { get; set; }
 
-        public List<PermissionDto> PermissionList { get; set; }
+        public List<PermissionDto> PermissionList { get; set; } = new List<PermissionDto>();
+
+        public List<RolePermissionDto> RolePermission { get; set; } = new List<RolePermissionDto>();
     }
 }

@@ -59,7 +59,7 @@ namespace BDMall.Model
         /// <summary>
         /// 会员编码
         /// </summary>
-        [MaxLength(10)]
+        [MaxLength(30)]
         [Column(TypeName = "varchar", Order = 18)]
         public string Code { get; set; }
         /// <summary>

@@ -55,16 +55,27 @@ namespace BDMall.BLL
             return result;
         }
 
-        public SystemResult CreateMember(RegisterMember member)
+        public SystemResult Register(RegisterMember member)
         { 
             var result = new SystemResult() ;
 
             member.Validate();
 
-            productRepository.UpdateProduct();
+            var dbModel = new Member {
 
-            //var mc = new MemberCreate<MemberDto>() { Param = member };             
-            //this.Mediator.Publish(mc);
+                Id = Guid.NewGuid(),
+                Account = member.Account,
+                Email = member.Email,
+                Password = ToolUtil.Md5Encrypt(member.Password),
+                IsActive = true, IsApprove = true, IsDeleted = false,
+                CreateDate = DateTime.Now, UpdateDate = DateTime.Now,
+                CurrencyCode = "HKD", Language = Language.C, BirthDate = member.BirthDate,
+                Code = AutoGenerateNumber("MB"), 
+                 FirstName = member.FirstName, LastName = member.LastName,
+                  OptOutPromotion = member.OptOutPromotion,
+            };
+
+            baseRepository.Insert(dbModel);
 
             result.Succeeded = true;
             return result;

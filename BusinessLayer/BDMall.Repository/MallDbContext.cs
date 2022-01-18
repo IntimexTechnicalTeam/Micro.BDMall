@@ -180,8 +180,10 @@ namespace BDMall.Repository
         public DbSet<SalesReturnOrderDetail> SalesReturnOrderDetails { get; set; }
 
         public DbSet<PaymentMethod> PaymentMethods { get; set; }
+        public DbSet<OrderDiscount> OrderDiscounts { get; set; }
 
         public DbSet<Customization> Customizations { get; set; }
+        public DbSet<ShoppingCartItem> ShoppingCartItems { get; set; }
 
         public DbSet<ExpressDiscount> ExpressDiscounts { get; set; }
         public DbSet<ExpressPrice> ExpressPrices { get; set; }
@@ -192,6 +194,10 @@ namespace BDMall.Repository
 
         public DbSet<ExpressZoneCountry> ExpressZoneCountries { get; set; }
         public DbSet<ExpressZoneProvince> ExpressZoneProvinces { get; set; }
+        public DbSet<InventoryHold> InventoryHolds { get; set; }
+
+
+        public DbSet<PaymentMethod> PaymentMethods { get; set; }
 
         public DbSet<City> Cities { get; set; }
         public DbSet<DeliveryAddress> DeliveryAddresses { get; set; }

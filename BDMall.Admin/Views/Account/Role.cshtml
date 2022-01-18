@@ -1,0 +1,372 @@
+﻿
+@*@model IEnumerable<BDMall.Model.UserMNG.Role>*@
+@{
+    ViewBag.Title = "Role";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+<div class="container" id="myApp">
+    <div class="row">
+        <div class="col-lg-12 col-md-12 col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading" v-on:click="showCondition">
+                    <i class="glyphicon glyphicon-search"></i>
+                    @BDMall.Resources.Label.Filters
+                    <span id="toggleSearch" class="pull-right glyphicon glyphicon-chevron-down"></span>
+                </div>
+                <div class="panel-body" style="display:none">
+
+                    <table class="table">
+                        <tr>
+                            <td>@BDMall.Resources.Label.IsActive</td>
+                            <td>
+                                <input type="checkbox" id="chkIsActive" v-model="condition.IsActive" />
+                            </td>
+
+                            <td>@BDMall.Resources.Label.IsDeleted</td>
+                            <td>
+                                <input type="checkbox" id="chkIsDeleted" v-model="condition.IsDeleted" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@BDMall.Resources.Label.Code</td>
+                            <td><input type="text" id="txtUserName" v-model="condition.Name"  /></td>
+                            <td>@BDMall.Resources.Label.Name</td>
+                            <td><input type="text" id="txtDisplayName" v-model="condition.DisplayName" /></td>
+                        </tr>
+                        <tr><td colspan="4" style="text-align:right"><input type="button" id="btnSearch" v-on:click="search" class="btn btn-default" value="@BDMall.Resources.Action.Search" /></td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6">
+            <table class="table table-striped ">
+
+                <tr>
+                    <th>@BDMall.Resources.Label.Index</th>
+                    <th>
+                        @BDMall.Resources.Label.Name
+                    </th>
+                    <th>
+                        @BDMall.Resources.Label.IsActive
+                    </th>
+                    <th>
+                        @BDMall.Resources.Label.IsDeleted
+                    </th>
+                    <th>@BDMall.Resources.Label.Action</th>
+                </tr>
+
+                <tr v-for="(r,index) in items">
+                    <td>{{ index + 1 }}</td>
+                    <td>
+                        {{r.DisplayName}}
+                    </td>
+                    <td>
+                        {{r.IsActive?"@BDMall.Resources.Message.Yes":"@BDMall.Resources.Message.No"}}
+                    </td>
+                    <td>
+                        {{r.IsDeleted?"@BDMall.Resources.Message.Yes":"@BDMall.Resources.Message.No"}}
+                    </td>
+                    <td>
+                        <a v-bind:disabled="status!==''" v-on:click="edit(r.Id)" class="btn btn-default">@BDMall.Resources.Action.Edit</a>
+                        <a v-show="!r.IsSystem&&!r.IsDeleted" v-bind:disabled="status!==''" v-on:click="remove(r.Id)" class="btn btn-primary">@BDMall.Resources.Action.Delete</a>
+                        <a v-show="r.IsDeleted" v-bind:disabled="status!==''" v-on:click="restore(r.Id)" class="btn btn-primary">@BDMall.Resources.Action.Restore</a>
+                    </td>
+
+                </tr>
+            </table>
+        </div>
+        <div class="col-lg-6">
+            <form id="form">
+                <table class="table table-striped">
+
+                    <tr>
+                        <td>
+                            @BDMall.Resources.Label.Code
+                        </td>
+                        <td>
+                            <input type="text" id="Name" v-model="role.Name" class="form-control" required v-bind:disabled="status!=='add'" />
+                            <input type="hidden" id="Id" v-model="role.Id" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            @BDMall.Resources.Label.Name
+                        </td>
+                        <td>
+                            <input type="text" id="Name" v-model="role.DisplayName" class="form-control" required v-bind:disabled="status===''" />
+                            <input type="hidden" id="Id" v-model="role.Id" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            @BDMall.Resources.Label.Permission
+                        </td>
+                        <td>
+                            @*<ul>
+                                    <li v-for="p in permissions" style="list-style-type: none">
+                                        <input type="checkbox" v-bind:id="'p_'+p.Id" v-bind:name="'p_'+p.Id" v-bind:value="p.Id" v-model="selectedPermission" v-bind:disabled="status===''">
+                                        <label v-bind:for="'p_'+p.Id">{{p.Description}}</label>
+                                    </li>
+                                </ul>*@
+                            <div id="tree"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            @BDMall.Resources.Label.Active
+                        </td>
+                        <td>
+                            <input type="checkbox" id="chkActive" v-model="role.IsActive" v-bind:disabled="status===''" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <input type="button" class="btn btn-primary" id="btnSave" value="@BDMall.Resources.Action.Save" v-on:click="save()" v-show="status!==''" />
+                            <input type="button" class="btn btn-default" id="btnReset" value="@BDMall.Resources.Action.Reset" v-on:click="reset()" v-show="status!==''" />
+                            &nbsp;<input type="button" class="btn btn-default" id="btnAdd" value="@BDMall.Resources.Action.AddNew" v-on:click="newRole()" v-show="status===''" />
+                        </td>
+
+                    </tr>
+                </table>
+            </form>
+        </div>
+    </div>
+    <div class="row text-right">
+        <div class="btn btn-info" onclick="clowWin();"><i class="glyphicon glyphicon glyphicon-remove"></i> @BDMall.Resources.Action.CloseTab</div>
+    </div>
+</div>
+
+@section scripts{
+
+    <link href="~/Scripts/boostraptreeview/bootstrap-treeview.css" rel="stylesheet" />
+    <script src="~/Scripts/boostraptreeview/bootstrap-treeview.js"></script>
+    <script type="text/javascript">
+
+        var app = new Vue({
+            el: "#myApp",
+            data: {
+                items: [],
+                role: { Id: '00000000-0000-0000-0000-000000000000', Name: "", PermissionList: [] },
+                condition: { IsActive: true, IsDeleted: false, IsSystem: null },
+                permissions: [],
+                selectedPermission: [],
+                status:""
+            },
+            methods: {
+                showCondition: function () {
+                    $("#toggleSearch").toggleClass("glyphicon-chevron-down");
+                    $("#toggleSearch").toggleClass("glyphicon-chevron-up");
+
+                    $(".panel-body").toggle(500);
+                },
+                search: function () {
+                    this.loadData();
+                },
+                loadData: function () {
+                    var _this = this;
+                    WS.AjaxSP({
+                        url: "/AdminApi/Role/Search",
+                        contentType: "application/json; charset=utf-8",
+                        type: "post",
+                        data: _this.condition,
+                        success: function (result, status) {
+                            if (result.Succeeded) {
+                                _this.items = result.ReturnValue;
+                                _this.loadPermissions();
+                                _this.role = { Id: "", Name: "", IsActive: false };
+                                _this.selectedPermission = [];
+                                _this.status = "";
+                            } else {
+                                showInfo(result.Message);
+                            }
+                        },
+                        error: function (result) {
+                            console.log(result);
+                        }
+                    });
+                },
+                newRole: function () {
+                    this.role = { Id: "", Name: "", IsActive: true };
+                    this.selectedPermission = [];
+                    this.status = "add";
+                    $('#tree').treeview({
+                        data: this.permissions,
+                        showCheckbox: true,
+                        levels: 1
+                    });
+                },
+                reset:function() {
+                    this.role = { Id: "", Name: "", IsActive: true };
+                    this.selectedPermission = [];
+                    this.status = "";
+                    $('#tree').treeview({ data: this.permissions, showCheckbox: false, levels: 1});
+                   // $('#tree').treeview('collapseAll', { silent: false });
+                },
+                edit: function (id) {
+
+                    var _this = this;
+                    WS.AjaxSP({
+                        url: "/AdminApi/Role/GetById?id=" + id,   //id为Roles.Id
+                        contentType: 'application/html; charset=utf-8',
+                        type: "get",
+                        success: function (result) {
+                            _this.selectedPermission = [];
+                            _this.role = result;
+                            _this.status = "edit";
+
+                               //还原数据的checked状态
+                            for (var j = 0; j < _this.permissions.length; j++) {
+                                _this.permissions[j].state.checked = false;
+                                _this.permissions[j].state.expanded = false;
+                                if (_this.permissions.nodes) {
+                                    for (var i = 0; i < _this.permissions.nodes.length; i++) {
+                                        _this.permissions[j].nodes[i].state.checked = false;
+                                        _this.permissions[j].nodes[i].state.expanded = false;
+                                    }
+                                }
+                            }
+                            //设定选中的数据checked=true
+                            if (result.PermissionList && result.PermissionList.length > 0) {
+                                for (var i = 0; i < result.PermissionList.length; i++) {
+                                    _this.selectedPermission.push(result.PermissionList[i].Id);
+                                    for (var j = 0; j < _this.permissions.length; j++) {
+                                        if (_this.permissions[j].id == result.PermissionList[i].Id) {
+                                            _this.permissions[j].state.checked = true;
+                                            break;
+                                        } else {
+                                            if (_this.permissions[j].nodes && _this.permissions[j].nodes.length > 0) {
+                                                for (var k = 0; k < _this.permissions[j].nodes.length; k++) {
+                                                    if (_this.permissions[j].nodes[k].id == result.PermissionList[i].Id) {
+                                                        _this.permissions[j].nodes[k].state.checked = true;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                }
+
+                                $('#tree').treeview({
+                                    data: _this.permissions,
+                                    showCheckbox: true,
+                                    levels:1
+                                });
+                           //   $('#tree').treeview('collapseAll', { silent: true });
+
+
+                            }
+                        }
+                    });
+                },
+                save: function () {
+                    var validator = $("#form").validate({
+                        debug: true
+                    }).form();
+                    if (!validator) {
+                        return;
+                    }
+
+                    this.selectedPermission= $('#tree').treeview('getChecked');
+                   
+                    var _this = this;
+                    this.role.PermissionList = [];
+                    for (var i = 0; i < this.selectedPermission.length; i++) {
+                        var id = this.selectedPermission[i].id=="" ? WS.GuidEmpty: this.selectedPermission[i].id
+                        this.role.PermissionList.push({ Id: id  });
+                    }
+
+               
+                    if (this.role.Id == "") this.role.Id = WS.GuidEmpty;
+
+                    WS.AjaxSP({
+                        url: "/AdminApi/Role/Save",
+                        contentType: 'application/json; charset=utf-8',
+                        type: "Post",
+                        data: this.role,
+                        success: function (result) {
+                            if (result.Succeeded) {
+                                _this.loadData();
+                            }
+                            showInfo(result.Message);
+                        }
+                    });
+                },
+                remove: function (id) {
+                    var _this = this;
+                    SystemConfirm("@BDMall.Resources.Message.ConfirmDelete",
+                        function() {
+                            WS.AjaxSP({
+                                url: "/AdminApi/Role/Remove/" + id,
+                                contentType: 'application/html; charset=utf-8',
+                                type: "get",
+                                success: function (result) {
+                                    if (result.Succeeded) {
+                                        _this.loadData();
+                                    }
+                                    showInfo(result.Message);
+                                }
+                            });
+                        });
+
+
+                },
+                restore: function (id) {
+                    var _this = this;
+                    WS.Post("/AdminApi/Role/Restore",
+                        { id: id },
+                        function (result) {
+                            if (result.Succeeded) {
+                                _this.loadData();
+                            }
+                            showInfo(result.Message);
+                        }
+                    );
+                },
+                loadPermissions: function () {
+                    var _this = this;
+                    WS.AjaxSP({
+                        url: "/AdminApi/role/GetPermissionModule",
+                        contentType: "application/json; charset=utf-8",
+                        type: "get",
+                        data: "",
+                        success: function (result, status) {
+                            _this.permissions = result;
+                            $('#tree').treeview({
+                                data: result,
+                                showCheckbox: true,
+                                showBorder: true,
+                                levels: 1,
+                                onNodeSelected: function (event, data) {
+
+                                },
+                                unselectNode: function (event, data) {
+
+                                },
+                                onNodeChecked: function (event, node) {
+                                    var parentNode = $('#tree').treeview('getParents', node);
+                                    if (parentNode && parentNode.length > 0) {
+                                        $('#tree').treeview('checkNode', parentNode, { silent: true });
+                                    }
+                                }
+                            });
+
+                            $('#tree').treeview('collapseAll', { silent: true });
+                        },
+                        error: function (result) {
+
+                        }
+                    });
+                }
+            },
+            mounted: function () {
+                this.loadData();
+            }
+
+        });
+
+
+    </script>
+}

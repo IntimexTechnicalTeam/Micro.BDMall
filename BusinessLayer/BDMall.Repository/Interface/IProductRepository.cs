@@ -32,5 +32,7 @@ namespace BDMall.Repository
         /// <param name="prodCode"></param>
         /// <returns></returns>
         Guid? GetOnSaleProductId(string prodCode);
+
+        List<LastVersionProductView> GetLastVersionProductLstByCode(List<string> prodCodeLst);
     }
 }

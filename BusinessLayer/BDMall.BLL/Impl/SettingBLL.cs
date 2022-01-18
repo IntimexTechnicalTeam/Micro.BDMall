@@ -277,5 +277,26 @@ namespace BDMall.BLL
             result.Url = ecshipInfos.FirstOrDefault(p => p.Key == "Url")?.Value ?? "";//"17924f27-5009-47a7-92b4-434b056ce50b";//
             return result;
         }
+
+        public InvTransIOType? GetInvTransIOType(InvTransType type)
+        {
+            switch (type)
+            {
+                case InvTransType.Purchase:
+                    return InvTransIOType.I;
+                case InvTransType.Relocation:
+                    return InvTransIOType.O;
+                case InvTransType.PurchaseReturn:
+                    return InvTransIOType.O;
+                case InvTransType.SalesShipment:
+                    return InvTransIOType.O;
+                case InvTransType.SalesReturn:
+                    return InvTransIOType.I;
+                case InvTransType.DeliveryReturn:
+                    return InvTransIOType.I;
+                default:
+                    return null;
+            }
+        }
     }
 }

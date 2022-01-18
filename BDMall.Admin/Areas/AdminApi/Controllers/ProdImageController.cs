@@ -71,5 +71,11 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
             result.Succeeded = true;
             return result;
         }
+
+        [HttpGet]
+        public string GetBigImgPath(string src)
+        {
+            return productImageBLL.GetBigImgPath(src);
+        }
     }
 }

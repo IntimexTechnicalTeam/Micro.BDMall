@@ -164,6 +164,8 @@ namespace Web.Mvc
                 _currentUser.LoginType = (LoginType)Enum.Parse(typeof(LoginType), payload["LoginType"]);
                 _currentUser.Email = payload["Email"];
 
+                _currentUser.IsLogin = bool.Parse(payload["IsLogin"]);
+
                 //admin,商家和第三方商家
                 if (_currentUser.LoginType <= LoginType.Admin)
                 {
@@ -186,9 +188,9 @@ namespace Web.Mvc
             }
         }
 
-        public string AutoGenerateNumber(string perfix = "BD")
-        {
-            return $"{perfix}{IdGenerator.NewId}";
-        }
+        //public string AutoGenerateNumber(string perfix = "BD")
+        //{
+        //    return $"{perfix}{IdGenerator.NewId}";
+        //}
     }
 }

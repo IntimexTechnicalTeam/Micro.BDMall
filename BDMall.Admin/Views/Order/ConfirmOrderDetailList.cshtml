@@ -1,0 +1,92 @@
+﻿@using System.Collections;
+@using BDMall.Model.OrderMNG.View.Back;
+@{
+
+    OrderInfoView order = TempData["OrderInfoView"] as OrderInfoView;
+    List<OrderDeliveryInfo> orderDeliveryList = order.Deliveries;
+}
+
+<table style="width:750px;float:left;margin-left:3px;">
+    @{
+        foreach (OrderDeliveryInfo orderDelivery in orderDeliveryList)
+        {
+            <tr>
+                <th>
+                    @BDMall.Resources.Label.DeliveryNO
+                </th>
+                <th>
+                    @BDMall.Resources.Label.Recipients
+                </th>
+                <th>
+                    @BDMall.Resources.Label.Address
+                </th>
+                <th>
+                    @BDMall.Resources.Label.ContactPhoneNum
+                </th>
+                <th>
+                    @BDMall.Resources.Label.Freight
+                </th>
+                <th>
+                    @BDMall.Resources.Label.DeliveryTypeName
+                </th>
+            </tr>
+            <tr>
+                <td style="text-align:center;">
+                    @(orderDelivery.DeliveryNo ?? string.Empty)
+                </td>
+                <td style="text-align:center;">
+                    @orderDelivery.ConactName
+                </td>
+                <td style="text-align:center;">
+                    @orderDelivery.DeliveryAddress
+                </td>
+                <td style="text-align:center;">
+                    @orderDelivery.ConactPhone
+                </td>
+                <td style="text-align:center;">
+                    @order.Currency.Code @orderDelivery.Freight
+                </td>
+                <td style="text-align:center;">
+                    @orderDelivery.DeliveryTypeName
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">
+                    @BDMall.Resources.Label.ProductList
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">
+                    <table> 
+                        @{
+                            foreach (OrderItem item in orderDelivery.DeliveryItems)
+                            {
+                                if (item != null && item.Product != null)
+                                {
+                                    <tr>
+                                        <td style="text-align:center;">
+                                            <img src="@(item.Product.Imgs?.Count>0?item.Product.Imgs[0]:string.Empty)" />
+                                        </td>
+                                        <td style="border:1px solid black;word-break:break-word;text-align:center;margin-top:1px;width:180px;height:30px;">
+                                            @item.Product.Name
+                                        </td>
+                                        <td style="border:1px solid black;word-break:break-word;text-align:center;margin-top:1px;width:180px;height:30px;">
+                                            @BDMall.Resources.Label.Code:@item.Product.Code
+                                        </td>
+                                        <td style="border:1px solid black;word-break:break-word;text-align:center;margin-top:1px;width:180px;height:30px;">
+                                            @BDMall.Resources.Label.Price:@item.Product.Currency.Name @item.Product.SalePrice
+                                        </td>
+                                        <td style="border:1px solid black;word-break:break-word;text-align:center;margin-top:1px;width:180px;height:30px;">
+                                            @BDMall.Resources.Label.Qty:@item.Qty
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        }
+                    </table>
+                </td>
+            </tr>
+            <tr></tr>
+        }
+    }
+</table>

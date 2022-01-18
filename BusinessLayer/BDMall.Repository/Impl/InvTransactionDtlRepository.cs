@@ -17,10 +17,15 @@ namespace BDMall.Repository.Impl
         private List<KeyValue> _TransTypeDescList;
 
         public ICodeMasterRepository codeMasterRepository;
+        public ITranslationRepository translationRepository;
+        public IProductRepository productRepository;
+
 
         public InvTransactionDtlRepository(IServiceProvider service) : base(service)
         {
             codeMasterRepository = Services.Resolve<ICodeMasterRepository>();
+            translationRepository = Services.Resolve<ITranslationRepository>();
+            productRepository = Services.Resolve<IProductRepository>();
         }
 
         /// <summary>
@@ -236,6 +241,217 @@ namespace BDMall.Repository.Impl
         }
 
         /// <summary>
+        /// 獲取交易項資料列表
+        /// </summary>
+        /// <param name="condition">搜尋條件</param>
+        public List<InvTransItemView> GetPurchaseItmLst(InvTransSrchCond condition)
+        {
+            var itemVwList = new List<InvTransItemView>();
+
+            if (condition != null && condition.ProdCodeList.Any())
+            {              
+                var merchId = condition.MerchantId;
+
+                condition.ProdCodeList = condition.ProdCodeList.Distinct().ToList();
+
+                foreach (string prodCodeItem in condition.ProdCodeList)
+                {
+                    if (!string.IsNullOrEmpty(prodCodeItem))
+                    {
+                        string prodCode = prodCodeItem.Trim();
+
+                        var productList = productRepository.GetLastVersionProductLstByCode(new List<string>() { prodCode })?.Where(x => x.MerchantId == merchId).ToList();
+                        if (productList != null && productList.Any())
+                        {
+                            var productSkuList = (from ps in baseRepository.GetList<ProductSku>()
+                                                  where ps.IsActive && !ps.IsDeleted
+                                                  && ps.ProductCode.ToUpper() == prodCode.Trim().ToUpper()
+                                                  select ps).ToList();
+
+                            foreach (var prodSku in productSkuList)
+                            {
+                                //按條件篩選屬性值
+                                if (condition.Attr1 != Guid.Empty)
+                                {
+                                    if (prodSku.AttrValue1 != condition.Attr1) continue;
+                                }
+                                if (condition.Attr2 != Guid.Empty)
+                                {
+                                    if (prodSku.AttrValue2 != condition.Attr2) continue;
+                                }
+                                if (condition.Attr3 != Guid.Empty)
+                                {
+                                    if (prodSku.AttrValue3 != condition.Attr3) continue;
+                                }
+
+                                var transItem = new InvTransItemView()
+                                {
+                                    Sku = prodSku.Id,
+                                    ProdCode = prodSku.ProductCode,
+                                    Attr1 = prodSku.AttrValue1,
+                                    Attr1Desc = GetAttrValDesc(prodSku.AttrValue1),
+                                    Attr2 = prodSku.AttrValue2,
+                                    Attr2Desc = GetAttrValDesc(prodSku.AttrValue2),
+                                    Attr3 = prodSku.AttrValue3,
+                                    Attr3Desc = GetAttrValDesc(prodSku.AttrValue3)
+                                };
+
+                                var product = productList.FirstOrDefault(x => x.Code.Trim().ToUpper() == prodCode.Trim().ToUpper());
+                                if (product != null)
+                                {
+                                    transItem.CatalogId = product.CatalogId;
+                                    transItem.ProdName = product.Name;
+                                }
+                                itemVwList.Add(transItem);
+                            }
+
+                        }
+                    }
+                }
+            }
+
+            return itemVwList;
+        }
+
+        public List<InvTransItemView> GetPurchaseReturnItmLst(InvTransSrchCond condition)
+        {
+            var itemVwList = new List<InvTransItemView>();
+            if (condition != null && !string.IsNullOrEmpty(condition.BatchNum))
+            {
+                bool isMerchant = CurrentUser.IsMerchant;
+                var merchId = condition.MerchantId;
+                var curLang = CurrentUser.Lang;
+
+                //篩選出產品
+                var queryProd = (from po in baseRepository.GetList<PurchaseOrder>()
+                                 join pod in baseRepository.GetList<PurchaseOrderDetail>()
+                                 on po.Id equals pod.POId
+                                 join ps in baseRepository.GetList<ProductSku>()
+                                 on pod.Sku equals ps.Id
+                                 join pq in baseRepository.GetList<ProductQty>()
+                                 on pod.Sku equals pq.SkuId
+                                 where po.IsActive && !po.IsDeleted && pod.IsActive && !pod.IsDeleted && ps.IsActive && !ps.IsDeleted
+                                 && po.BatchNum.ToUpper() == condition.BatchNum.Trim().ToUpper() && (condition.WhId == Guid.Empty || po.WHId == condition.WhId)
+                                 select new { po, pod, ps, pq }).ToList();
+
+                foreach (var prodItem in queryProd)
+                {
+                    if (prodItem != null && prodItem.ps != null)
+                    {
+                        //按條件篩選屬性值
+                        if (condition.Attr1 != Guid.Empty)
+                        {
+                            if (prodItem.ps.AttrValue1 != condition.Attr1) continue;
+                        }
+                        if (condition.Attr2 != Guid.Empty)
+                        {
+                            if (prodItem.ps.AttrValue2 != condition.Attr2) continue;
+                        }
+                        if (condition.Attr3 != Guid.Empty)
+                        {
+                            if (prodItem.ps.AttrValue3 != condition.Attr3) continue;
+                        }
+
+                        var transItem = new InvTransItemView()
+                        {
+                            Sku = prodItem.ps.Id,
+                            ProdCode = prodItem.ps.ProductCode,
+                            Attr1 = prodItem.ps.AttrValue1,
+                            Attr1Desc = GetAttrValDesc(prodItem.ps.AttrValue1),
+                            Attr2 = prodItem.ps.AttrValue2,
+                            Attr2Desc = GetAttrValDesc(prodItem.ps.AttrValue2),
+                            Attr3 = prodItem.ps.AttrValue3,
+                            Attr3Desc = GetAttrValDesc(prodItem.ps.AttrValue3),
+                            TransFrom = prodItem.po.WHId,
+                            TransFromDesc = GetWarehouseName(prodItem.po.WHId),
+                            TransTo = prodItem.po.SupplierId,
+                            TransToDesc = GetSupplierName(prodItem.po.SupplierId),
+                            ReturnQty = 0,
+                            TransQty = prodItem.pod.OrderQty,
+                            UnitPrice = prodItem.pod.UnitPrice,
+                            SalesQty = prodItem.pq.SalesQty,
+                        };
+
+                        var productList = productRepository.GetLastVersionProductLstByCode(new List<string>() { prodItem.ps.ProductCode });
+                        if (productList != null)
+                        {
+                            var product = productList.FirstOrDefault(x => x.MerchantId == merchId);
+                            if (product != null)
+                            {
+                                transItem.CatalogId = product.CatalogId;
+                                transItem.ProdName = product.Name;
+                            }
+                        }
+                        itemVwList.Add(transItem);
+                    }
+                }
+            }
+
+            return itemVwList;
+        }
+
+        /// <summary>
+        /// 獲取指定庫存屬性的屬性值列表
+        /// </summary>
+        /// <param name="attrId">屬性ID</param>
+        private List<ProductAttributeValue> GetProductAttributeValues(Guid attrId)
+        {
+            var merchId = CurrentUser.MerchantId;
+            bool isMerchant = CurrentUser.IsMerchant;
+            var attrValList = new List<ProductAttributeValue> { new ProductAttributeValue {
+                AttrId = attrId,             
+                MerchantId = merchId,
+                IsActive = true,
+                IsDeleted = false 
+            }};
+
+            if (attrValList == null || !attrValList.Any())
+                return attrValList;
+
+            attrValList = baseRepository.GetList<ProductAttributeValue>().Where(x => x.AttrId == attrId
+                                    && (isMerchant || (!isMerchant && x.MerchantId == merchId)) && x.IsActive && !x.IsDeleted).ToList();
+            return attrValList;
+        }
+
+        private string GetAttrValDesc(Guid attrValId)
+        {
+            string desc = string.Empty;
+            var attr = baseRepository.GetModel<ProductAttributeValue>(x => x.Id == attrValId);
+            if (attr != null) desc = translationRepository.GetDescForLang(attr.DescTransId, CurrentUser.Lang);         
+            return desc;
+        }
+
+        /// <summary>
+        /// 獲取供應商名稱
+        /// </summary>
+        /// <param name="suppId">Id</param>
+        private string GetSupplierName(Guid suppId)
+        {
+            string name = string.Empty;
+            var supplier = baseRepository.GetModel<Supplier>(x => x.Id == suppId);
+            if (supplier != null)
+            {
+                name = translationRepository.GetDescForLang(supplier.NameTransId ,CurrentUser.Lang);
+            }
+            return name;
+        }
+
+        /// <summary>
+        /// 獲取倉庫名稱
+        /// </summary>
+        /// <param name="suppId">Id</param>
+        private string GetWarehouseName(Guid whId)
+        {
+            string name = string.Empty;
+            var warehouse = baseRepository.GetModel<Warehouse>(x => x.Id == whId);
+            if (warehouse != null)
+            {
+                name = translationRepository.GetDescForLang(warehouse.NameTransId, CurrentUser.Lang);
+            }
+            return name;
+        }
+
+        /// <summary>
         /// 初始化庫存交易描述列表緩存
         /// </summary>
         private void InitTransTypeList()
@@ -266,7 +482,7 @@ namespace BDMall.Repository.Impl
                 Attr3Desc = attr3Desc ?? "",
                 //GetAttrValDesc(transDtl.ProductSkuInfo.AttrValue3),
                 TransType = transDtl.TransType,
-                TransTypeDesc = _TransTypeDescList?.FirstOrDefault(x => x.Id == transDtl.TransType.ToString())?.Text,
+                TransTypeDesc = _TransTypeDescList?.FirstOrDefault(x => x.Id == transDtl.TransType.ToInt().ToString())?.Text,
                 TransDate = transDtl.TransDate,
                 TransQty = transDtl.TransQty,
                 CreateDate = transDtl.CreateDate,
@@ -282,27 +498,30 @@ namespace BDMall.Repository.Impl
                     var poDtl = baseRepository.GetModel<PurchaseOrderDetail>(x => x.Id == transDtl.BizId);
                     if (poDtl != null)
                     {
-                        invFlow.RefNo = poDtl.POInfo?.OrderNo;
-                        invFlow.BatchNo = poDtl.POInfo?.BatchNum;
-                        invFlow.Remarks = poDtl.POInfo?.Remarks;
+                        var poOder = baseRepository.GetModelById<PurchaseOrder>(poDtl.POId);
+                        invFlow.RefNo = poOder?.OrderNo ?? "";
+                        invFlow.BatchNo = poOder?.BatchNum ?? "";
+                        invFlow.Remarks = poOder?.Remarks ?? "";
                     }
                     break;
                 case InvTransType.Relocation:
                     var roDtl = baseRepository.GetModel<RelocationOrderDetail>(x => x.Id == transDtl.BizId);
                     if (roDtl != null)
                     {
-                        invFlow.RefNo = roDtl.ROInfo?.OrderNo;
+                        var roOder = baseRepository.GetModelById<RelocationOrder>(roDtl.ROId);
+                        invFlow.RefNo = roOder?.OrderNo;
                         //invFlow.BatchNo = roDtl.ROInfo?.BatchNum;
-                        invFlow.Remarks = roDtl.ROInfo?.Remarks;
+                        invFlow.Remarks = roOder?.Remarks;
                     }
                     break;
                 case InvTransType.PurchaseReturn:
                     var proDtl = baseRepository.GetModel<PurchaseReturnOrderDetail>(x => x.Id == transDtl.BizId);
                     if (proDtl != null)
                     {
-                        invFlow.RefNo = proDtl.PROInfo?.OrderNo;
-                        invFlow.BatchNo = proDtl.PROInfo?.BatchNum;
-                        invFlow.Remarks = proDtl.PROInfo?.Remarks;
+                        var proOder = baseRepository.GetModelById<PurchaseReturnOrder>(proDtl.PROId);
+                        invFlow.RefNo = proOder?.OrderNo ??  "";
+                        invFlow.BatchNo = proOder?.BatchNum ?? "";
+                        invFlow.Remarks = proOder?.Remarks ?? "";
                     }
                     break;
                 case InvTransType.SalesShipment:
@@ -316,7 +535,8 @@ namespace BDMall.Repository.Impl
                     var sroDtl = baseRepository.GetModel<SalesReturnOrderDetail>(x => x.Id == transDtl.BizId);
                     if (sroDtl != null)
                     {
-                        invFlow.RefNo = sroDtl.SROInfo?.OrderNo;
+                        var sroOder = baseRepository.GetModelById<SalesReturnOrder>(sroDtl.SROId);
+                        invFlow.RefNo = sroOder?.OrderNo ?? "";
                     }
                     break;
                 default:

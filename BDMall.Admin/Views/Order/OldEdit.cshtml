@@ -1,0 +1,568 @@
+﻿
+@{
+    ViewBag.Title = "OldEdit";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="col-md-12" id="app" v-cloak>
+    <div>
+        <table class="table">
+            <tr>
+                <td class="col-md-2">@BDMall.Resources.Label.OrderNoWithSymbol</td>
+                <td class="col-md-10"><label style="color:red">{{OrderInfo.OrderNO}}</label></td>
+            </tr>
+            <tr>
+                <td class="col-md-2">@BDMall.Resources.Label.OrderDateWithSymbol</td>
+                <td class="col-md-10">{{OrderInfo.CreateAt}}</td>
+            </tr>
+            <tr v-show="OrderInfo.IsMerchant==false">
+                <td class="col-md-2">@BDMall.Resources.Label.StateWithSymbol</td>
+                <td class="col-md-10"><label style="color:red">{{OrderInfo.StatusName}}</label></td>
+            </tr>
+            <tr>
+                <td class="col-md-2">@BDMall.Resources.Label.PaymentMethodWithSymbol</td>
+                <td class="col-md-10">{{OrderInfo.PaymentMethod}}</td>
+            </tr>
+        </table>
+
+    </div>
+
+
+
+
+    <div id="divOrderInfo">
+        <ul id="myTab" class="nav nav-tabs">
+            <li class="active">
+                <a href="#DeliveryInfo" data-toggle="tab">@BDMall.Resources.Label.DeliveryInformation</a>
+            </li>
+
+            <li>
+                <a href="#ProductInfo" data-toggle="tab">@BDMall.Resources.Label.OrderProductInformation</a>
+            </li>
+            <li>
+                <a href="#BillInfo" data-toggle="tab">@BDMall.Resources.Label.BillingInformation</a>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+
+            <div class="tab-pane fade in active" id="DeliveryInfo">
+                <div class="panel-body">
+                    <div class="panel panel-default" v-for="delivery,index in OrderInfo.Deliveries">
+                        <div class="panel-body">
+                            <table class="table">
+                                <tr>
+                                    <td class="col-md-1">
+                                        @BDMall.Resources.Label.DeliveryStatusWithSymbol
+                                    </td>
+                                    <td class="col-md-5">
+                                        <label v-show="delivery.CalmeDateCaption==''" style="color:red">{{delivery.StatusName}}</label>
+                                        <label v-show="delivery.CalmeDateCaption!=''" style="color:red">{{delivery.StatusName}}--{{delivery.CalmeDateCaption}}</label>
+                                    </td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        @BDMall.Resources.Label.DeliveryNoWithSymbol
+                                    </td>
+                                    <td>
+                                        {{delivery.DeliveryNo}}
+                                    </td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        @BDMall.Resources.Label.CountryWithSymbol
+                                    </td>
+                                    <td>
+                                        {{delivery.Country}}
+                                    </td>
+                                    <td>@BDMall.Resources.Label.ProvinceWithSymbol</td>
+                                    <td>
+                                        {{delivery.Province}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>@BDMall.Resources.Label.CityWithSymbol</td>
+                                    <td>
+                                        <div v-if="delivery.StatusCode<='2'">
+                                            <input type="text" class="form-control" v-model="delivery.City" maxlength="200" />
+                                        </div>
+                                        <div v-else>
+                                            {{delivery.City}}
+                                        </div>
+                                    </td>
+                                    <td>@BDMall.Resources.Label.PostalCodeWithSymbol</td>
+                                    <td>
+                                        <div v-if="delivery.StatusCode<='2'">
+                                            <input type="text" class="form-control" v-model="delivery.PostCode" maxlength="15" />
+                                        </div>
+                                        <div v-else>
+                                            {{delivery.PostCode}}
+                                        </div>
+                                    </td>
+
+                                </tr>
+                                <tr>
+                                    <td>@BDMall.Resources.Label.Address1WithSymbol</td>
+                                    <td>
+                                        <div v-if="delivery.StatusCode<='2'">
+                                            <input type="text" class="form-control" v-model="delivery.Address" maxlength="200" />
+                                        </div>
+                                        <div v-else>
+                                            {{delivery.Address}}
+                                        </div>
+                                    </td>
+                                    <td>@BDMall.Resources.Label.Address2WithSymbol</td>
+                                    <td>
+                                        <div v-if="delivery.StatusCode<='2'">
+                                            <input type="text" class="form-control" v-model="delivery.Address1" maxlength="200" />
+                                        </div>
+                                        <div v-else>
+                                            {{delivery.Address1}}
+                                        </div>
+                                    </td>
+
+                                </tr>
+                                <tr>
+                                    <td>@BDMall.Resources.Label.Address3WithSymbol</td>
+                                    <td>
+                                        <div v-if="delivery.StatusCode<='2'">
+                                            <input type="text" class="form-control" v-model="delivery.Address2" maxlength="200" />
+                                        </div>
+                                        <div v-else>
+                                            {{delivery.Address2}}
+                                        </div>
+                                    </td>
+                                    <td>@BDMall.Resources.Label.Address4WithSymbol</td>
+                                    <td>
+                                        <div v-if="delivery.StatusCode<='2'">
+                                            <input type="text" class="form-control" v-model="delivery.Address3" maxlength="200" />
+                                        </div>
+                                        <div v-else>
+                                            {{delivery.Address3}}
+                                        </div>
+                                    </td>
+
+                                </tr>
+                                <tr>
+                                    <td>@BDMall.Resources.Label.NameWithSymbol</td>
+                                    <td>
+                                        <div v-if="delivery.StatusCode<='2'">
+                                            <input type="text" class="form-control" v-model="delivery.ConactName" maxlength="200" />
+                                        </div>
+                                        <div v-else>
+                                            {{delivery.ConactName}}
+                                        </div>
+                                    </td>
+                                    <td>@BDMall.Resources.Label.MobileWithSymbol</td>
+                                    <td>
+                                        <div v-if="delivery.StatusCode<='2'">
+                                            <input type="text" class="form-control" v-model="delivery.ConactPhone" maxlength="200" />
+                                        </div>
+                                        <div v-else>
+                                            {{delivery.ConactPhone}}
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+
+                                    <td>@BDMall.Resources.Label.EmailWithSymbol</td>
+                                    <td>
+                                        <div v-if="delivery.StatusCode<='2'">
+                                            <input type="email" class="form-control" v-model="delivery.ConactMail" maxlength="200" />
+                                        </div>
+                                        <div v-else>
+                                            {{delivery.ConactMail}}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @BDMall.Resources.Label.DeliveryTypeName:
+                                    </td>
+                                    <td>
+                                        {{delivery.ExpressServiceName}}
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <table class="table table-bordered table-condensed">
+                                <tr>
+                                    <th>@BDMall.Resources.Label.Img</th>
+                                    <th>@BDMall.Resources.Label.ProductCode</th>
+                                    <th>@BDMall.Resources.Label.ProductName</th>
+                                    <th>@BDMall.Resources.Label.UnitPrice ({{OrderInfo.Currency.Name}})</th>
+                                    <th>@BDMall.Resources.Label.MarkUpPrice</th>
+                                    <th>@BDMall.Resources.Label.Qty</th>
+                                    <th>@BDMall.Resources.Label.SubTotal</th>
+
+                                </tr>
+                                <tr v-if="item.Product!=null" v-for="item in delivery.DeliveryItems">
+                                    <td>
+                                        @*<img v-bind:src="item.Product.Imgs[0]" width="64">*@
+                                    </td>
+                                    <td>
+                                        {{item.Product.Code}}
+                                    </td>
+                                    <td>
+                                        {{item.Product.Name}}
+                                        <div v-for="d in item.DiscountInfo">
+                                            {{d}}
+                                        </div>
+                                        <div v-for="a in item.AdditionalChargeInfo">
+                                            {{a}}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {{item.UnitPrice}}
+                                    </td>
+                                    <td>
+                                        {{item.Product.MarkupPrice}}
+                                    </td>
+                                    <td>
+                                        {{item.Qty}}
+                                    </td>
+                                    <td>
+                                        {{((item.UnitPrice+item.Product.MarkupPrice)*item.Qty).toFixed(2)}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="6" class="text-right">@BDMall.Resources.Label.TotalQtyWithSymbol</td>
+                                    <td>{{delivery.TotalQty}}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="6" class="text-right">@BDMall.Resources.Label.TotalAmountWithSymbol ({{OrderInfo.Currency.Name}})</td>
+                                    <td>{{delivery.TotalPrice.toFixed(2)}}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="6" class="text-right">@BDMall.Resources.Label.ChargeWithSymbol ({{OrderInfo.Currency.Name}})</td>
+                                    <td>{{(delivery.Freight+delivery.FreightDiscount).toFixed(2)}}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="6" class="text-right">@BDMall.Resources.Label.ChargeDiscountWithSymbol ({{OrderInfo.Currency.Name}})</td>
+                                    <td>
+                                        -{{delivery.FreightDiscount.toFixed(2)}}
+                                    </td>
+                                </tr>
+                                <tr v-for="discount in delivery.Discounts">
+                                    <td colspan="6" class="text-right">@BDMall.Resources.Label.CashCoupon ({{ OrderInfo.Currency.Name}})</td>
+                                    <td>
+                                        -{{discount.DiscountPrice.toFixed(2)}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="6" class="text-right">@BDMall.Resources.Label.GrandTotalWithSymbol ({{OrderInfo.Currency.Name}})</td>
+                                    <td>{{delivery.DiscountTotalAmount.toFixed(2)}}</td>
+                                </tr>
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+            <div class="tab-pane fade" id="ProductInfo">
+                <div class="panel-body">
+                    <table class="table table-bordered table-condensed" id="tblOrderProduct">
+                        <tr>
+                            <th>@BDMall.Resources.Label.Img</th>
+                            <th>@BDMall.Resources.Label.ProductCode</th>
+                            <th>@BDMall.Resources.Label.ProductName</th>
+                            <th>@BDMall.Resources.Label.UnitPrice ({{OrderInfo.Currency.Name}})</th>
+                            <th>@BDMall.Resources.Label.MarkUpPrice</th>
+                            <th>@BDMall.Resources.Label.Qty</th>
+                            <th>@BDMall.Resources.Label.SubTotal</th>
+                        </tr>
+                        <tr v-if="item.Product!=null" v-for="item in OrderInfo.OrderItems">
+                            <td>
+                                @*<img v-bind:src="item.Product.Imgs[0]" width="64">*@
+                            </td>
+                            <td>
+                                {{item.Product.Code}}
+                            </td>
+                            <td>
+                                {{item.Product.Name}}
+                                <div v-for="d in item.DiscountInfo">
+                                    {{d}}
+                                </div>
+                                <div v-for="a in item.AdditionalChargeInfo">
+                                    {{a}}
+                                </div>
+                            </td>
+                            <td>
+                                {{item.UnitPrice}}
+                            </td>
+                            <td>
+                                {{item.Product.MarkupPrice}}
+                            </td>
+                            <td>
+                                {{item.Qty}}
+                            </td>
+                            <td>
+                                {{(item.UnitPrice*item.Qty).toFixed(2)}}
+                            </td>
+                        </tr>
+                        <tr v-else>
+                            <td colspan="6" class="text-center">@BDMall.Resources.Message.NoRecord</td>
+                        </tr>
+                        <tr>
+                            <td colspan="6" class="text-right">@BDMall.Resources.Label.TotalQtyWithSymbol</td>
+                            <td>{{OrderSummary.TotalQty}}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="6" class="text-right">@BDMall.Resources.Label.TotalAmountWithSymbol ({{OrderInfo.Currency.Name}})</td>
+                            <td>{{OrderSummary.ItemsAmount.toFixed(2)}}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="6" class="text-right">@BDMall.Resources.Label.ChargeWithSymbol ({{OrderInfo.Currency.Name}})</td>
+                            <td>{{OrderSummary.DeliveryCharge.toFixed(2)}}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="6" class="text-right">@BDMall.Resources.Label.ChargeDiscountWithSymbol ({{OrderInfo.Currency.Name}})</td>
+                            <td>
+                                -{{OrderSummary.DeliveryDiscount.toFixed(2)}}
+                            </td>
+                        </tr>
+                        <tr v-for="discount in OrderTotalDiscount">
+                            <td colspan="6" class="text-right">@BDMall.Resources.Label.CashCoupon ({{ OrderInfo.Currency.Name}})</td>
+                            <td>
+                                -{{discount.DiscountPrice.toFixed(2)}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="6" class="text-right">@BDMall.Resources.Label.GrandTotalWithSymbol ({{OrderInfo.Currency.Name}})</td>
+                            <td>{{OrderSummary.DiscountTotalAmount.toFixed(2)}}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="BillInfo">
+                <table class="table">
+                    <tr>
+                        <td class="col-md-2">@BDMall.Resources.Label.FirstNameWithSymbol</td>
+                        <td class="col-md-10">{{OrderInfo.Member.FirstName}}</td>
+                    </tr>
+                    <tr>
+                        <td class="col-md-2">@BDMall.Resources.Label.LastNameWithSymbol</td>
+                        <td class="col-md-10">{{OrderInfo.Member.LastName}}</td>
+                    </tr>
+                    @*<tr>
+                            <td class="col-md-2">@BDMall.Resources.Label.GenderWithSymbol</td>
+                            <td class="col-md-10">{{OrderInfo.Member.Gender}}</td>
+                        </tr>*@
+
+                    <tr>
+                        <td class="col-md-2">@BDMall.Resources.Label.PhoneWithSymbol</td>
+                        <td class="col-md-10">{{OrderInfo.Member.Mobile}}</td>
+                    </tr>
+                    <tr>
+                        <td class="col-md-2">@BDMall.Resources.Label.EmailAddressWithSymbol</td>
+                        <td class="col-md-10">{{OrderInfo.Member.Email}}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <a download="" id="exportLink" href="" target="_blank" hidden></a>
+</div>
+@section scripts{
+    <script type="text/javascript">
+        var orderId = "@ViewBag.OrderId";
+        var lang = $.cookie('Language');
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                isProceed: false,
+                OrderInfo: {
+                    IsMerchant: false,
+                    OrderId: orderId,
+                    InvoiceNO: "",
+                    PaymentMethod: "",
+                    CreateAt: "",
+                    Currency: {},
+                    OrderItems: [],
+                    Deliveries: [],
+                    BillInfo: {},
+                    Remark: "",
+                    StatusCode: 0,
+                    StatusName: "",
+                    PickupDate: "",
+                    PickupTime: "",
+                    DeliveryCharge: 0,
+                    ItemsAmount: 0,
+                    TotalAmount: 0,
+                    Member: {},
+                    Discounts:[]
+                },
+                OrderStatus: {
+                    RecevedOrder: {},
+                    PaymentConfirmed: {},
+                    Processing: {},
+                    DeliveryArranged: {},
+                    OrderCompleted: {},
+                    OrderCancelled: {},
+                },
+                UpdateStatusCondition: {
+                    OrderId: 0,
+                    Status: 0,
+                    LocationId: -1,
+                    DeliveryTrackingInfo:[]
+                },
+                MailTrackingInfo: {
+
+                },
+                OrderSummary: {
+                    TotalQty: 0,
+                    ItemsAmount: 0,
+                    DeliveryCharge: 0,
+                    DeliveryDiscount: 0,
+                    DiscountTotalAmount:0
+
+                },
+                OrderTotalDiscount: [{ DiscountPrice: 0, DiscountTypeName:""}],
+                TotalQty: 0,
+            },
+            methods: {
+                getOrderInfo: function () {
+                    var data = new Object();
+                    data.id = orderId;
+                    WS.AjaxP("get", "/adminapi/Order/GetOldOrder", data, function (response) {
+                        vm.OrderInfo = response;
+
+                        vm.getOrderTotalDiscount();
+
+                        vm.getOrderSummary();
+
+                        //vm.$nextTick(function () {
+                        //    vm.OrderInfo.Deliveries.forEach(function (val, index) {
+                        //        InitBootstrapSelect("cboLocation" + index, "/adminapi/Inventory/GetWhseComboSrcByMerchant", 1, false, false, { merchantId: val.MerchantId }, function () {
+                        //            if (val.LocationId != WS.GuidEmpty) {
+                        //                $("#cboLocation" + index).selectpicker('val', val.LocationId);
+                        //            }
+                        //            else
+                        //            {
+                        //                val.LocationId = $("#cboLocation" + index).val();
+                        //            }
+
+                        //            vm.checkIsProceed(val);
+                        //        });
+
+                        //    })
+
+                        //});
+                        vm.getTotalCountInfo();
+                    }, function () { })
+                },
+                getOrderSummary: function ()
+                {
+                    vm.OrderInfo.Deliveries.forEach(function (val) {
+                        vm.OrderSummary.TotalQty += val.TotalQty;
+                        vm.OrderSummary.ItemsAmount += val.TotalPrice;
+                        vm.OrderSummary.DeliveryCharge += (val.Freight + val.FreightDiscount);
+                        vm.OrderSummary.DeliveryDiscount += val.FreightDiscount;
+                        vm.OrderSummary.DiscountTotalAmount += val.DiscountTotalAmount;
+
+                    });
+
+                    var discout = 0;
+                    vm.OrderInfo.Discounts.forEach(function (val) {
+                        discout += val.DiscountPrice;
+                    });
+                    vm.OrderSummary.DiscountTotalAmount-=discout;
+
+                },
+                getOrderTotalDiscount: function ()
+                {
+                    vm.OrderTotalDiscount = [];
+
+                    if (vm.OrderInfo.Discounts)
+                    {
+                        vm.OrderInfo.Discounts.forEach(function (val) {
+                            var discount = {};
+                            discount.DiscountPrice = val.DiscountPrice;
+                            discount.DiscountTypeName = val.DiscountTypeName;
+                            if (vm.OrderTotalDiscount.length == 0) {
+                                vm.OrderTotalDiscount.push(discount);
+                            }
+                            else {
+                                var isExist = false;
+                                vm.OrderTotalDiscount.forEach(function (totalDis) {
+                                    if (totalDis.DiscountTypeName == discount.DiscountTypeName) {
+                                        totalDis.DiscountPrice += discount.DiscountPrice;
+                                        isExist = true;
+                                    }
+                                });
+                                if (isExist == false) {
+                                    vm.OrderTotalDiscount.push(discount);
+                                }
+                            }
+                        });
+                    }
+
+                    vm.OrderInfo.Deliveries.forEach(function (val) {
+                        if (val.Discounts)
+                        {
+                            val.Discounts.forEach(function (dis) {
+                                var discount = {};
+                                discount.DiscountPrice = dis.DiscountPrice;
+                                discount.DiscountTypeName = dis.DiscountTypeName;
+                                if (vm.OrderTotalDiscount.length == 0) {
+                                    vm.OrderTotalDiscount.push(discount);
+                                }
+                                else {
+                                    var isExist = false;
+                                    vm.OrderTotalDiscount.forEach(function (totalDis) {
+                                        if (totalDis.DiscountTypeName == discount.DiscountTypeName)
+                                        {
+                                            totalDis.DiscountPrice += discount.DiscountPrice;
+                                            isExist = true;
+                                        }
+                                    });
+                                    if (isExist == false)
+                                    {
+                                        vm.OrderTotalDiscount.push(discount);
+                                    }
+                                }
+                            });
+                        }
+
+                    });
+
+                },
+
+                getTotalCountInfo: function () {
+                    var itemsAmount = 0;
+                    var totalQty = 0;
+
+                    vm.OrderInfo.OrderItems.forEach(function (val) {
+                        totalQty += parseInt(val.Qty);
+                        itemsAmount += val.UnitPrice * val.Qty;
+                    });
+
+                    vm.TotalQty = parseInt(totalQty);
+                    vm.OrderInfo.ItemsAmount = itemsAmount.toFixed(2);
+                    vm.OrderInfo.TotalAmount = parseFloat(vm.OrderInfo.ItemsAmount) + parseFloat(vm.OrderInfo.DeliveryCharge);
+
+                }
+
+            }
+        });
+
+
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+        $(document).ready(function(){
+            vm.getOrderInfo();
+            //vm.getOrderStatus();
+
+        });
+    </script>
+}
+

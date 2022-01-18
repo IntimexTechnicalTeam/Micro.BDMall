@@ -26,7 +26,7 @@ namespace BDMall.Repository
                 //    item.DisplayName = _unitWork.DataContext.Translations.FirstOrDefault(d => d.TransId == item.FullNameTransId && d.Lang == _unitWork.Operator.Language)?.Value ?? "";
                 //}
 
-                var RolePermissions = baseRepository.GetList<RolePermission>().Where(x => x.IsActive && !x.IsDeleted && x.RoleId == item.Id).Select(s=>s.PermissionId).ToList();
+                var RolePermissions = baseRepository.GetList<RolePermission>().Where(x => x.IsActive && !x.IsDeleted && x.RoleId == item.Id).Select(s => s.PermissionId).ToList();
                 item.PermissionList = baseRepository.GetList<Permission>().Where(x => RolePermissions.Contains(x.Id)).ToList();
             }
             return roles;
@@ -40,7 +40,18 @@ namespace BDMall.Repository
             paramList.Add(new SqlParameter("@MerchantId", merchantId));
 
             var result = baseRepository.IntFromSql(sql, paramList.ToArray());
-            return result >0 ? true : false;
+            return result > 0 ? true : false;
+        }
+
+        public List<Permission> GetUserPermissionByRoleId(Guid RoleId)
+        {
+            var list = from a in baseRepository.GetList<RolePermission>().Where(x => x.IsActive && !x.IsDeleted)
+                       join b in baseRepository.GetList<Permission>().Where(x => x.IsActive && !x.IsDeleted) on a.PermissionId equals b.Id
+                       where a.RoleId == RoleId
+                       select b;
+
+            return list.ToList();
+
         }
     }
 }

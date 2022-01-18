@@ -179,6 +179,7 @@ namespace BDMall.BLL
                 _currentUser.CurrencyCode = payload["CurrencyCode"];
                 _currentUser.Lang = (Language)Enum.Parse(typeof(Language), payload["Lang"]);
                 _currentUser.LoginType = (LoginType)Enum.Parse(typeof(LoginType), payload["LoginType"]);
+                _currentUser.IsLogin = bool.Parse(payload["IsLogin"]);
                 _currentUser.Email = payload["Email"];
 
                 //admin,商家和第三方商家

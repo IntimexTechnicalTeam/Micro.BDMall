@@ -18,7 +18,7 @@ namespace BDMall.BLL
 
         PageData<MemberDto> SearchMember(MbrSearchCond cond);
 
-        SystemResult CreateMember(RegisterMember member);
+        SystemResult Register(RegisterMember member);
 
         Task<SystemResult> ChangeLang(CurrentUser currentUser, Language Lang);
 

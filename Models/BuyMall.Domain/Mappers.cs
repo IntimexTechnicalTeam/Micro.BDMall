@@ -47,7 +47,7 @@ namespace Domain
             ConfigMap<Supplier, SupplierDto>();
             ConfigMap<InvFlow,InvFlowView>();
 
-
+            ConfigMap<InvTransactionDtl, InvTransactionDtlDto>();
             ConfigMap<PaymentMethodDto, PaymentMethod>();
             ConfigMap<CountryDto, Country>();
             ConfigMap<ProvinceDto, Province>();
@@ -56,6 +56,7 @@ namespace Domain
             ConfigMap<DeliveryAddressDto, DeliveryAddress>();
             
 
+            ConfigMap<RolePermission,RolePermissionDto>();
         }
         void ConfigMap<TSource, TDestination>()
         {

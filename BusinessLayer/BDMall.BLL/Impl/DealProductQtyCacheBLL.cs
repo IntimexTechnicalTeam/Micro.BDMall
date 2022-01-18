@@ -43,11 +43,11 @@ namespace BDMall.BLL
         }
 
         /// <summary>
-        /// 采购入库,采购退回，銷售退回，發貨退回时更新库存
+        /// 采购入库,采购退回,銷售退回，發貨退回时更新库存(ProductQty)
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
-        public async Task<SystemResult> UpdateQtyWhenPurchaseOrReturn(List<InvTransactionDtl> list)
+        public async Task<SystemResult> UpdateQtyWhenPurchaseOrReturn(List<InvTransactionDtlDto> list)
         {
             var result = new SystemResult();
 
@@ -57,9 +57,10 @@ namespace BDMall.BLL
                 {
                     case InvTransType.Purchase: result = await UpdateQtyWhenPurchasing(item.Sku, item.TransQty); break;
                     case InvTransType.PurchaseReturn: result = await UpdateQtyWhenPurchaseReturn(item.Sku, item.TransQty); break;
+                    case InvTransType.Relocation: result.Succeeded = true; break;          //调拨不处理ProductQty,直接break
                     case InvTransType.SalesReturn:
-                    case InvTransType.DeliveryReturn:
-                        result = await UpdateQtyWhenReturn(item.Sku, item.TransQty); break;
+                    case InvTransType.DeliveryReturn:  result = await UpdateQtyWhenReturn(item.Sku, item.TransQty); break;
+                    default:break;
                 }
             }
             return result;
@@ -526,8 +527,8 @@ namespace BDMall.BLL
                 Id = Guid.NewGuid(),
                 ItemId = ProductQty.SkuId,
                 MsgType = MQType.UpdateInvt,
-                QueueName = MQSetting.UpdateQtyQueue,
-                ExchangeName = MQSetting.UpdateQtyExchange,
+                QueueName = MQSetting.WeChatUpdateQtyQueue,
+                ExchangeName = MQSetting.WeChatUpdateQtyExchange,
                 MsgContent = JsonUtil.ToJson(ProductQty)
             };
 

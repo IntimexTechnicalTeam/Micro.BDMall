@@ -160,6 +160,17 @@ namespace BDMall.BLL
             }
         }
 
+        public string GetBigImgPath(string smallImgPath)
+        {
+            string path = "";
+            var ImageID = baseRepository.GetModel<ProductImageList>(d => d.Path == smallImgPath)?.ImageID;
+            if (ImageID != null)
+            {
+                path = baseRepository.GetList<ProductImageList>(d => d.ImageID == ImageID).OrderByDescending(d => d.Type).FirstOrDefault().Path;
+            }
+            return path;
+        }
+
         private ProductImageView GenProductSkuImageView(ProductImage image, Guid defaultImageID)
         {
             ProductImageView view = new ProductImageView();

@@ -153,6 +153,12 @@ namespace BDMall.BLL
             return result;
         }
 
+        public PageData<ProductSummary> SearchProductList(ProdSearchCond cond)
+        { 
+            var result  = SearchBackEndProductSummary(cond);
+            return result;
+        }
+
         public ProductEditModel GetProductInfo(Guid id)
         {
             var product = baseRepository.GetModelById<Product>(id);
@@ -710,6 +716,28 @@ namespace BDMall.BLL
             baseRepository.Insert(obj);
         }
 
+        public ProductSkuDto GetProductSku(Guid skuId)
+        {
+            var dbsku = baseRepository.GetModelById<ProductSku>(skuId);
+            if (dbsku == null) return null;
+
+            var sku = AutoMapperExt.MapTo<ProductSkuDto>(dbsku);
+
+            var attr1 = attributeBLL.GetAttribute(sku.Attr1);
+            var attr2 = attributeBLL.GetAttribute(sku.Attr2);
+            var attr3 = attributeBLL.GetAttribute(sku.Attr3);
+            sku.Attr1Name = attr1?.Desc ?? "";
+            sku.Attr2Name = attr2?.Desc ?? "";
+            sku.Attr3Name = attr3?.Desc ?? "";
+            sku.AttrValue1Name = attr1?.AttributeValues == null ? "" : attr1?.AttributeValues.FirstOrDefault(p => p.Id == sku.AttrValue1)?.Desc ?? "";
+            sku.AttrValue2Name = attr2?.AttributeValues == null ? "" : attr2?.AttributeValues.FirstOrDefault(p => p.Id == sku.AttrValue2)?.Desc ?? "";
+            sku.AttrValue3Name = attr3?.AttributeValues == null ? "" : attr3?.AttributeValues.FirstOrDefault(p => p.Id == sku.AttrValue3)?.Desc ?? "";
+
+            return sku;
+
+        }
+
+
         /// <summary>
         /// 整合产品浏览（日，周，月）
         /// </summary>
@@ -1165,6 +1193,35 @@ namespace BDMall.BLL
         {
             var flag = baseRepository.Any<Product>(x => x.Code == code && x.IsActive && !x.IsDeleted);
             return flag;
+        }
+
+        public ProductSummary GetProductSummary(Guid id, Guid skuId)
+        {        
+            var product = baseRepository.GetModelById<Product>(id);
+            if (product == null)    return null; 
+            var result = GenProductSummary(product, skuId);
+            return result;
+        }
+
+        /// <summary>
+        /// 获取SaleQty<0的数据
+        /// </summary>
+        /// <returns></returns>
+        public async Task<List<string>> GetSelloutSkus()
+        {
+            string SalesQtyKey = $"{CacheKey.SalesQty}";
+            //优先读缓存
+            var cacheData =  await RedisHelper.ZRangeByScoreAsync(SalesQtyKey, "-inf", "0");   //取小于等于0           
+            if (cacheData?.Any() ?? false)
+            {
+                var query = from q in UnitOfWork.DataContext.ProductSkus
+                            join s in UnitOfWork.DataContext.ProductQties on q.Id equals s.SkuId into qss
+                            from qs in qss.DefaultIfEmpty()
+                            where qs == null || (q.IsActive && q.IsDeleted == false && qs.SalesQty <= 0)
+                            select q.Id;
+                cacheData = query.Select(d => d.ToString()).ToArray();
+            }
+            return cacheData.ToList();
         }
 
         private Product GenProduct(Product dbProduct, ProductEditModel viewProduct)

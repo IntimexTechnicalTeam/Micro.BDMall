@@ -12,6 +12,8 @@ namespace BDMall.Repository
     {
         PageData<InvFlow> GetInvTransDtlLst(InvFlowSrchCond cond);
 
+        List<InvTransItemView> GetPurchaseItmLst(InvTransSrchCond condition);
 
+        List<InvTransItemView> GetPurchaseReturnItmLst(InvTransSrchCond condition);
     }
 }

@@ -33,6 +33,8 @@ namespace BDMall.BLL
 
         PageData<ProductSummary> SearchRelatedProduct(RelatedProductCond cond);
 
+        PageData<ProductSummary> SearchProductList(ProdSearchCond cond);
+
         List<ProductSummary> GetRelatedProduct(Guid id);
 
         void AddRelatedProduct(List<string> prodCodes, Guid originalId);
@@ -48,5 +50,15 @@ namespace BDMall.BLL
         SystemResult ApplyApprove(Guid id);
 
         Task TurndownProduct(Guid prodID, string reason);
+
+        ProductSummary GetProductSummary(Guid id, Guid skuId);
+
+        ProductSkuDto GetProductSku(Guid skuId);
+
+        /// <summary>
+        /// 获取SaleQty<0的数据
+        /// </summary>
+        /// <returns></returns>
+        Task<List<string>> GetSelloutSkus();
     }
 }

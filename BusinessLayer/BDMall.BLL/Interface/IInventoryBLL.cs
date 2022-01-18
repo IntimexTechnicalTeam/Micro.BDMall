@@ -1,5 +1,6 @@
 ﻿using BDMall.Domain;
 using BDMall.Enums;
+using BDMall.Model;
 using Intimex.Common;
 using System;
 using System.Collections.Generic;
@@ -29,8 +30,25 @@ namespace BDMall.BLL
         List<KeyValue> GetSupplierComboSrc();
 
         List<KeyValue> GetInvFlowTypeLstComboSrc();
+
         List<KeyValue> GetInvTransTypeComboSrc();
 
+        List<KeyValue> GetWhseComboSrc(Guid merchantId);
+
         PageData<InvFlowView> GetInvFlowLstByCond(InvFlowSrchCond condition);
+
+        List<InvTransItemView> GetPurchaseItmLst(InvTransSrchCond condition);
+
+        List<InvTransItemView> GetPurReturnItmLst(InvTransSrchCond condition);
+
+        Task<SystemResult> SaveInvTransRec(InvTransView transView);
+
+        SystemResult IsExsitBathNum(InvTransactionDtlDto cond);
+
+        SystemResult InsertInventoryHold(InventoryHold insRec);
+
+        SystemResult DeleteInventoryHold(InventoryHold delRec);
+
+        decimal GetTotAvailableInvQty(InventoryReserved uniqueProp);
     }
 }

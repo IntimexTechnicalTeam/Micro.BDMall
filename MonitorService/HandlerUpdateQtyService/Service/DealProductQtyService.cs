@@ -18,8 +18,8 @@ namespace HandleUpdateQtyService
         
         }
 
-        protected override string Queue => MQSetting.UpdateQtyQueue;
-        protected override string Exchange => MQSetting.UpdateQtyExchange;
+        protected override string Queue => MQSetting.WeChatUpdateQtyQueue;
+        protected override string Exchange => MQSetting.WeChatUpdateQtyExchange;
 
         protected override string categoryName => this.GetType().FullName;
 

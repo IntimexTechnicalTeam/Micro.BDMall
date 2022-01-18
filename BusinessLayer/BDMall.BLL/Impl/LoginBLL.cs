@@ -22,7 +22,11 @@ namespace BDMall.BLL
         public async Task<SystemResult> Login(LoginInput input) {
 
             var result = new SystemResult() ;
-            var user = await baseRepository.GetModelAsync<Member>(x => x.Id == Guid.Parse("E3F18C3B-5D1E-4ACC-B716-B128693BD107"));
+            var user = await baseRepository.GetModelAsync<Member>(x =>x.Account == input.Account);
+
+            if (user == null) throw new BLException("账号错误");
+            if (user.Password != ToolUtil.Md5Encrypt(input.Password)) throw new BLException("密码错误");
+
             result.ReturnValue = AutoMapperExt.MapTo<MemberDto>(user);
             result.Succeeded = true;          
             return result;

@@ -1,0 +1,365 @@
+﻿@*@model IEnumerable<BDMall.Model.UserMNG.User>*@
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="container-fluid" id="myApp">
+    <div class="row">
+        <div class="col-lg-12 col-md-12 col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading" v-on:click="showCondition">
+                    <i class="glyphicon glyphicon-search"></i>
+                    @BDMall.Resources.Label.Filters
+                    <span id="toggleSearch" class="pull-right glyphicon glyphicon-chevron-down"></span>
+                </div>
+                <div class="panel-body" style="display:none">
+
+                    <table class="table">
+                        <tr>
+                            <td>@BDMall.Resources.Label.IsActive</td>
+                            <td>
+                                <input type="checkbox" id="chkIsActive" v-model="condition.IsActive" />
+                            </td>
+
+                            <td>@BDMall.Resources.Label.IsDeleted</td>
+                            <td>
+                                <input type="checkbox" id="chkIsDeleted" v-model="condition.IsDeleted" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>@BDMall.Resources.Label.UserName</td>
+                            <td><input type="text" id="txtUserName" v-model="condition.UserName" /></td>
+                            <td>@BDMall.Resources.Label.Phone</td>
+                            <td><input type="text" id="txtPhone" v-model="condition.Phone" /></td>
+                        </tr>
+                        <tr><td colspan="4" style="text-align:right"><input type="button" id="btnSearch" v-on:click="search" class="btn btn-default" value="@BDMall.Resources.Action.Search" /></td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <table class="table table-simple" v-cloak>
+                <tr>
+                    <th>@BDMall.Resources.Label.Index</th>
+
+                    <th>
+                        @BDMall.Resources.Label.Email
+                    </th>
+                    <th>
+                        @BDMall.Resources.Label.Role
+                    </th>
+                    <th>
+                        @BDMall.Resources.Label.Merchant
+                    </th>
+                    <th>
+                        @BDMall.Resources.Label.CreateDate
+                    </th>
+                    <th>
+                        @BDMall.Resources.Label.IsActive
+                    </th>
+                    <th>
+                        @BDMall.Resources.Label.IsDeleted
+                    </th>
+                    <th>
+                    </th>
+                </tr>
+                <tr v-for="(r,index) in items">
+                    <td>{{ index + 1 }}</td>
+                    <td>
+                        {{r.Email}}
+                    </td>
+                    <td>
+                        {{r.Roles.length>0?r.Roles[0].DisplayName:""}}
+                    </td>
+                    <td>
+                        {{r.MerchantName}}
+                    </td>
+                    <td>
+                        {{r.CreateDate}}
+                    </td>
+                    <td>
+                        {{r.IsActive?"@BDMall.Resources.Message.Yes":"@BDMall.Resources.Message.No"}}
+                    </td>
+                    <td>
+                        {{r.IsDeleted?"@BDMall.Resources.Message.Yes":"@BDMall.Resources.Message.No"}}
+                    </td>
+                    <td>
+                        <button v-on:click="edit(r.Id)" class="btn btn-default" v-bind:disabled="status!==''">@BDMall.Resources.Action.Edit</button>
+                        <button v-show="!r.IsDeleted" v-on:click="remove(r.Id)" class="btn btn-default" v-bind:disabled="status!==''">@BDMall.Resources.Action.Delete</button>
+                        <button v-show="r.IsDeleted" v-on:click="actRemove(r.Id)" class="btn btn-default" v-bind:disabled="status!==''">@BDMall.Resources.Action.PhysicalDelete</button>
+                        <button v-on:click="resetPWD(r.Id)" class="btn btn-default" v-bind:disabled="status!==''">@BDMall.Resources.Action.resetPWD</button>
+                    </td>
+                </tr>
+            </table>
+            <data-pager url="/AdminAPI/User/Search" v-bind:condition="condition" ref="pager" v-bind:pagesize="5" v-on:load="pageData"></data-pager>
+        </div>
+
+        <div class="col-lg-4">
+
+            <form id="form" class="form-horizontal" role="form">
+                <h4 v-show="model.Id==''">@BDMall.Resources.Action.CreateAccount</h4>
+                <h4 v-show="model.Id!=''">@BDMall.Resources.Action.UpdateAccount</h4>
+                <hr />
+                <div class="form-group">
+                    <label for="txtName" class="col-md-4 control-label">@BDMall.Resources.Model.Account</label>
+                    <div class="col-md-8">
+                        <input type="text" id="txtName" name="txtName" v-model="model.Account" v-bind:disabled="status===''" class="form-control" required />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="txtEmail" class="col-md-4 control-label">@BDMall.Resources.Model.Email</label>
+                    <div class="col-md-8">
+                        <input type="email" id="txtEmail" name="txtEmail" v-model="model.Email" v-bind:disabled="status===''" class="form-control" required />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="selectRole" class="col-md-4 control-label">@BDMall.Resources.Action.AssginRoles</label>
+                    <div class="col-md-8">
+                        <select id="selectRole" class="form-control" v-model="model.Roles[0].Id"
+                                :onchange="selectRole()" v-bind:disabled="status===''" required>
+                            <option value=""></option>
+                            <option v-for="r in roles" v-bind:value="r.Id" v-bind:selected="model.Roles[0].Id==r.Id">{{r.DisplayName}}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="selectMerchant" class="col-md-4 control-label">@BDMall.Resources.Label.Merchant</label>
+                    <div class="col-md-8">
+                        <select id="selectMerchant" class="form-control" v-model="model.MerchantId"
+                                v-bind:disabled="status===''" v-on:change="selectMerchant">
+                            <option value=""></option>
+                            <option v-for="r in merchants" v-bind:value="r.Id" v-bind:selected="model.MerchantId==r.Id">{{r.Text}}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" v-if="status==='edit'">
+                    <label for="txtEmail" class="col-md-4 control-label">@BDMall.Resources.Model.IsActive</label>
+                    <div class="col-md-8">
+                        <input type="checkbox" id="txtAcitve" name="txtAcitve" v-model="model.IsActive" v-bind:disabled="status===''" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-offset-4 col-md-8">
+                        <input type="hidden" id="Id" v-model="model.Id" />
+                        <input type="button" class="btn btn-primary" id="btnSave" value="@BDMall.Resources.Action.Save" v-on:click="save()" v-show="status!==''" />
+                        <input type="button" class="btn btn-default" id="btnReset" value="@BDMall.Resources.Action.Reset" v-on:click="reset()" v-show="status!==''" />
+                        <input type="button" id="btnAdd" class="btn btn-default" value="@BDMall.Resources.Action.AddNew" v-on:click="add()" v-show="status===''" />
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+    <div class="row text-right">
+        <div class="btn btn-info" onclick="clowWin();"><i class="glyphicon glyphicon glyphicon-remove"></i> @BDMall.Resources.Action.CloseTab</div>
+    </div>
+</div>
+
+@section scripts{
+
+    <script type="text/javascript">
+
+        var app = new Vue({
+            el: "#myApp",
+            data: {
+                model: { Id: WS.GuidEmpty, Account: "", Email: "", Roles: [{ Id: WS.GuidEmpty }],MerchantId:WS.GuidEmpty },
+                items: [],
+                roles: [],
+                merchants: [],
+                condition: { Account: "", IsDeleted: false, IsActive: true },
+                status: ""
+            },
+            methods: {
+                showCondition: function () {
+                    $("#toggleSearch").toggleClass("glyphicon-chevron-down");
+                    $("#toggleSearch").toggleClass("glyphicon-chevron-up");
+
+                    $(".panel-body").toggle(500);
+                },
+                getRoles: function () {
+                    WS.Get(
+                        "/AdminAPI/Role/GetRoles",
+                        { merchantId: WS.GuidEmpty },
+                        function (result) {
+                            app.roles = result;
+                        });
+                },
+                getMerchantRoles: function () {
+                    WS.Get(
+                        "/AdminAPI/Role/GetRoles",
+                        { merchantId: this.model.MerchantId },
+                        function (result) {
+                            app.roles = result;
+                        });
+                },
+                getMerchants: function () {
+                    WS.Get(
+                        "/adminapi/Dict/GetMerchantCboSrc",
+                        {},
+                        function (result) {
+                            app.merchants = result;
+                        });
+                },
+                selectMerchant: function () {
+                    if (this.model.MerchantId != "") {
+                        this.getMerchantRoles();
+                    }
+                },
+                selectRole: function () {
+
+                },
+                search: function () {
+                    app.$refs.pager.firstPage();
+                    this.status = "";
+                },
+                pageData: function (result) {
+                    if (result.Succeeded) {
+                        this.items = result.ReturnValue.Data;
+                    } else {
+                        showInfo(result.Message);
+                    }
+                },
+                add: function () {
+                    app.model = { Id: "", Account: "", Email: "", Roles: [{ Id: 0 }] };
+                    app.getRoles();
+                    app.getMerchants();
+                    this.status = "add";
+                },
+                reset: function () {
+                    app.model = { Id: "", Account: "", Email: "", Roles: [{ Id: 0 }] };
+                    // app.getRoles();
+                    //  app.getMerchants();
+                    this.status = "";
+                },
+                edit: function (id) {
+                    WS.AjaxSP({
+                        url: "/AdminApi/User/Get?id=" + id,
+                        contentType: 'application/json; charset=utf-8',
+                        type: "get",
+                        success: function (result) {
+                            if (result.Succeeded) {
+                                var data = result.ReturnValue;
+                                if (data.Roles && data.Roles.length > 0) {
+                                    app.model = data;
+                                    $.each(app.roles,
+                                        function (i, obj) {
+                                            if (obj.Id === data.Roles[0].Id) {//单角色
+                                                var roles = [];
+                                                roles.push(data.Roles[0]);
+                                                app.model.Roles = roles;
+                                                return;
+                                            }
+                                        });
+                                } else {
+                                    data.Roles = [{ Id: 0 }];
+                                    app.model = data;
+                                }
+                                app.status = "edit";
+                                if (data.MerchantId && data.MerchantId != WS.GuidEmpty) {
+                                    app.getMerchantRoles();
+                                }
+                            } else {
+                                showInfo(result.Message);
+                            }
+                        }
+                    });
+                },
+                remove: function (id) {
+                    WS.AjaxSP({
+                        url: "/AdminApi/User/Remove?id=" + id,
+                        // contentType: 'application/json; charset=utf-8',
+                        type: "get",
+                        //data: { id: id },
+                        success: function (result) {
+                            if (result.Succeeded) {
+                                app.refresh();
+                                showInfo(result.Message);
+                            } else {
+                                showWarn(result.Message);
+                            }
+                        }
+                    });
+                },
+                actRemove: function (id) {
+                    WS.AjaxSP({
+                        url: "/AdminApi/User/ActRemove",
+                        // contentType: 'application/json; charset=utf-8',
+                        type: "get",
+                        data: { id: id },
+                        success: function (result) {
+                            if (result.Succeeded) {
+                                app.refresh();
+                                showInfo(result.Message);
+                            } else {
+                                showWarn(result.Message);
+                            }
+                        }
+                    });
+                },
+                resetPWD: function (id) {
+                    WS.AjaxSP({
+                        url: "/AdminApi/User/ResetPassword",
+                        contentType: 'application/json; charset=utf-8',
+                        type: "get",
+                        data: { id: id },
+                        success: function (result) {
+                            if (result.Succeeded) {
+                                showInfo(result.Message);
+                            } else {
+                                showWarn(result.Message);
+                            }
+                        }
+                    });
+                },
+                save: function () {
+                    var validator = $("#form").validate({
+                        debug: true
+                    }).form();
+                    if (!validator) {
+                        return;
+                    }
+                    app.model.RoleIds = [];
+                    // app.model.RoleIds.push(app.model.Role.Id);
+                    // app.model.UserName = app.model.Email;
+
+                    if (app.model.Id=="") app.model.Id =WS.GuidEmpty;
+
+                    $.ajax({
+                        url: "/AdminAPI/User/Save",
+                        // contentType: 'application/json; charset=utf-8',
+                        type: "post",
+                        data: app.model
+                    }).done(function (result) {
+                        if (result.Succeeded) {
+                            app.refresh();
+                            app.model = { Id: "", Account: "", Email: "", Roles: [{ Id: 0 }] };
+                            app.status = "";
+                            showInfo(result.Message);
+                        } else {
+                            showInfo(result.Message);
+                        }
+                    });
+
+                },
+                refresh: function () {
+                    app.$refs.pager.refresh();
+                    app.selected = [];
+                    this.status = "";
+
+                }
+            },
+            mounted: function () {
+                //app.loadData();
+                this.$refs.pager.firstPage();
+                this.getRoles();
+                this.getMerchants();
+            }
+        });
+
+    </script>
+}

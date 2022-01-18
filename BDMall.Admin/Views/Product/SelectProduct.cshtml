@@ -125,14 +125,14 @@
                 ProductList: [],
                 Selected: [],
                 condition: {
-                    Language: "",
+                    Language:0,
                     Key: "",
                     KeyWordType: "",
                     ProductCode: "",
-                    Category: -1,
-                    Attribute: -1,
-                    AttributeValue: -1,
-                    PermissionLevel: "",
+                    Category: WS.GuidEmpty,
+                    Attribute: WS.GuidEmpty,
+                    AttributeValue: WS.GuidEmpty,
+                    PermissionLevel: 0,
                     OnSale: false,
                     SaleOff: false,
                     CreateDateFrom: "",
@@ -328,7 +328,6 @@
                                     var el = e.target;
                                     vm.getBigImage($(el));
                                 }, 300);
-
                             },
                             'dblclick .dialog': function (e, value, row, index) {
                                 clearTimeout(timer);
@@ -348,7 +347,10 @@
                     }, {
                         field: 'Name',
                         title: '@BDMall.Resources.Label.ProductName'
-                    }, {
+                    },{
+                        field: 'ApproveTypeString',
+                        title: '@BDMall.Resources.Label.ProductStatus',                       
+                    },{
                         field: 'CatalogName',
                         title: '@BDMall.Resources.Label.Category'
                     }],
@@ -414,7 +416,7 @@
         //});
 
         function GetProductCondition() {
-            InitNormalSelect("cboMerchant", "/adminapi/Merchant/GetMerchantCboSrc", true, null, false);
+            InitNormalSelect("cboMerchant", "/adminapi/Dict/GetMerchantCboSrc", true, null, false);
 
             WS.AjaxP("get", "/AdminAPI/Product/GetProductCondition", null, function (response) {
                 vm.ProductCondtionCache = response.ReturnValue;
