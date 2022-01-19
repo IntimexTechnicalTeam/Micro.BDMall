@@ -47,7 +47,7 @@ namespace BDMall.Domain
 
         public List<MutiLanguage> Names { get; set; }
 
-        public List<Province> Procince { get; set; }
+        public List<ProvinceDto> Procince { get; set; }
 
 
     }

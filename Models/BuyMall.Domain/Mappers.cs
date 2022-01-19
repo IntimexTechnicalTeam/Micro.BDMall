@@ -49,6 +49,13 @@ namespace Domain
 
             ConfigMap<InvTransactionDtl, InvTransactionDtlDto>();
             ConfigMap<PaymentMethodDto, PaymentMethod>();
+            ConfigMap<CountryDto, Country>();
+            ConfigMap<ProvinceDto, Province>();
+            ConfigMap<CityDto, City>();
+
+            ConfigMap<DeliveryAddressDto, DeliveryAddress>();
+            
+
             ConfigMap<RolePermission,RolePermissionDto>();
 
             ConfigMap<ShoppingCartItemDetail, ShoppingCartItemDetailDto>();

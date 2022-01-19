@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\BDMall.Resources\BDMall.Resources.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\BDMall.ECShip\BDMall.ECShip.csproj" />
     <ProjectReference Include="..\..\Infrastructure\BDMall.Runtime\BDMall.Runtime.csproj" />
     <ProjectReference Include="..\..\Infrastructure\BDMall.Utility\BDMall.Utility.csproj" />
     <ProjectReference Include="..\..\Infrastructure\Intimex.Common\Intimex.Common.csproj" />
