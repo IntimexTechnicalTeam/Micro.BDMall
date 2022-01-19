@@ -43,9 +43,10 @@ namespace BDMall.Repository
                                   UpdateDate = a.UpdateDate,                                 
                               }).Distinct().OrderBy(o => o.IsInv).ToList();
 
-            attributes.ForEach(item => {
+            attributes.ForEach(item =>
+            {
                 var attrValues = baseRepository.GetList<ProductAttrValue>(x => x.ProdAttrId == item.Id).ToList();
-                item.AttrValues = AutoMapperExt.MapTo<List<ProductAttrValueDto>>(attrValues);        
+                item.AttrValues = AutoMapperExt.MapTo<List<ProductAttrValueDto>>(attrValues);
             });
 
             return attributes;

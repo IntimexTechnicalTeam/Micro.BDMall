@@ -12,6 +12,9 @@ namespace BDMall.Domain
         public Guid Sku { get; set; }
         public Guid ProductId { get; set; }
         public string ProdCode { get; set; }
+        /// <summary>
+        /// 对应数值为ProductSku.AttrValue1
+        /// </summary>
         public Guid Attr1 { get; set; } = Guid.Empty;
 
         public Guid Attr2 { get; set; } = Guid.Empty;
@@ -41,8 +44,7 @@ namespace BDMall.Domain
         /// 购物数量
         /// </summary>
         [DataMember]
-        [Required(ErrorMessage = "购物数量必填")]
-        [MinLength(1)]
+        [Required(ErrorMessage = "购物数量必填")]     
         public int Qty { get; set; }
 
         /// <summary>

@@ -185,6 +185,7 @@ namespace BDMall.Repository
 
         public DbSet<InventoryHold> InventoryHolds { get; set; }
 
+        public DbSet<ShoppingCartItemDetail> ShoppingCartItemDetails { get; set; }
 
         public DbSet<PaymentMethod> PaymentMethods { get; set; }
 

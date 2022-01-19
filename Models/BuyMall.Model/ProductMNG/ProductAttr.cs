@@ -27,5 +27,8 @@ namespace BDMall.Model
         public bool IsInv { get; set; }
         [Column(Order = 7)]
         public Guid CatalogID { get; set; }
+        
+        [NotMapped]
+        public List<ProductAttrValue> AttrValues { get; set; }
     }
 }

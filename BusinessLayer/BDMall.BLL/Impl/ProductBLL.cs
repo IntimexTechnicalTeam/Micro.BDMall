@@ -1738,8 +1738,11 @@ namespace BDMall.BLL
                             AdditionalPrice = attrValue.Price
                         }).ToList();
 
+                        dbProductAttr.AttrValues = eachAttrValueList;
                         productAttrList.Add(dbProductAttr);
                         productAttrValueList.AddRange(eachAttrValueList);
+
+                        
                     }
 
                     baseRepository.Insert(productAttrList);

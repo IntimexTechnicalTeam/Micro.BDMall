@@ -168,7 +168,7 @@ namespace BDMall.Domain
        
         public string IconLUrl { get; set; }
 
-        public string UpdateDateString =>UpdateDate.Value.ToString("yyyy-MM-dd HH:mm:ss");
+        public string UpdateDateString =>UpdateDate.Value.ToString("yyyy-MM-dd HH:mm:ss") ?? "";
         /// <summary>
         /// 是否香港信心產品
         /// </summary>

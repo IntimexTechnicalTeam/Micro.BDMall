@@ -50,6 +50,8 @@ namespace Domain
             ConfigMap<InvTransactionDtl, InvTransactionDtlDto>();
             ConfigMap<PaymentMethodDto, PaymentMethod>();
             ConfigMap<RolePermission,RolePermissionDto>();
+
+            ConfigMap<ShoppingCartItemDetail, ShoppingCartItemDetailDto>();
         }
         void ConfigMap<TSource, TDestination>()
         {

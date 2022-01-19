@@ -1,6 +1,7 @@
 ﻿using BDMall.Domain;
 using BDMall.Enums;
 using BDMall.Model;
+using BDMall.Repository;
 using BDMall.Utility;
 using System;
 using System.Collections.Generic;
@@ -16,138 +17,45 @@ namespace BDMall.BLL
         public IDealProductQtyCacheBLL dealProductQtyCacheBLL;
         public IInventoryBLL InventoryBLL;
         public IProductBLL ProductBLL;
+        public IShoppingCartRepository ShoppingCartRepository;
+        public IAttributeBLL AttributeBLL;
+        public ICurrencyBLL CurrencyBLL;
+        public ITranslationRepository TranslationRepository;
 
         public ShoppingCartBLL(IServiceProvider services) : base(services)
         {
             dealProductQtyCacheBLL = Services.Resolve<IDealProductQtyCacheBLL>();
             InventoryBLL = Services.Resolve<IInventoryBLL>(); 
             ProductBLL = Services.Resolve<IProductBLL>();
+            ShoppingCartRepository = Services.Resolve<IShoppingCartRepository>();
+            AttributeBLL= Services.Resolve<IAttributeBLL>();
+            CurrencyBLL = Services.Resolve<ICurrencyBLL>();
+            TranslationRepository = Services.Resolve<ITranslationRepository>();
         }
 
-        public List<ShopcartItem> GetShoppingCartItem()
+        public ShopCartInfo GetShoppingCart()
         {
-            List<ShopcartItem> data = new List<ShopcartItem>();
+            var shoppingCart = new ShopCartInfo();
+            shoppingCart.Items = GetShoppingCartItem();
 
-            var query = from m in baseRepository.GetList<ShoppingCartItem>()
-                               join sku in baseRepository.GetList<ProductSku>() on m.SkuId equals sku.Id into msku
-                               from mt in msku.DefaultIfEmpty()
-                      
-                        where m.MemberId == Guid.Parse(CurrentUser.UserId) && m.IsActive && !m.IsDeleted && m.Product.Status == ProductStatus.OnSale
-                        select new
-                        {
-                            Id = m.Id,
-                            SkuId = m.SkuId,
-                            AttrValue1 = mt.AttrValue1,
-                            AttrValue2 = mt.AttrValue2,
-                            AttrValue3 = mt.AttrValue3,
-                            AttrId1 = mt.Attr1,
-                            AttrId2 = mt.Attr2,
-                            AttrId3 = mt.Attr3,
+            double taxRate = 0;
+            foreach (var item in shoppingCart.Items)
+            {
+                decimal totalPrice = (item.Qty - item.FreeQty) * (item.Product.SalePrice + item.AttrValue1.AddPrice + item.AttrValue2.AddPrice + item.AttrValue3.AddPrice);
+                shoppingCart.ItemsAmount += totalPrice;
+                shoppingCart.ItemsTaxAmount += totalPrice * (decimal)taxRate;
+                shoppingCart.TotalWeight += item.GrossWeight * item.Qty;
+            }
 
-                            ////AttrValue1Price = aap1 == null ? 0 : aap1.AdditionalPrice,
-                            ////AttrValue2Price = aap2 == null ? 0 : aap2.AdditionalPrice,
-                            ////AttrValue3Price = aap3 == null ? 0 : aap3.AdditionalPrice,
-                            
-                            //AttrValueName1 = ma == null ? Guid.Empty : ma.DescTransId,
-                            //AttrValueName2 = mb == null ? Guid.Empty : mb.DescTransId,
-                            //AttrValueName3 = mc == null ? Guid.Empty : mc.DescTransId,
+            shoppingCart.ItemsTaxAmount = PriceUtil.SystemPrice(shoppingCart.ItemsTaxAmount);
+            shoppingCart.TotalAmount = shoppingCart.ItemsAmount + shoppingCart.DeliveryCharge;
+            shoppingCart.Currency = CurrencyBLL.GetSimpleCurrency(CurrentUser.CurrencyCode);
+            shoppingCart.Qty = shoppingCart.Items.Sum(d => d.Qty);
+            shoppingCart.IsTemp = !CurrentUser.IsLogin;
 
-                            //AttrName1 = mat1 == null ? Guid.Empty : mat1.DescTransId,
-                            //AttrName2 = mat2 == null ? Guid.Empty : mat2.DescTransId,
-                            //AttrName3 = mat3 == null ? Guid.Empty : mat3.DescTransId,
-                            Qty = m.Qty,
-                            Product = new ProductSummary()
-                            {
-                                ProductId = m.Product.Id,
-                                MarkupPrice = m.Product.MarkUpPrice,
-                                SalePrice = m.Product.SalePrice + m.Product.MarkUpPrice,
-                                OriginalPrice = m.Product.OriginalPrice + m.Product.MarkUpPrice,
-                                Code = m.Product.Code,
-                                Name = m.Product.NameTransId.ToString(),
-                                IsActive = m.Product.IsActive,
-                                CatalogId = m.Product.CatalogId,
-                                CurrencyCode = m.Product.CurrencyCode,
-                                ApproveType = m.Product.Status,
-                                MerchantId = m.Product.MerchantId
-
-                            }
-                        };
-
-        //    foreach (var item in query.ToList())
-        //    {
-        //        ShopcartItem cartItem = new ShopcartItem();
-        //        cartItem.CartItemType = ShoppingCartItemType.BUYDONG;
-
-        //        item.Product.Imgs = ProductBLL.GetProductImages(item.Product.ProductId);
-        //        item.Product.Currency = CurrencyBLL.GetSimpleCurrency(item.Product.CurrencyCode);// new Model.PaymentMNG.Front.SimpleCurrency();
-
-        //        cartItem.Id = item.Id;
-        //        cartItem.SkuId = item.SkuId;
-        //        cartItem.Product = item.Product;
-        //        cartItem.Qty = item.Qty;
-
-        //        cartItem.AttrValue1 = new ProdAttValue();
-        //        cartItem.AttrValue1.Id = item.AttrValue1;
-        //        cartItem.AttrValue1.AddPrice = item.AttrValue1Price;
-        //        //cartItem.AttrValue1.Name = _translationRepository.GetTranslation(item.AttrValueName1, ReturnDataLanguage)?.Value;
-
-        //        cartItem.AttrValue2 = new ProdAttValue();
-        //        cartItem.AttrValue2.Id = item.AttrValue2;
-        //        cartItem.AttrValue2.AddPrice = item.AttrValue2Price;
-        //        //cartItem.AttrValue2.Name = _translationRepository.GetTranslation(item.AttrValueName2, ReturnDataLanguage)?.Value;
-
-        //        cartItem.AttrValue3 = new ProdAttValue();
-        //        cartItem.AttrValue3.Id = item.AttrValue3;
-        //        cartItem.AttrValue3.AddPrice = item.AttrValue3Price;
-        //        //cartItem.AttrValue3.Name = _translationRepository.GetTranslation(item.AttrValueName3, ReturnDataLanguage)?.Value;
-
-
-        //        cartItem.Attr1 = new Model.ProductMNG.Front.ProdAtt();
-        //        cartItem.Attr1.Id = item.AttrId1;
-        //        //cartItem.Attr1.Name = _translationRepository.GetTranslation(item.AttrName1, ReturnDataLanguage)?.Value;
-
-        //        cartItem.Attr2 = new Model.ProductMNG.Front.ProdAtt();
-        //        cartItem.Attr2.Id = item.AttrId2;
-        //        //cartItem.Attr2.Name = _translationRepository.GetTranslation(item.AttrName2, ReturnDataLanguage)?.Value;
-
-        //        cartItem.Attr3 = new Model.ProductMNG.Front.ProdAtt();
-        //        cartItem.Attr3.Id = item.AttrId3;
-        //        //cartItem.Attr3.Name = _translationRepository.GetTranslation(item.AttrName3, ReturnDataLanguage)?.Value;
-
-        //        cartItem.AttrList = AttributeBLL.GetInvAttributeByProductWithMapForFront(item.Product.ProductId);
-
-        //        item.Product.Name = translationRepository.GetTranslation(Guid.Parse(item.Product.Name), ReturnDataLanguage)?.Value;
-        //        item.Product.Currency = CurrencyBLL.GetSimpleCurrency(item.Product.CurrencyCode);
-
-
-
-        //        ////判斷該產品是否有promotion rule并計算rule
-        //        //var rule = _promotionRuleRepository.GetProductPromotionRule(item.Product.MerchantId, item.Product.Code);
-
-        //        ////如果規則是買一送一，則在購物車上添加贈送的數量
-        //        //if (rule != null)
-        //        //{
-        //        //    if (rule.PromotionRule == PromotionRuleType.BuySend)
-        //        //    {
-        //        //        var freeItem = GetFreeProduct(rule, cartItem);
-        //        //        if (freeItem != null)
-        //        //        {
-        //        //            cartItem.Qty += freeItem.Qty;
-        //        //            cartItem.FreeQty += freeItem.Qty;
-        //        //        }
-
-        //        //    }
-        //        //    else if (rule.PromotionRule == PromotionRuleType.GroupSale)
-        //        //    {
-        //        //        SetGroupSalePrice(rule, cartItem);
-        //        //    }
-        //        //}
-
-        //        //    data.Add(cartItem);
-        //        //}
-
-               return data;
+            return shoppingCart;
         }
+
 
         public async Task<SystemResult> AddtoCartAsync(CartItem cartItem)
         {
@@ -180,6 +88,8 @@ namespace BDMall.BLL
             if (cartItem.ProdCode.IsEmpty()) cartItem.ProdCode = product.Code;
 
             var sku = baseRepository.GetModel<ProductSku>(d => d.ProductCode == cartItem.ProdCode && d.IsActive && !d.IsDeleted && d.ProductCode == cartItem.ProdCode && d.AttrValue1 == cartItem.Attr1 && d.AttrValue2 == cartItem.Attr2 && d.AttrValue3 == cartItem.Attr3 && d.IsActive && !d.IsDeleted);
+            if (sku == null) throw new BLException("sku is empty");
+            
             cartItem.Sku = sku.Id;
 
             var existRecord = baseRepository.GetModel<ShoppingCartItem>(d => d.ProductId == cartItem.ProductId && d.SkuId == sku.Id && d.MemberId == Guid.Parse(CurrentUser.UserId) && d.IsActive && !d.IsDeleted);
@@ -203,6 +113,8 @@ namespace BDMall.BLL
                     item.Qty = cartItem.Qty;
                     item.ProductId = cartItem.ProductId;
                     baseRepository.Insert(item);
+                    CreateShoppingCartItemDetail(item);
+
                     result = InventoryBLL.InsertInventoryHold(new InventoryHold()
                     {
                         SkuId = sku.Id,
@@ -217,6 +129,7 @@ namespace BDMall.BLL
                 cartItem.AddQty = cartItem.Qty;
                 cartItem.Qty += existRecord.Qty;
                 cartItem.ProdCode = product.Code;
+ 
                 result = await CheckPurchasePermissionAsync(cartItem);
                 if (result.Succeeded)
                 {
@@ -224,6 +137,7 @@ namespace BDMall.BLL
 
                     existRecord.Qty = cartItem.Qty;
                     baseRepository.Update(existRecord);
+                    CreateShoppingCartItemDetail(existRecord);
 
                     result = InventoryBLL.InsertInventoryHold(new InventoryHold()
                     {
@@ -249,49 +163,51 @@ namespace BDMall.BLL
             SystemResult result = new SystemResult();
 
             var existRecord = baseRepository.GetModel<ShoppingCartItem>(d => d.Id == itemId);
-            if (existRecord != null)
+            if (existRecord == null) throw new BLException("itemid is empty");
+
+
+            int oldQty = existRecord.Qty;
+            CartItem cartItem = new CartItem();
+            cartItem.ProductId = existRecord.ProductId;
+            cartItem.Sku = existRecord.SkuId;
+            cartItem.Qty = qty;
+            cartItem.AddQty = qty - existRecord.Qty;//計算增量
+            existRecord.Qty = qty;
+            result = await CheckPurchasePermissionAsync(cartItem);
+            if (result.Succeeded)
             {
-                int oldQty = existRecord.Qty;
-                CartItem cartItem = new CartItem();
-                cartItem.ProductId = existRecord.ProductId;
-                cartItem.Sku = existRecord.SkuId;
-                cartItem.Qty = qty;
-                cartItem.AddQty = qty - existRecord.Qty;//計算增量
-                existRecord.Qty = qty;
-                result = await CheckPurchasePermissionAsync(cartItem);
-                if (result.Succeeded)
+                UnitOfWork.IsUnitSubmit = true;
+
+                baseRepository.Update(existRecord);
+
+                if (qty > 0)
                 {
-                    UnitOfWork.IsUnitSubmit = true;
-
-                    baseRepository.Update(existRecord);
-
-                    if (qty > 0)
+                    var holdRes = InventoryBLL.InsertInventoryHold(new InventoryHold()
                     {
-                        var holdRes = InventoryBLL.InsertInventoryHold(new InventoryHold()
-                        {
-                            SkuId = cartItem.Sku,
-                            MemberId = Guid.Parse(CurrentUser.UserId),
-                            Qty = cartItem.Qty,
-                        });
-                    }
-                    else
+                        SkuId = cartItem.Sku,
+                        MemberId = Guid.Parse(CurrentUser.UserId),
+                        Qty = cartItem.Qty,
+                    });
+                }
+                else
+                {
+                    var holdRes = InventoryBLL.DeleteInventoryHold(new InventoryHold()
                     {
-                        var holdRes = InventoryBLL.DeleteInventoryHold(new InventoryHold()
-                        {
-                            SkuId = existRecord.SkuId,
-                            MemberId = existRecord.MemberId,
-                        });
-                    }
+                        SkuId = existRecord.SkuId,
+                        MemberId = existRecord.MemberId,
+                    });
+                }
 
-                    UnitOfWork.Submit();
+                CreateShoppingCartItemDetail(existRecord);
 
-                    result.Succeeded = true;
-                    result.Message = BDMall.Resources.Message.UpdateSuccess;
+                UnitOfWork.Submit();
 
-                    if (result.Succeeded && qty > 0)
-                    {
-                        await this.dealProductQtyCacheBLL.UpdateQtyWhenModifyCart(existRecord.SkuId, qty, oldQty);
-                    }
+                result.Succeeded = true;
+                result.Message = BDMall.Resources.Message.UpdateSuccess;
+
+                if (result.Succeeded && qty > 0)
+                {
+                    await this.dealProductQtyCacheBLL.UpdateQtyWhenModifyCart(existRecord.SkuId, qty, oldQty);
                 }
             }
 
@@ -427,6 +343,97 @@ namespace BDMall.BLL
             #endregion
 
             return result;
+        }
+        
+        /// <summary>
+        /// 创建购物车明细数据
+        /// </summary>
+        /// <param name="item"></param>
+        private void CreateShoppingCartItemDetail(ShoppingCartItem item)
+        { 
+            var detail = ShoppingCartRepository.GetItemDetail(item);
+            var deleteDetails = baseRepository.GetList<ShoppingCartItemDetail>(x=>x.ShoppingCartItemId== item.Id).ToList();
+
+            var dbDetails = AutoMapperExt.MapTo<ShoppingCartItemDetail>(detail);
+
+            dbDetails.Id = Guid.NewGuid();
+            dbDetails.CreateDate = DateTime.Now;
+            dbDetails.IsActive = true;
+            dbDetails.IsDeleted = false;
+            dbDetails.ShoppingCartItemId = item.Id;
+            dbDetails.Qty = item.Qty;
+            dbDetails.MemberId = item.MemberId;         
+            dbDetails.SkuId = item.SkuId;
+            dbDetails.ProductId = item.ProductId; 
+
+            baseRepository.Delete(deleteDetails);
+            baseRepository.Insert(dbDetails);           
+        }
+
+        private List<ShopcartItem> GetShoppingCartItem()
+        {           
+            var query = baseRepository.GetList<ShoppingCartItemDetail>(x => x.MemberId == Guid.Parse(CurrentUser.UserId))
+                            .Select(item => new ShopcartItem
+                            {
+                                Id = item.Id,
+                                SkuId = item.SkuId,
+                                CartItemType = ShoppingCartItemType.BUYDONG,
+                                AttrValue1 = new ProdAttValue { Id = item.AttrValue1, AddPrice = item.AttrValue1Price },
+                                AttrValue2 = new ProdAttValue { Id = item.AttrValue2, AddPrice = item.AttrValue2Price },
+                                AttrValue3 = new ProdAttValue { Id = item.AttrValue3, AddPrice = item.AttrValue3Price },
+                                Attr1 = new ProdAtt { Id = item.AttrId1 },
+                                Attr2 = new ProdAtt { Id = item.AttrId2 },
+                                Attr3 = new ProdAtt { Id = item.AttrId3 },
+                                Qty = item.Qty,
+                                Product = new ProductSummary()
+                                {
+                                    ProductId = item.ProductId,
+                                    Code = item.ProductCode,
+                                    MerchantId = item.MerchantId,
+                                    
+                                }
+                            }).ToList();
+
+            foreach (var item in query)
+            {
+                var product = baseRepository.GetModelById<Product>(item.Product.ProductId);
+
+                item.AttrList = AttributeBLL.GetInvAttributeByProductWithMapForFront(item.Product.ProductId);
+                item.Product.Name = TranslationRepository.GetDescForLang(product.NameTransId, CurrentUser.Lang);
+                item.Product.Currency = CurrencyBLL.GetSimpleCurrency(product.CurrencyCode);
+                item.Product.Imgs = ProductBLL.GetProductImages(item.Product.ProductId);
+                item.Product.MarkupPrice = product.MarkUpPrice;
+                item.Product.SalePrice = product.SalePrice + product.MarkUpPrice;
+                item.Product.OriginalPrice = product.OriginalPrice + product.MarkUpPrice;
+                item.Product.CatalogId = product.CatalogId;
+                item.Product.ApproveType = product.Status;
+                item.Product.CreateDate = product.CreateDate;
+                item.Product.UpdateDate = product.UpdateDate;
+            }
+
+            ////判斷該產品是否有promotion rule并計算rule
+            //var rule = _promotionRuleRepository.GetProductPromotionRule(item.Product.MerchantId, item.Product.Code);
+
+            ////如果規則是買一送一，則在購物車上添加贈送的數量
+            //if (rule != null)
+            //{
+            //    if (rule.PromotionRule == PromotionRuleType.BuySend)
+            //    {
+            //        var freeItem = GetFreeProduct(rule, cartItem);
+            //        if (freeItem != null)
+            //        {
+            //            cartItem.Qty += freeItem.Qty;
+            //            cartItem.FreeQty += freeItem.Qty;
+            //        }
+
+            //    }
+            //    else if (rule.PromotionRule == PromotionRuleType.GroupSale)
+            //    {
+            //        SetGroupSalePrice(rule, cartItem);
+            //    }
+            //}
+
+            return query;
         }
     }
 }

@@ -48,5 +48,7 @@ namespace BDMall.BLL
         ProductAttributeDto GetProductAttribute(Guid attrId, Language lang);
 
         InvAttributeLst GetInvAttributeItemsByCatID(Guid catID);
+
+        List<ProdAtt> GetInvAttributeByProductWithMapForFront(Guid prodId);
     }
 }

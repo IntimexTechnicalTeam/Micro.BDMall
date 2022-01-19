@@ -454,6 +454,55 @@ namespace BDMall.BLL
             return inven;
         }
 
+        public List<ProdAtt> GetInvAttributeByProductWithMapForFront(Guid prodId)
+        {
+            List<ProdAtt> list = new List<ProdAtt>();
+
+            var mapAttrs = productAttrRepository.GetAttributeItemsMappByProductId(prodId).Where(p => p.IsInv == true).OrderBy(o => o.Seq).ToList();
+            var dbAttrs = attributeRepository.GetAttributeItemsByProductId(prodId).Where(p => p.IsInvAttribute == true).ToList();
+
+            if (dbAttrs?.Any() ?? false)
+            {
+                var attrs = AutoMapperExt.MapTo<List<ProductAttributeDto>>(dbAttrs);
+                foreach (var item in mapAttrs)
+                {
+                    var attr = attrs.FirstOrDefault(p => p.Id == item.AttrId);
+                    if (attr != null)
+                    {
+                        var modelAttr = GenProductAttribute(attr);
+                        ProdAtt obj = new ProdAtt();
+                        obj.Id = modelAttr.Id;
+                        obj.Name = modelAttr.Desc;
+                        obj.Values = new List<ProdAttValue>();
+                        obj.Layout = modelAttr.Layout;
+                        obj.Seq = item.Seq;
+                        foreach (var attrValue in modelAttr.AttributeValues)
+                        {
+                            var mapAttrValue = item.AttrValues.FirstOrDefault(p => p.AttrValueId == attrValue.Id);
+                            if (mapAttrValue != null)
+                            {
+                                obj.Values.Add(new ProdAttValue
+                                {
+                                    Id = attrValue.Id,
+                                    Name = attrValue.Desc,
+                                    Image = attrValue.Image,
+                                    //Image = attrValue.Image,
+                                    AddPrice = mapAttrValue.AdditionalPrice// TODO
+                                });
+                            }
+                        }
+
+                        if (obj.Values.Count() > 0)//沒有屬性值，不顯示屬性
+                        {
+                            list.Add(obj);
+                        }
+                    }
+                }
+            }
+
+            return list;
+        }
+
         private ProductAttributeValueDto GenProductAttrValue(ProductAttributeValueDto attributeValue)
         {
             attributeValue.Descs = translationRepository.GetMutiLanguage(attributeValue.DescTransId);

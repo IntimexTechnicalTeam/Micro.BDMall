@@ -12,20 +12,20 @@ namespace BDMall.Domain
         public ProductSummary Product { get; set; }
 
 
-        public ProductAttrValueDto AttrValue1 { get; set; }
+        public ProdAttValue AttrValue1 { get; set; }
 
-        public ProductAttrValueDto AttrValue2 { get; set; }
+        public ProdAttValue AttrValue2 { get; set; }
 
-        public ProductAttrValueDto AttrValue3 { get; set; }
+        public ProdAttValue AttrValue3 { get; set; }
 
         public Guid SkuId { get; set; }
 
 
-        public ProductAttrDto Attr1 { get; set; }
+        public ProdAtt Attr1 { get; set; }
 
-        public ProductAttrDto Attr2 { get; set; }
+        public ProdAtt Attr2 { get; set; }
 
-        public ProductAttrDto Attr3 { get; set; }
+        public ProdAtt Attr3 { get; set; }
 
         public int Qty { get; set; }
 
@@ -37,7 +37,7 @@ namespace BDMall.Domain
             {
                 decimal result = 0;
                 //result = Product.SalePrice * (Qty - FreeQty) - GroupSaleDiscountPrice;
-                result = (Product.SalePrice + AttrValue1.AdditionalPrice + AttrValue2.AdditionalPrice + AttrValue3.AdditionalPrice) * (Qty - FreeQty);// - GroupSaleDiscountPrice;
+                result = (Product.SalePrice + AttrValue1.AddPrice + AttrValue2.AddPrice + AttrValue3.AddPrice) * (Qty - FreeQty);// - GroupSaleDiscountPrice;
                 return result;
             }
             set { }
@@ -69,20 +69,20 @@ namespace BDMall.Domain
         /// </summary>
         public Guid RuleId { get; set; }
 
-        ///// <summary>
-        ///// 在用的推廣優惠信息
-        ///// </summary>
-        //public PromotionRuleView InUsePromotionRule { get; set; }
+        /// <summary>
+        /// 在用的推廣優惠信息
+        /// </summary>
+        ////public PromotionRuleView InUsePromotionRule { get; set; }
 
         /// <summary>
         /// 是否贈品
         /// </summary>
         public bool IsFree { get; set; }
 
-        ///// <summary>
-        ///// 規則類型
-        ///// </summary>
-        //public PromotionRuleType RuleType { get; set; }
+        /// <summary>
+        /// 規則類型
+        /// </summary>
+        ///public PromotionRuleType RuleType { get; set; }
 
         //public int SaleQuota { get; set; }
 
@@ -99,7 +99,8 @@ namespace BDMall.Domain
         /// <summary>
         /// 产品属性列表
         /// </summary>        
-        public List<ProductAttrDto> AttrList { get; set; }
+        public List<ProdAtt> AttrList { get; set; }
 
     }
 }
+
