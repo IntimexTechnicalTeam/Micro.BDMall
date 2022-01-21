@@ -13,5 +13,9 @@ namespace BDMall.BLL
         PageData<OrderSummaryView> GetSimpleOrders(OrderCondition cond);
 
         OrderInfoView GetOrder(Guid orderId);
+
+        Task<SystemResult> BuildOrder(NewOrder checkout);
+
+        Task<SystemResult> UpdateOrderStatus(UpdateStatusCondition cond);
     }
 }

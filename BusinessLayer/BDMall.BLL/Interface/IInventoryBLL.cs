@@ -49,6 +49,24 @@ namespace BDMall.BLL
 
         SystemResult DeleteInventoryHold(InventoryHold delRec);
 
-        decimal GetTotAvailableInvQty(InventoryReserved uniqueProp);
+        decimal GetTotAvailableInvQty(InventoryReservedDto uniqueProp);
+
+        SystemResult AddInvReserved(InventoryReservedDto reserve, Guid memberId);
+
+        SystemResult IsExsitInventoryHold(InventoryHold curRec);
+
+        /// <summary>
+        /// 使用預留記錄扣除庫存數量
+        /// </summary>
+        /// <param name="reserve"></param>
+        /// <returns></returns>
+        SystemResult DeductInvQtyWithReserve(InventoryReservedDto reserve);
+
+        /// <summary>
+        /// 取消庫存預留
+        /// </summary>
+        /// <param name="reserve"></param>
+        /// <returns></returns>
+        SystemResult CancelInvReserved(InventoryReservedDto reserve);
     }
 }

@@ -22,7 +22,7 @@ namespace BDMall.BLL
 
         string GetDefaultCurrencyCode();
 
-        //SimpleCurrency GetDefaultCurrency();
+        SimpleCurrency GetDefaultCurrency();
 
         /// <summary>
         /// 獲取貨幣列表

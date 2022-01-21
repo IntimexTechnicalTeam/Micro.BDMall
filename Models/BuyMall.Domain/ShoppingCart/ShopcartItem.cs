@@ -82,7 +82,7 @@ namespace BDMall.Domain
         /// <summary>
         /// 規則類型
         /// </summary>
-        ///public PromotionRuleType RuleType { get; set; }
+        public PromotionRuleType RuleType { get; set; }
 
         //public int SaleQuota { get; set; }
 

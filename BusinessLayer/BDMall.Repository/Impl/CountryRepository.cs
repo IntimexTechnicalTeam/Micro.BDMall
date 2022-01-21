@@ -1,4 +1,5 @@
-﻿using BDMall.Enums;
+﻿using BDMall.Domain;
+using BDMall.Enums;
 using BDMall.Model;
 using BDMall.Utility;
 using Intimex.Common;
@@ -7,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Web.Framework;
 
 namespace BDMall.Repository
 {
@@ -18,13 +20,15 @@ namespace BDMall.Repository
 
         public List<KeyValue> GetList(Language lang)
         {         
-            var lists = baseRepository.GetList<Country>(x => !x.IsDeleted).ToList();
-            List<KeyValue> list = lists.Select(d => new KeyValue
+            var dbList = baseRepository.GetList<Country>(x => !x.IsDeleted).ToList();
+            var list = AutoMapperExt.MapTo < List<CountryDto>>(dbList);
+
+            var data = list.Select(d => new KeyValue
             {
                 Id = d.Id.ToString(),
                 Text = NameUtil.GetCountryName(lang.ToString(), d),
             }).ToList();
-            return list;
+            return data;
         }
     }
 }

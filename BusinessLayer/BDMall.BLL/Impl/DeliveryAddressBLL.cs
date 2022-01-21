@@ -124,7 +124,8 @@ namespace BDMall.BLL
             if (CountryList == null)
             {
                 CountryList = baseRepository.GetList<Country>().Where(d => d.IsActive == true && d.IsDeleted == false).OrderBy(o => o.Seq).ThenBy(t => t.Code).ToList();
-                foreach (var item in CountryList)
+                var model = AutoMapperExt.MapTo <List<CountryDto>>(CountryList);
+                foreach (var item in model)
                 {
                     item.Name = NameUtil.GetCountryName(CurrentUser.Lang.ToString(), item);
                 }

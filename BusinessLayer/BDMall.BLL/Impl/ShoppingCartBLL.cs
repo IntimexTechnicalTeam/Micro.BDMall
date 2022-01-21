@@ -21,6 +21,7 @@ namespace BDMall.BLL
         public IAttributeBLL AttributeBLL;
         public ICurrencyBLL CurrencyBLL;
         public ITranslationRepository TranslationRepository;
+        public IPromotionRuleRepository PromotionRuleRepository;
 
         public ShoppingCartBLL(IServiceProvider services) : base(services)
         {
@@ -31,6 +32,7 @@ namespace BDMall.BLL
             AttributeBLL= Services.Resolve<IAttributeBLL>();
             CurrencyBLL = Services.Resolve<ICurrencyBLL>();
             TranslationRepository = Services.Resolve<ITranslationRepository>();
+            PromotionRuleRepository = Services.Resolve<IPromotionRuleRepository>();
         }
 
         public ShopCartInfo GetShoppingCart()
@@ -316,7 +318,7 @@ namespace BDMall.BLL
                 return result;
             }
 
-            InventoryReserved invSku = new InventoryReserved();
+            var invSku = new InventoryReservedDto();
             invSku.Sku = item.Sku;
 
             var totalAvailable = InventoryBLL.GetTotAvailableInvQty(invSku);
@@ -409,31 +411,81 @@ namespace BDMall.BLL
                 item.Product.ApproveType = product.Status;
                 item.Product.CreateDate = product.CreateDate;
                 item.Product.UpdateDate = product.UpdateDate;
+
+                GenPromotionRule(item);
             }
 
-            ////判斷該產品是否有promotion rule并計算rule
-            //var rule = _promotionRuleRepository.GetProductPromotionRule(item.Product.MerchantId, item.Product.Code);
-
-            ////如果規則是買一送一，則在購物車上添加贈送的數量
-            //if (rule != null)
-            //{
-            //    if (rule.PromotionRule == PromotionRuleType.BuySend)
-            //    {
-            //        var freeItem = GetFreeProduct(rule, cartItem);
-            //        if (freeItem != null)
-            //        {
-            //            cartItem.Qty += freeItem.Qty;
-            //            cartItem.FreeQty += freeItem.Qty;
-            //        }
-
-            //    }
-            //    else if (rule.PromotionRule == PromotionRuleType.GroupSale)
-            //    {
-            //        SetGroupSalePrice(rule, cartItem);
-            //    }
-            //}
-
+          
             return query;
+        }
+
+        private void GenPromotionRule(ShopcartItem cartItem)
+        {
+            //判斷該產品是否有promotion rule并計算rule
+            var rule = PromotionRuleRepository.GetProductPromotionRule(cartItem.Product.MerchantId, cartItem.Product.Code);
+
+            //如果規則是買一送一，則在購物車上添加贈送的數量
+            if (rule != null)
+            {
+                if (rule.PromotionRule == PromotionRuleType.BuySend)
+                {
+                    var freeItem = GetFreeProduct(rule, cartItem);
+                    if (freeItem != null)
+                    {
+                        cartItem.Qty += freeItem.Qty;
+                        cartItem.FreeQty += freeItem.Qty;
+                    }
+                }
+                else if (rule.PromotionRule == PromotionRuleType.GroupSale)
+                {
+                    SetGroupSalePrice(rule, cartItem);
+                }
+            }
+        }
+
+        public ShopcartItem GetFreeProduct(PromotionRuleView rule, ShopcartItem cartItem)
+        {
+            ShopcartItem freeItem = new ShopcartItem();
+            decimal setQty = Math.Floor(cartItem.Qty / rule.X);
+
+            if (setQty >= 1)
+            {
+                ClassUtility.CopyValue(freeItem, cartItem);
+                freeItem.Qty = (int)setQty * (int)rule.Y;
+                freeItem.IsFree = true;
+                freeItem.RuleId = Guid.Empty;
+                ProductSummary product = new ProductSummary();
+                ClassUtility.CopyValue(product, cartItem.Product);
+                product.SalePrice = 0;
+                product.SalePrice2 = 0;
+                //product.IconRType = ProductType.FreeR;
+                product.IconRUrl = PathUtil.GetProductIconUrl(product.IconRType,CurrentUser.Lang);
+                //product.IconLType = ProductType.FreeL;
+                product.IconLUrl = PathUtil.GetProductIconUrl(product.IconLType,CurrentUser.Lang);
+                freeItem.Product = product;
+                return freeItem;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public void SetGroupSalePrice(PromotionRuleView rule, ShopcartItem cartItem)
+        {
+
+            decimal setQty = Math.Floor(cartItem.Qty / rule.X);
+
+            if (setQty >= 1)
+            {
+                cartItem.RuleId = rule.Id;
+                cartItem.RuleType = PromotionRuleType.GroupSale;
+                cartItem.GroupSaleDiscountPrice = Math.Round((setQty * rule.X * cartItem.Product.SalePrice) - (setQty * rule.Y), 2);
+
+                //var a = (setQty * rule.Y) + ((cartItem.Qty - (setQty * rule.X)) * cartItem.Product.SalePrice);
+                cartItem.SingleDiscountPrice = Math.Round(cartItem.GroupSaleDiscountPrice / cartItem.Qty, 2);
+            }
+
         }
     }
 }

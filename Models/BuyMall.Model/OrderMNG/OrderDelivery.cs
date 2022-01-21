@@ -297,6 +297,12 @@ namespace BDMall.Model
         [Column(TypeName = "nvarchar")]
         public string Remark { get; set; }
 
+        /// <summary>
+        /// 货品明细
+        /// </summary>
+        [NotMapped]
+        public List<OrderDeliveryDetail> DeliveryDetails { get; set; } = new List<OrderDeliveryDetail>();
+
         [ForeignKey("OrderId")]
         public virtual Order Order { get; set; }
     }
