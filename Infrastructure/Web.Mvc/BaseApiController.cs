@@ -163,7 +163,6 @@ namespace Web.Mvc
                 _currentUser.Lang = (Language)Enum.Parse(typeof(Language), payload["Lang"]);
                 _currentUser.LoginType = (LoginType)Enum.Parse(typeof(LoginType), payload["LoginType"]);
                 _currentUser.Email = payload["Email"];
-
                 _currentUser.IsLogin = bool.Parse(payload["IsLogin"]);
 
                 //admin,商家和第三方商家

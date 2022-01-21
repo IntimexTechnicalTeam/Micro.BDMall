@@ -36,6 +36,7 @@ namespace Web.Jwt
             claimList.Add(new Claim("Account", "AnonymousUser"));
             claimList.Add(new Claim("IsLogin", "false"));
             claimList.Add(new Claim("LoginType", $"{ LoginType.TempUser}"));
+            claimList.Add(new Claim("Email", ""));
             string ticket = CreateToken(claimList);
             return ticket;
         }
@@ -114,6 +115,8 @@ namespace Web.Jwt
             claimList.Add(new Claim("CurrencyCode", !CurrencyCode.IsEmpty() ? CurrencyCode : payload["CurrencyCode"]));
             claimList.Add(new Claim("Account", payload["Account"]));
             claimList.Add(new Claim("LoginType", payload["LoginType"]));
+            claimList.Add(new Claim("IsLogin", payload["IsLogin"]));
+            claimList.Add(new Claim("Email", payload["Email"]));
 
             string ticket = CreateToken(claimList);
             return ticket;

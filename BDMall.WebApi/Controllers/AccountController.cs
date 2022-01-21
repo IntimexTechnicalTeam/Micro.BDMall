@@ -22,7 +22,7 @@ namespace BDMall.WebApi.Controllers
         IJwtToken jwtToken;
 
         public AccountController(IComponentContext service) : base(service)
-        { 
+        {
             jwtToken = this.Services.Resolve<IJwtToken>();
             memberBLL = this.Services.Resolve<IMemberBLL>();
         }
@@ -43,13 +43,14 @@ namespace BDMall.WebApi.Controllers
             {
                 var userInfo = result.ReturnValue as MemberDto;
 
-                var claimList = new List<Claim>() {  };
-                claimList.Add(new Claim("UserId",userInfo.Id.ToString()));
+                var claimList = new List<Claim>() { };
+                claimList.Add(new Claim("UserId", userInfo.Id.ToString()));
                 claimList.Add(new Claim("Lang", userInfo.Language.ToString()));
-                claimList.Add(new Claim("CurrencyCode",userInfo.CurrencyCode));
+                claimList.Add(new Claim("CurrencyCode", userInfo.CurrencyCode));
                 claimList.Add(new Claim("Account", userInfo.Account));
                 claimList.Add(new Claim("IsLogin", "true"));
                 claimList.Add(new Claim("LoginType", $"{ LoginType.Member }"));
+                claimList.Add(new Claim("Email", userInfo.Email));
                 string ticket = jwtToken.CreateToken(claimList);
 
                 result.Succeeded = true;
@@ -98,7 +99,7 @@ namespace BDMall.WebApi.Controllers
         public async Task<SystemResult> ChangeCurrencyCode(string CurrencyCode)
         {
             var result = new SystemResult() { Succeeded = true };
-            result.ReturnValue =await memberBLL.ChangeCurrencyCode(CurrentUser, CurrencyCode);          
+            result.ReturnValue = await memberBLL.ChangeCurrencyCode(CurrentUser, CurrencyCode);
             return result;
         }
 
