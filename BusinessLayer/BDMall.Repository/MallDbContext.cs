@@ -3,7 +3,6 @@ using System;
 using System.Linq;
 using System.Reflection;
 using BDMall.Model;
-using BDMall.Model.SystemMNG;
 using Microsoft.EntityFrameworkCore;
 
 namespace BDMall.Repository
@@ -135,6 +134,7 @@ namespace BDMall.Repository
         public DbSet<RnpSubmitData> RnpSubmitDatas { get; set; }
 
         public DbSet<Inventory> Inventories { get; set; }
+        public DbSet<InventoryChangeNotify> InventoryChangeNotifies { get; set; }
 
         public DbSet<ProductAttrValue> ProductAttrValues { get; set; }
 
@@ -154,6 +154,8 @@ namespace BDMall.Repository
 
         public DbSet<ProductSpecification> ProductSpecifications { get; set; }
 
+        public DbSet<ProductPriceHour> ProductPriceHours { get; set; }
+
         public DbSet<MerchantFreeCharge> MerchantFreeCharges { get; set; }
 
         public DbSet<ProductImage> ProductImages { get; set; }
@@ -166,6 +168,8 @@ namespace BDMall.Repository
 
         public DbSet<OrderDelivery> OrderDeliveries { get; set; }
         public DbSet<OrderDeliveryDetail> OrderDeliveryDetails { get; set; }
+
+        public DbSet<OrderPriceDetail> OrderPriceDetails { get; set; }
 
         public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
         public DbSet<PurchaseOrderDetail> PurchaseOrderDetails { get; set; }
@@ -199,6 +203,21 @@ namespace BDMall.Repository
 
         public DbSet<City> Cities { get; set; }
         public DbSet<DeliveryAddress> DeliveryAddresses { get; set; }
-        
+
+        public DbSet<Coupon> Coupons { get; set; }
+        public DbSet<PromotionRule> PromotionRules { get; set;}
+        public  DbSet<PromotionRuleProduct> PromotionRuleProducts { get; set; }
+
+        public DbSet<MemberGroupDiscount> MemberGroupDiscounts { get; set; }
+
+        public DbSet<MemberGroupDiscountItem> MemberGroupDiscountItems { get; set; }    
+
+        public DbSet<FunHistory> FunHistories { get; set; }
+
+        public DbSet<OrderStatusHistory> OrderStatusHistories { get; set; } 
+
+        public DbSet<SubOrderStatusHistory> SubOrderStatusHistories { get; set; }
+
+        public DbSet<MerchantSalesStatistic> MerchantSalesStatistics { get; set; }
     }
 }

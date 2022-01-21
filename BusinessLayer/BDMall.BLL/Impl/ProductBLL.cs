@@ -322,6 +322,8 @@ namespace BDMall.BLL
             product.MerchantId = dbProduct.MerchantId;
             InsertOrUpdateFreeChargeProduct(product);
 
+
+
             UnitOfWork.Submit();
 
             var dto = AutoMapperExt.MapTo<ProductDto>(dbProduct);
@@ -737,6 +739,41 @@ namespace BDMall.BLL
 
         }
 
+
+        public bool CheckProductIsExists(string code)
+        {
+            var flag = baseRepository.Any<Product>(x => x.Code == code && x.IsActive && !x.IsDeleted);
+            return flag;
+        }
+
+        public ProductSummary GetProductSummary(Guid id, Guid skuId)
+        {
+            var product = baseRepository.GetModelById<Product>(id);
+            if (product == null) return null;
+            var result = GenProductSummary(product, skuId);
+            return result;
+        }
+
+        /// <summary>
+        /// 获取SaleQty<0的数据
+        /// </summary>
+        /// <returns></returns>
+        public async Task<List<string>> GetSelloutSkus()
+        {
+            string SalesQtyKey = $"{CacheKey.SalesQty}";
+            //优先读缓存
+            var cacheData = await RedisHelper.ZRangeByScoreAsync(SalesQtyKey, "-inf", "0");   //取小于等于0           
+            if (cacheData?.Any() ?? false)
+            {
+                var query = from q in UnitOfWork.DataContext.ProductSkus
+                            join s in UnitOfWork.DataContext.ProductQties on q.Id equals s.SkuId into qss
+                            from qs in qss.DefaultIfEmpty()
+                            where qs == null || (q.IsActive && q.IsDeleted == false && qs.SalesQty <= 0)
+                            select q.Id;
+                cacheData = query.Select(d => d.ToString()).ToArray();
+            }
+            return cacheData.ToList();
+        }
 
         /// <summary>
         /// 整合产品浏览（日，周，月）
@@ -1189,40 +1226,6 @@ namespace BDMall.BLL
             return sysRslt;
         }
 
-        public bool CheckProductIsExists(string code)
-        {
-            var flag = baseRepository.Any<Product>(x => x.Code == code && x.IsActive && !x.IsDeleted);
-            return flag;
-        }
-
-        public ProductSummary GetProductSummary(Guid id, Guid skuId)
-        {        
-            var product = baseRepository.GetModelById<Product>(id);
-            if (product == null)    return null; 
-            var result = GenProductSummary(product, skuId);
-            return result;
-        }
-
-        /// <summary>
-        /// 获取SaleQty<0的数据
-        /// </summary>
-        /// <returns></returns>
-        public async Task<List<string>> GetSelloutSkus()
-        {
-            string SalesQtyKey = $"{CacheKey.SalesQty}";
-            //优先读缓存
-            var cacheData =  await RedisHelper.ZRangeByScoreAsync(SalesQtyKey, "-inf", "0");   //取小于等于0           
-            if (cacheData?.Any() ?? false)
-            {
-                var query = from q in UnitOfWork.DataContext.ProductSkus
-                            join s in UnitOfWork.DataContext.ProductQties on q.Id equals s.SkuId into qss
-                            from qs in qss.DefaultIfEmpty()
-                            where qs == null || (q.IsActive && q.IsDeleted == false && qs.SalesQty <= 0)
-                            select q.Id;
-                cacheData = query.Select(d => d.ToString()).ToArray();
-            }
-            return cacheData.ToList();
-        }
 
         private Product GenProduct(Product dbProduct, ProductEditModel viewProduct)
         {
@@ -1465,6 +1468,156 @@ namespace BDMall.BLL
                 //dbProduct.IngredientTransId = _translationRepository.UpdateMutiLanguage(product.IngredientTransId, product.Ingredient, TranslationType.Product);
                 //dbProduct.InstructionsTransId = _translationRepository.UpdateMutiLanguage(product.InstructionsTransId, product.Instructions, TranslationType.Product);
             }
+        }
+
+        public ProductSummary GenProductSummary(Product product)
+        {
+            return GenProductSummary(product, Guid.Empty);
+        }
+
+        public ProductSummary GenProductSummary(Product product, Guid skuId)
+        {
+            ProductSummary summary = AutoMapperExt.MapTo<ProductSummary>(product);
+            var statistic = baseRepository.GetModel<ProductStatistics>(x => x.Code == product.Code);
+            var catalogs = baseRepository.GetModelById<ProductCatalog>(product.CatalogId);
+            var mchInfo = baseRepository.GetModelById<Merchant>(product.MerchantId);
+            var prodSepcification = baseRepository.GetModel<ProductSpecification>(x => x.Id == product.Id);
+            var prodExtension = baseRepository.GetModel<ProductExtension>(x => x.Id == product.Id);
+
+            summary.CatalogPath = "";
+            summary.CatalogName = translationRepository.GetDescForLang((catalogs?.NameTransId ?? Guid.Empty), CurrentUser.Lang);
+            summary.Code = product.Code;
+            summary.Currency = currencyBLL.GetSimpleCurrency(product.CurrencyCode);
+            summary.Imgs = GetProductImages(product.Id);
+            summary.Name = translationRepository.GetDescForLang(product.NameTransId, CurrentUser.Lang);
+            summary.Introduction = translationRepository.GetDescForLang(product.IntroductionTransId, CurrentUser.Lang);
+            summary.OriginalPrice = product.OriginalPrice + product.MarkUpPrice;
+            summary.SalePrice = product.SalePrice + product.MarkUpPrice;
+            summary.ProductId = product.Id;
+            summary.ApproveType = product.Status;
+            summary.MerchantNo = mchInfo?.MerchNo ?? string.Empty;
+            summary.MerchantNameId = mchInfo.NameTransId;
+            summary.MerchantName = translationRepository.GetDescForLang(mchInfo.NameTransId, CurrentUser.Lang);
+            summary.IsGS1 = MerchantType.GS1 == mchInfo?.MerchantType ? true : false;
+            summary.PurchaseCounter = statistic == null ? 0 : statistic.PurchaseCounter;
+            summary.VisitCounter = statistic == null ? 0 : statistic.VisitCounter;
+
+            summary.Score = statistic == null ? 0M : NumberUtil.ConvertToRounded(statistic.Score);
+            if (summary.Score < 1)
+            {
+                summary.Score = 0;
+            }
+            summary.WeightUnit = prodSepcification?.WeightUnit ?? 0;
+            summary.GrossWeight = prodSepcification?.GrossWeight ?? 0;
+            summary.IconType = prodExtension?.ProductType ?? ProductType.Basic;
+            summary.IconRType = prodExtension?.ProductType;
+            summary.IconType = prodExtension?.ProductType ?? ProductType.Basic;
+            summary.IsLimit = prodExtension?.IsLimit ?? false;
+
+
+
+            //var addPrices = new List<ProductAtrtValueModel>();
+            //if (skuId != Guid.Empty)
+            //{
+            //    #region 生成產品屬性
+
+            //    var productInvAttrs = product.Attrs.Where(p => p.IsInv == true).OrderBy(o => o.Seq).ToList();
+
+            //    var skuInfo = _productSkuRepository.GetByKey(skuId);
+
+            //    //var skuAttrValues1 = productInvAttrs.FirstOrDefault(p => p.AttrId == skuInfo.Attr1)?.AttrValues;
+            //    //var skuAttrValues2 = productInvAttrs.FirstOrDefault(p => p.AttrId == skuInfo.Attr2)?.AttrValues;
+            //    //var skuAttrValues3 = productInvAttrs.FirstOrDefault(p => p.AttrId == skuInfo.Attr3)?.AttrValues;
+
+            //    // var AttrValueLst = UnitOfWork.DataContext.ProductAttrs.Where(x => x.IsInv == true && x.ProductId == product.Id)
+            //    var AttrValueLst = productInvAttrs.Join(UnitOfWork.DataContext.ProductAttrValues,
+            //                                    pa => pa.Id, pav => pav.ProdAttrId, (pa, pav) => pav).ToList();
+
+            //    var productAttrValue1 = AttrValueLst.FirstOrDefault(f => f.AttrValueId == skuInfo.AttrValue1);
+            //    var productAttrValue2 = AttrValueLst.FirstOrDefault(f => f.AttrValueId == skuInfo.AttrValue2);
+            //    var productAttrValue3 = AttrValueLst.FirstOrDefault(f => f.AttrValueId == skuInfo.AttrValue3);
+
+            //    var attribute = UnitOfWork.DataContext.ProductAttributes.AsNoTracking()
+            //                            .Where(a => a.Id == skuInfo.Attr1 || a.Id == skuInfo.Attr2 || a.Id == skuInfo.Attr3).ToList();
+
+            //    var attributeValues = UnitOfWork.DataContext.ProductAttributeValues.AsNoTracking()
+            //                           .Where(a => a.Id == skuInfo.AttrValue1 || a.Id == skuInfo.AttrValue2 || a.Id == skuInfo.AttrValue3).ToList();
+
+            //    if (productAttrValue1 != null)
+            //    {
+            //        ProductAtrtValueModel model = GenProductAtrtValueModel(productAttrValue1, skuInfo.Attr1, attribute, attributeValues);
+            //        addPrices.Add(model);
+            //    }
+            //    if (productAttrValue2 != null)
+            //    {
+            //        ProductAtrtValueModel model = GenProductAtrtValueModel(productAttrValue2, skuInfo.Attr2, attribute, attributeValues);
+            //        addPrices.Add(model);
+            //    }
+            //    if (productAttrValue3 != null)
+            //    {
+            //        ProductAtrtValueModel model = GenProductAtrtValueModel(productAttrValue3, skuInfo.Attr3, attribute, attributeValues);
+            //        addPrices.Add(model);
+            //    }
+            //}
+
+            //#endregion
+
+            //summary.AttrValues = addPrices;
+            //summary.TotalPrice = summary.SalePrice + addPrices.Sum(s => s.AddPrice);
+            //if (CurrentUser != null)
+            //{
+            //    if (CurrentUser.IsLogin)
+            //    {
+            //        var favoriteList = MemberFavoriteRepos.Entities.FirstOrDefault(d => d.MemberId == CurrentUser.Id && d.ProductCode == product.Code && d.IsActive == true && d.IsDeleted == false);
+            //        if (favoriteList != null)
+            //        {
+            //            summary.IsFavorite = true;
+            //        }
+            //    }
+
+            //    summary.IconRUrl = PathUtil.GetProductIconUrl(summary.IconRType, CurrentUser.ComeFrom, CurrentUser.Language);
+            //    if (summary.IsGS1)
+            //    {
+            //        summary.GS1Url = PathUtil.GetProductIconUrl(ProductType.GS1, CurrentUser.ComeFrom, CurrentUser.Language);
+            //    }
+            //    else
+            //    {
+            //        summary.GS1Url = PathUtil.GetProductIconUrl(ProductType.Basic, CurrentUser.ComeFrom, CurrentUser.Language);
+            //    }
+            //    if (product.DetailDescriptions?.Count > 0)
+            //    {
+            //        summary.DescriptionDetail = product.DetailDescriptions.FirstOrDefault(x => x.Lang == CurrentUser.Language)?.Value ?? string.Empty;
+            //    }
+            //    if (!IsMatchBaseCurrency(CurrentUser.Currency))
+            //    {
+            //        summary.Currency2 = CurrentUser.Currency;
+            //        summary.SalePrice2 = MoneyConversion(product.SalePrice);
+            //        summary.OriginalPrice2 = MoneyConversion(product.OriginalPrice);
+            //    }
+            //}
+
+            //summary.PromotionRuleTitle = PromotionRuleRepository.GetPromotionRuleTitle(product.Code);
+            //summary.IsSalesReturn = product.ProductExtension?.IsSalesReturn ?? false;
+
+            if (!string.IsNullOrEmpty(product.Remark))
+            {
+
+                var saleTimes = product.Remark.Trim().Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                if (saleTimes.Length >= 2)
+                {
+                    var time = DateUtil.ConvertoDateTime(saleTimes[1], "yyyy-MM-dd HH:mm:00");
+                    summary.SaleTime = time;
+                }
+                else
+                {
+                    summary.SaleTime = null;
+                }
+            }
+            else
+            {
+                summary.SaleTime = null;
+            }
+            return summary;
         }
 
         private void InsertOrUpdateProductRefuseDelivery(ProductEditModel product)
@@ -2188,156 +2341,6 @@ namespace BDMall.BLL
                     dbImagePaths.Add(new KeyValue { Id = imageItemId.ToString(), Text = relativePath + "/" + imageItemId + Path.GetExtension(defaultImage) });
                 }
             }
-        }
-
-        public ProductSummary GenProductSummary(Product product)
-        {
-            return GenProductSummary(product, Guid.Empty);
-        }
-
-        public ProductSummary GenProductSummary(Product product, Guid skuId)
-        {
-            ProductSummary summary = AutoMapperExt.MapTo<ProductSummary>(product);
-            var statistic = baseRepository.GetModel<ProductStatistics>(x => x.Code == product.Code);
-            var catalogs = baseRepository.GetModelById<ProductCatalog>(product.CatalogId);
-            var mchInfo = baseRepository.GetModelById<Merchant>(product.MerchantId);
-            var prodSepcification = baseRepository.GetModel<ProductSpecification>(x=>x.Id== product.Id);
-            var prodExtension = baseRepository.GetModel<ProductExtension>(x => x.Id == product.Id);
-
-            summary.CatalogPath = "";
-            summary.CatalogName = translationRepository.GetDescForLang((catalogs?.NameTransId ?? Guid.Empty), CurrentUser.Lang);
-            summary.Code = product.Code;
-            summary.Currency = currencyBLL.GetSimpleCurrency(product.CurrencyCode);
-            summary.Imgs = GetProductImages(product.Id);
-            summary.Name = translationRepository.GetDescForLang(product.NameTransId, CurrentUser.Lang);
-            summary.Introduction = translationRepository.GetDescForLang(product.IntroductionTransId,CurrentUser.Lang);
-            summary.OriginalPrice = product.OriginalPrice + product.MarkUpPrice;
-            summary.SalePrice = product.SalePrice + product.MarkUpPrice;
-            summary.ProductId = product.Id;
-            summary.ApproveType = product.Status;          
-            summary.MerchantNo = mchInfo?.MerchNo ?? string.Empty;
-            summary.MerchantNameId = mchInfo.NameTransId;
-            summary.MerchantName = translationRepository.GetDescForLang(mchInfo.NameTransId,CurrentUser.Lang);
-            summary.IsGS1 = MerchantType.GS1  ==mchInfo?.MerchantType ? true : false;          
-            summary.PurchaseCounter = statistic == null ? 0 : statistic.PurchaseCounter;
-            summary.VisitCounter = statistic == null ? 0 : statistic.VisitCounter;
-
-            summary.Score = statistic == null ? 0M : NumberUtil.ConvertToRounded(statistic.Score);
-            if (summary.Score < 1)
-            {
-                summary.Score = 0;
-            }
-            summary.WeightUnit = prodSepcification?.WeightUnit ?? 0;
-            summary.GrossWeight = prodSepcification?.GrossWeight ?? 0;
-            summary.IconType = prodExtension?.ProductType ?? ProductType.Basic;
-            summary.IconRType = prodExtension?.ProductType;
-            summary.IconType = prodExtension?.ProductType ?? ProductType.Basic;
-            summary.IsLimit = prodExtension?.IsLimit ?? false;
-
-        
-            
-            //var addPrices = new List<ProductAtrtValueModel>();
-            //if (skuId != Guid.Empty)
-            //{
-            //    #region 生成產品屬性
-
-            //    var productInvAttrs = product.Attrs.Where(p => p.IsInv == true).OrderBy(o => o.Seq).ToList();
-
-            //    var skuInfo = _productSkuRepository.GetByKey(skuId);
-
-            //    //var skuAttrValues1 = productInvAttrs.FirstOrDefault(p => p.AttrId == skuInfo.Attr1)?.AttrValues;
-            //    //var skuAttrValues2 = productInvAttrs.FirstOrDefault(p => p.AttrId == skuInfo.Attr2)?.AttrValues;
-            //    //var skuAttrValues3 = productInvAttrs.FirstOrDefault(p => p.AttrId == skuInfo.Attr3)?.AttrValues;
-
-            //    // var AttrValueLst = UnitOfWork.DataContext.ProductAttrs.Where(x => x.IsInv == true && x.ProductId == product.Id)
-            //    var AttrValueLst = productInvAttrs.Join(UnitOfWork.DataContext.ProductAttrValues,
-            //                                    pa => pa.Id, pav => pav.ProdAttrId, (pa, pav) => pav).ToList();
-
-            //    var productAttrValue1 = AttrValueLst.FirstOrDefault(f => f.AttrValueId == skuInfo.AttrValue1);
-            //    var productAttrValue2 = AttrValueLst.FirstOrDefault(f => f.AttrValueId == skuInfo.AttrValue2);
-            //    var productAttrValue3 = AttrValueLst.FirstOrDefault(f => f.AttrValueId == skuInfo.AttrValue3);
-
-            //    var attribute = UnitOfWork.DataContext.ProductAttributes.AsNoTracking()
-            //                            .Where(a => a.Id == skuInfo.Attr1 || a.Id == skuInfo.Attr2 || a.Id == skuInfo.Attr3).ToList();
-
-            //    var attributeValues = UnitOfWork.DataContext.ProductAttributeValues.AsNoTracking()
-            //                           .Where(a => a.Id == skuInfo.AttrValue1 || a.Id == skuInfo.AttrValue2 || a.Id == skuInfo.AttrValue3).ToList();
-
-            //    if (productAttrValue1 != null)
-            //    {
-            //        ProductAtrtValueModel model = GenProductAtrtValueModel(productAttrValue1, skuInfo.Attr1, attribute, attributeValues);
-            //        addPrices.Add(model);
-            //    }
-            //    if (productAttrValue2 != null)
-            //    {
-            //        ProductAtrtValueModel model = GenProductAtrtValueModel(productAttrValue2, skuInfo.Attr2, attribute, attributeValues);
-            //        addPrices.Add(model);
-            //    }
-            //    if (productAttrValue3 != null)
-            //    {
-            //        ProductAtrtValueModel model = GenProductAtrtValueModel(productAttrValue3, skuInfo.Attr3, attribute, attributeValues);
-            //        addPrices.Add(model);
-            //    }
-            //}
-
-            //#endregion
-
-            //summary.AttrValues = addPrices;
-            //summary.TotalPrice = summary.SalePrice + addPrices.Sum(s => s.AddPrice);
-            //if (CurrentUser != null)
-            //{
-            //    if (CurrentUser.IsLogin)
-            //    {
-            //        var favoriteList = MemberFavoriteRepos.Entities.FirstOrDefault(d => d.MemberId == CurrentUser.Id && d.ProductCode == product.Code && d.IsActive == true && d.IsDeleted == false);
-            //        if (favoriteList != null)
-            //        {
-            //            summary.IsFavorite = true;
-            //        }
-            //    }
-
-            //    summary.IconRUrl = PathUtil.GetProductIconUrl(summary.IconRType, CurrentUser.ComeFrom, CurrentUser.Language);
-            //    if (summary.IsGS1)
-            //    {
-            //        summary.GS1Url = PathUtil.GetProductIconUrl(ProductType.GS1, CurrentUser.ComeFrom, CurrentUser.Language);
-            //    }
-            //    else
-            //    {
-            //        summary.GS1Url = PathUtil.GetProductIconUrl(ProductType.Basic, CurrentUser.ComeFrom, CurrentUser.Language);
-            //    }
-            //    if (product.DetailDescriptions?.Count > 0)
-            //    {
-            //        summary.DescriptionDetail = product.DetailDescriptions.FirstOrDefault(x => x.Lang == CurrentUser.Language)?.Value ?? string.Empty;
-            //    }
-            //    if (!IsMatchBaseCurrency(CurrentUser.Currency))
-            //    {
-            //        summary.Currency2 = CurrentUser.Currency;
-            //        summary.SalePrice2 = MoneyConversion(product.SalePrice);
-            //        summary.OriginalPrice2 = MoneyConversion(product.OriginalPrice);
-            //    }
-            //}
-
-            //summary.PromotionRuleTitle = PromotionRuleRepository.GetPromotionRuleTitle(product.Code);
-            //summary.IsSalesReturn = product.ProductExtension?.IsSalesReturn ?? false;
-
-            if (!string.IsNullOrEmpty(product.Remark))
-            {
-            
-                    var saleTimes = product.Remark.Trim().Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
-                    if (saleTimes.Length >= 2)
-                    {
-                        var time = DateUtil.ConvertoDateTime(saleTimes[1], "yyyy-MM-dd HH:mm:00");
-                        summary.SaleTime = time;
-                    }
-                    else
-                    {
-                        summary.SaleTime = null;
-                    }
-            }
-            else
-            {
-                summary.SaleTime = null;
-            }
-            return summary;
         }
     }
 }

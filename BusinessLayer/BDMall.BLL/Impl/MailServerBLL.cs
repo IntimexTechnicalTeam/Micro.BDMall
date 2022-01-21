@@ -1,7 +1,6 @@
 ﻿using BDMall.Domain;
 using BDMall.Enums;
 using BDMall.Model;
-using BDMall.Model.SystemMNG;
 using BDMall.Repository;
 using BDMall.Runtime;
 using Intimex.Common;

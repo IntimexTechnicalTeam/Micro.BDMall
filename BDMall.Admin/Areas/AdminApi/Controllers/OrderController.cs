@@ -5,6 +5,7 @@ using BDMall.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Threading.Tasks;
 using Web.Framework;
 using Web.Mvc;
 
@@ -17,10 +18,12 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
     public class OrderController : BaseApiController
     {
         public IOrderBLL OrderBLL;
+        public IDealProductQtyCacheBLL DealProductQtyCacheBLL;
 
         public OrderController(IComponentContext services) : base(services)
         {
             OrderBLL=Services.Resolve<IOrderBLL>();
+            DealProductQtyCacheBLL = Services.Resolve<IDealProductQtyCacheBLL>();
         }
 
         /// <summary>
@@ -46,6 +49,13 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
         {
             var data  = OrderBLL.GetOrder(orderId);           
             return data;
+        }
+
+        [HttpPost]
+        public async Task<SystemResult> UpdateOrderStatus(UpdateStatusCondition orderStatusInfo)
+        {
+            var result = await OrderBLL.UpdateOrderStatus(orderStatusInfo);
+            return result;  
         }
     }
 }

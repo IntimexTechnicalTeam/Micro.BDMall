@@ -19,6 +19,6 @@ namespace BDMall.BLL
         /// <param name="transIOTyp"></param>
         /// <param name="transType"></param>
         /// <returns></returns>
-        Task<SystemResult> DealProductInventory(List<InvTransactionDtlDto> insertLst, InvTransIOType? transIOTyp, InvTransType transType);
+        SystemResult DealProductInventory(List<InvTransactionDtlDto> insertLst, InvTransIOType? transIOTyp, InvTransType transType);
     }
 }

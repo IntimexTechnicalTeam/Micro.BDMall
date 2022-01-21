@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BDMall.Model.SystemMNG
+namespace BDMall.Model
 {
     public class Currency
     {

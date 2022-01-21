@@ -49,7 +49,7 @@ namespace BDMall.Utility
                     return string.Empty;
             }
         }
-        public static string GetCountryName(string language, Country country)
+        public static string GetCountryName(string language, CountryDto country)
         {
             if (country == null)
             {

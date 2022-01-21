@@ -27,6 +27,9 @@ namespace BDMall.BLL
         public IUpdateInventoryBLL UpdateInventoryBLL;
         public IDealProductQtyCacheBLL DealProductQtyCacheBLL;
         public IInvReservedRepository InvReservedRepository;
+        public ICodeMasterRepository CodeMasterRepository;
+        public IUpdateInventoryBLL updateInventoryBLL;
+        public IInventoryChangeNotifyBLL inventoryChangeNotifyBLL;
 
         public InventoryBLL(IServiceProvider services) : base(services)
         {
@@ -44,6 +47,9 @@ namespace BDMall.BLL
             UpdateInventoryBLL = Services.Resolve<IUpdateInventoryBLL>();
             DealProductQtyCacheBLL = Services.Resolve<IDealProductQtyCacheBLL>();
             InvReservedRepository = Services.Resolve<IInvReservedRepository>();
+            CodeMasterRepository = Services.Resolve<ICodeMasterRepository>();
+            updateInventoryBLL = Services.Resolve<IUpdateInventoryBLL>();
+            inventoryChangeNotifyBLL = Services.Resolve<IInventoryChangeNotifyBLL>();
         }
 
         public List<WarehouseDto> GetWarehouseLstByCond(WarehouseDto cond)
@@ -410,7 +416,7 @@ namespace BDMall.BLL
         /// <returns>下拉框資源</returns>
         public List<KeyValue> GetInvFlowTypeLstComboSrc()
         {
-            var transTypeList = SettingBLL.GetInvTransTypeLst();        
+            var transTypeList = SettingBLL.GetInvTransTypeLst();
             var result = transTypeList.Select(transType => new KeyValue {
 
                 Id = transType.Value.ToString(),
@@ -425,13 +431,13 @@ namespace BDMall.BLL
         {
             var Ids = new string[] { InvTransType.Purchase.ToInt().ToString(), InvTransType.Relocation.ToInt().ToString(), InvTransType.PurchaseReturn.ToInt().ToString() };
 
-            var transTypeList = GetInvFlowTypeLstComboSrc().Where(x=>Ids.Contains(x.Id)).ToList();
+            var transTypeList = GetInvFlowTypeLstComboSrc().Where(x => Ids.Contains(x.Id)).ToList();
             return transTypeList;
         }
 
         public List<KeyValue> GetWhseComboSrc(Guid merchantId)
         {
-            var warehouseLst = GetWarehouseLstByCond(new WarehouseDto()).Where(p=>p.MerchantId== merchantId).ToList();
+            var warehouseLst = GetWarehouseLstByCond(new WarehouseDto()).Where(p => p.MerchantId == merchantId).ToList();
             var keyValList = warehouseLst.Select(s => new KeyValue { Id = s.Id.ToString(), Text = s.Name }).ToList();
             return keyValList;
         }
@@ -516,7 +522,7 @@ namespace BDMall.BLL
         }
 
         public async Task<SystemResult> SaveInvTransRec(InvTransView transView)
-        { 
+        {
             var result = new SystemResult();
 
             transView.TransactionItemList = transView.TransactionItemList.Where(x => x.IsChecked).ToList();
@@ -568,7 +574,7 @@ namespace BDMall.BLL
             }).ToList();
 
             //var dbTranDtlList = AutoMapperExt.MapTo<List<InvTransactionDtl>>(transDtlList);
-            result =await InsertInvTransList(transView.TransType, transDtlList);
+            result = await InsertInvTransList(transView.TransType, transDtlList);
             return result;
         }
 
@@ -580,8 +586,26 @@ namespace BDMall.BLL
         /// <returns>操作結果</returns>
         public async Task<SystemResult> InsertInvTransList(InvTransType transTyp, List<InvTransactionDtlDto> insertLst)
         {
-            var sysRslt = new SystemResult();         
-            sysRslt =await InsertInvTransListWithSign(transTyp, insertLst, true);
+            InvTransIOType? transIOTyp = SettingBLL.GetInvTransIOType(transTyp);
+            if (transIOTyp == null) throw new BLException(InventoryErrorEnum.InvTransIOTypeNotExsit.ToString());
+
+            var sysRslt = new SystemResult();
+            sysRslt = InsertInvTransListWithSign(transTyp, insertLst, true);
+
+            //处理Inventory表
+            sysRslt = UpdateInventoryBLL.DealProductInventory(insertLst, transIOTyp, transTyp);
+            UnitOfWork.Submit();
+
+            //到货通知，消息处理请在这里实现
+            if (sysRslt.Succeeded)
+            {
+                ///只处理采购，采购退回
+                int[] cond = new int[] { InvTransType.Purchase.ToInt(), InvTransType.PurchaseReturn.ToInt() };
+                if (cond.Any(x => x == transTyp.ToInt()))
+                    sysRslt = await DealProductQtyCacheBLL.UpdateQtyWhenPurchaseOrReturn(insertLst);
+                sysRslt.Succeeded = true;
+            }
+
             return sysRslt;
         }
 
@@ -612,6 +636,92 @@ namespace BDMall.BLL
             }
             sysRslt.Succeeded = true;
 
+            return sysRslt;
+        }
+
+        /// <summary>
+        /// 使用預留記錄扣除庫存數量
+        /// </summary>
+        /// <param name="reserve"></param>
+        /// <returns></returns>
+        public SystemResult DeductInvQtyWithReserve(InventoryReservedDto reserve)
+        {
+            SystemResult sysRslt = DeductInvQtyWithReservePreprocess(reserve);
+
+            if (sysRslt.Succeeded)
+            {
+                //int qty = int.Parse(sysRslt.ReturnValue.ToString());
+                var returnObj = sysRslt.ReturnValue as InventoryReservedDto;
+                if (returnObj != null)
+                {
+                    reserve.ReservedQty = returnObj.ReservedQty;
+                    reserve.WHId = returnObj.WHId;
+                }
+                var transDtlLst = GenSalesShipmentTransDtlLst(new List<InventoryReservedDto>() { reserve });
+                sysRslt = updateInventoryBLL.DealProductInventory(transDtlLst, InvTransIOType.O, InvTransType.SalesShipment);
+                sysRslt.ReturnValue = returnObj;
+
+                //檢查是否售罄并發出通知
+                ///InventoryChangeCheckAndNotify(reserve);
+            }
+
+            return sysRslt;
+        }
+
+        /// <summary>
+        /// 檢查產品庫存量變化，并判斷需要觸發的通知類型
+        /// </summary>
+        /// <param name="reserve"></param>
+        public void InventoryChangeCheckAndNotify(InventoryReservedDto reserve)
+        {
+
+            int invTotalQty = (int)GetActualInvQty(reserve);
+
+            var productSku = baseRepository.GetModelById<ProductSku>(reserve.Sku);
+            string prodCode = productSku?.ProductCode;
+            var lvProduct = ProductRepository.GetLastVersionProductByCode(prodCode);
+            if (lvProduct != null)
+            {
+                var product = baseRepository.GetModelById<Product>(lvProduct.Id);
+                var prduxtExt = baseRepository.GetModel<ProductExtension>(x => x.Id == product.Id && x.IsActive && !x.IsDeleted);
+                if (prduxtExt != null)
+                {
+                    //低於安全庫存
+                    if (invTotalQty < prduxtExt.SafetyStock)
+                    {
+                        var notify = new InventoryChangeNotify()
+                        {
+                            SkuId = reserve.Sku,
+                            Type = InvChangeNotifyType.LowThanSaftey,
+                            //CurStockQty = invTotalQty,
+                        };
+                        inventoryChangeNotifyBLL.AddInventoryChangeNotify(notify);
+                    }
+                }
+            }
+
+            if (invTotalQty <= 0)
+            {
+                //售罄
+                var notify = new InventoryChangeNotify()
+                {
+                    SkuId = reserve.Sku,
+                    Type = InvChangeNotifyType.SoldOut,
+                    //CurStockQty = invTotalQty,
+                };
+                inventoryChangeNotifyBLL.AddInventoryChangeNotify(notify);
+            }
+        }
+
+        /// <summary>
+        /// 取消庫存預留
+        /// </summary>
+        /// <param name="reserve">庫存預留</param>
+        /// <param name="dbContext">數據庫操作對象</param>
+        /// <returns>操作結果</returns>
+        public SystemResult CancelInvReserved(InventoryReservedDto reserve)
+        {
+            SystemResult sysRslt = CancelInvReservedWithSign(reserve, false);
             return sysRslt;
         }
 
@@ -679,7 +789,7 @@ namespace BDMall.BLL
         /// </summary>
         /// <param name="uniqueProp">庫存產品唯一標識</param>
         /// <returns>可用的庫存數量</returns>
-        public decimal GetTotAvailableInvQty(InventoryReserved uniqueProp)
+        public decimal GetTotAvailableInvQty(InventoryReservedDto uniqueProp)
         {
             decimal invtQty = decimal.Zero;
 
@@ -719,6 +829,159 @@ namespace BDMall.BLL
             return invtQty;
         }
 
+        /// <summary>
+        /// 根据用户Id添加庫存預留
+        /// </summary>
+        /// <param name="reserve"></param>
+        /// <param name="memberId"></param>
+        /// <returns></returns>
+        public SystemResult AddInvReserved(InventoryReservedDto reserve, Guid memberId)
+        {
+            SystemResult sysRslt = AddInvReservedWithSign(reserve, false, memberId);
+            return sysRslt;
+        }
+
+        /// <summary>
+        /// 檢查是否存在指定的庫存保留記錄
+        /// </summary>
+        /// <param name="curRec">庫存保留資料</param>
+        /// <returns></returns>
+        public SystemResult IsExsitInventoryHold(InventoryHold curRec)
+        {
+            var sysRslt = new SystemResult();
+            Guid skuId = curRec.SkuId;
+            Guid memberId = curRec.MemberId;
+
+            var invtHold = baseRepository.Any<InventoryHold>(x => x.SkuId == skuId && x.MemberId == memberId && x.IsActive && !x.IsDeleted);
+            if (invtHold)
+            {
+                sysRslt.Succeeded = true;
+            }
+            return sysRslt;
+        }
+
+        /// <summary>
+        /// 獲取總的實際庫存數量
+        /// </summary>
+        private decimal GetActualInvQty(InventoryReservedDto uniqueProp)
+        {
+            decimal invtQty = decimal.Zero;
+            //產品庫存記錄（各個倉庫）
+            var currentInvtList = InvRepository.GetInventoryList(new InventoryDto()
+            {
+                Sku = uniqueProp.Sku
+            });
+
+            if (currentInvtList != null)
+            {
+                invtQty = currentInvtList.Sum(x => x.Quantity);
+            }
+            return invtQty;
+        }
+
+        /// <summary>
+        /// 使用是否批量標識取消庫存預留
+        /// </summary>
+        /// <param name="reserve">預留信息</param>
+        /// <param name="isBatch">是否批量處理</param>
+        private SystemResult CancelInvReservedWithSign(InventoryReservedDto reserve, bool isBatch)
+        {
+            var sysRslt = new SystemResult();
+
+            InventoryReserved currentReserved = null;//當前預留記錄
+
+            #region 獲取當前預留記錄
+
+            var currentInvReservedLst = InvReservedRepository.GetInvReservedLst(new InventoryReserved()
+            {
+                OrderId = reserve.OrderId,
+                Sku = reserve.Sku,
+                ProcessState = InvReservedState.RESERVED
+            });
+
+            if (currentInvReservedLst == null) throw new BLException($"订单[{reserve.OrderId}]的库存预留记录不存在");
+            currentReserved = currentInvReservedLst.FirstOrDefault();
+            if (currentReserved.ProcessState != InvReservedState.RESERVED) throw new BLException($"订单[{reserve.OrderId}]的库存预留记录状态不是预留中");
+            #endregion
+
+            currentReserved.ProcessState = InvReservedState.CANCEL;
+            baseRepository.Update(currentReserved);
+
+            if (!isBatch) UnitOfWork.Submit();
+            sysRslt.Succeeded = true;       
+            return sysRslt;
+        }
+
+        /// <summary>
+        /// 使用預留記錄扣除庫存前的預處理
+        /// </summary>
+        /// <param name="reserve">預留記錄</param>
+        private SystemResult DeductInvQtyWithReservePreprocess(InventoryReservedDto reserve)
+        {
+            SystemResult sysRslt = new SystemResult();
+            decimal availableInvTotQty = GetTotAvailableInvQty(reserve);//可用庫存總數量
+
+            //指定倉庫庫存記錄
+            var currentInvtLst = InvRepository.GetInventoryList(new InventoryDto() { Sku = reserve.Sku, WHId = reserve.WHId.Value });
+            var currentInvt = currentInvtLst.FirstOrDefault();
+
+            if (currentInvt != null && currentInvt.Quantity < 1)//如果選擇的倉庫冇貨，就自動選擇有該產品的倉庫
+            {
+                currentInvtLst = InvRepository.GetInventoryList(new InventoryDto() { Sku = reserve.Sku, WHId = Guid.Empty });
+                currentInvtLst = currentInvtLst.Where(x => x.Quantity > 0).ToList();
+            }
+
+            //庫存預留記錄
+            var currentInvReservedLst = InvReservedRepository.GetInvReservedLst(new InventoryReserved()
+            {
+                OrderId = reserve.OrderId,
+                SubOrderId = reserve.SubOrderId,
+                Sku = reserve.Sku,
+                ProcessState = InvReservedState.RESERVED//預留中狀態
+            });
+
+            if ((!currentInvtLst?.Any() ?? false) || (!currentInvReservedLst?.Any() ?? false )) throw new BLException($"找不到库存记录或库存预留记录,信息,订单[{reserve.OrderId}],Sku[{reserve.Sku}],仓位[{reserve.WHId}]");
+
+            currentInvt = currentInvtLst.FirstOrDefault();
+            var currentInvReserved = currentInvReservedLst.FirstOrDefault();
+
+            reserve.WHId = currentInvt.WHId;
+
+            decimal availableWHQty = currentInvt?.Quantity ?? 0;//指定倉庫的庫存數量
+            decimal reservedQty = currentInvReserved.ReservedQty;
+            decimal diffQty = availableWHQty - reservedQty;
+
+            if (diffQty < 0) throw new BLException($"检测到库存预留记录的库存不足，无法进行扣减,信息:订单[{reserve.OrderId}],仓位[{reserve.WHId}],预留记录[{currentInvReserved.Id}]");
+
+            //更新庫存預存記錄的狀態
+            currentInvReserved.ProcessState = InvReservedState.FINISH;
+            baseRepository.Update(currentInvReserved);
+
+            sysRslt.ReturnValue = new InventoryReservedDto() { ReservedQty = (int)reservedQty, WHId = reserve.WHId };
+            sysRslt.Succeeded = true;
+
+            return sysRslt;
+        }
+
+        /// <summary>
+        /// 生成銷售出貨的交易記錄列表
+        /// </summary>
+        /// <param name="reservedLst"></param>
+        private List<InvTransactionDtlDto> GenSalesShipmentTransDtlLst(List<InventoryReservedDto> reservedLst)
+        {
+            var transDtlLst = reservedLst.Select(reserved => new InvTransactionDtlDto
+            {
+                Sku = reserved.Sku,
+                FromId = reserved.WHId.Value,
+                BizId = reserved.SubOrderId,
+                TransQty = reserved.ReservedQty,
+                TransDate = DateTime.Now,
+                TransType = InvTransType.SalesShipment,
+                WHId = reserved.WHId.Value,
+
+            }).ToList();
+            return transDtlLst;
+        }
 
         string GetImage(Guid ProductId)
         {
@@ -822,12 +1085,12 @@ namespace BDMall.BLL
             return warehouse;
         }
 
-        private async Task<SystemResult> InsertInvTransListWithSign(InvTransType transTyp, List<InvTransactionDtlDto> insertLst, bool whetherCommit)
+        private SystemResult InsertInvTransListWithSign(InvTransType transTyp, List<InvTransactionDtlDto> insertLst, bool whetherCommit)
         {
             var sysRslt = new SystemResult();
 
-            InvTransIOType? transIOTyp = SettingBLL.GetInvTransIOType(transTyp);
-            if (transIOTyp == null) throw new BLException(InventoryErrorEnum.InvTransIOTypeNotExsit.ToString());
+            //InvTransIOType? transIOTyp = SettingBLL.GetInvTransIOType(transTyp);
+            //if (transIOTyp == null) throw new BLException(InventoryErrorEnum.InvTransIOTypeNotExsit.ToString());
              
             #region 生成單據
 
@@ -841,21 +1104,6 @@ namespace BDMall.BLL
                 default: break;
             }
             #endregion
-
-            //处理Inventory表
-            sysRslt = await UpdateInventoryBLL.DealProductInventory(insertLst, transIOTyp, transTyp);
-            UnitOfWork.Submit();
-
-            //到货通知，消息处理请在这里实现
-            if (sysRslt.Succeeded)
-            {
-                ///只处理采购，采购退回
-                int[] cond = new int[] { InvTransType.Purchase.ToInt(), InvTransType.PurchaseReturn.ToInt() };
-                if (cond.Any(x => x == transTyp.ToInt()))
-                    sysRslt = await DealProductQtyCacheBLL.UpdateQtyWhenPurchaseOrReturn(insertLst);
-                sysRslt.Succeeded = true;
-            }
-
             return sysRslt;
         }
 
@@ -1035,6 +1283,82 @@ namespace BDMall.BLL
             return sysRslt;
         }
 
+        /// <summary>
+        /// 使用是否批量標識添加庫存預留
+        /// </summary>
+        /// <param name="reserve">預留信息</param>
+        /// <param name="isBatch">是否批量處理</param>
+        /// <param name="memberId">用户Id</param>
+        /// <returns></returns>
+        private SystemResult AddInvReservedWithSign(InventoryReservedDto reserve, bool isBatch, Guid memberId)
+        {
+            SystemResult sysRslt = new SystemResult();
 
+            int reservedQty = reserve.ReservedQty;//需要預留的數量
+            InvReservedType invtReservedTyp = InvReservedType.PRESELL;//需要預留的類型  
+
+            /*新增預留記錄時，先判斷Hold貨記錄是否存在并數量相等，如果不存在，則檢查庫存是否足夠扣除預留數量，
+             * 是則新增正常預留記錄，
+             * 否則新增預訂預留記錄*/
+            var invtHold =  baseRepository.GetModel<InventoryHold>(x => x.SkuId == reserve.Sku && x.MemberId == memberId && x.IsActive && !x.IsDeleted);
+            if (invtHold != null)
+            {
+                if (invtHold.Qty < reservedQty)
+                {                  
+                    throw new BLException("库存预留数据不正确");
+                    
+                }
+                else
+                {
+                    invtReservedTyp = InvReservedType.NORMAL;
+                }
+            }
+            else
+            {
+                decimal availableQty = GetTotAvailableInvQty(reserve);//可用庫存總數量                 
+
+                if (availableQty > 0 && reservedQty <= availableQty)
+                {
+                    //庫存足夠扣除預留數量
+                    invtReservedTyp = InvReservedType.NORMAL;
+                }
+                else
+                {
+                    //庫存不足，獲取是夠可以預訂的標識
+                    var preSwitch = CodeMasterRepository.GetCodeMaster(CodeMasterModule.Setting.ToString(), CodeMasterFunction.InvtReserved.ToString(), "PresellSwitch");
+                    bool canPresell = bool.Parse(preSwitch.Value);
+                    if (!canPresell)
+                    {
+                        if (availableQty <= 0) throw new BLException("库存为零");                        
+                        else  throw new BLException("库存不足");                      
+                       
+                    }
+                }
+            }
+
+            var reservedLst = InvReservedRepository.GetInvReservedLst(new InventoryReserved()
+            {
+                OrderId = reserve.OrderId,
+                SubOrderId = reserve.SubOrderId,
+                Sku = reserve.Sku,
+                ProcessState = InvReservedState.RESERVED
+            });
+            if (reservedLst?.Any() ?? false) throw new BLException("已存在的预留记录，无法新增");
+
+            var reservedDetail = new InventoryReserved()
+            {
+                Id = Guid.NewGuid(),
+                OrderId = reserve.OrderId,
+                SubOrderId = reserve.SubOrderId,
+                Sku = reserve.Sku,
+                ProcessState = InvReservedState.RESERVED,
+                ReservedType = invtReservedTyp,
+                ReservedQty = reservedQty
+            };
+
+            baseRepository.Insert(reservedDetail);
+            sysRslt.Succeeded = true;
+            return sysRslt;
+        }
     }
 }

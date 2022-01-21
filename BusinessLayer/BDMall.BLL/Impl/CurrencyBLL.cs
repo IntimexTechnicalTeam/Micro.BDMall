@@ -1,7 +1,6 @@
 ﻿using BDMall.Domain;
 using BDMall.Enums;
 using BDMall.Model;
-using BDMall.Model.SystemMNG;
 using BDMall.Repository;
 using BDMall.Runtime;
 using Intimex.Common;
@@ -161,34 +160,24 @@ namespace BDMall.BLL
 
         }
 
-        //public SimpleCurrency GetDefaultCurrency()
-        //{
-        //    try
-        //    {
-        //        if (DefaultCurrency == null)
-        //        {
-        //            var code = _codeMasterRepository.GetCodeMaster(CodeMasterModule.Setting.ToString(), CodeMasterFunction.Currency.ToString(), "DefaultCurrency");
-        //            if (code == null || string.IsNullOrEmpty(code.Value))
-        //            {
-        //                throw new DefaultCurrencyException();
-        //            }
+        public SimpleCurrency GetDefaultCurrency()
+        {
 
-        //            return GetSimpleCurrency(code.Value);
-        //        }
-        //        else
-        //        {
-        //            return DefaultCurrency;
-        //        }
-        //    }
+            if (DefaultCurrency == null)
+            {
+                var code = _codeMasterRepository.GetCodeMaster(CodeMasterModule.Setting.ToString(), CodeMasterFunction.Currency.ToString(), "DefaultCurrency");
+                if (code == null || string.IsNullOrEmpty(code.Value))
+                {
+                    throw new BLException();
+                }
 
-        //    catch (Exception ex)
-        //    {
-        //        SaveError(this.GetType().FullName, ClassUtility.GetMethodName(), "", ex.Message);
-        //        return null;
-        //        //throw ex;
-        //    }
-
-        //}
+                return GetSimpleCurrency(code.Value);
+            }
+            else
+            {
+                return DefaultCurrency;
+            }
+        }
 
         private string GetName(string code)
         {

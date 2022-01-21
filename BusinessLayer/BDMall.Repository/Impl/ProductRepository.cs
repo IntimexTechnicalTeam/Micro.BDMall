@@ -250,6 +250,59 @@ namespace BDMall.Repository
             return lvProductList;
         }
 
+        /// <summary>
+        /// 获取产品的附加价钱
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="skuId"></param>
+        /// <returns></returns>
+        public List<decimal> GetProductAddPriceBySku(Guid id, Guid skuId)
+        {
+
+            List<decimal> addPrices = new List<decimal>();
+
+            var attrs = (from d in baseRepository.GetList<ProductAttr>()
+                         where d.IsInv == true && d.ProductId == id
+                         orderby d.Seq
+                         select d
+                         ).ToList();
+
+            var skus = baseRepository.GetModel<ProductSku>(p => p.Id == skuId);
+            for (int i = 0; i < attrs.Count(); i++)
+            {
+                if (i == 0)
+                {
+                    var attrValue1 = attrs[0].AttrValues.FirstOrDefault(p => p.AttrValueId == skus.AttrValue1);
+                    if (attrValue1 != null)
+                    {
+                        addPrices.Add(attrValue1.AdditionalPrice);
+                    }
+                }
+                else if (i == 1)
+                {
+                    var attrValue2 = attrs[1].AttrValues.FirstOrDefault(p => p.AttrValueId == skus.AttrValue2);
+                    if (attrValue2 != null)
+                    {
+                        addPrices.Add(attrValue2.AdditionalPrice);
+                    }
+
+                }
+                else if (i == 2)
+                {
+                    var attrValue3 = attrs[2].AttrValues.FirstOrDefault(p => p.AttrValueId == skus.AttrValue3);
+                    if (attrValue3 != null)
+                    {
+                        addPrices.Add(attrValue3.AdditionalPrice);
+                    }
+
+                }
+            }
+            return addPrices;
+
+        }
+
+
+
         private QueryParam GenBaseQuery(ProdSearchCond cond)
         {
             StringBuilder sb = new StringBuilder();           

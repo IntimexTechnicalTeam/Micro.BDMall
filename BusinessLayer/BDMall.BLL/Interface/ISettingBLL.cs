@@ -320,11 +320,11 @@ namespace BDMall.BLL
         ///// <returns></returns>
         //int GetMaxClinetOLQty();
 
-        ///// <summary>
-        ///// 獲取訂單冷靜期值
-        ///// </summary>
-        ///// <returns></returns>
-        //int GetOrderGracePeriodValue();
+        /// <summary>
+        /// 獲取訂單冷靜期值
+        /// </summary>
+        /// <returns></returns>
+        int GetOrderGracePeriodValue();
 
         ///// <summary>
         ///// 獲取客服工作時間段列表

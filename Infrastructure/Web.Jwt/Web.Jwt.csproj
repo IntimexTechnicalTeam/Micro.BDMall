@@ -9,6 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Models\BuyMall.Domain\BDMall.Domain.csproj" />
     <ProjectReference Include="..\..\Models\BuyMall.Enums\BDMall.Enums.csproj" />
     <ProjectReference Include="..\Web.Framework\Web.Framework.csproj" />
   </ItemGroup>

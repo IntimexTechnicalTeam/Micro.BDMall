@@ -27,7 +27,7 @@ namespace BDMall.BLL
         /// <param name="transIOTyp"></param>
         /// <param name="transType"></param>
         /// <returns></returns>
-        public async Task<SystemResult> DealProductInventory(List<InvTransactionDtlDto> insertLst, InvTransIOType? transIOTyp, InvTransType transType)
+        public SystemResult DealProductInventory(List<InvTransactionDtlDto> insertLst, InvTransIOType? transIOTyp, InvTransType transType)
         {
             var result = new SystemResult();
             foreach (var transDtl in insertLst)
@@ -46,7 +46,7 @@ namespace BDMall.BLL
 
                 switch (transType)
                 {
-                    case InvTransType.Purchase: await UpdateInvWhenPurchase(transDtl); break;
+                    case InvTransType.Purchase:  UpdateInvWhenPurchase(transDtl); break;
                     case InvTransType.Relocation:UpdateInvWhenRelocation(transDtl); break;                     
                     case InvTransType.PurchaseReturn:UpdateInvWhenPurchaseReturn(transDtl); break;                      
                     case InvTransType.SalesShipment: UpdateInvWhenSalesShipment(transDtl); break;
@@ -66,7 +66,7 @@ namespace BDMall.BLL
         /// 采购,更新Inventory
         /// </summary>
         /// <returns></returns>
-        async Task<SystemResult> UpdateInvWhenPurchase(InvTransactionDtlDto transDtl)
+        SystemResult UpdateInvWhenPurchase(InvTransactionDtlDto transDtl)
         {
             var result = new SystemResult();
 
@@ -122,7 +122,7 @@ namespace BDMall.BLL
                 }
 
                 ////回写redis,相当于补录
-                await UpdateProductQtyCache(transDtl.Sku);
+                UpdateProductQtyCache(transDtl.Sku);
             }
 
             #endregion
@@ -274,7 +274,7 @@ namespace BDMall.BLL
 
         }
 
-       
+
 
         /// <summary>
         /// 更新ProductQtyCache
@@ -282,17 +282,17 @@ namespace BDMall.BLL
         /// <param name="SkuId"></param>
         /// <param name="Qty"></param>
         /// <returns></returns>
-        async Task UpdateProductQtyCache(Guid SkuId, int Qty = 0)
+        void UpdateProductQtyCache(Guid SkuId, int Qty = 0)
         {
             string SalesQtyKey = $"{CacheKey.SalesQty}";
             string InvtHoldQtyKey = $"{CacheKey.InvtHoldQty}";
             string InvtActualQtyKey = $"{CacheKey.InvtActualQty}";
             string InvtReservedQtyKey = $"{CacheKey.InvtReservedQty}";
 
-            await RedisHelper.ZAddAsync(InvtActualQtyKey, (0, SkuId.ToString()));
-            await RedisHelper.ZAddAsync(SalesQtyKey, (0, SkuId.ToString()));
-            await RedisHelper.ZAddAsync(InvtReservedQtyKey, (0, SkuId.ToString()));
-            await RedisHelper.ZAddAsync(InvtHoldQtyKey, (0, SkuId.ToString()));
+            RedisHelper.ZAdd(InvtActualQtyKey, (0, SkuId.ToString()));
+            RedisHelper.ZAdd(SalesQtyKey, (0, SkuId.ToString()));
+            RedisHelper.ZAdd(InvtReservedQtyKey, (0, SkuId.ToString()));
+            RedisHelper.ZAdd(InvtHoldQtyKey, (0, SkuId.ToString()));
         }
 
 

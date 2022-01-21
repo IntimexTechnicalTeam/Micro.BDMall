@@ -11,7 +11,10 @@ namespace Domain
     public class Mappers : Profile, ICreateMapper
     {
         public Mappers()
-        {            
+        {
+            ConfigMap<CurrentUser, TokenInfo>();
+            ConfigMap<TokenInfo, UserDto>();
+            ConfigMap<TokenInfo,MemberDto>();  
             ConfigMap<Member, MemberDto>();
             ConfigMap<User, UserDto>();
             ConfigMap<Role, RoleDto>();
@@ -47,6 +50,7 @@ namespace Domain
             ConfigMap<Supplier, SupplierDto>();
             ConfigMap<InvFlow,InvFlowView>();
 
+            ConfigMap<InventoryReserved, InventoryReservedDto>();
             ConfigMap<InvTransactionDtl, InvTransactionDtlDto>();
             ConfigMap<PaymentMethodDto, PaymentMethod>();
             ConfigMap<CountryDto, Country>();
@@ -59,6 +63,10 @@ namespace Domain
             ConfigMap<RolePermission,RolePermissionDto>();
 
             ConfigMap<ShoppingCartItemDetail, ShoppingCartItemDetailDto>();
+
+            ConfigMap<Order,OrderDto>();
+            ConfigMap<OrderDelivery, OrderDeliveryDto>();
+            ConfigMap<OrderDeliveryDetail, OrderDeliveryDetailDto>();
         }
         void ConfigMap<TSource, TDestination>()
         {

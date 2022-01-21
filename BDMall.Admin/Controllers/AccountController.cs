@@ -14,21 +14,23 @@ using Web.Mvc;
 
 namespace BDMall.Admin.Controllers
 {
-    [LanguageResource]
+    
     public class AccountController : Controller
-    {      
-        
+    {
+        [LanguageResource]
         [HttpGet]
         public ActionResult User()
         {
             return View();
         }
-        
+
+        [LanguageResource]
         [HttpGet]
         public ActionResult Role()
         {
             return View();
         }
+
         [AllowAnonymous]
         public async Task<IActionResult> Login()
         {

@@ -232,7 +232,9 @@ namespace BDMall.BLL
                         select c
                         ).ToList();
 
-            var list = data.Select(d => new KeyValue
+            var model = AutoMapperExt.MapTo<List<CountryDto>>(data);
+
+            var list = model.Select(d => new KeyValue
             {
                 Id = d.Id.ToString(),
                 Text = NameUtil.GetCountryName(CurrentUser.Lang.ToString(), d),
@@ -259,7 +261,8 @@ namespace BDMall.BLL
                 }
             }
             var data = baseRepository.GetList<Country>().Where(p => ids.Contains(p.Id) && !selectedCountry.Contains(p.Id)).ToList();
-            var list = data.Select(d => new KeyValue
+            var model = AutoMapperExt.MapTo<List<CountryDto>>(data);
+            var list = model.Select(d => new KeyValue
             {
                 Id = d.Id.ToString(),
                 Text = NameUtil.GetCountryName(CurrentUser.Lang.ToString(), d),
@@ -270,7 +273,8 @@ namespace BDMall.BLL
         public List<KeyValue> GetCountryForSelect()
         {
             var lists = baseRepository.GetList<Country>().Where(d => d.IsDeleted == false).ToList();
-            List<KeyValue> list = lists.Select(d => new KeyValue
+            var model = AutoMapperExt.MapTo<List<CountryDto>>(lists);
+            List<KeyValue> list = model.Select(d => new KeyValue
             {
                 Id = d.Id.ToString(),
                 Text = NameUtil.GetCountryName(CurrentUser.Lang.ToString(), d),

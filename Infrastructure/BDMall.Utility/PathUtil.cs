@@ -228,6 +228,44 @@ namespace BDMall.Utility
             }
             return path;
         }
+
+        public static string GetProductIconUrl(ProductType? iconType,  Language lang)
+        {
+            string imgUrl = "/Images/APP/";
+            string extension = ".png";
+
+            if (iconType != null)
+            {
+                string langLower = lang.ToString().ToLower();
+
+                switch (iconType.Value)
+                {
+                    case ProductType.New:
+                        imgUrl += "new_" + langLower + extension;
+                        break;
+                    case ProductType.HotSale:
+                        imgUrl += "hot_" + langLower + extension;
+                        break;
+                    case ProductType.FreeShip:
+                        imgUrl += "free_" + langLower + extension;
+                        break;
+
+                    case ProductType.GS1:
+                        imgUrl += "trust" + extension;
+                        break;
+                    default:
+                        imgUrl += "transparent" + extension;
+                        break;
+                }
+            }
+            else
+            {
+                imgUrl += "transparent" + extension;
+            }
+
+            return imgUrl;
+        }
+
         //public static string GetPMServer()
         //{
         //    var server = System.Configuration.ConfigurationManager.AppSettings["PMServer"];

@@ -298,5 +298,19 @@ namespace BDMall.BLL
                     return null;
             }
         }
+
+        /// <summary>
+        /// 獲取系統所設置的訂單冷靜期（全局）
+        /// </summary>
+        /// <returns></returns>
+        public int GetOrderGracePeriodValue()
+        {
+            var setting = _codeMasterRepo.GetCodeMaster(CodeMasterModule.Setting.ToString(), CodeMasterFunction.GracePeriod.ToString(), "OrderComepleted");
+            if (setting != null)
+            {
+                return int.Parse(setting.Value);
+            }
+            return 14;
+        }
     }
 }

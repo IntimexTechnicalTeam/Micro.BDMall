@@ -1,4 +1,5 @@
-﻿using BDMall.Enums;
+﻿using BDMall.Domain;
+using BDMall.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,12 +11,19 @@ using Web.Framework;
 namespace Web.Jwt
 {
     public interface IJwtToken:IDependency
-    {
+    {       
         /// <summary>
         /// 针对TempUser生成的一个DefaultToken
         /// </summary>
         /// <returns></returns>
         string CreateDefautToken();
+
+        /// <summary>
+        /// 根据Token生成CurrentUser
+        /// </summary>
+        /// <param name="encodeJwt"></param>
+        /// <returns></returns>
+        CurrentUser CreateCurrentUser(string encodeJwt);
 
         /// <summary>
         /// 生成token
@@ -36,7 +44,7 @@ namespace Web.Jwt
         string RefreshToken(string token, Language? Lang = null, string CurrencyCode = "");
 
         /// <summary>
-        ///  解析token中的payload信息
+        ///  解析token中的payload信息,payload信息来源于tokeninfo类
         /// </summary>
         /// <param name="encodeJwt"></param>
         /// <returns></returns>

@@ -1,4 +1,5 @@
-﻿using BDMall.Enums;
+﻿using BDMall.Domain;
+using BDMall.Enums;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -21,24 +22,6 @@ namespace Web.Jwt
         {
             this.service = _service;
             configuration = service.Resolve<IConfiguration>();
-        }
-
-        /// <summary>
-        /// 针对TempUser生成的一个DefaultToken
-        /// </summary>
-        /// <returns></returns>
-        public string CreateDefautToken()
-        {
-            var claimList = new List<Claim>() { };
-            claimList.Add(new Claim("UserId", $"{Guid.NewGuid() }"));
-            claimList.Add(new Claim("Lang", "C"));
-            claimList.Add(new Claim("CurrencyCode", "HKD"));
-            claimList.Add(new Claim("Account", "AnonymousUser"));
-            claimList.Add(new Claim("IsLogin", "false"));
-            claimList.Add(new Claim("LoginType", $"{ LoginType.TempUser}"));
-            claimList.Add(new Claim("Email", ""));
-            string ticket = CreateToken(claimList);
-            return ticket;
         }
 
         public string CreateToken<T>(T user) where T : class
@@ -84,7 +67,76 @@ namespace Web.Jwt
         }
 
         /// <summary>
-        /// 解析token中的payload信息
+        /// 重新刷新Token
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public string RefreshToken(string token, Language? Lang = null, string CurrencyCode = "")
+        {          
+            var tmpUser = CreateCurrentUser(token);
+            tmpUser.Lang = Lang != null ? Lang.Value : tmpUser.Lang;
+            tmpUser.CurrencyCode = !CurrencyCode.IsEmpty() ? CurrencyCode : tmpUser.CurrencyCode;
+            var loginInput = AutoMapperExt.MapTo<TokenInfo>(tmpUser);
+            return CreateToken(loginInput);
+        }
+
+        /// <summary>
+        /// 针对TempUser生成的一个DefaultToken
+        /// </summary>
+        /// <returns></returns>
+        public string CreateDefautToken()
+        {
+            var tempUser = new TokenInfo
+            {
+                UserId = Guid.NewGuid().ToString(),
+                Account = "AnonymousUser",
+                IsLogin = false,
+                LoginType = LoginType.TempUser,
+                CurrencyCode = "HKD",
+                Lang = Language.C,
+            };
+            string ticket = CreateToken(tempUser);
+            return ticket;
+        }
+
+        /// <summary>
+        /// 根据Token生成CurrentUser
+        /// </summary>
+        /// <param name="encodeJwt"></param>
+        /// <returns></returns>
+        public CurrentUser CreateCurrentUser(string encodeJwt)
+        {
+            var currentUser = new CurrentUser();
+
+            var payload = DecodeJwt(encodeJwt);
+
+            var prop = currentUser.GetType().GetProperties();
+            foreach (var item in prop)
+            {
+                if (payload.Any(x => x.Key == item.Name))
+                {
+                    if (item.PropertyType == typeof(string))
+                    {
+                        item.SetValue(currentUser, payload[item.Name]);
+                    }
+                    else if (item.PropertyType.IsEnum)
+                    {
+                        if (item.PropertyType.Name == "Language")
+                            item.SetValue(currentUser, payload[item.Name].ToEnum<Language>());
+                        else if (item.PropertyType.Name == "LoginType")
+                            item.SetValue(currentUser, payload[item.Name].ToEnum<LoginType>());
+                    }
+                    else if (item.PropertyType == typeof(bool))
+                    {
+                        item.SetValue(currentUser, bool.Parse(payload[item.Name]));
+                    }
+                }
+            }
+            return currentUser;
+        }
+
+        /// <summary>
+        /// 解析token中的payload信息,payload信息来源于tokeninfo类
         /// </summary>
         /// <param name="encodeJwt"></param>
         /// <returns></returns>
@@ -97,29 +149,6 @@ namespace Web.Jwt
             //var header = JsonUtil.JsonToObject<Dictionary<string, string>>(Base64UrlEncoder.Decode(jwtArr[0]));
             var payLoad = JsonUtil.JsonToObject<Dictionary<string, string>>(Base64UrlEncoder.Decode(jwtArr[1]));
             return payLoad;
-        }
-
-        /// <summary>
-        /// 重新刷新Token
-        /// </summary>
-        /// <param name="token"></param>
-        /// <returns></returns>
-        public string RefreshToken(string token, Language? Lang = null, string CurrencyCode = "")
-        {
-            var payload = DecodeJwt(token);
-
-            var claimList = new List<Claim>() { };
-
-            claimList.Add(new Claim("UserId", payload["UserId"]));
-            claimList.Add(new Claim("Lang", Lang != null ? Lang.ToString() : payload["Lang"]));
-            claimList.Add(new Claim("CurrencyCode", !CurrencyCode.IsEmpty() ? CurrencyCode : payload["CurrencyCode"]));
-            claimList.Add(new Claim("Account", payload["Account"]));
-            claimList.Add(new Claim("LoginType", payload["LoginType"]));
-            claimList.Add(new Claim("IsLogin", payload["IsLogin"]));
-            claimList.Add(new Claim("Email", payload["Email"]));
-
-            string ticket = CreateToken(claimList);
-            return ticket;
         }
 
         /// <summary>

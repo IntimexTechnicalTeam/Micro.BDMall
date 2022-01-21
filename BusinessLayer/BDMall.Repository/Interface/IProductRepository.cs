@@ -34,5 +34,7 @@ namespace BDMall.Repository
         Guid? GetOnSaleProductId(string prodCode);
 
         List<LastVersionProductView> GetLastVersionProductLstByCode(List<string> prodCodeLst);
+
+        List<decimal> GetProductAddPriceBySku(Guid id, Guid skuId);
     }
 }
