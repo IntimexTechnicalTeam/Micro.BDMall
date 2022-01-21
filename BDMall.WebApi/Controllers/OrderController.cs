@@ -25,6 +25,8 @@ namespace BDMall.WebApi.Controllers
         /// </summary>
         /// <param name="checkout"></param>
         /// <returns></returns>
+        [HttpPost("Create")]
+        [ProducesResponseType(typeof(SystemResult), 200)]
         public async Task<SystemResult> Create([FromBody] NewOrder checkout)
         { 
             var result = await orderBLL.BuildOrder(checkout);

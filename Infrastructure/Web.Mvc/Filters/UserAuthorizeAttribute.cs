@@ -18,18 +18,7 @@ using Web.Jwt;
 namespace Web.Mvc
 {
     public class UserAuthorizeAttribute  : ActionFilterAttribute
-    {
-        //IServiceProvider service;
-        //IJwtToken jwtToken; 
-        //IConfiguration Configuration;
-
-        //public UserAuthorizeAttribute(IServiceProvider _service) 
-        //{
-        //    this.service = _service;
-        //    jwtToken = service.Resolve<IJwtToken>();
-        //    this.Configuration = service.Resolve<IConfiguration>();
-        //}
-
+    {       
         /// <summary>
         /// 鉴权
         /// </summary>

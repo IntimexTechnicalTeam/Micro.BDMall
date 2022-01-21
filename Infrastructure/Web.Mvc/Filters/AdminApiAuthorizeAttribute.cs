@@ -18,10 +18,6 @@ namespace Web.Mvc
     /// </summary>
     public class AdminApiAuthorizeAttribute : ActionFilterAttribute
     {
-        //IServiceProvider service;
-        //IJwtToken jwtToken;
-        //IConfiguration Configuration;
-
         /// <summary>
         /// 需要模塊權限 
         /// </summary>
@@ -35,15 +31,6 @@ namespace Web.Mvc
         /// 需要的功能權限
         /// </summary>
         public string[] Function;
-
-
-        //public AdminApiAuthorizeAttribute(IServiceProvider _service)// : base(_service)
-        //{
-        //    this.service = _service;
-
-        //    jwtToken = service.Resolve<IJwtToken>();
-        //    this.Configuration = service.Resolve<IConfiguration>();
-        //}
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
@@ -87,8 +74,7 @@ namespace Web.Mvc
 
             var payload = jwtToken.DecodeJwt(token);
             var uid = payload["UserId"];
-            var loginType = payload["LoginType"];
-
+            
             string key = $"{CacheKey.CurrentUser}";
             var cacheUser = await RedisHelper.HGetAsync<UserDto>(key, uid);
 

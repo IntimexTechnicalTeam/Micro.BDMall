@@ -85,7 +85,7 @@ namespace BDMall.BLL
         {
             var result = new SystemResult() { Succeeded =false };
             
-            var member  = await baseRepository.GetModelByIdAsync<Member>(currentUser.UserId);
+            var member  = await baseRepository.GetModelByIdAsync<Member>(Guid.Parse(currentUser.UserId));
             member.Language = Lang;
 
             if (currentUser.IsLogin)
@@ -102,7 +102,7 @@ namespace BDMall.BLL
         {
             var result = new SystemResult() { Succeeded = false };
 
-            var member = await baseRepository.GetModelByIdAsync<Member>(currentUser.UserId);
+            var member = await baseRepository.GetModelByIdAsync<Member>(Guid.Parse(currentUser.UserId));
             member.CurrencyCode = CurrencyCode;
 
             if (currentUser.IsLogin)

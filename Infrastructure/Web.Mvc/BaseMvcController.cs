@@ -156,14 +156,7 @@ namespace Web.Mvc
                     //return _currentUser;
                 }
 
-                var payload = jwtToken.DecodeJwt(token);
-                _currentUser.Token = token;
-                _currentUser.UserId = payload["UserId"];
-                _currentUser.CurrencyCode = payload["CurrencyCode"];
-                _currentUser.Lang = (Language)Enum.Parse(typeof(Language), payload["Lang"]);
-                _currentUser.LoginType = (LoginType)Enum.Parse(typeof(LoginType), payload["LoginType"]);
-                _currentUser.IsLogin = bool.Parse(payload["IsLogin"]);
-                _currentUser.Email = payload["Email"];
+                _currentUser = jwtToken.CreateCurrentUser(token);
                 //admin,商家和第三方商家
                 if (_currentUser.LoginType <= LoginType.Admin)
                 {

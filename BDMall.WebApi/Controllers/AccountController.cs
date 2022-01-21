@@ -36,22 +36,18 @@ namespace BDMall.WebApi.Controllers
         [HttpPost("Login")]
         [ProducesResponseType(typeof(SystemResult), 200)]
         public async Task<SystemResult> Login([FromBody] LoginInput input)
-        {
+        {           
             var result = await loginBLL.Login(input);
 
             if (result.Succeeded)
             {
                 var userInfo = result.ReturnValue as MemberDto;
 
-                var claimList = new List<Claim>() { };
-                claimList.Add(new Claim("UserId", userInfo.Id.ToString()));
-                claimList.Add(new Claim("Lang", userInfo.Language.ToString()));
-                claimList.Add(new Claim("CurrencyCode", userInfo.CurrencyCode));
-                claimList.Add(new Claim("Account", userInfo.Account));
-                claimList.Add(new Claim("IsLogin", "true"));
-                claimList.Add(new Claim("LoginType", $"{ LoginType.Member }"));
-                claimList.Add(new Claim("Email", userInfo.Email));
-                string ticket = jwtToken.CreateToken(claimList);
+                var tokenInfo = AutoMapperExt.MapTo<TokenInfo>(userInfo);
+                tokenInfo.UserId = userInfo.Id.ToString();
+                tokenInfo.IsLogin = true;
+                tokenInfo.LoginType = LoginType.Member;
+                string ticket = jwtToken.CreateToken(tokenInfo);
 
                 result.Succeeded = true;
                 result.ReturnValue = ticket;

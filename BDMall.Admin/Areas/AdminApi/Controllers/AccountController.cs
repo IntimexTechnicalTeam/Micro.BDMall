@@ -6,11 +6,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Web.Framework;
-using Web.Jwt;
 using Web.Mvc;
 
 namespace BDMall.Admin.Areas.AdminApi.Controllers
@@ -41,17 +38,10 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
             {
                 var userInfo = result.ReturnValue as UserDto;
 
-                var claimList = new List<Claim>() { };
-                claimList.Add(new Claim("UserId", $"{userInfo.Id }"));
-                claimList.Add(new Claim("Lang", userInfo.Language.ToString()));
-                claimList.Add(new Claim("CurrencyCode", "HKD"));                     //为了兼容默认一个
-                claimList.Add(new Claim("Account", $"{userInfo.Account}"));
-                claimList.Add(new Claim("IsLogin", "true"));
-                claimList.Add(new Claim("LoginType", $"{ userInfo.LoginType }"));
-                claimList.Add(new Claim("Email", $"{ userInfo.Email }"));
-
-
-                userInfo.Token = jwtToken.CreateToken(claimList);
+                var tokenInfo = AutoMapperExt.MapTo<TokenInfo>(userInfo);
+                tokenInfo.UserId = userInfo.Id.ToString();
+                tokenInfo.IsLogin = true;              
+                userInfo.Token = jwtToken.CreateToken(tokenInfo);
 
                 //把登录信息：token,权限，菜单，角色放进redis中
                 string key = $"{CacheKey.CurrentUser}";
