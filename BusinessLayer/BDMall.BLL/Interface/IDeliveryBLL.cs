@@ -276,5 +276,8 @@ namespace BDMall.BLL
         /// <returns></returns>
         DeliveryTypeActiveView GetDeliveryActiveInfo(Guid merchantId);
 
+        PageData<ExpressCompanyView> GetExpress(ExpressSearchCond cond);
+
+        List<CountryZoneView> GetProvinceByCountryZoneForSelect(Guid zoneid, Guid id);
     }
 }

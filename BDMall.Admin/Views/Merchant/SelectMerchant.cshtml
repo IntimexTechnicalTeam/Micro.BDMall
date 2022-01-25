@@ -1,0 +1,242 @@
+﻿
+@{
+    ViewBag.Title = "SelectMerchant";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div id="app" class="col-xs-12" v-cloak>
+    <div class="col-xs-10">
+        <div>
+            <table class="table table-condensed">
+                <tr>
+                    <td class="col-xs-2">
+                        @BDMall.Resources.Label.MerchantName
+                    </td>
+                    <td class="col-xs-10">
+                        <input type="text" v-model="condition.Name" class="form-control input-sm" />
+                    </td>
+                
+                </tr>
+                <tr>
+                  
+                    <td class="col-xs-2">
+                        @BDMall.Resources.Label.IsActive
+                    </td>
+                    <td class="col-xs-10">
+                        <select id="cboIsActive" class="form-control" style="width:110px;"></select>
+                    </td>
+                </tr>
+            </table>
+            <div class="text-right">
+                <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Search" onclick="search();" />
+            </div>
+        </div>
+
+        <div>
+            <div class="panel-body">
+                <div id="toolbar" class="btn-group">
+                    <button id="btn_add" type="button" class="btn btn-default" v-on:click="add" v-bind:disabled="IsAdd">
+                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>@BDMall.Resources.Action.Add
+                    </button>
+                </div>
+                <table id="tblMerchant"></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+         var isSingleSelect = Boolean(@ViewBag.IsSingleSelect);
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                MerchantList: [],
+                Selected: [],
+                condition: {
+                    Name: "",
+                    ShowPass: true,
+                    IsActiveCond: -1,
+                },
+                IsAdd: true,
+            },
+            methods: {
+                ShowTableData: function () {
+                    $("#tblMerchant").bootstrapTable("refresh", { url: "/AdminAPI/Merchant/SearchMerchantList", pageNumber:1 });
+                    vm.IsAdd = true;
+                },
+                SetButtonState: function () {
+
+                    var selected = $("#tblMerchant").bootstrapTable("getSelections");
+
+                    if (selected.length > 0) {
+                        vm.IsAdd = false;
+                    }
+                    else {
+                        vm.IsAdd = true;
+                    }
+                },
+                add: function () {
+                    dialogClose();
+                },
+                addMerchant: function (row) {
+                    if ($.inArray(row, vm.MerchantList) < 0) {
+                        vm.MerchantList.push(row);
+                    }
+                },
+                removeMerchant: function (row) {
+                    var index = $.inArray(row, vm.MerchantList);
+                    vm.MerchantList.splice(index, 1);
+                }
+            }
+        });
+
+        function dialogClose() {
+            bDialog.closeCurrent(vm.MerchantList);
+        }
+
+       var ProductTableInit = function () {
+
+            var btTable = new Object();
+
+            btTable.queryParams = function (params) {
+                var page = 1;
+                if (params.offset > 0) {
+                    page = parseInt(params.offset / params.limit) + 1;
+                }
+                var isActive = $("#cboIsActive").val();
+                if (isActive != "-1") {
+                    if (isActive == "Yes" || isActive == "是") {
+                        vm.condition.IsActiveCond = true;
+                    }
+                    else {
+                        vm.condition.IsActiveCond = false;
+                    }
+                }
+                else {
+                    vm.condition.IsActiveCond = null;
+                }
+
+                vm.condition.Page = page;
+                vm.condition.PageSize = params.limit;
+
+                return vm.condition;
+
+            }
+            btTable.Init = function () {
+
+                $("#tblMerchant").bootstrapTable({
+                    method: 'post',                      //请求方式（*）
+                    //url: '/AdminAPI/Merchant/SearchMerchantList',         //请求后台的URL（*）
+                    queryParams: btTable.queryParams,//传递参数（*）
+                    toolbar: '#toolbar',                //工具按钮用哪个容器
+                    striped: true,                      //是否显示行间隔色
+                    cache: true,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                    sortable: false,                     //是否启用排序
+                    sortOrder: "asc",                   //排序方式
+                    sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+                    pageNumber: 1,                       //初始化加载第一页，默认第一页
+                    pageSize: 10,                       //每页的记录行数（*）
+                    pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                    smartDisplay: false,
+                    showRefresh: true,                  //是否显示刷新按钮
+                    singleSelect: isSingleSelect,
+                    clickToSelect: true,                //是否启用点击选中行
+                    //height: 750,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+                    uniqueId: "Id",                     //每一行的唯一标识，一般为主键列
+                    cardView: false,                    //是否显示详细视图
+                    detailView: false,                   //是否显示父子表
+                    pagination: true,                   //是否显示分页（*）
+                    dataField: "Data",
+                    totalField: "TotalRecord",
+                    ajaxOptions: {
+                        beforeSend: function (request) {
+                            var access_token = $.cookie("access_token");
+                            request.setRequestHeader("Authorization", "Bearer " + access_token);
+                        }
+                    },
+                    onLoadSuccess: function () {
+                        vm.SetButtonState();
+                    },
+                    onCheck: function (row) {
+                        vm.SetButtonState();
+                        vm.addMerchant(row);
+                    },
+                    onUncheck: function (row) {
+                        vm.SetButtonState();
+                        vm.removeMerchant(row);
+                    },
+                    onCheckAll: function (rows) {
+                        vm.SetButtonState();
+                        rows.forEach(function (val) {
+                            vm.addMerchant(val);
+                        });
+                    },
+                    onUncheckAll: function (rows) {
+                        vm.SetButtonState();
+                        rows.forEach(function (val) {
+                            vm.removeProduct(val);
+                        });
+                    },
+                    onLoadSuccess: function () {
+                        checkSelectedMerchants();
+
+                    },
+                    columns: [{
+                        checkbox: true
+                    }, {
+                        field: 'Id',
+                        title: 'Id',
+                        visible: false
+                    },{
+                        field: 'Logo',
+                        title: '@BDMall.Resources.Label.Logo',
+                        formatter: function (value, row, index) {
+                            return '<img  src="' + value + '" width="64" class="dialog">';
+                        }
+                    },{
+                        field: 'Name',
+                        title: '@BDMall.Resources.Label.MerchantName',
+                    }],
+                });
+            };
+
+            return btTable;
+        }
+
+
+        function checkSelectedMerchants()
+        {
+            if (vm.MerchantList) {
+                var datas = $("#tblMerchant").bootstrapTable("getData");
+                for (var i = 0; i < datas.length; i++) {
+                    var item = datas[i];
+                    for (var j = 0; j < vm.MerchantList.length; j++) {
+                        selectItem = vm.MerchantList[j];
+                        if (selectItem.Id == item.Id)
+                        {
+                            $("#tblMerchant").bootstrapTable("check", i);
+                        }
+                    }
+                }
+            }
+        }
+
+        function search() {
+            vm.ShowTableData();
+        }
+
+
+        $(document).ready(function () {
+
+
+            var oTable = ProductTableInit();
+            oTable.Init();
+
+            InitNormalSelect("cboIsActive", "/adminapi/Dict/GetWhether", true, null, false);
+            //cover();
+        });
+
+    </script>
+
+}

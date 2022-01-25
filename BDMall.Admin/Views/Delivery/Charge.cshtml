@@ -1,0 +1,684 @@
+﻿@{
+    ViewBag.Title = "Charge";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+<div id="app">
+    <table class="table table-condensed">
+        <tr>
+            <td class="col-md-2">
+                <form class="form-inline">
+                    @BDMall.Resources.Label.Merchant
+                    @*<select id="cboMerchant" class="form-control" style="width:300px;" v-model="merchId" v-on:change="initExpress"></select>*@
+                    <input type="text" class="form-control" id="txtexName" v-model="merchName">
+                    <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Select" v-on:click="selectMerchant" />
+
+                </form>
+            </td>
+            <td class="col-md-2">
+                <form class="form-inline">
+                    @BDMall.Resources.Label.ExpressCompany
+                    @*<select id="cboexpress" class="form-control" style="width:300px;"></select>*@
+                    <input type="text" class="form-control" id="txtexName" v-model="exName">
+                    <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Select" v-on:click="selectExpressCompany" />
+
+                </form>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <input type="button" class="btn btn-primary" value="@BDMall.Resources.Action.Search" v-on:click="Search();" />
+            </td>
+        </tr>
+    </table>
+    <ul id="myTab" class="nav nav-tabs">
+        <li class="active" v-on:click="TabClick(0)">
+            <a href="#SelfDefine" data-toggle="tab">@BDMall.Resources.Label.ChargeRules</a>
+        </li>
+        <li v-on:click="TabClick(1)">
+            <a href="#Routine" data-toggle="tab">@BDMall.Resources.Label.DiscountRules</a>
+        </li>
+    </ul>
+    <div id="myTabContent" class="tab-content">
+        <div class="tab-pane fade in active" id="SelfDefine">
+            <div>
+                <div class="panel-body">
+                    <div id="toolbar" class="btn-group">
+                        <button id="btn_add" type="button" class="btn btn-default" v-on:click="Add">
+                            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>@BDMall.Resources.Action.Add
+                        </button>
+                        <button id="btn_edit" type="button" class="btn btn-default" v-on:click="Modify" v-bind:disabled="IsSModify">
+                            <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>@BDMall.Resources.Action.Modify
+                        </button>
+                        <button id="btn_delete" type="button" class="btn btn-default" v-on:click="Delete" v-bind:disabled="IsSDelete">
+                            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>@BDMall.Resources.Action.Delete
+                        </button>
+                    </div>
+                    <table id="tblAttribute"></table>
+                </div>
+            </div>
+
+        </div>
+        <div class="tab-pane fade" id="Routine">
+            <div>
+
+                <div class="panel-body">
+                    <div id="Routinetoolbar" class="btn-group">
+                        <button type="button" class="btn btn-default" v-on:click="Add">
+                            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>@BDMall.Resources.Action.Add
+                        </button>
+                        <button type="button" class="btn btn-default" v-on:click="Modify" v-bind:disabled="IsRModify">
+                            <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>@BDMall.Resources.Action.Modify
+                        </button>
+                        <button type="button" class="btn btn-default" v-on:click="Delete" v-bind:disabled="IsRDelete">
+                            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>@BDMall.Resources.Action.Delete
+                        </button>
+                    </div>
+                    <table id="tblRoutineAttr"></table>
+                </div>
+            </div>
+        </div>
+        <div id="myModal2" style="display: none;">
+            <div class="modal-header">
+                <span>@BDMall.Resources.Label.DiscountRules</span>
+            </div>
+            <table style="width:100%;">
+                <tr>
+                    <td>
+                        <div class="form-inline">
+                            <label class="col-md-6 text-left">@BDMall.Resources.Label.ExpressCompany</label>
+                            @*<select id="cbosubBuyerGroup" class="form-control col-md-6 " v-model="discount.ExpressId"></select>*@
+
+                            <input type="text" class="form-control col-md-6 " v-model="discount.ExpressName">
+                            <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Select" v-on:click="selectExpressCompany2" />
+
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="form-inline">
+                            <label class="col-md-6 text-left">@BDMall.Resources.Label.Merchant</label>
+                            <input type="text" class="form-control col-md-6 " v-model="discount.MerchantName" disabled>
+                            @*<select id="cboDisMerchant" class="form-control col-md-6 " v-model="discount.MerchantId" disabled></select>*@
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="form-inline">
+                            <label class="col-md-6 text-left">@BDMall.Resources.Label.DiscountMoney</label>
+                            <input type="text" class="form-control col-md-6" v-model="discount.DiscountMoney" id="txtDiscount" maxlength="5" />
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                <tr>
+                    <td>
+                        <div class="form-inline">
+                            <label class="col-md-6 text-left">@BDMall.Resources.Label.DiscountPercent</label>
+                            <input type="text" class="form-control col-md-6" v-model="discount.DiscountPercent" id="txtDiscount" maxlength="5" />
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="form-inline">
+                            <label for="CatalogCode" class="col-md-6 text-left">@BDMall.Resources.Label.IsActive</label>
+                            <input type="checkbox" v-model="discount.IsActive" />
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="form-inline">
+                            <label for="CatalogCode" class="col-md-6 text-left">@BDMall.Resources.Label.IsPercent</label>
+                            <input type="checkbox" v-model="discount.IsPercent" />
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" v-on:click="Close">@BDMall.Resources.Action.Close</button>
+                <button type="button" class="btn btn-primary" v-on:click="Save">@BDMall.Resources.Action.Save</button>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+@section scripts{
+    <script type="text/javascript">
+        var MerchName = '';
+        layui.use(['miniTab'], function () {
+            var layer = layui.layer,
+                miniTab = layui.miniTab;
+        });
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                exId: "00000000-0000-0000-0000-000000000000",
+                exName: "",
+                merchId: "00000000-0000-0000-0000-000000000000",
+                merchName: MerchName,
+                AttrItemID: 0,
+                SubAttriTitle: "",
+                AttrType: 1,
+                action: "",
+                subAction: "",
+                IsSModify: true,
+                IsSDelete: true,
+                IsRModify: true,
+                IsRDelete: true,
+                rule: {
+                    Id: "00000000-0000-0000-0000-000000000000",
+                    ExpressId: "00000000-0000-0000-0000-000000000000",
+                    WeightFrom: 0,
+                    WeightTo: 0,
+                    FirstPrice: 0,
+                    AddPric: 0,
+                    AddWeight: 0,
+                },
+                discount: {
+                    Id: "00000000-0000-0000-0000-000000000000",
+                    ExpressId: "00000000-0000-0000-0000-000000000000",
+                    ExpressName: "",
+                    MerchantId: "00000000-0000-0000-0000-000000000000",
+                    MerchantName: MerchName,
+                    DiscountMoney: 0,
+                    DiscountPercent: 0,
+                    IsActive: true,
+                    IsPercent: false
+                }
+            },
+            methods: {
+
+                TabClick: function (index) {
+                    if (index == 0) {
+                        vm.AttrType = 1;
+                    } else {
+                        vm.AttrType = 2;
+                    }
+                },
+                InitRuleItem: function () {
+
+                    var data = new Object();
+                    data.id = vm.rule.Id;
+                    WS.AjaxP("get", "/adminapi/Delivery/GetRuleItem", data, function (response) {
+                        vm.rule = response;
+                        InitNormalSelect("cbosubBuyerGroup2", "/adminapi/Delivery/GetExpressCompany", true);
+                    }, function () { });
+                },
+                InitDiscountItem: function () {
+                    //InitNormalSelect("cbosubBuyerGroup", "/adminapi/Delivery/GetExpressCompany", true);
+                    var data = new Object();
+                    data.id = vm.discount.Id;
+                    WS.AjaxP("get", "/adminapi/Delivery/GetDiscountItem", { id: vm.discount.Id }, function (response) {
+
+                        vm.discount.MerchantId = vm.merchId;
+                        vm.discount.MerchantName = vm.merchName;
+                        vm.discount.ExpressName = vm.exName;
+                        vm.discount.DiscountMoney = response.DiscountMoney;
+                        vm.discount.DiscountPercent = response.DiscountPercent;
+                        vm.discount.IsActive = response.IsActive;
+                        vm.discount.ExpressId = response.ExpressId;
+                        vm.discount.IsPercent =response.IsPercent;
+                     
+                    }, function () { })
+
+                },
+                Search: function () {
+                    $("#tblAttribute").bootstrapTable("refresh", { url: "/adminapi/Delivery/GetTransRule" });
+                    $("#tblRoutineAttr").bootstrapTable("refresh", { url: "/adminapi/Delivery/GetDiscount" });
+
+                },
+                Add: function () {
+                    vm.action = "Add";
+                    if (vm.AttrType == 1) {
+                        //vm.exId = $("#cboexpress").val();
+                        //vm.merchId = $("#cboMerchant").val();
+                        miniTab.openNewTabByIframe({
+                            href: "/Delivery/TransRuleEdit/00000000-0000-0000-0000-000000000000/" + vm.exId + "/" + vm.merchId,
+                            title:  '@BDMall.Resources.Label.Add-@BDMall.Resources.Label.ChargeRules',
+                            callback: vm.Search
+                        });
+                    }
+                    else {
+                        //vm.SubAttriTitle = "@BDMall.Resources.Label.Add-@BDMall.Resources.Label.DiscountRules";
+                        vm.discount.Id = "00000000-0000-0000-0000-000000000000";
+                        vm.InitDiscountItem();
+                        show2Modal(2);
+                    }
+
+                },
+                Close: function () {
+                    CleanSubAttribute();
+                    $('#app').unblock();
+                },
+                Save: function () {
+                    WS.AjaxP("post", "/adminapi/Delivery/SaveDiscount", vm.discount, function (response) {
+                        if (response.Succeeded == true) {
+                            vm.Close();
+                            showWarn('@BDMall.Resources.Message.SaveSuccess');
+                            vm.Search();
+                        }
+                        else {
+                            showWarn('@BDMall.Resources.Message.SaveFail');
+                        }
+                    }, function () { })
+                },
+                Modify: function () {
+
+                    var a;
+                    if (vm.AttrType == 1) {
+                        a = $("#tblAttribute").bootstrapTable('getSelections');
+                    }
+                    else {
+                        a = $("#tblRoutineAttr").bootstrapTable('getSelections');
+                    }
+
+                    var selected = a[0];
+                    vm.action = "Modify";
+                    if (vm.AttrType == 1) {
+                        //vm.exId = $("#cboexpress").val();
+                        //vm.merchId = $("#cboMerchant").val();
+                        miniTab.openNewTabByIframe({
+                            href:"/Delivery/TransRuleEdit/" + a[0].Id + "/" + vm.exId + "/" + vm.merchId,
+                            title:'@BDMall.Resources.Label.Edit-@BDMall.Resources.Label.ChargeRules',
+                            callback:vm.Search
+                        });
+
+                    }
+                    else {
+                        vm.SubAttriTitle = "@BDMall.Resources.Label.Edit-@BDMall.Resources.Label.DiscountRules";
+                        vm.discount.Id = a[0].Id;
+                        vm.InitDiscountItem();
+                        show2Modal(2);
+                    }
+                },
+                Delete: function () {
+                    var a;
+                    if (vm.AttrType == 1) {
+                        a = $("#tblAttribute").bootstrapTable('getSelections');
+                    }
+                    else {
+                        a = $("#tblRoutineAttr").bootstrapTable('getSelections');
+                    }
+                    if (a.length > 0) {
+                        SystemConfirm('@BDMall.Resources.Message.DeleteConfirm', function () {
+
+                            var listindex = "";
+                            if (vm.AttrType == 1) {
+                                for (var i = 0; i < a.length; i++) {
+                                    if (listindex == "") {
+                                        listindex = a[i].Id;
+                                    }
+                                    else {
+                                        listindex += "," + a[i].Id;
+                                    }
+
+                                }
+                                var data = new Object();
+                                data.skus = listindex;
+                                WS.AjaxP("get", "/adminapi/Delivery/DeleteTransRule", data, function (response) {
+                                    if (response.Succeeded == true) {
+
+                                        showWarn('@BDMall.Resources.Message.DeleteSucceeded');
+                                        vm.Search();
+                                    }
+                                    else {
+                                        showWarn(response.Message);
+                                    }
+
+                                }, function () { })
+                            }
+                            else {
+                                for (var i = 0; i < a.length; i++) {
+                                    if (listindex == "") {
+                                        listindex = a[i].Id;
+                                    }
+                                    else {
+                                        listindex += "," + a[i].Id;
+                                    }
+
+                                }
+                                var data = new Object();
+                                data.skus = listindex;
+                                WS.AjaxP("get", "/adminapi/Delivery/DiscountDelete", data, function (response) {
+                                    if (response.Succeeded == true) {
+                                        showWarn('@BDMall.Resources.Message.DeleteSucceeded');
+                                        vm.Search();
+                                    }
+                                    else {
+                                        showWarn(response.Message);
+                                    }
+
+                                }, function () { })
+                            }
+
+
+                        });
+                    } else {
+                        showWarn('@BDMall.Resources.Message.DeleteSelect');
+                    }
+
+                },
+                SetSelfButtonState: function () {
+                    var selected = $("#tblAttribute").bootstrapTable("getSelections");
+                    if (selected.length == 1) {
+                        vm.IsSModify = false;
+                    }
+                    else {
+                        vm.IsSModify = true;
+                    }
+
+                    if (selected.length >= 1) {
+                        vm.IsSDelete = false;
+                    }
+                    else {
+                        vm.IsSDelete = true;
+                    }
+                },
+                SetRouteButtonState: function () {
+                    var selected = $("#tblRoutineAttr").bootstrapTable("getSelections");
+                    if (selected.length == 1) {
+                        vm.IsRModify = false;
+                    }
+                    else {
+                        vm.IsRModify = true;
+                    }
+
+                    if (selected.length >= 1) {
+                        vm.IsRDelete = false;
+                    }
+                    else {
+                        vm.IsRDelete = true;
+                    }
+                },
+                initExpress: function () {
+                    //var obj = new Object();
+                    //obj.id = $("#cboMerchant").val();
+                    //vm.merchId = $("#cboMerchant").val();
+                    //InitNormalSelect("cboexpress", "/adminapi/Delivery/GetMerchantExpressByCond", false, obj, false);
+                 },
+                selectExpressCompany2: function () {
+
+
+                    OpenDialog("@BDMall.Resources.Label.ExpressCompany", 1000, 700, "/Delivery/SelectExpressCompany/0/00000000-0000-0000-0000-000000000000/0", null, function (data) {
+
+                        if (data && data.results && data.results.length > 0) {
+                            //vm.Condition.ProdCode = data.results[0].Code;
+                            vm.discount.ExpressId = data.results[0].Id;
+                            vm.discount.ExpressName = data.results[0].Name;
+                        }
+
+
+                    });
+                },
+                selectExpressCompany: function () {
+
+                    var mercahntId = vm.merchId;
+                    OpenDialog("@BDMall.Resources.Label.ExpressCompany", 1000, 700, "/Delivery/SelectExpressCompany/0/" + mercahntId + "/0", null, function (data) {
+
+                        if (data && data.results && data.results.length > 0) {
+                            //vm.Condition.ProdCode = data.results[0].Code;
+                            vm.exId = data.results[0].Id;
+                            vm.exName = data.results[0].Name;
+                        }
+                    });
+                },
+                selectMerchant: function () {
+
+                    OpenDialog("@BDMall.Resources.Label.Merchant", 1000, 700, "/Merchant/SelectMerchant/1/0/0", null, function (data) {
+                        if (data && data.results && data.results.length > 0) {
+                            data.results.forEach(function (val) {
+
+                                vm.merchId = val.Id;
+                                vm.merchName = val.Name;
+
+                                vm.discount.MerchantId = val.Id;
+                                vm.discount.MerchantName = val.Name;
+
+                            });
+
+                        }
+                    });
+                }
+            }
+        });
+
+
+        var SelfAttrTableInit = function () {
+
+            var oTableInit = new Object();
+            oTableInit.Init = function () {
+
+                $("#tblAttribute").bootstrapTable({
+                    method: 'get',                      //请求方式（*）
+                    //url: '/adminapi/Attribute/GetSelfDefineAttribute',         //请求后台的URL（*）
+                    queryParams: oTableInit.queryParams,//传递参数（*）
+                    //queryParamsType:'limit',
+                    toolbar: '#toolbar',                //工具按钮用哪个容器
+                    striped: true,                      //是否显示行间隔色
+                    cache: true,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                    sortable: true,                     //是否启用排序
+                    sortOrder: "asc",                   //排序方式
+                    sidePagination: "client",           //分页方式：client客户端分页，server服务端分页（*）
+                    pageNumber: 1,                       //初始化加载第一页，默认第一页
+                    pageSize: 10,                       //每页的记录行数（*）
+                    pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                    smartDisplay: false,
+                    showRefresh: true,                  //是否显示刷新按钮
+                    clickToSelect: true,                //是否启用点击选中行
+                    height: 500,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+                    uniqueId: "id",                     //每一行的唯一标识，一般为主键列
+                    cardView: false,                    //是否显示详细视图
+                    detailView: false,                   //是否显示父子表
+                    pagination: true,                   //是否显示分页（*）
+                    ajaxOptions: {
+                        beforeSend: function (request) {
+                            var access_token = $.cookie("access_token");
+                            request.setRequestHeader("Authorization", "Bearer " + access_token);
+                        }
+                    },
+                    onCheck: function (row) {
+                        vm.SetSelfButtonState();
+                    },
+                    onUncheck: function (row) {
+                        vm.SetSelfButtonState();
+                    },
+                    onCheckAll: function (rows) {
+                        vm.SetSelfButtonState();
+                    },
+                    onUncheckAll: function (rows) {
+                        vm.SetSelfButtonState();
+                    },
+                    columns: [{
+                        checkbox: true
+                    }, {
+                        field: 'RuleId',
+                        title: 'id',
+                        visible: false
+                    }, {
+                        field: 'Seq',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.Seq',
+
+                    }, {
+                        field: 'WeightFrom',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.WeightFrom',
+
+                    }, {
+                        field: 'WeightTo',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.WeightTo',
+                    }, {
+                        field: 'FirstPrice',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.FirstPrice',
+                    }, {
+                        field: 'AddPrice',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.AddPrice',
+                    }, {
+                        field: 'AddWeight',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.AddWeight',
+                    }
+                    ]
+                });
+            };
+
+            oTableInit.queryParams = function (params) {
+                //vm.exId = $("#cboexpress").val();
+                //vm.merchId = $("#cboMerchant").val();
+                return {
+                    exId: vm.exId,
+                    merchId: vm.merchId
+                };
+            }
+            return oTableInit;
+        }
+
+        var RoutineAttrTableInit = function () {
+
+            var rTableInit = new Object();
+            rTableInit.Init = function () {
+
+                $("#tblRoutineAttr").bootstrapTable({
+                    method: 'get',                      //请求方式（*）
+                    //url: '/adminapi/Attribute/GetSelfDefineAttribute',         //请求后台的URL（*）
+                    queryParams: rTableInit.queryParams,//传递参数（*）
+                    //queryParamsType:'limit',
+                    toolbar: '#Routinetoolbar',                //工具按钮用哪个容器
+                    striped: true,                      //是否显示行间隔色
+                    cache: true,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                    sortable: true,                     //是否启用排序
+                    sortOrder: "asc",                   //排序方式
+                    sidePagination: "client",           //分页方式：client客户端分页，server服务端分页（*）
+                    pageNumber: 1,                       //初始化加载第一页，默认第一页
+                    pageSize: 10,                       //每页的记录行数（*）
+                    pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                    smartDisplay: false,
+                    showRefresh: true,                  //是否显示刷新按钮
+                    clickToSelect: true,                //是否启用点击选中行
+                    height: 500,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+                    uniqueId: "id",                     //每一行的唯一标识，一般为主键列
+                    cardView: false,                    //是否显示详细视图
+                    detailView: false,                   //是否显示父子表
+                    pagination: true,                   //是否显示分页（*）
+                    ajaxOptions: {
+                        beforeSend: function (request) {
+                            var access_token = $.cookie("access_token");
+                            request.setRequestHeader("Authorization", "Bearer " + access_token);
+                        }
+                    },
+                    onCheck: function (row) {
+                        vm.SetRouteButtonState();
+                    },
+                    onUncheck: function (row) {
+                        vm.SetRouteButtonState();
+                    },
+                    onCheckAll: function (rows) {
+                        vm.SetRouteButtonState();
+                    },
+                    onUncheckAll: function (rows) {
+                        vm.SetRouteButtonState();
+                    },
+                    columns: [{
+                        checkbox: true
+                    }, {
+                        field: 'Id',
+                        title: 'id',
+                        visible: false
+                    }, {
+                        field: 'DiscountMoney',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.DiscountMoney',
+
+                    }, {
+                        field: 'DiscountPercent',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.ChargeDiscount',
+                        formatter: function (value, row, index) {
+                            var result = row.IsPercent == true ? value + '%' : value
+                            return result;
+                        }
+                    }, {
+                        field: 'IsActive',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.IsActive',
+                        formatter: function (value, row, index) {
+                            var a = value ? "@BDMall.Resources.Label.Yes" : "@BDMall.Resources.Label.No";
+                            return a;
+                        }
+                    }]
+                });
+            };
+
+            rTableInit.queryParams = function (params) {
+                //vm.exId = $("#cboexpress").val();
+                //vm.merchId = $("#cboMerchant").val();
+                return {
+                    exId: vm.exId,
+                    merchId: vm.merchId
+                };
+            }
+            return rTableInit;
+        }
+
+        function SubClose() {
+            CleanSubAttribute();
+            $('#myModal').unblock();
+        }
+
+        function CleanAttribute() {
+
+        }
+
+        function CleanSubAttribute() {
+            vm.discount.Id= "00000000-0000-0000-0000-000000000000";
+            vm.discount.ExpressId = "00000000-0000-0000-0000-000000000000";
+            vm.discount.ExpressName = "";
+            vm.discount.DiscountMoney = 0;
+            vm.discount.DiscountPercent = 0;
+
+        }
+        function show2Modal(val) {
+            $("#app").block({
+                message: $('#myModal' + val),
+                css: {
+                    'width': '600px',
+                    'border': '1px',
+                    'border-radius': '6px',
+                    'box-shadow': '0 5px 15px rgba(0,0,0,.5)',
+                    'cursor': 'default'
+                },
+                overlayCSS: { backgroundColor: '#000', opacity: '0.6', cursor: 'defalut' }
+            });
+        }
+        //function Search() {
+        //    vm.exId = $("#cboexpress").val();
+        //    vm.merchId = $("#cboMerchant").val();
+        //    vm.Search();
+        //}
+
+        function InitModal() {
+            $('#myModal').modal({ backdrop: 'static', keyboard: false, show: false })
+        }
+
+        $(document).ready(function () {
+
+            //InitTable();
+            //InitNormalSelect("cboMerchant", "/adminapi/Merchant/GetMerchantOptions", false, null, false);
+            //InitNormalSelect("cboDisMerchant", "/adminapi/Merchant/GetMerchantOptions", false, null, false);
+            vm.initExpress();
+            InitModal();
+            var oTable = SelfAttrTableInit();
+            oTable.Init();
+            var rTable = RoutineAttrTableInit();
+            rTable.Init();
+            //BindAttributeGrid();
+        });
+    </script>
+}

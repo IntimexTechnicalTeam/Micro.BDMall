@@ -1,0 +1,385 @@
+﻿@{
+    ViewBag.Title = "TransRuleEdit";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+<div id="app">
+    <div id="myModal1">
+        <div class="modal-header">
+            <span>{{SubAttriTitle}}</span>
+        </div>
+        <div class="row">
+            <table style="width:100%;">
+                <tr>
+                    <td>
+                        <div class="form-inline">
+                            <label class="col-md-6 text-left">@BDMall.Resources.Label.ExpressName</label>
+                            @*<select id="cboBuyerGroup" class="form-control" v-model="rule.ExpressId" onchange="getZone()" v-bind:disabled="IsShow" style="width:300px;"></select>*@
+                            <input type="text" class="form-control" id="txtExpressName" v-model="rule.ExpressName" v-bind:disabled="IsShow" style="width:300px;">
+                            <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Select" v-on:click="selectExpressCompany" v-bind:disabled="IsShow" />
+
+
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="form-inline">
+                            <label class="col-md-6 text-left">@BDMall.Resources.Label.Merchant</label>
+                            @*<select id="cboMerchant" class="form-control" v-model="rule.MerchantId" disabled style="width:300px;"></select>*@
+                            <input type="text" class="form-control" id="txtMerchantName" v-model="rule.MerchantName" disabled style="width:300px;">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="form-inline">
+                            <label class="col-md-6 text-left">@BDMall.Resources.Label.WeightFrom</label>
+                            <input type="text" class="form-control col-md-6" v-model="rule.WeightFrom" id="txtWeightFrom" maxlength="5" disabled />
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                <tr>
+                    <td>
+                        <div class="form-inline">
+                            <label class="col-md-6 text-left">@BDMall.Resources.Label.WeightTo</label>
+                            <input type="text" class="form-control col-md-6" v-model="rule.WeightTo" id="txtWeightTo" maxlength="5" v-bind:disabled="IsShow" />
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="form-inline">
+                            <label class="col-md-6 text-left">@BDMall.Resources.Label.FirstPrice</label>
+                            <input type="text" class="form-control col-md-6" v-model="rule.FirstPrice" id="txtFirstPrice" maxlength="5" v-bind:disabled="IsShow" />
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="form-inline">
+                            <label class="col-md-6 text-left">@BDMall.Resources.Label.AddPrice</label>
+                            <input type="text" class="form-control col-md-6" v-model="rule.AddPrice" id="txtAddPrice" maxlength="5" v-bind:disabled="IsShow" />
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="form-inline">
+                            <label class="col-md-6 text-left">@BDMall.Resources.Label.AddWeight</label>
+                            <input type="text" class="form-control col-md-6" v-model="rule.AddWeight" id="txtAddWeight" maxlength="5" v-bind:disabled="IsShow" />
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-primary" v-on:click="genChargeList" v-bind:disabled="IsShow">@BDMall.Resources.Action.GenerateRules</button>
+        </div>
+
+    </div>
+    <div id="myModal2">
+        <div class="modal-header">
+            <span></span>
+        </div>
+        <div id="divChargeList">
+            @*<table class="table table-condensed" style="margin-bottom:0px">
+                    <thead>
+
+                    </thead>
+                </table>*@
+            <div style="height: 350px; overflow-y: scroll; ">
+                <table class="table table-striped table-condensed scrolltable">
+                    <tr>
+                        <td width="5%"><label class="control-label">@BDMall.Resources.Label.Weight</label></td>
+                        <td v-for="z in charge.zones">
+                            <label class="control-label">{{z.Text}}</label>
+                            <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" title="@BDMall.Resources.Label.ModifyAdditionalPrice" v-on:click="setZoneAddPrice(z.Id)">M.P.</button>
+                        </td>
+                    </tr>
+                    <tr v-for="c in charge.charges">
+                        <td width="5%"><label class="control-label">{{c.Weight}}</label></td>
+                        <td v-for="zc in c.zoneCharge">
+                            <input type="number" v-model="zc.Price" class="form-control" />
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-primary" v-on:click="Save" v-bind:disabled="charge.charges.length==0">@BDMall.Resources.Action.Save</button>
+        </div>
+
+    </div>
+    <div class="modal fade" id="addPriceModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="myModalLabel">
+                        @BDMall.Resources.Label.ZonePrice
+                    </h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                </div>
+                <div class="modal-body">
+                    @BDMall.Resources.Label.FirstPrice   <input type="number" id="txtDefFirstPrice" class="form-control" min="0" />
+                    @BDMall.Resources.Label.AddPrice   <input type="number" id="txtDefAddPrice" class="form-control" min="0" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">
+                        @BDMall.Resources.Action.Close
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="updateZoneAddPrice();">
+                        @BDMall.Resources.Action.Save
+                    </button>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal -->
+    </div>
+</div>
+@section scripts
+{
+    
+<script type="text/javascript">
+        var attrItemRowID = 0;
+        var params = bDialog.getDialogParams();
+        var RuleId = '@ViewBag.RuleId';
+        var exId = '@ViewBag.exId';
+        var merchId = '@ViewBag.MerchId';
+        var charges = [];
+        var zones = [];
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                RuleId: "00000000-0000-0000-0000-000000000000",
+                exId:0,
+                SubAttriTitle: "",
+                charge: {
+                    zones:zones,
+                    charges: charges,
+                    currentZoneId: 0
+                },
+                rule:{
+                    Id: "00000000-0000-0000-0000-000000000000",
+                    ExpressId: "00000000-0000-0000-0000-000000000000",
+                    ExpressName: "",
+                    MerchantId: '00000000-0000-0000-0000-000000000000',
+                    MerchantName: "",
+                    WeightFrom: 0,
+                    WeightTo: 0,
+                    FirstPrice: 0,
+                    AddPrice: 0,
+                    AddWeight: 0,
+                    MerchantId: merchId
+                },
+                IsModify: true,
+                IsDelete: true,
+                IsShow: false,
+
+            },
+            methods: {
+                genChargeList: function () {
+                    var from = Number(vm.rule.WeightFrom);
+                    var to = Number(vm.rule.WeightTo);
+                    var addWeight = Number(vm.rule.AddWeight);
+                    var addPrice = Number(vm.rule.AddPrice);
+                    var price = Number(vm.rule.FirstPrice);
+                    var weight = from;
+                    var preWeight = from;//for zoneChargeItem
+                    charges.splice(0, charges.length);//clear items
+                    while (weight <= to) {
+                        if (weight == vm.rule.WeightFrom) {
+                            weight += addWeight;
+                        }
+                        var chargeItem = {
+                            Weight: weight,
+                            zoneCharge: []
+                        };
+                        for (var i = 0; i < vm.charge.zones.length; i++) {
+
+                            var zoneChargeItem = { ZoneId: vm.charge.zones[i].Id, Price: price, WeightTo: weight, WeightFrom: preWeight,RuleId:vm.RuleId};
+                            chargeItem.zoneCharge.push(zoneChargeItem);
+                        }
+                        charges.push(chargeItem);
+                        preWeight = weight;
+                        weight += addWeight;
+                        price += addPrice;
+                    }
+
+                },
+                GetRulePrice: function () {
+                    var data = new Object();
+                    data.id = vm.exId;
+                    WS.AjaxP("get", "/adminapi/Delivery/GetZoneT", data, function (response) {
+                        vm.charge.zones = response;
+                        var obj = new Object();
+                        obj.ruleId = vm.RuleId
+                        WS.AjaxP("get", "/adminapi/Delivery/GetTransPrice", obj, function (response) {
+                            vm.charge.charges = response;
+                        }, function () { });
+                    }, function () { });
+                },
+                InitRuleItem: function () {
+
+                    var data = new Object();
+                    data.id = vm.RuleId;
+                    WS.AjaxP("get", "/adminapi/Delivery/GetRuleItem", data, function (response) {
+                        vm.rule = response.rule;
+                        vm.rule.MerchantId = merchId;
+                        vm.rule.MerchantName = response.MerchantName;
+                        vm.rule.ExpressName = response.ExpressName;
+                    }, function () { });
+                },
+                GetZone: function () {
+                    var data = new Object();
+                    data.exId = vm.rule.ExpressId;
+                    data.merchId = merchId;
+                    WS.AjaxP("get", "/adminapi/Delivery/GetMaxWeightByExpress", data, function (response) {
+                        vm.rule.WeightFrom = response;
+                    }, function () { });
+                    var obj = new Object();
+                    obj.id = vm.rule.ExpressId;
+                    WS.AjaxP("get", "/adminapi/Delivery/GetZoneT", obj, function (response) {
+                        vm.charge.zones = response;
+                    }, function () { })
+                },
+                GetExpress:function(){
+                    InitNormalSelect("cbosubBuyerGroup2", "/adminapi/Delivery/GetExpressCompany", true);
+                },
+                GetTranName: function () {
+                    var data = new Object();
+                    data.id = merchId;
+                    WS.AjaxP("get", "/adminapi/Delivery/GetMerchantName", data, function (response) {
+                        vm.rule.MerchantName = response.Text;
+                    }, function () { });
+                },
+                setZoneAddPrice: function (zoneId) {
+                    vm.charge.currentZoneId = zoneId;
+                    $('#addPriceModal').modal("show");
+                },
+                Close: function () {
+                    clowWin();
+                },
+                Save: function () {
+                    if (vm.charge.charges.length < 1) {
+                        return false;
+                    }
+                    var chargePrices = [];
+                    for (var i = 0; i < vm.charge.charges.length; i++) {
+                        chargePrices = chargePrices.concat(vm.charge.charges[i].zoneCharge);
+                    }
+                    var obj = new Object();
+                    obj.charges = chargePrices;
+                    //vm.rule.MerchantId = $("#cboMerchant").val();
+                    obj.rule = vm.rule;
+
+                    WS.AjaxP("post", "/adminapi/Delivery/SaveTransRulePrice", obj, function (response) {
+                        if (response.Succeeded == true) {
+                            vm.Close();
+                            showWarn('@BDMall.Resources.Message.SaveSuccess');
+                            //vm.Search();
+                        }
+                        else {
+                            showWarn('@BDMall.Resources.Message.SaveFail');
+                        }
+                    }, function () { })
+
+                },
+                selectExpressCompany: function () {
+
+
+                    OpenDialog("@BDMall.Resources.Label.ExpressCompany", 1000, 700, "/Delivery/SelectExpressCompany/0/0/0", null, function (data) {
+
+                        if (data && data.results && data.results.length > 0) {
+                            //vm.Condition.ProdCode = data.results[0].Code;
+                            vm.rule.ExpressId = data.results[0].Id;
+                            vm.rule.ExpressName = data.results[0].Name;
+                            getZone();
+                        }
+                    });
+                }
+
+            }
+        });
+        function getZone()
+        {
+
+            //vm.rule.ExpressId = $("#cboBuyerGroup").val();
+            vm.GetZone();
+            if (vm.IsCharge)
+            {
+                vm.genChargeList();
+            }
+        }
+        function show2Modal(val) {
+            $("#app").block({
+                message: $('#myModal' + val),
+                css: {
+                    'width': '1100px',
+                    'border': '1px',
+                    'border-radius': '6px',
+                    'box-shadow': '0 5px 15px rgba(0,0,0,.5)',
+                    'cursor': 'default'
+                },
+                overlayCSS: { backgroundColor: '#000', opacity: '0.6', cursor: 'defalut' }
+            });
+        }
+        function updateZoneAddPrice() {
+            if (vm.charge.currentZoneId == 0) {
+                return;
+            }
+            var addPrice = Number($("#txtDefAddPrice").val());
+            var firstPrice = Number($("#txtDefFirstPrice").val());
+            var price = firstPrice;
+            for (var priceIndex = 0; priceIndex < vm.charge.charges.length; priceIndex++) {
+                //console.log("priceIndex=" + priceIndex);
+                var zoneCharge = vm.charge.charges[priceIndex].zoneCharge;
+                for (var zoneIndex = 0; zoneIndex < zoneCharge.length; zoneIndex++) {
+                    // console.log("zoneIndex=" + zoneIndex)
+                    var zonePrice = zoneCharge[zoneIndex];
+                    if (zonePrice.ZoneId == vm.charge.currentZoneId) {
+                        //  console.log(zonePrice);
+                        if (priceIndex != 0) {
+                            zonePrice.Price = price + addPrice;
+                        } else {
+                            zonePrice.Price = price;
+                        }
+                        price = zonePrice.Price;
+                        break;
+                    }
+                }
+            }
+            $('#addPriceModal').modal("hide");
+        }
+        $(document).ajaxStart(function () {
+            showLoading();
+        });
+        $(document).ajaxStop(function () {
+            hideLoading();
+        });
+        $(document).ready(function () {
+            vm.RuleId = RuleId;
+            vm.exId = exId;
+            vm.MerchantId = merchId;
+            //InitNormalSelect("cboMerchant", "/adminapi/Merchant/GetMerchantOptions", false, null, false);
+            //$("#cboMerchant").val(vm.MerchantId);
+            //InitNormalSelect("cboBuyerGroup", "/adminapi/Delivery/GetMerchantExpress", true);
+            if (vm.RuleId != "00000000-0000-0000-0000-000000000000" && vm.exId != "00000000-0000-0000-0000- 000000000000")
+            {
+                vm.IsShow = true;
+                vm.GetRulePrice();
+                vm.InitRuleItem();
+            }
+            else {
+                vm.GetTranName();
+            }
+
+
+
+        });
+</script>
+}

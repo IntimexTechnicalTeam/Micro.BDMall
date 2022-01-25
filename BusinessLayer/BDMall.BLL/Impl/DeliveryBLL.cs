@@ -6,9 +6,11 @@ using BDMall.Model;
 using BDMall.Repository;
 using BDMall.Utility;
 using Intimex.Common;
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Web.Framework;
 
 namespace BDMall.BLL
@@ -36,6 +38,8 @@ namespace BDMall.BLL
             _codeMasterBLL = Services.Resolve<ICodeMasterBLL>();
             _merchantBLL = Services.Resolve<IMerchantBLL>();
             _deliveryAddressBLL = Services.Resolve<IDeliveryAddressBLL>();
+            _provinceRepository = Services.Resolve<IProvinceRepository>();
+            _cityRepository = Services.Resolve<ICityRepository>();
         }
 
         public List<ProductRefuseResult> CheckCountryIsVaild(CountryVaildInfo vailInfo)
@@ -217,9 +221,13 @@ namespace BDMall.BLL
         public List<CountryDto> GetCountry(string name)
         {
             List<CountryDto> list = new List<CountryDto>();
-            var query = baseRepository.GetList<Country>().Where(d => d.IsDeleted == false && (d.Name.Contains(name) || d.Name_e.Contains(name) || d.Name_c.Contains(name) || d.Name_s.Contains(name) || d.Name_j.Contains(name))).ToList();
 
-            list = AutoMapperExt.MapToList<Country, CountryDto>(query);
+            var query = baseRepository.GetList<Country>();
+
+            if (!name.IsEmpty())
+                query = query.Where(d => d.IsDeleted == false && (d.Name.Contains(name) || d.Name_e.Contains(name) || d.Name_c.Contains(name) || d.Name_s.Contains(name) || d.Name_j.Contains(name)));
+
+            list = AutoMapperExt.MapToList<Country, CountryDto>(query.ToList());
             return list;
         }
 
@@ -548,6 +556,91 @@ namespace BDMall.BLL
 
             return result;
         }
+
+        public PageData<ExpressCompanyView> GetExpress(ExpressSearchCond cond)
+        {
+            PageData<ExpressCompanyView> data = new PageData<ExpressCompanyView>();
+
+            var fromIndex = ((cond.PageInfo.Page - 1) * cond.PageInfo.PageSize) + 1;
+            var toIndex = cond.PageInfo.Page * cond.PageInfo.PageSize;
+
+            StringBuilder sb = new StringBuilder();
+            List<SqlParameter> paramList = new List<SqlParameter>();
+            sb.AppendLine("select CCode, TCode, Code,[Name],Id,CreateDate,IsActive ");
+            sb.AppendLine(" from(");
+
+            sb.AppendLine(" select ROW_NUMBER() OVER(ORDER BY Code) as rowNum");
+
+            sb.AppendLine(",a.* from(");
+
+            if (cond.MerchantId != Guid.Empty)
+            {
+
+
+                sb.AppendLine(" select distinct e.CCode,e.TCode,e.Code,t.Value [Name],e.Id,e.CreateDate,e.IsActive from ExpressCompanies e");
+                sb.AppendLine(" left join Translations t on e.NameTransId = t.TransId ");
+                sb.AppendLine(" and t.Lang=@Lang and  t.IsActive=1 and t.IsDeleted=0");
+                sb.AppendLine(" left join MerchantActiveShipMethods m on m.MerchantId = @MerchantId ");
+                sb.AppendLine(" and m.ShipCode=e.Code and t.IsActive=1 and t.IsDeleted=0");
+                paramList.Add(new SqlParameter("@MerchantId", cond.MerchantId));
+            }
+            else
+            {
+                sb.AppendLine(" select e.CCode,e.TCode,e.Code,t.Value [Name],e.Id,e.CreateDate,e.IsActive from ExpressCompanies e");
+                sb.AppendLine(" left join Translations t on e.NameTransId = t.TransId ");
+                sb.AppendLine(" and t.Lang=@Lang and t.IsActive=1 and t.IsDeleted=0");
+            }
+
+            sb.AppendLine(" where 1 = 1 and e.IsDeleted = 0 ");
+
+            paramList.Add(new SqlParameter("@Lang", CurrentUser.Lang));
+            if (!string.IsNullOrEmpty(cond.CCode))
+            {
+                sb.AppendLine(" and UPPER(e.CCode) like @CCode ");
+                paramList.Add(new SqlParameter("@CCode", "%" + cond.CCode + "%"));
+            }
+            if (!string.IsNullOrEmpty(cond.TCode))
+            {
+                sb.AppendLine(" and UPPER(e.TCode) like @TCode ");
+                paramList.Add(new SqlParameter("@TCode", "%" + cond.TCode + "%"));
+            }
+
+            if (!string.IsNullOrEmpty(cond.Code))
+            {
+                sb.AppendLine(" and UPPER(e.Code) like @Code ");
+                paramList.Add(new SqlParameter("@Code", "%" + cond.Code + "%"));
+            }
+
+            if (!string.IsNullOrEmpty(cond.Name))
+            {
+                sb.AppendLine(" and t.Value like @Name ");
+                paramList.Add(new SqlParameter("@Name", "%" + cond.Name + "%"));
+            }
+
+
+            sb.AppendLine(" ) a");
+
+            sb.AppendLine(" ) b");
+            data.TotalRecord = UnitOfWork.DataContext.Database.SqlQuery<ExpressCompanyView>(sb.ToString(), paramList.ToArray()).Count();
+
+
+            if (toIndex > 0 && toIndex >= fromIndex)
+            {
+                sb.AppendFormat(" where rowNum between @FromIndex and @ToIndex", fromIndex, toIndex);
+                paramList.Add(new SqlParameter("@FromIndex", fromIndex));
+                paramList.Add(new SqlParameter("@ToIndex", toIndex));
+            }
+            var paramList2 = paramList.Select(x => ((ICloneable)x).Clone());
+
+            var result = UnitOfWork.DataContext.Database.SqlQuery<ExpressCompanyView>(sb.ToString(), paramList2.ToArray()).ToList();
+            if (result.Count() > 0)
+            {
+                data.Data = result;
+            }
+
+            return data;
+        }
+
         /// <summary>
         /// 计算ECship的运费
         /// </summary>
@@ -1223,7 +1316,7 @@ namespace BDMall.BLL
         {
             var langs = _settingBLL.GetSupportLanguages();
             var name = GetExpressName(id);
-            List<ExpressZone> list = baseRepository.GetList<ExpressZone>().Where(p => p.ExpressId == id).ToList();
+            List<ExpressZone> list = baseRepository.GetList<ExpressZone>().Where(p => p.ExpressId == id && p.IsActive && !p.IsDeleted).ToList();
 
             var dtos = AutoMapperExt.MapToList<ExpressZone, ExpressZoneDto>(list);
 
@@ -1416,6 +1509,12 @@ namespace BDMall.BLL
                     dbModel.CreateDate = DateTime.Now;
                     dbModel.IsActive = true;
                     dbModel.IsDeleted = false;
+                    dbModel.Name = model.Name;
+                    dbModel.Name_e = model.Name_e;
+                    dbModel.Name_c = model.Name_c;
+                    dbModel.Name_s= model.Name_s;
+                    dbModel.Name_j= model.Name_j;
+                    dbModel.Code = model.Code;
                     baseRepository.Insert(dbModel);
                 }
             }
@@ -1539,10 +1638,14 @@ namespace BDMall.BLL
             {
                 var dbMoel = new ExpressDiscount();
                 dbMoel.Id = Guid.NewGuid();
-                dbMoel.IsActive = true;
+                dbMoel.IsActive = model.IsActive;
                 dbMoel.IsDeleted = false;
                 dbMoel.CreateBy = Guid.Parse(CurrentUser.UserId);
                 dbMoel.CreateDate = DateTime.Now;
+                dbMoel.MerchantId = model.MerchantId;
+                dbMoel.ExpressId = model.ExpressId;
+                dbMoel.DiscountMoney = model.DiscountMoney;
+                dbMoel.DiscountPercent = model.DiscountPercent;
                 baseRepository.Insert(dbMoel);
             }
             UnitOfWork.Submit();
@@ -1625,7 +1728,7 @@ namespace BDMall.BLL
         /// <param name="expId"></param>
         private void SaveExpressCountry(List<int> countryIds, Guid expId)
         {
-            var old = baseRepository.GetList<ExpressCountry>().Where(d => d.ExpressId == expId);
+            var old = baseRepository.GetList<ExpressCountry>().Where(d => d.ExpressId == expId).ToList();
             if (old != null)
             {
                 baseRepository.Delete(old);
@@ -1997,6 +2100,71 @@ namespace BDMall.BLL
                 _EmptyLangs = LangUtil.GetMutiLangFromTranslation(null, supportLangs);
             }
             return _EmptyLangs;
+        }
+
+        /// <summary>
+        /// 根據國家獲取相關省份
+        /// </summary>
+        /// <param name="countryId">國家ID</param>
+        /// <returns></returns>
+        public List<CountryZoneView> GetProvinceByCountryZoneForSelect(Guid zoneid, Guid id)
+        {
+            List<int> selectedProvince = new List<int>();
+            List<CountryZoneView> selectedCountryProvince = new List<CountryZoneView>();
+
+
+            var ids =  baseRepository.GetList<ExpressCountry>(d => d.ExpressId == id && d.IsDeleted == false).Select(d => d.CountryId).ToList();
+            List<int> selectedCountry = new List<int>();
+            var orderZone = baseRepository.GetList<ExpressZone> (d => d.ExpressId == id && !d.Id.Equals(zoneid) && d.IsDeleted == false).Select(d => d.Id).ToList();
+            if (orderZone?.Count() > 0)
+            {
+                var selectedCountryTemp = baseRepository.GetList<ExpressZoneCountry>(d => orderZone.Contains(d.ZoneId)).Select(d => d.CountryId).ToList();
+                foreach (var cid in selectedCountryTemp)
+                {
+                    var proNum = baseRepository.GetList<Province>(d => d.CountryId == cid && d.IsDeleted == false).Count();
+                    var selproNum = baseRepository.GetList<ExpressZoneProvince>(d => d.CountryId == cid && d.ZoneId == zoneid && d.IsDeleted == false).Count();
+                    if (proNum == selproNum)
+                    {
+                        selectedCountry.Add(cid);
+                    }
+                }
+            }
+            var dataCountry = baseRepository.GetList<Country>(p => ids.Contains(p.Id) && !selectedCountry.Contains(p.Id)).ToList();
+            //var list = dataCountry.Select(d => new KeyValue
+            //{
+            //    Id = d.Id.ToString(),
+            //    Text = NameUtil.GetCountryName(CurrentUser.Language.ToString(), d),
+            //}).ToList();
+
+            if (dataCountry.Count() > 0)
+            {
+                foreach (var country in dataCountry)
+                {
+
+                    //var orderZone = _expressZoneRepository.Entities.Where(d => d.ExpressId == id && !d.Id.Equals(zoneid) && d.IsDeleted == false).Select(d => d.Id).ToList();
+                    if (orderZone?.Count() > 0)
+                    {
+                        selectedProvince = baseRepository.GetList<ExpressZoneProvince>(d => d.IsDeleted == false && d.CountryId == country.Id && orderZone.Contains(d.ZoneId)).Select(d => d.ProvinceId).ToList();
+                    }
+                    var dblist = baseRepository.GetList<Province>(d => d.IsDeleted == false && d.CountryId == country.Id && !selectedProvince.Contains(d.Id)).ToList();
+                    var list = AutoMapperExt.MapToList<Province,ProvinceDto>(dblist);
+                    foreach (var item in list)
+                    {
+                        item.Name = NameUtil.GetProviceName(CurrentUser.Lang.ToString(), item);
+                    }
+                    var keyList = list.Select(d => new KeyValue
+                    {
+                        Id = d.Id.ToString(),
+                        Text = d.Name,
+                    }).ToList();
+                    var view = new CountryZoneView();
+                    view.CountryId = country.Id;
+                    view.Province = keyList;
+                    selectedCountryProvince.Add(view);
+                }
+            }
+
+            return selectedCountryProvince;
         }
     }
 }

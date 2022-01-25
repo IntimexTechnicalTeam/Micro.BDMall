@@ -27,5 +27,14 @@ namespace BDMall.Domain
         public List<MutiLanguage> Names { get; set; }
 
         public List<CityDto> Cities { get; set; }
+
+        public virtual void Validate()
+        {
+            if (Cities?.Any() ?? false)
+            { 
+                var flag = Cities.Any(x=>x.Code.IsEmpty());
+                if (flag) throw new BLException("Code is Required");
+            }
+        }
     }
 }

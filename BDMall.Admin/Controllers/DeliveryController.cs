@@ -101,5 +101,21 @@ namespace BDMall.Admin.Controllers
             return View();
         }
 
+        /// <summary>
+        /// 搜索快遞公司
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="para2">商家ID</param>
+        /// <param name="para3"></param>
+        /// <returns></returns>
+        public ActionResult SelectExpressCompany(int id, string para2, string para3)
+        {          
+            if (para2.IsEmpty() ||  para2 == "0") 
+                ViewBag.MerchantId = Guid.Empty.ToString();
+            else
+                ViewBag.MerchantId = para2;
+
+            return View();
+        }
     }
 }

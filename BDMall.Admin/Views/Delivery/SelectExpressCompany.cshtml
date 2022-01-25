@@ -1,0 +1,298 @@
+﻿
+@{
+    ViewBag.Title = "SelectExpressCompany";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+
+<div id="app">
+    <div>
+        <table class="table table-condensed">
+            <tr>
+                <td class="col-xs-1">
+                    @BDMall.Resources.Label.ExpressCode
+                </td>
+                <td class="col-xs-5">
+                    <input type="text" v-model="exInfo.Code" class="form-control input-sm" />
+                </td>
+                <td class="col-xs-1">
+                    @BDMall.Resources.Label.ExpressCompany
+                </td>
+                <td class="col-xs-5">
+                    <input type="text" v-model="exInfo.Name" class="form-control input-sm" />
+                </td>
+
+            </tr>
+        </table>
+
+        <div class="text-right">
+            <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Search" onclick="search();" />
+
+        </div>
+    </div>
+    <div id="myTabContent" class="tab-content">
+        <div id="toolbar" class="btn-group">
+            <button id="btn_add" type="button" class="btn btn-default" v-on:click="Add">
+                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>@BDMall.Resources.Action.Add
+            </button>
+        </div>
+        <table id="tblAttribute"></table>
+    </div>
+
+</div>
+@section scripts{
+
+    <style type="text/css">
+        select#bootstrap-duallistbox-selected-list_country, select#bootstrap-duallistbox-nonselected-list_country {
+            width: 100%;
+        }
+    </style>
+    <link href="~/Scripts/bootstrap-duallistbox-master/css/bootstrap-duallistbox.min.css" rel="stylesheet" />
+    <script src="~/Scripts/bootstrap-duallistbox-master/js/jquery.bootstrap-duallistbox.min.js"></script>
+
+    <script type="text/javascript">
+        var formValidate;
+        var merchantId = '@ViewBag.MerchantId';
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                SubAttriTitle: "",
+                AttrType: 1,
+                action: "",
+                subAction: "",
+
+                MerchantId: merchantId,
+                items: {
+                    Code: "",
+                    Id: "00000000-0000-0000-0000-000000000000",
+                    Discount: 0,
+                    Names: [{ Lang: { Text: "", Code: "" }, Desc: "" }],
+                    IsActive: true,
+                    CountryIds:[]
+                },
+                exInfo: {
+                    MerchantId: merchantId,
+                    Code: "",
+                    Name: ""
+                },
+                country: [],
+                ExpressCompany: [],
+                Langs: []
+            },
+            methods: {
+                InitCountry:function(){
+                    WS.AjaxP("get", "/adminapi/Delivery/GetCountryForExpress", null, function (a) {
+                        vm.country = a;
+
+                    }, function () { });
+
+                },
+                InitExpressItem: function () {
+                    cleanSelect();
+                        var data = new Object();
+                        data.id = vm.items.Id;
+                        WS.AjaxP("get", "/adminapi/Delivery/GetExpressItem", data, function (response) {
+                            vm.items = response;
+                            vm.$nextTick(function () {
+                                var selector = $('.demo1').bootstrapDualListbox();//初始化组件
+                                console.log(vm.items.CountryIds);
+                                if (vm.items.CountryIds!=[])
+                                {
+                                    $.each(vm.items.CountryIds, function (i, val) {
+                                        console.log(val);
+                                        $(".demo1 option[value='" + val + "']").attr("selected", "selected");
+                                    });
+                                    selector.bootstrapDualListbox('refresh');
+                                }
+
+                            })
+                        }, function () { });
+
+
+
+                   // InitNormalSelect("bootstrap-duallistbox-nonselected-list_duallistbox_demo1", "/adminapi/Delivery/GetExpressCompany", true);
+
+                },
+                Search: function () {
+                    WS.AjaxP("get", "/adminapi/Delivery/GetLangs", null, function (response) {
+                        vm.Langs = response;
+                        HideTableColumn();
+                        $("#tblAttribute").bootstrapTable("refresh", { url: "/AdminAPI/Delivery/GetExpress", pageNumber: 1});
+                    }, function () { });
+
+                },
+                Add: function () {
+                    dialogClose();
+
+                },
+                addExpressCompany: function (row) {
+
+                    vm.ExpressCompany = [];
+                    vm.ExpressCompany.push(row);
+
+
+                },
+                removeExpressCompany: function (row) {
+
+                    vm.ExpressCompany = [];
+
+                }
+            },
+        });
+
+
+        var SelfAttrTableInit = function () {
+
+            var oTableInit = new Object();
+            oTableInit.Init = function () {
+
+                $("#tblAttribute").bootstrapTable({
+                    method: 'post',                      //请求方式（*）
+                    //url: '/AdminAPI/Delivery/GetExpress',         //请求后台的URL（*）
+                    queryParams: oTableInit.queryParams,//传递参数（*）
+                    //queryParamsType:'limit',
+                    toolbar: '#toolbar',                //工具按钮用哪个容器
+                    striped: true,                      //是否显示行间隔色
+                    cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                    sortable: false,                     //是否启用排序
+                    sortOrder: "asc",                   //排序方式
+                    sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+                    pageNumber: 1,                       //初始化加载第一页，默认第一页
+                    pageSize: 10,                       //每页的记录行数（*）
+                    pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                    smartDisplay: false,
+                    showRefresh: true,                  //是否显示刷新按钮
+                    singleSelect: true,
+                    clickToSelect: true,                //是否启用点击选中行
+                    height: 500,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+                    uniqueId: "Id",                     //每一行的唯一标识，一般为主键列
+                    cardView: false,                    //是否显示详细视图
+                    detailView: false,                   //是否显示父子表
+                    pagination: true,                   //是否显示分页（*）
+                    dataField: "Data",
+                    totalField: "TotalRecord",
+                    ajaxOptions:{
+                        beforeSend: function (request)
+                        {
+                            var access_token = $.cookie("access_token");
+                            request.setRequestHeader("Authorization", "Bearer " + access_token);
+                        }
+                    },
+                    onCheck: function (row) {
+                        vm.addExpressCompany(row);
+                    },
+                    onUncheck: function (row) {
+                        vm.removeExpressCompany(row);
+                    },
+                    columns: [{
+                        checkbox: true
+                    }, {
+                        field: 'Id',
+                        title: 'id',
+                        visible: false,
+                    }, {
+                        field: 'Code',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.ExpressCode',
+
+                    }, {
+                        field: 'Name',
+                        sortable: true,
+                        title: '@BDMall.Resources.Label.Name',
+
+                    }
+                    ]
+                });
+            };
+
+            oTableInit.queryParams = function (params) {
+                var page = 1;
+                if (params.offset > 0) {
+                    page = parseInt(params.offset / params.limit) + 1;
+                }
+
+                var sorted = params.order;
+                var sortedBy = "";
+                vm.exInfo.PageInfo = { Page: page, PageSize: params.limit, SortName: sortedBy, SortOrder: sorted };
+
+                return vm.exInfo;
+                //return {
+                //};
+            }
+            return oTableInit;
+        }
+
+        function SubClose() {
+            CleanSubAttribute();
+            $('#myModal').unblock();
+        }
+
+        function CleanAttribute() {
+
+        }
+
+        function dialogClose() {
+            //var selected = $("#tblProduct").bootstrapTable("getSelections");
+            bDialog.closeCurrent(vm.ExpressCompany);
+
+
+        }
+
+
+        function CleanSubAttribute() {
+            $("#txtSubAttriCode").val("");
+            $("#SubDesc_e").val("");
+            $("#SubDesc_c").val("");
+            $("#SubDesc_s").val("");
+            $("#SubDesc_j").val("");
+            $("#txtSubAttriCode").focus();
+        }
+
+        function HideTableColumn() {
+            $('#tblAttribute').bootstrapTable('hideColumn', 'Name_e');
+            $('#tblAttribute').bootstrapTable('hideColumn', 'Name_c');
+            $('#tblAttribute').bootstrapTable('hideColumn', 'Name_s');
+            $('#tblAttribute').bootstrapTable('hideColumn', 'Name_j');
+            console.log("b");
+            vm.Langs.forEach(function (val) {
+                if (val.Code == "E") {
+                    $('#tblAttribute').bootstrapTable('showColumn', 'Name_e');
+                }
+                else if (val.Code == "C") {
+                    $('#tblAttribute').bootstrapTable('showColumn', 'Name_c');
+                }
+                else if (val.Code == "S") {
+                    $('#tblAttribute').bootstrapTable('showColumn', 'Name_s');
+                }
+                else if (val.Code == "J") {
+                    $('#tblAttribute').bootstrapTable('showColumn', 'Name_j');
+                }
+
+            });
+
+        }
+        function search() {
+
+            vm.Search();
+
+        }
+        function InitModal() {
+            $('#myModal').modal({ backdrop: 'static', keyboard: false, show: false })
+        }
+        function cleanSelect() {
+            $("select").removeSelected();
+        }
+        jQuery.fn.removeSelected = function () {
+            this.val("");
+        };
+        $(document).ready(function () {
+            InitModal();
+            var oTable = SelfAttrTableInit();
+            oTable.Init();
+            vm.InitCountry();
+            vm.Search();
+
+        });
+    </script>
+}
+

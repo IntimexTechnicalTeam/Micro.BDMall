@@ -27,6 +27,7 @@ namespace Domain
             ConfigMap<MerchantECShipInfo, MerchantECShipInfoDto>();
             ConfigMap<MerchantActiveShipMethod, MerchantActiveShipMethodDto>();
             ConfigMap<CodeMasterDto, CodeMaster>();
+            ConfigMap<ExpressZoneDto, ExpressZone>();
             ConfigMap<ExpressCompanyDto, ExpressCompany>();
             ConfigMap<CurrencyExchangeRateDto, CurrencyExchangeRate>();
             ConfigMap<CustomMenuDto, CustomMenu>();

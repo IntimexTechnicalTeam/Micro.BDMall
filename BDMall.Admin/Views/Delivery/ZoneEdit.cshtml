@@ -1,0 +1,452 @@
+﻿@{
+    ViewBag.Title = "Zone Edit";
+    Layout = "~/Views/Shared/_LayoutMain.cshtml";
+}
+<div id="app">
+    <div>
+        <table>
+            <tr>
+                <td class="col-md-2">@BDMall.Resources.Label.ExpressName</td>
+                <td class="col-md-10">
+                    <select id="cbosubBuyerGroup2" class="form-control col-md-6 " v-model="items.ExpressId" onchange="InitCountry();"></select>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">@BDMall.Resources.Label.ZoneCode</td>
+                <td class="col-md-10">
+                    <input type="text" class="form-control col-md-6" v-model="items.Code" id="txtSubAttriCode" maxlength="5" />
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2"></td>
+                <td class="col-md-10">
+                    <multilang-bar v-bind:data="items.Names" ref="langbar" v-bind:selectlanguage="selectLanguage"></multilang-bar>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">@BDMall.Resources.Label.ZoneName</td>
+                <td class="col-md-10">
+                    <div v-for="zone in items.Names" v-show="zone.Lang.Code==languageType">
+                        <input type="text" class="form-control" v-model="zone.Desc" v-bind:id="'SubDesc_'+zone.Lang.Code" />
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">@BDMall.Resources.Label.Remarks</td>
+                <td class="col-md-10">
+                    <div v-for="item in items.Remarks" v-show="item.Lang.Code==languageType">
+                        <input type="text" class="form-control col-md-6" v-bind:id="'remarkDesc_'+item.Lang.Code" v-model="item.Desc" />
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-2">@BDMall.Resources.Label.FuelSurcharge</td>
+                <td class="col-md-10"><input type="text" class="form-control col-md-6" v-model="items.FuelSurcharge" id="txtDiscount" maxlength="5" /></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="form-inline">
+                        <div class="col-md-6 text-left" style="height:400px;overflow:scroll;list-style:none">
+                            <input type="checkbox" id="cbxSelectAllRow" onchange="checkAllItems();" />
+                            @BDMall.Resources.Label.Country <br>
+                            <ul v-for="c in country">
+                                <li><input type="checkbox" v-bind:id="'txtcountry'+c.Id" name="txtcountry" v-bind:value="c.Id" v-bind:onchange="'checkedCountry('+c.Id+')'" /><span v-bind:onclick="'selectProvince('+c.Id+')'">{{c.Text}}</span></li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6" style="height:400px;overflow:scroll;list-style:none">
+                            @BDMall.Resources.Label.Province <br>
+                            <ul v-for="c in province">
+                                <li><input type="checkbox" name="txtprovince" onchange="getSelectArr();" v-bind:id="'txtprovince'+c.Id" v-bind:value="c.Id" />{{c.Text}}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="checkedHidden" style="display:none;"></div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default" onclick="clowWin();">@BDMall.Resources.Action.Close</button>
+        <button type="button" class="btn btn-primary" v-on:click="Save">@BDMall.Resources.Action.Save</button>
+    </div>
+
+</div>
+@section scripts{
+    <style type="text/css">
+        li {
+            list-style: none;
+        }
+    </style>
+    <script src="~/Scripts/admin/vue-component/multilangbar.js"></script>
+    <script type="text/javascript">
+
+        var zId = '@ViewBag.Id';
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                exId: "00000000-0000-0000-0000-000000000000",
+                SubAttriTitle: "",
+                AttrType: 1,
+                action: "",
+                subAction: "",
+                items: {
+                    Id: "00000000-0000-0000-0000-000000000000",
+                    Code: "",
+                    Names: [{ Lang: { Text: "", Code: "" }, Desc: "" }],
+                    Remarks:[{ Lang: { Text: "", Code: "" }, Desc: "" }],
+                    FuelSurcharge:0,
+                    ExpressId: "00000000-0000-0000-0000-000000000000",
+
+                },
+                check: [{ countryId:0,provinceList:[]}],
+                selected: [],
+                selectedCache: [],
+                province: [],
+                country: [],
+                countryId: 0,
+                languageType: "",
+            },
+            methods: {
+                InitCountry: function () {
+                    vm.selectedCache = [];
+                    var obj = new Object();
+                    obj.id = vm.exId;
+                    obj.zoneid = zId;
+                    WS.AjaxP("get", "/adminapi/Delivery/GetExpressCountryZone", obj, function (a) {
+                        vm.country = a;
+                        if (a != null) {
+                            vm.$nextTick(function () {
+                                cleanCountry();
+                                showSelCountry();
+                            })
+                        }
+                    }, function () { });
+                },
+                InitProvince:function(){
+                    var data = new Object();
+                    data.countryId = vm.countryId;
+                    data.zoneId = vm.items.Id;
+                    data.exId = vm.exId;
+                    WS.AjaxP("get", "/adminapi/Delivery/GetProvinceByCountryZoneForSelect", data, function (a) {
+                        vm.province = a;
+                        vm.$nextTick(function () {
+                            showSelProvince();
+                        })
+                        }, function () { });
+
+                },
+                InitProvinceCheckedAll: function () {
+                    var data = new Object();
+                    data.countryId = vm.countryId;
+                    data.zoneId = vm.items.Id;
+                    data.exId = vm.exId;
+                    WS.AjaxP("get", "/adminapi/Delivery/GetProvinceByCountryZoneForSelect", data, function (a) {
+                        vm.province = a;
+                        vm.$nextTick(function () {
+                                $('input[name="txtprovince"]').each(function () {
+                                    //此处如果用attr，会出现第三次失效的情况
+                                    $(this).prop("checked", true);
+                                });
+                                getSelectArr();
+                                isSelAllProvince();
+                        })
+                    }, function () { });
+
+                },
+                //缓存字段，再次全选直接获取字段
+                InitProvinceCheckedAllBySelectAllV2: function () {
+
+                    var data = new Object();
+                    data.countryId = vm.countryId;
+                    data.zoneId = vm.items.Id;
+                    data.exId = vm.exId;
+                    WS.AjaxP("get", "/adminapi/Delivery/GetProvinceByCountryZoneForSelect", data, function (a) {
+                        //vm.province = a;  全选就不加载省份了
+                        var chk_value = [];//定义一个数组 
+
+                        $.each(a, function (n, value) {
+
+                            chk_value.push(value.Id);//将选中的值添加到数组chk_value中 
+                        });
+                        var selectArr = { country: 0, province: ["0"] };
+
+                        if (data.countryId.length > 0 && data.countryId != null)
+                            selectArr.country = parseInt(data.countryId);
+                        if (chk_value.length > 0)
+                            selectArr.province = chk_value;
+                        vm.$nextTick(function () {
+                            $('input[name="txtprovince"]').prop("checked", true);
+                        })
+                        saveCheckCache(selectArr);
+
+
+                    }, function () { });
+
+                },
+                InitProvinceCheckedAllBySelectAll: function () {
+
+                    var data = new Object();
+                    data.zoneId = vm.items.Id;
+                    data.exId = vm.exId;
+
+                    WS.AjaxP("get", "/adminapi/Delivery/GetProvinceByCountryZoneForSelectALL", data, function (a) {
+
+                     
+                        vm.$nextTick(function () {
+                            for (var i = 0; i < a.length; i++) {
+                                var selectArr = { country: 0, province: ["0"] };
+                                var chk_value = [];//定义一个数组 
+                                selectArr.country = a[i].CountryId;
+                                var provinces = a[i].Province;
+
+                                for (var j = 0; j < provinces.length; j++) {
+                                    chk_value.push(provinces[j].Id);
+                                }
+                                if (chk_value.length > 0)
+                                    selectArr.province = chk_value;
+                                saveCheckCache(selectArr);
+                            }
+                        })
+
+
+
+                    }, function () { });
+
+                },
+                InitExpressItem: function () {
+                    InitNormalSelect("cbosubBuyerGroup2", "/adminapi/Delivery/GetExpressCompany", true);
+                    var data = new Object();
+                    data.id = vm.items.Id;
+                    WS.AjaxP("get", "/adminapi/Delivery/GetZoneItem", data, function (response) {
+                        vm.items = response.zone;
+                        vm.exId = vm.items.ExpressId;
+                        vm.selected = response.exCounProvince;
+                        vm.country = response.exCountry;
+                        vm.setDefaultLanguage(vm.items.Names);
+                        vm.$nextTick(function () {
+                            vm.InitCountry();
+                        })
+
+                    }, function () { })
+
+                },
+                Save: function () {
+
+
+                    var obj = new Object();
+                    obj.zone = vm.items;
+                    obj.exCounProvince =vm.selected;
+                    WS.AjaxP("post", "/adminapi/Delivery/SaveZone", obj, function (response) {
+                        if (response.Succeeded == true) {
+                            vm.items.Id = response.ReturnValue;
+                            vm.InitExpressItem();
+                            @*clowWin();*@
+                            showCloseInfo(response.Message);
+
+
+                        }
+                        else {
+                            showWarn('@BDMall.Resources.Message.SaveFail');
+                        }
+                    }, function () { })
+                },
+                selectLanguage: function (obj) {
+                    vm.$refs.langbar.setCurrentLanguage(obj.Lang.Code);
+                    vm.languag = obj.Lang.Text;
+                    vm.languageType = obj.Lang.Code;
+                },
+                setDefaultLanguage: function (data) {
+                    if (data.length > 0) {
+                        var defaultLang = data[0].Lang.Code;
+                        vm.$refs.langbar.setCurrentLanguage(defaultLang);
+                        vm.language = data[0].Lang.Text;
+                        vm.languageType = data[0].Lang.Code;
+                    }
+                }
+            }
+        });
+
+        function InitCountry() {
+            vm.exId = $('#cbosubBuyerGroup2').val();
+            vm.selected = [];
+            vm.province = [];
+            $('#cbxSelectAllRow').prop("checked", false);
+            vm.InitCountry();
+        }
+        function CleanSubAttribute() {
+            $("#txtSubAttriCode").val("");
+            $("#SubDesc_e").val("");
+            $("#SubDesc_c").val("");
+            $("#SubDesc_s").val("");
+            $("#SubDesc_j").val("");
+            $("#txtSubAttriCode").focus();
+
+        }
+        function showSelCountry()
+        {
+            $.each(vm.selected, function (n, value) {
+                $('#txtcountry' + value.country).prop("checked", true);
+            });
+            if (vm.country.length == vm.selected.length && vm.selected.length!=0) {
+                $('#cbxSelectAllRow').prop("checked", true);
+            }
+        }
+        function showSelProvince()
+        {
+            $.each(vm.selected, function (n, value) {
+                if(value.country==vm.countryId)
+                {
+                    $.each(value.province, function (a, Arr) {
+                        $('#txtprovince' + Arr).prop("checked", true);
+                    });
+                }
+            });
+        }
+        function getSelectArr()
+        {
+            var chk_value = [];//定义一个数组 
+            $('input[name="txtprovince"]:checked').each(function () {//遍历每一个名字为interest的复选框，其中选中的执行函数 
+                chk_value.push($(this).val());//将选中的值添加到数组chk_value中 
+            });
+            var selectArr = { country: 0, province: [] };
+            selectArr.country = vm.countryId;
+            selectArr.province = chk_value;
+            saveCheck(selectArr);
+        }
+        function saveCheck(selectArr) {
+            var change = 0;
+            $.each(vm.selected, function (n, value) {
+                if (value.country === selectArr.country) {
+                    vm.selected[n] = selectArr;
+                    change = 1;
+                }
+            });
+            if (change == 0) {
+                vm.selected[vm.selected.length] = selectArr;
+            }
+        }
+        function saveCheckCache(selectArr) {
+            var change = 0;
+            $.each(vm.selectedCache, function (n, value) {
+                if (value.country === selectArr.country) {
+                    vm.selectedCache[n] = selectArr;
+                    vm.selected[n] = selectArr;
+                    change = 1;
+                }
+            });
+            if (change == 0) {
+                vm.selectedCache[vm.selectedCache.length] = selectArr;
+                vm.selected[vm.selected.length] = selectArr;
+            }
+        }
+        function selectProvince(id) {
+            cleanProvince();
+            vm.countryId = id;
+            vm.InitProvince();
+        }
+        function isSelAllProvince()
+        {
+            if ($('input[name="txtprovince"]').length==0)
+            {
+                $('#txtcountry' + vm.countryId).prop("checked", true);
+                var selectArr = { country: 0, province:["0"] };
+                selectArr.country = vm.countryId;
+                saveCheck(selectArr);
+            }
+        }
+        function checkedCountry(id) {
+            cleanProvince();
+            vm.countryId = id;
+            if ($('#txtcountry' + id).is(':checked')) {
+                vm.InitProvinceCheckedAll();
+                if (vm.country.length == $('input[name="txtcountry"]:checked').length)
+                {
+                    $('#cbxSelectAllRow').prop("checked", true);
+                }
+
+            } else {
+                $('#cbxSelectAllRow').prop("checked", false);
+                    $.each(vm.selected, function (n, value) {
+                        console.log(value.country);
+                        if (value.country===id) {
+                            removeSelCountry(n);
+                            return false;
+                        }
+                    });
+                    cleanProvince();
+                    vm.InitProvince();
+
+            }
+        }
+        function removeSelCountry(index)
+        {
+            if(vm.selected.length>index)
+            {
+                vm.selected[index] = vm.selected[vm.selected.length-1];
+                vm.selected.length = vm.selected.length - 1;
+            }
+        }
+        function cleanCountry() {
+            $("input[name='txtcountry']").removeAttr("checked");
+            //vm.selected = [];
+            console.log(vm.selected);
+        }
+        function cleanProvince()
+        {
+            $("input[name='txtprovince']").removeAttr("checked");
+            console.log(vm.selected);
+        }
+        function Search() {
+            vm.exId = $("#cboBuyerGroup").val();
+            vm.Search();
+        }
+        function cleanSelect() {
+            vm.selected = [];
+            vm.province = [];
+            $('input[name="txtprovince"]').empty();
+            $('#cbosubBuyerGroup2').empty();
+        }
+        $(document).ready(function () {
+
+            vm.items.Id = zId;
+            vm.InitExpressItem();
+        });
+
+
+        //国家全选
+        function checkAllItems() {           
+            if ($('#cbxSelectAllRow').is(':checked')) {
+                vm.selected = [];
+                $('input[name="txtcountry"]').prop("checked", true);
+                $('input[name="txtprovince"]').prop("checked", true);
+                if (vm.selectedCache.length > 0) {
+                    //vm.selected = vm.selectedCache;
+                    $.extend(true, vm.selected, vm.selectedCache);
+   
+                }
+                else {
+                
+                    //$('input[name="txtcountry"]:checked').each(function () {
+                    //    //    //此处如果用attr，会出现第三次失效的情况
+                    //    vm.countryId = $(this).attr("value");
+                       
+                        
+                    //    vm.InitProvinceCheckedAllBySelectAllV2();
+                    //});
+
+                  
+                    vm.InitProvinceCheckedAllBySelectAll();
+                }
+
+
+            }
+            else {
+                cleanCountry();
+                cleanProvince();
+                //InitCountry();
+            }
+
+        }
+
+    </script>
+}

@@ -71,12 +71,13 @@ namespace BDMall.WebApi
         {
             Globals.Services = app.ApplicationServices;
 
+            //如果是开发者模式
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
-                app.ConfigureSwagger();
+                app.UseDeveloperExceptionPage();            
             }
-           
+
+            app.ConfigureSwagger();
             app.UseMiddleware<GlobalErrorHandlingMiddleware>();         //全局异常处理
             //app.UseMiddleware<JwtAuthenticationMiddleware>();
 

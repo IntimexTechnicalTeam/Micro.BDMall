@@ -192,9 +192,10 @@ namespace BDMall.Admin.Controllers
             return View();
         }
 
-        public ActionResult SelectMerchant()
+        public ActionResult SelectMerchant(int id, string para2, string para3)
         {
             ViewBag.Lang = CurrentUser.Lang;
+            ViewBag.IsSingleSelect = id;
             return View();
         }
 

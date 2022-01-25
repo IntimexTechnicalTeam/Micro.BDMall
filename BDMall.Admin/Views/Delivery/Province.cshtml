@@ -3,7 +3,7 @@
     Layout = "~/Views/Shared/_LayoutEditor.cshtml";
 }
 
-<link href="~/Scripts/bootstrap-fileinput/css/fileinput.min.css" rel="stylesheet" />
+
 <div id="app" v-cloak>
     <form id="content">
         <div id="myModal">
@@ -75,7 +75,7 @@
     </form>
     <div id="myModal2" style="display: none;">
         <div class="modal-header">
-            <span>{{SubAttriTitle}}</span>
+            <span>@BDMall.Resources.Label.Province</span>
         </div>
         <div class="row">
             <input type="hidden" id="hidSubAttributeID" v-model="subItems.id" />
@@ -98,7 +98,7 @@
                 </tr>
 
             </table>
-            @BDMall.Resources.Label.CityWithSymbol
+            @*@BDMall.Resources.Label.CityWithSymbol
             <div class="panel-body">
                 <div id="subToolbar" class="btn-group">
                     <button id="btn_SubAdd" type="button" class="btn btn-default" v-on:click="SubAdd">
@@ -114,7 +114,8 @@
 
             </div>
             <table id="tblCity">
-            </table>
+
+            </table>*@
         </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-default" v-on:click="SubClose">@BDMall.Resources.Action.Close</button>
@@ -126,525 +127,524 @@
 
 @section scripts
 {
+   
+    <script type="text/javascript">
 
-<script src="~/Scripts/bootstrap-fileinput/js/fileinput.min.js"></script>
-<script type="text/javascript">
+        var attrItemRowID = 0;
+        var params = bDialog.getDialogParams();
+        var CountryId = '@ViewBag.CountryID';
+        var formValidate;
+        var vm = new Vue({
+            el: "#app",
+            data: {
+                CountryId: CountryId,
+                SubAttriTitle: "",
+                items: {
+                    Id: "",
+                    Code: "",
+                    Names: [{ Lang: { Text: "", Code: "" }, Desc: "" }],
+                    IsNeedPostalCode: false,
+                    Procince: [],
+                    Seq:0
 
-    var attrItemRowID = 0;
-    var params = bDialog.getDialogParams();
-    var CountryId = '@ViewBag.CountryID';
-    var formValidate;
-    var vm = new Vue({
-        el: "#app",
-        data: {
-            CountryId: CountryId,
-            SubAttriTitle: "",
-            items: {
-                Id: "",
-                Code: "",
-                Names: [{ Lang: { Text: "", Code: "" }, Desc: "" }],
-                IsNeedPostalCode: false,
-                Procince: [],
-                Seq:0
+                },
+                subItems: {
+                    Id:0,
+                    CountryId: 0,
+                    Code: "",
+                    Names: [{ Lang: { Text: "", Code: "" }, Desc: "" }],
+                },
+                subTableValues:[],
+                IsModify: true,
+                IsDelete: true
 
-            },
-            subItems: {
-                Id:0,
-                CountryId: 0,
-                Code: "",
-                Names: [{ Lang: { Text: "", Code: "" }, Desc: "" }],
-            },
-            subTableValues:[],
-            IsModify: true,
-            IsDelete: true
-
-
-        },
-        methods: {
-            GetAttribute: function () {
-                var data = new Object();
-                data.id = vm.CountryId;
-                WS.AjaxP("get", "/adminapi/Delivery/GetCountryItem", data, function (response) {
-                    var showList = [];
-                    vm.items = response;
-                    InitSubTable();
-                    DBDataToSubTableData(vm.items.Procince);
-                    showList = JSON.parse(JSON.stringify(vm.subTableValues));
-
-                    $("#tblSubAttribute").bootstrapTable("load", showList);
-                }, function () { })
-            },
-            InitProvinceItem: function () {
-                var data = new Object();
-                data.id =vm.subItems.Id;
-                WS.AjaxP("get", "/adminapi/Delivery/GetProvinceItem", data, function (response) {
-                    vm.subItems = response;
-                }, function () { })
-            },
-            Close: function () {
-                clowWin();
-            },
-            Save: function () {
-                Save();
-            },
-            checkSave: function () {
-                if (formValidate.form()) {
-                    $("#content").submit();
-                }
-            },
-            SubAdd: function () {
-                CleanSubAttribute();
-                vm.subAction = "Add";
-                vm.SubAttriTitle = "@BDMall.Resources.Label.Add-@BDMall.Resources.Label.Province";
-                vm.subItems.CountryId = vm.CountryId;
-                show2Modal();
 
             },
-            SubModify: function () {
-                var selected = $("#tblSubAttribute").bootstrapTable('getSelections');
-                vm.subAction = "Modify";
-                vm.SubAttriTitle = "@BDMall.Resources.Label.Edit-@BDMall.Resources.Label.Province";
-                vm.subItems.CountryId = vm.CountryId;
-                vm.subItems.Id = selected[0].Id;
-                FillSubAttribute(selected[0]);
-                show2Modal();
-            },
-            SubDelete: function () {
-                var selected = $("#tblSubAttribute").bootstrapTable('getSelections');
+            methods: {
+                GetAttribute: function () {
+                    var data = new Object();
+                    data.id = vm.CountryId;
+                    WS.AjaxP("get", "/adminapi/Delivery/GetCountryItem", data, function (response) {
+                        var showList = [];
+                        vm.items = response;
+                        InitSubTable();
+                        DBDataToSubTableData(vm.items.Procince);
+                        showList = JSON.parse(JSON.stringify(vm.subTableValues));
 
-                if (selected.length > 0) {
-                    var code = selected[0].Code;
-                    var id = selected[0].Id;
-                    if (id != 0) {
-                        SystemConfirm('@BDMall.Resources.Message.DeleteConfirm', function () {
+                        $("#tblSubAttribute").bootstrapTable("load", showList);
+                    }, function () { })
+                },
+                InitProvinceItem: function () {
+                    var data = new Object();
+                    data.id =vm.subItems.Id;
+                    WS.AjaxP("get", "/adminapi/Delivery/GetProvinceItem", data, function (response) {
+                        vm.subItems = response;
+                    }, function () { })
+                },
+                Close: function () {
+                    clowWin();
+                },
+                Save: function () {
+                    Save();
+                },
+                checkSave: function () {
+                    if (formValidate.form()) {
+                        $("#content").submit();
+                    }
+                },
+                SubAdd: function () {
+                    CleanSubAttribute();
+                    vm.subAction = "Add";
+                    //vm.SubAttriTitle = "@BDMall.Resources.Label.Add-@BDMall.Resources.Label.Province";
+                    vm.subItems.CountryId = vm.CountryId;
+                    show2Modal();
+
+                },
+                SubModify: function () {
+                    var selected = $("#tblSubAttribute").bootstrapTable('getSelections');
+                    vm.subAction = "Modify";
+                    //vm.SubAttriTitle = "@BDMall.Resources.Label.Edit-@BDMall.Resources.Label.Province";
+                    vm.subItems.CountryId = vm.CountryId;
+                    vm.subItems.Id = selected[0].Id;
+                    FillSubAttribute(selected[0]);
+                    show2Modal();
+                },
+                SubDelete: function () {
+                    var selected = $("#tblSubAttribute").bootstrapTable('getSelections');
+
+                    if (selected.length > 0) {
+                        var code = selected[0].Code;
+                        var id = selected[0].Id;
+                        if (id != 0) {
+                            SystemConfirm('@BDMall.Resources.Message.DeleteConfirm', function () {
+                            var data = new Object();
+                            data.skus = id;
+                            WS.AjaxP("get", "/adminapi/Delivery/DeleteProvince", data, function (response) {
+                                if (response.Succeeded == true) {
+                                    showWarn('@BDMall.Resources.Message.DeleteSucceeded');
+                                    $("#tblSubAttribute").bootstrapTable('removeByUniqueId', id);
+                                }
+                                else {
+                                    showWarn(response.Message);
+                                }
+                            }, function () { });
+                            });
+
+                        }
+                        else
+                        {
+                            $("#tblSubAttribute").bootstrapTable('removeByUniqueId', id);
+                        }
+                    }
+                    else {
+                        showWarn('@BDMall.Resources.Message.DeleteSelect');
+                    }
+                    @*var selects = $("#tblSubAttribute").bootstrapTable('getSelections');
+
+                    SystemConfirm('@BDMall.Resources.Message.DeleteConfirm', function () {
+
+                        var strSkus = "";
+                        for (var i = 0; i < selects.length; i++) {
+                            if (strSkus == "") {
+                                strSkus = selects[i].Id;
+                            }
+                            else {
+                                strSkus += "," + selects[i].Id;
+                            }
+
+                        }
                         var data = new Object();
-                        data.skus = id;
+                        data.skus = selects.val();
                         WS.AjaxP("get", "/adminapi/Delivery/DeleteProvince", data, function (response) {
                             if (response.Succeeded == true) {
                                 showWarn('@BDMall.Resources.Message.DeleteSucceeded');
-                                $("#tblSubAttribute").bootstrapTable('removeByUniqueId', id);
+                                vm.GetProvince();
                             }
                             else {
                                 showWarn(response.Message);
                             }
                         }, function () { });
-                        });
+                    });*@
 
+                },
+                SubClose: function () {
+                    CleanSubAttribute();
+                    $('#app').unblock();
+                },
+                SubSave: function () {
+                    saveAttributeValue();
+                    var datas = $("#tblSubAttribute").bootstrapTable('getData');
+                    console.log(datas);
+                },
+                SetButtonState: function () {
+                    var selected = $("#tblSubAttribute").bootstrapTable("getSelections");
+                    if (selected.length == 1) {
+                        vm.IsModify = false;
                     }
-                    else
-                    {
-                        $("#tblSubAttribute").bootstrapTable('removeByUniqueId', id);
+                    else {
+                        vm.IsModify = true;
+                    }
+
+                    if (selected.length >= 1) {
+                        vm.IsDelete = false;
+                    }
+                    else {
+                        vm.IsDelete = true;
                     }
                 }
-                else {
-                    showWarn('@BDMall.Resources.Message.DeleteSelect');
-                }
-    @*var selects = $("#tblSubAttribute").bootstrapTable('getSelections');
-
-            SystemConfirm('@BDMall.Resources.Message.DeleteConfirm', function () {
-
-            var strSkus = "";
-            for (var i = 0; i < selects.length; i++) {
-            if (strSkus == "") {
-            strSkus = selects[i].Id;
             }
-            else {
-            strSkus += "," + selects[i].Id;
-            }
+        });
 
-            }
-            var data = new Object();
-            data.skus = selects.val();
-            WS.AjaxP("get", "/adminapi/Delivery/DeleteProvince", data, function (response) {
-            if (response.Succeeded == true) {
-            showWarn('@BDMall.Resources.Message.DeleteSucceeded');
-            vm.GetProvince();
-            }
-            else {
-            showWarn(response.Message);
-            }
-            }, function () { });
-            });*@
+        function SetDBDataDelete(id) {
 
-            },
-            SubClose: function () {
-                CleanSubAttribute();
-                $('#app').unblock();
-            },
-            SubSave: function () {
-                saveAttributeValue();
-                var datas = $("#tblSubAttribute").bootstrapTable('getData');
-                console.log(datas);
-            },
-            SetButtonState: function () {
-                var selected = $("#tblSubAttribute").bootstrapTable("getSelections");
-                if (selected.length == 1) {
-                    vm.IsModify = false;
-                }
-                else {
-                    vm.IsModify = true;
-                }
-
-                if (selected.length >= 1) {
-                    vm.IsDelete = false;
-                }
-                else {
-                    vm.IsDelete = true;
+            for (var i = 0; i < vm.items.Procince.length; i++) {
+                var item = vm.items.Procince[i];
+                if (item.Id == id) {
+                    item.Status = 2;
                 }
             }
         }
-    });
-
-    function SetDBDataDelete(id) {
-
-        for (var i = 0; i < vm.items.Procince.length; i++) {
-            var item = vm.items.Procince[i];
-            if (item.Id == id) {
-                item.Status = 2;
-            }
-        }
-    }
-    function show2Modal() {
-        $("#app").block({
-            message: $('#myModal2'),
-            css: {
-                'width': '600px',
-                'border': '1px',
-                'border-radius': '6px',
-                'box-shadow': '0 5px 15px rgba(0,0,0,.5)',
-                'cursor': 'default'
-            },
-            overlayCSS: { backgroundColor: '#000', opacity: '0.6', cursor: 'defalut' }
-        });
-    }
-
-    function InitSubTable() {
-        $("#tblSubAttribute").bootstrapTable({
-            //method: 'get',                      //请求方式（*）
-            //url: '/adminapi/Attribute/GetSelfDefineAttribute',         //请求后台的URL（*）
-            toolbar: '#subToolbar',                //工具按钮用哪个容器
-            //striped: true,                      //是否显示行间隔色
-            cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
-            pagination: false,                   //是否显示分页（*）
-            sortable: false,                     //是否启用排序
-            sortOrder: "asc",                   //排序方式
-            //queryParams: queryParams,//传递参数（*）
-            sidePagination: "client",           //分页方式：client客户端分页，server服务端分页（*）
-            //pageNumber: 1,                       //初始化加载第一页，默认第一页
-            //pageSize: 10,                       //每页的记录行数（*）
-            //pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
-            showRefresh: true,                  //是否显示刷新按钮
-            clickToSelect: true,                //是否启用点击选中行
-            singleSelect: true,
-            height: 300,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
-            uniqueId: "Id",                     //每一行的唯一标识，一般为主键列
-            cardView: false,                    //是否显示详细视图
-            detailView: false,                   //是否显示父子表
-            onClickRow: function (row, $element) {
-                attrItemRowID = $element.data('index');
-            },
-            onLoadSuccess: function () {
-                vm.SetButtonState();
-            },
-            onCheck: function (row) {
-                vm.SetButtonState();
-            },
-            onUncheck: function (row) {
-                vm.SetButtonState();
-            },
-            onCheckAll: function (rows) {
-                vm.SetButtonState();
-            },
-            onUncheckAll: function (rows) {
-                vm.SetButtonState();
-            },
-            columns: InitTableColumn()
-        });
-    }
-
-    function Save() {
-        PutInsertRecordInItems();
-        WS.AjaxP("post", "/adminapi/Delivery/SaveCountry", vm.items, function (response) {
-            if (response.Succeeded == true) {
-                showWarn('@BDMall.Resources.Message.SaveSuccess');
-                vm.Close();
-            }
-            else {
-                showWarn('@BDMall.Resources.Message.SaveFail');
-            }
-        }, function () { })
-    }
-    function InitTableColumn() {
-        var columns = new Array();
-        var descName = new Array();
-        descName.push('@BDMall.Resources.Label.Desc_e');
-        descName.push('@BDMall.Resources.Label.Desc_c');
-        descName.push('@BDMall.Resources.Label.Desc_s');
-        descName.push('@BDMall.Resources.Label.Desc_j');
-        columns.push({ checkbox: true });
-        columns.push({ field: 'Id', title: 'id', visible: false });
-        //columns.push({ field: 'AttrId', title: 'AttrId', visible: false });
-        columns.push({ field: 'Code', title: '@BDMall.Resources.Label.AttributeCode' });
-        if (vm.items.Names.length) {
-            vm.items.Names.forEach(function (val, index) {
-                columns.push({ field: 'Desc_' + val.Lang.Code, title: descName[index] });
+        function show2Modal() {
+            $("#app").block({
+                message: $('#myModal2'),
+                css: {
+                    'width': '600px',
+                    'border': '1px',
+                    'border-radius': '6px',
+                    'box-shadow': '0 5px 15px rgba(0,0,0,.5)',
+                    'cursor': 'default'
+                },
+                overlayCSS: { backgroundColor: '#000', opacity: '0.6', cursor: 'defalut' }
             });
         }
 
-        //columns.push({ field: 'Image', title: '', visible: false });
-
-        return columns;
-    }
-
-    function saveAttributeValue() {
-
-        var datas = $("#tblSubAttribute").bootstrapTable('getData');
-        var selected = $("#tblSubAttribute").bootstrapTable('getSelections');
-        var exceptMe = false;
-
-        if (vm.subItems.Code == "") {
-            showWarn('@BDMall.Resources.Message.PleaseInputDesc');
-            return;
+        function InitSubTable() {
+            $("#tblSubAttribute").bootstrapTable({
+                //method: 'get',                      //请求方式（*）
+                //url: '/adminapi/Attribute/GetSelfDefineAttribute',         //请求后台的URL（*）
+                toolbar: '#subToolbar',                //工具按钮用哪个容器
+                //striped: true,                      //是否显示行间隔色
+                cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                pagination: false,                   //是否显示分页（*）
+                sortable: false,                     //是否启用排序
+                sortOrder: "asc",                   //排序方式
+                //queryParams: queryParams,//传递参数（*）
+                sidePagination: "client",           //分页方式：client客户端分页，server服务端分页（*）
+                //pageNumber: 1,                       //初始化加载第一页，默认第一页
+                //pageSize: 10,                       //每页的记录行数（*）
+                //pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                showRefresh: true,                  //是否显示刷新按钮
+                clickToSelect: true,                //是否启用点击选中行
+                singleSelect: true,
+                height: 300,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+                uniqueId: "Id",                     //每一行的唯一标识，一般为主键列
+                cardView: false,                    //是否显示详细视图
+                detailView: false,                   //是否显示父子表
+                onClickRow: function (row, $element) {
+                    attrItemRowID = $element.data('index');
+                },
+                onLoadSuccess: function () {
+                    vm.SetButtonState();
+                },
+                onCheck: function (row) {
+                    vm.SetButtonState();
+                },
+                onUncheck: function (row) {
+                    vm.SetButtonState();
+                },
+                onCheckAll: function (rows) {
+                    vm.SetButtonState();
+                },
+                onUncheckAll: function (rows) {
+                    vm.SetButtonState();
+                },
+                columns: InitTableColumn()
+            });
         }
 
-
-        if (selected.length > 0)//當有選中記錄時，判斷除去選中記錄以外的記錄與Code是否重複
-        {
-            if ($("#txtSubAttriCode").val().trim().toLocaleUpperCase() == selected[0].Code.trim().toLocaleUpperCase() && vm.subAction == "Modify") {
-                exceptMe = true;
+        function Save() {
+            PutInsertRecordInItems();
+            WS.AjaxP("post", "/adminapi/Delivery/SaveCountry", vm.items, function (response) {
+                if (response.Succeeded == true) {
+                    showWarn('@BDMall.Resources.Message.SaveSuccess');
+                    vm.Close();
+                }
+                else {
+                    showWarn('@BDMall.Resources.Message.SaveFail');
+                }
+            }, function () { })
+        }
+        function InitTableColumn() {
+            var columns = new Array();
+            var descName = new Array();
+            descName.push('@BDMall.Resources.Label.Desc_e');
+            descName.push('@BDMall.Resources.Label.Desc_c');
+            descName.push('@BDMall.Resources.Label.Desc_s');
+            descName.push('@BDMall.Resources.Label.Desc_j');
+            columns.push({ checkbox: true });
+            columns.push({ field: 'Id', title: 'id', visible: false });
+            //columns.push({ field: 'AttrId', title: 'AttrId', visible: false });
+            columns.push({ field: 'Code', title: '@BDMall.Resources.Label.AttributeCode' });
+            if (vm.items.Names.length) {
+                vm.items.Names.forEach(function (val, index) {
+                    columns.push({ field: 'Desc_' + val.Lang.Code, title: descName[index] });
+                });
             }
+
+            //columns.push({ field: 'Image', title: '', visible: false });
+
+            return columns;
         }
 
-        for (var i = 0; i < datas.length; i++) {
-            if ($("#txtSubAttriCode").val().trim().toLocaleUpperCase() == datas[i].Code.trim().toLocaleUpperCase() && exceptMe == false) {
-                $("#txtSubAttriCode").val("");
-                $("#txtSubAttriCode").focus();
-                showWarn('@BDMall.Resources.Message.SubAttributeIsExist');
+        function saveAttributeValue() {
+
+            var datas = $("#tblSubAttribute").bootstrapTable('getData');
+            var selected = $("#tblSubAttribute").bootstrapTable('getSelections');
+            var exceptMe = false;
+
+            if (vm.subItems.Code == "") {
+                showWarn('@BDMall.Resources.Message.PleaseInputDesc');
                 return;
             }
-        }
-
-        var row = new Object();
-
-        row.Id = vm.subItems.Id;
-        row.CountryId = vm.subItems.CountryId;
-        row.Code = $("#txtSubAttriCode").val().trim();
-
-        row.Desc_E = $("#SubDesc_E").length > 0 ? $("#SubDesc_E").val().trim() : "";
-        row.Desc_C = $("#SubDesc_C").length > 0 ? $("#SubDesc_C").val().trim() : "";
-        row.Desc_S = $("#SubDesc_S").length > 0 ? $("#SubDesc_S").val().trim() : "";
-        row.Desc_J = $("#SubDesc_J").length > 0 ? $("#SubDesc_J").val().trim() : "";
 
 
-        if (vm.subAction == "Add") {
-            $("#tblSubAttribute").bootstrapTable('insertRow', {
-                index: datas.length, row: row
-            });
-            CleanSubAttribute();
-            vm.SubClose();
-        }
-        else {
-            $("#tblSubAttribute").bootstrapTable('updateRow', {
-                index: attrItemRowID, row: row
-            });
-            UpdateDBData(row);
-            vm.SubClose();
-        }
-        vm.SetButtonState();
-    }
-    function UpdateDBData(data) {
-        var dbData = vm.items.Procince;
-        for (var i = 0; i < vm.items.Procince.length; i++) {
-            var item = vm.items.Procince[i];
-            if (item.Id == data.Id) {
-                item.Code = data.Code;
-                item.Names = JSON.parse(JSON.stringify(vm.items.Names));
-
-                for (var i = 0; i < item.Names.length; i++) {
-                    var desc = item.Names[i];
-                    if (desc.Lang.Code == "E") {
-                        item.Names[i].Desc = data.Desc_E;
-                    }
-                    else if (desc.Lang.Code == "C") {
-                        item.Names[i].Desc = data.Desc_C;
-                    }
-                    else if (desc.Lang.Code == "S") {
-                        item.Names[i].Desc = data.Desc_S;
-                    }
-                    else if (desc.Lang.Code == "J") {
-                        item.Names[i].Desc = data.Desc_J;
-                    }
+            if (selected.length > 0)//當有選中記錄時，判斷除去選中記錄以外的記錄與Code是否重複
+            {
+                if ($("#txtSubAttriCode").val().trim().toLocaleUpperCase() == selected[0].Code.trim().toLocaleUpperCase() && vm.subAction == "Modify") {
+                    exceptMe = true;
                 }
             }
-        }
-    }
-    function DBDataToSubTableData(datas) {
 
-        for (var i = 0; i < datas.length; i++) {
-            var val = datas[i];
+            for (var i = 0; i < datas.length; i++) {
+                if ($("#txtSubAttriCode").val().trim().toLocaleUpperCase() == datas[i].Code.trim().toLocaleUpperCase() && exceptMe == false) {
+                    $("#txtSubAttriCode").val("");
+                    $("#txtSubAttriCode").focus();
+                    showWarn('@BDMall.Resources.Message.SubAttributeIsExist');
+                    return;
+                }
+            }
 
             var row = new Object();
-            row.Id = val.Id;
-            row.CountryId = val.CountryId;
-            row.Code = val.Code;
-            for (var j = 0; j < val.Names.length; j++) {
-                var desc = val.Names[j];
-                if (desc.Lang.Code == "E") {
-                    row.Desc_E = desc.Desc;
-                }
-                else if (desc.Lang.Code == "C") {
-                    row.Desc_C = desc.Desc;
-                }
-                else if (desc.Lang.Code == "S") {
-                    row.Desc_S = desc.Desc;
-                }
-                else if (desc.Lang.Code == "J") {
-                    row.Desc_J = desc.Desc;
+
+            row.Id = vm.subItems.Id;
+            row.CountryId = vm.subItems.CountryId;
+            row.Code = $("#txtSubAttriCode").val().trim();
+
+            row.Desc_E = $("#SubDesc_E").length > 0 ? $("#SubDesc_E").val().trim() : "";
+            row.Desc_C = $("#SubDesc_C").length > 0 ? $("#SubDesc_C").val().trim() : "";
+            row.Desc_S = $("#SubDesc_S").length > 0 ? $("#SubDesc_S").val().trim() : "";
+            row.Desc_J = $("#SubDesc_J").length > 0 ? $("#SubDesc_J").val().trim() : "";
+
+
+            if (vm.subAction == "Add") {
+                $("#tblSubAttribute").bootstrapTable('insertRow', {
+                    index: datas.length, row: row
+                });
+                CleanSubAttribute();
+                vm.SubClose();
+            }
+            else {
+                $("#tblSubAttribute").bootstrapTable('updateRow', {
+                    index: attrItemRowID, row: row
+                });
+                UpdateDBData(row);
+                vm.SubClose();
+            }
+            vm.SetButtonState();
+        }
+        function UpdateDBData(data) {
+            var dbData = vm.items.Procince;
+            for (var i = 0; i < vm.items.Procince.length; i++) {
+                var item = vm.items.Procince[i];
+                if (item.Id == data.Id) {
+                    item.Code = data.Code;
+                    item.Names = JSON.parse(JSON.stringify(vm.items.Names));
+
+                    for (var i = 0; i < item.Names.length; i++) {
+                        var desc = item.Names[i];
+                        if (desc.Lang.Code == "E") {
+                            item.Names[i].Desc = data.Desc_E;
+                        }
+                        else if (desc.Lang.Code == "C") {
+                            item.Names[i].Desc = data.Desc_C;
+                        }
+                        else if (desc.Lang.Code == "S") {
+                            item.Names[i].Desc = data.Desc_S;
+                        }
+                        else if (desc.Lang.Code == "J") {
+                            item.Names[i].Desc = data.Desc_J;
+                        }
+                    }
                 }
             }
-
-            vm.subTableValues.push(row);
         }
-    }
+        function DBDataToSubTableData(datas) {
 
-    function PutInsertRecordInItems() {
-        var datas = $("#tblSubAttribute").bootstrapTable('getData');
-
-
-        if (vm.items.Procince != null) {
-            for (var i = vm.items.Procince.length - 1; i >= 0; i--) {
-                if (vm.items.Procince[i].Id == 0) {
-                    vm.items.Procince.splice(i, 1);
-                }
-            }
-        }
-
-        datas.forEach(function (val, index, array) {
-            if (val.Id == 0) {
-
+            for (var i = 0; i < datas.length; i++) {
+                var val = datas[i];
 
                 var row = new Object();
                 row.Id = val.Id;
                 row.CountryId = val.CountryId;
                 row.Code = val.Code;
-                row.Names = JSON.parse(JSON.stringify(vm.subItems.Names));
-                for (var i = 0; i < row.Names.length; i++) {
-                    var desc = row.Names[i];
+                for (var j = 0; j < val.Names.length; j++) {
+                    var desc = val.Names[j];
                     if (desc.Lang.Code == "E") {
-                        row.Names[i].Desc = val.Desc_E;
+                        row.Desc_E = desc.Desc;
                     }
                     else if (desc.Lang.Code == "C") {
-                        row.Names[i].Desc = val.Desc_C;
+                        row.Desc_C = desc.Desc;
                     }
                     else if (desc.Lang.Code == "S") {
-                        row.Names[i].Desc = val.Desc_S;
+                        row.Desc_S = desc.Desc;
                     }
                     else if (desc.Lang.Code == "J") {
-                        row.Names[i].Desc = val.Desc_J;
+                        row.Desc_J = desc.Desc;
                     }
                 }
-                vm.items.Procince.push(row);
-            }
-        });
-        console.log(vm.items.Procince);
-    }
-    function SetDBDataDelete(id) {
 
-        for (var i = 0; i < vm.items.AttrItems.length; i++) {
-            var item = vm.items.AttrItems[i];
-            if (item.id == id) {
-                item.IsDelete = true;
+                vm.subTableValues.push(row);
             }
         }
 
-    }
-    function FillSubAttribute(selectedData) {
-        vm.subItems.Id = selectedData.Id;
-        vm.subItems.CountryId = selectedData.CountryId;
-        vm.subItems.Code = selectedData.Code;
-        //vm.attrValue.Descs = selectedData.Descs;
-        $("#SubDesc_E").val(selectedData.Desc_E);
-        $("#SubDesc_C").val(selectedData.Desc_C);
-        $("#SubDesc_S").val(selectedData.Desc_S);
-        $("#SubDesc_J").val(selectedData.Desc_J);
+        function PutInsertRecordInItems() {
+            var datas = $("#tblSubAttribute").bootstrapTable('getData');
 
-    }
-    function HideTableColumn() {
-        $('#tblSubAttribute').bootstrapTable('hideColumn', 'Name_e');
-        $('#tblSubAttribute').bootstrapTable('hideColumn', 'Name_c');
-        $('#tblSubAttribute').bootstrapTable('hideColumn', 'Name_s');
-        $('#tblSubAttribute').bootstrapTable('hideColumn', 'Name_j');
-        vm.items.Names.forEach(function (val) {
-            if (val.Lang.Code == "E") {
-                $('#tblSubAttribute').bootstrapTable('showColumn', 'Name_e');
-            }
-            else if (val.Lang.Code == "C") {
-                $('#tblSubAttribute').bootstrapTable('showColumn', 'Name_c');
-            }
-            else if (val.Lang.Code == "S") {
-                $('#tblSubAttribute').bootstrapTable('showColumn', 'Name_s');
-            }
-            else if (val.Lang.Code == "J") {
-                $('#tblSubAttribute').bootstrapTable('showColumn', 'Name_j');
-            }
 
-        });
-
-    }
-
-    function CleanSubAttribute() {
-        $("#txtSubAttriCode").val("");
-        //vm.attrValue.Descs.forEach(function (val) {
-        //    val.Desc = "";
-        //})
-        $("#SubDesc_E").val("");
-        $("#SubDesc_C").val("");
-        $("#SubDesc_S").val("");
-        $("#SubDesc_J").val("");
-        vm.subItems.Code = "";
-
-    }
-    $(document).ready(function () {
-        vm.GetAttribute();
-        vm.InitProvinceItem();
-        formValidate = $("#content").validate({
-            ignore: "",
-            submitHandler: function () {
-                vm.Save();
-            },
-            rules: {
-                ExCode: "required",
-                ExName: "required",
-                Seq: {
-                    number: true,
-                    digits: true
-                }
-            },
-            messages:
-            {
-                ExName: '@BDMall.Resources.Message.RequiredField',
-                Seq: {
-                    number: '@BDMall.Resources.Message.Number',
-                    digits:'@BDMall.Resources.Message.Digits'
-                }
-            },
-
-            success: function (label) {
-                $(label).parent().removeClass('has-error');
-                //console.log(label);
-            },
-            showErrors: function (errorMap, errorList) {
-                // 此处注意，一定要调用默认方法，这样保证提示消息的默认效果
-                this.defaultShowErrors();
-            },
-            errorPlacement: function (error, element) {
-                if (error.length > 0) {
-                    if (error[0].innerHTML != '') {
-                        error.insertAfter(element);
+            if (vm.items.Procince != null) {
+                for (var i = vm.items.Procince.length - 1; i >= 0; i--) {
+                    if (vm.items.Procince[i].Id == 0) {
+                        vm.items.Procince.splice(i, 1);
                     }
                 }
             }
+
+            datas.forEach(function (val, index, array) {
+                if (val.Id == 0) {
+
+
+                    var row = new Object();
+                    row.Id = val.Id;
+                    row.CountryId = val.CountryId;
+                    row.Code = val.Code;
+                    row.Names = JSON.parse(JSON.stringify(vm.subItems.Names));
+                    for (var i = 0; i < row.Names.length; i++) {
+                        var desc = row.Names[i];
+                        if (desc.Lang.Code == "E") {
+                            row.Names[i].Desc = val.Desc_E;
+                        }
+                        else if (desc.Lang.Code == "C") {
+                            row.Names[i].Desc = val.Desc_C;
+                        }
+                        else if (desc.Lang.Code == "S") {
+                            row.Names[i].Desc = val.Desc_S;
+                        }
+                        else if (desc.Lang.Code == "J") {
+                            row.Names[i].Desc = val.Desc_J;
+                        }
+                    }
+                    vm.items.Procince.push(row);
+                }
+            });
+            console.log(vm.items.Procince);
+        }
+        function SetDBDataDelete(id) {
+
+            for (var i = 0; i < vm.items.AttrItems.length; i++) {
+                var item = vm.items.AttrItems[i];
+                if (item.id == id) {
+                    item.IsDelete = true;
+                }
+            }
+
+        }
+        function FillSubAttribute(selectedData) {
+            vm.subItems.Id = selectedData.Id;
+            vm.subItems.CountryId = selectedData.CountryId;
+            vm.subItems.Code = selectedData.Code;
+            //vm.attrValue.Descs = selectedData.Descs;
+            $("#SubDesc_E").val(selectedData.Desc_E);
+            $("#SubDesc_C").val(selectedData.Desc_C);
+            $("#SubDesc_S").val(selectedData.Desc_S);
+            $("#SubDesc_J").val(selectedData.Desc_J);
+
+        }
+        function HideTableColumn() {
+            $('#tblSubAttribute').bootstrapTable('hideColumn', 'Name_e');
+            $('#tblSubAttribute').bootstrapTable('hideColumn', 'Name_c');
+            $('#tblSubAttribute').bootstrapTable('hideColumn', 'Name_s');
+            $('#tblSubAttribute').bootstrapTable('hideColumn', 'Name_j');
+            vm.items.Names.forEach(function (val) {
+                if (val.Lang.Code == "E") {
+                    $('#tblSubAttribute').bootstrapTable('showColumn', 'Name_e');
+                }
+                else if (val.Lang.Code == "C") {
+                    $('#tblSubAttribute').bootstrapTable('showColumn', 'Name_c');
+                }
+                else if (val.Lang.Code == "S") {
+                    $('#tblSubAttribute').bootstrapTable('showColumn', 'Name_s');
+                }
+                else if (val.Lang.Code == "J") {
+                    $('#tblSubAttribute').bootstrapTable('showColumn', 'Name_j');
+                }
+
+            });
+
+        }
+
+        function CleanSubAttribute() {
+            $("#txtSubAttriCode").val("");
+            //vm.attrValue.Descs.forEach(function (val) {
+            //    val.Desc = "";
+            //})
+            $("#SubDesc_E").val("");
+            $("#SubDesc_C").val("");
+            $("#SubDesc_S").val("");
+            $("#SubDesc_J").val("");
+            vm.subItems.Code = "";
+
+        }
+        $(document).ready(function () {
+            vm.GetAttribute();
+            vm.InitProvinceItem();
+            formValidate = $("#content").validate({
+                ignore: "",
+                submitHandler: function () {
+                    vm.Save();
+                },
+                rules: {
+                    ExCode: "required",
+                    ExName: "required",
+                    Seq: {
+                        number: true,
+                        digits: true
+                    }
+                },
+                messages:
+                {
+                    ExName: '@BDMall.Resources.Message.RequiredField',
+                    Seq: {
+                        number: '@BDMall.Resources.Message.Number',
+                        digits:'@BDMall.Resources.Message.Digits'
+                    }
+                },
+
+                success: function (label) {
+                    $(label).parent().removeClass('has-error');
+                    //console.log(label);
+                },
+                showErrors: function (errorMap, errorList) {
+                    // 此处注意，一定要调用默认方法，这样保证提示消息的默认效果
+                    this.defaultShowErrors();
+                },
+                errorPlacement: function (error, element) {
+                    if (error.length > 0) {
+                        if (error[0].innerHTML != '') {
+                            error.insertAfter(element);
+                        }
+                    }
+                }
+            });
         });
-    });
-</script>
+    </script>
 }

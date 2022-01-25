@@ -37,6 +37,14 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
             return merchVwLst;
         }
 
+        [HttpPost]
+        [AdminApiAuthorize(Module = ModuleConst.MerchantModule)]
+        public PageData<MerchantSelectSummary> SearchMerchantList(MerchantCond cond)
+        {
+            var merchVwLst = merchantBLL.SearchMerchantList(cond);
+            return merchVwLst;
+        }
+
         [HttpGet]
         [AdminApiAuthorize(Module = ModuleConst.MerchantModule)]
         public async Task<MerchantView> GetMerchInfo(string merchID)

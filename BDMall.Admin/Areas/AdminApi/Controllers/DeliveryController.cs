@@ -44,12 +44,10 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
         [AllowAnonymous]
         public List<CountryDto> GetCountry(string name)
         {
-            List<CountryDto> list = new List<CountryDto>();
-
-            list = DeliveryBLL.GetCountry(name);
-
+            List<CountryDto> list = DeliveryBLL.GetCountry(name);
             return list;
         }
+
         /// <summary>
         /// 獲取所有ExpressCountry
         /// </summary>
@@ -119,7 +117,7 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
         /// <param name ="country" ></param >
         /// <returns></returns >
         [HttpPost]
-        public SystemResult SaveCountry(CountryDto country)
+        public SystemResult SaveCountry([FromForm]CountryDto country)
         {
             SystemResult result = DeliveryBLL.SaveCountry(country);
             return result;
@@ -179,12 +177,16 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
         /// 獲取快遞信息
         /// </summary>
         /// <returns></returns>
-        [HttpGet]
-        public List<ExpressCompanyDto> GetExpress()
+        [HttpPost]
+        public PageData<ExpressCompanyView> GetExpress(ExpressSearchCond exInfo)
         {
-            List<ExpressCompanyDto> list = DeliveryBLL.GetExpress();
-            return list;
+            var data = new PageData<ExpressCompanyView>();
+            data = DeliveryBLL.GetExpress(exInfo);
+
+            return data;
         }
+
+
         /// <summary>
         /// 獲取屬性下的值
         /// </summary>
@@ -392,8 +394,7 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
         /// <param name="discount"></param>
         /// <returns></returns>
         [HttpPost]
-
-        public SystemResult SaveDiscount(ExpressDiscount discount)
+        public SystemResult SaveDiscount([FromForm]ExpressDiscount discount)
         {
             SystemResult result = DeliveryBLL.SaveDiscount(discount);
             return result;
@@ -455,8 +456,7 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
         /// <param name="obj"></param>
         /// <returns></returns>
         [HttpPost]
-
-        public SystemResult SaveZone(ZoneInfo obj)
+        public SystemResult SaveZone([FromForm]ZoneInfo obj)
         {
             SystemResult result = DeliveryBLL.SaveZone(obj);
             return result;
@@ -488,5 +488,11 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
             return list;
         }
 
+        [HttpGet]
+        public List<CountryZoneView> GetProvinceByCountryZoneForSelectALL(Guid zoneId, Guid exId)
+        {
+            var list = DeliveryBLL.GetProvinceByCountryZoneForSelect(zoneId, exId);
+            return list;
+        }
     }
 }

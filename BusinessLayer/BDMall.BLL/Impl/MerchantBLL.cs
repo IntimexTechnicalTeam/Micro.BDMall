@@ -86,6 +86,37 @@ namespace BDMall.BLL
 
         }
 
+        public PageData<MerchantSelectSummary> SearchMerchantList(MerchantCond cond)
+        {
+            var data = new PageData<MerchantSelectSummary>();
+
+            var query = (from m in  baseRepository.GetList<Merchant>()
+                         join p in baseRepository.GetList<MerchantPromotion>() on new { a1 = m.Id, a2 = true, a3 = false } equals new { a1 = p.MerchantId, a2 = p.IsActive, a3 = p.IsDeleted }
+                         join t in baseRepository.GetList<Translation>() on new { a1 = p.BigLogoId, a2 = CurrentUser.Lang } equals new { a1 = t.TransId, a2 = t.Lang } into tc
+                         from tt in tc.DefaultIfEmpty()
+                         join n in baseRepository.GetList<Translation>() on new { a1 = m.NameTransId, a2 = CurrentUser.Lang } equals new { a1 = n.TransId, a2 = n.Lang } into nc
+                         from nn in nc.DefaultIfEmpty()
+                         where (p.ApproveStatus == ApproveType.Pass || cond.ShowPass == false) && !m.IsDeleted
+                         orderby m.UpdateDate descending
+                         select new MerchantSelectSummary
+                         {
+                             Id = m.Id,
+                             Logo = tt.Value,
+                             Name = nn.Value,
+                             IsActive = m.IsActive
+                         });
+            if (!string.IsNullOrEmpty(cond.Name))
+                query = query.Where(d => d.Name.ToUpper().Contains(cond.Name));
+            if (cond.IsActiveCond != null)
+            {
+                query = query.Where(d => d.IsActive == cond.IsActiveCond);
+            }
+            data.TotalRecord = query.Select(d => d.Id).Count();
+            data.Data = query.Skip(cond.Offset).Take(cond.PageSize).ToList();
+            return data;
+        }
+
+
         public MerchantView GetMerchById(Guid Id)
         {
             var merchant = new MerchantView();

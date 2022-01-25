@@ -1,0 +1,252 @@
+﻿@{
+    ViewBag.Title = "Zone";
+    Layout = "~/Views/Shared/_LayoutMain.cshtml";
+}
+<div id="app">
+    <table class="table table-condensed">
+        <tr>
+            <td class="col-md-2">
+                <form class="form-inline">
+                    @BDMall.Resources.Label.ExpressCompany
+                    @*<select id="cboBuyerGroup" class="form-control" style="width:300px;" onchange="Search();"></select>*@
+                    <input type="text" class="form-control" id="txtexName" v-model="exName">
+                    <input type="button" class="btn btn-default" value="@BDMall.Resources.Action.Select" v-on:click="selectExpressCompany" />
+
+                </form>
+            </td>
+        </tr>
+    </table>
+    <div id="myTabContent" class="tab-content">
+        <div id="toolbar" class="btn-group">
+            <button id="btn_add" type="button" class="btn btn-default" v-on:click="Add">
+                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>@BDMall.Resources.Action.Add
+            </button>
+            <button id="btn_edit" type="button" class="btn btn-default" v-on:click="Modify" v-bind:disabled="IsModify">
+                <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>@BDMall.Resources.Action.Modify
+            </button>
+            <button id="btn_delete" type="button" class="btn btn-default" v-on:click="Delete" v-bind:disabled="IsDelete">
+                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>@BDMall.Resources.Action.Delete
+            </button>
+        </div>
+        <table id="tblAttribute"></table>
+    </div>
+</div>
+@section scripts{
+    @*<script src="~/Scripts/admin/vue-component/productCatalog.js"></script>*@
+    <style type="text/css">
+        select#bootstrap-duallistbox-selected-list_province, select#bootstrap-duallistbox-nonselected-list_province {
+            width: 100%;
+        }
+    </style>
+    <link href="~/Scripts/bootstrap-duallistbox-master/css/bootstrap-duallistbox.min.css" rel="stylesheet" />
+    <script src="~/Scripts/bootstrap-duallistbox-master/js/jquery.bootstrap-duallistbox.min.js"></script>
+    <script type="text/javascript">
+    layui.use(['miniTab'], function () {
+        var layer = layui.layer,
+            miniTab = layui.miniTab;
+    });
+    var vm = new Vue({
+        el: "#app",
+        data: {
+            exId: "00000000-0000-0000-0000-000000000000",
+            exName: "",
+            SubAttriTitle: "",
+            AttrType: 1,
+            action: "",
+            subAction: "",
+            IsModify: true,
+            IsDelete: true,
+            items: {
+                Id: "00000000-0000-0000-0000-000000000000",
+                Code: "",
+                zoneItem: [{ Lang: { Text: "", Code: "" }, Desc: "" }],
+                remarkItem: [{ Lang: { Text: "", Code: "" }, Desc: "" }],
+                FuelSurcharge: 0,
+                ExpressCompanyId: 0,
+
+            },
+            check: [{ countryId: 0, provinceList: [] }],
+            selected: [],
+            province: [],
+            country: [],
+            countryId: 0,
+        },
+        methods: {
+            Search: function () {
+                $("#tblAttribute").bootstrapTable("refresh", { url: "/adminapi/Delivery/GetZone" });
+            },
+            Add: function () {
+                miniTab.openNewTabByIframe({
+                    href:"/Delivery/ZoneEdit/00000000-0000-0000-0000-000000000000",
+                    title:'@BDMall.Resources.Label.Add-@BDMall.Resources.Label.ExpressZone',
+                    callback: vm.Search
+                });
+            },
+            Modify: function () {
+                var a = $("#tblAttribute").bootstrapTable('getSelections');
+                miniTab.openNewTabByIframe({
+                    href:"/Delivery/ZoneEdit/" + a[0].Id,
+                    title: '@BDMall.Resources.Label.Edit-@BDMall.Resources.Label.ExpressZone',
+                    callback: vm.Search
+                });
+            },
+            Delete: function () {
+                var selects = $("#tblAttribute").bootstrapTable('getSelections');
+
+                SystemConfirm('@BDMall.Resources.Message.DeleteConfirm', function () {
+                    var strSkus = "";
+                    for (var i = 0; i < selects.length; i++) {
+                        if (strSkus == "") {
+                            strSkus = selects[i].Id;
+                        }
+                        else {
+                            strSkus += "," + selects[i].Id;
+                        }
+
+                    }
+
+                    var data = new Object();
+                    data.skus = strSkus;
+                    WS.AjaxP("get", "/adminapi/Delivery/ZoneDelete", data, function (response) {
+                        if (response.Succeeded == true) {
+                            showWarn('@BDMall.Resources.Message.DeleteSucceeded');
+                            vm.Search();
+                        }
+                        else {
+                            showWarn(response.Message);
+                        }
+                    }, function () { });
+                });
+
+            },
+            SetSelfButtonState: function () {
+                var selected = $("#tblAttribute").bootstrapTable("getSelections");
+                if (selected.length == 1) {
+                    vm.IsModify = false;
+                }
+                else {
+                    vm.IsModify = true;
+                }
+
+                if (selected.length >= 1) {
+                    vm.IsDelete = false;
+                }
+                else {
+                    vm.IsDelete = true;
+                }
+            },
+            selectExpressCompany: function () {
+
+                OpenDialog("@BDMall.Resources.Label.ExpressCompany", 1000, 700, "/Delivery/SelectExpressCompany/0/00000000-0000-0000-0000-000000000000/0", null, function (data) {
+                    if (data && data.results && data.results.length > 0) {
+
+                        vm.exId = data.results[0].Id;
+                        vm.exName = data.results[0].Name;
+
+                        //if (data.results.length > 0) {
+                        //    vm.exId = data.results[0].Code;
+                        //    vm.exName = data.results[0].Name;
+                        //}
+                        Search();
+                    }
+                });
+            }
+        }
+    });
+
+
+    var SelfAttrTableInit = function () {
+
+        var oTableInit = new Object();
+        oTableInit.Init = function () {
+
+            $("#tblAttribute").bootstrapTable({
+                method: 'get',                      //请求方式（*）
+                //url: '/adminapi/Attribute/GetSelfDefineAttribute',         //请求后台的URL（*）
+                queryParams: oTableInit.queryParams,//传递参数（*）
+                //queryParamsType:'limit',
+                toolbar: '#toolbar',                //工具按钮用哪个容器
+                striped: true,                      //是否显示行间隔色
+                cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+                sortable: true,                     //是否启用排序
+                sortOrder: "asc",                   //排序方式
+                sidePagination: "client",           //分页方式：client客户端分页，server服务端分页（*）
+                pageNumber: 1,                       //初始化加载第一页，默认第一页
+                pageSize: 10,                       //每页的记录行数（*）
+                pageList: [10, 25, 50, 100],        //可供选择的每页的行数（*）
+                smartDisplay: false,
+                showRefresh: true,                  //是否显示刷新按钮
+                clickToSelect: true,                //是否启用点击选中行
+                height: 500,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
+                uniqueId: "id",                     //每一行的唯一标识，一般为主键列
+                cardView: false,                    //是否显示详细视图
+                detailView: false,                   //是否显示父子表
+                onCheck: function (row) {
+                    vm.SetSelfButtonState();
+                },
+                onUncheck: function (row) {
+                    vm.SetSelfButtonState();
+                },
+                onCheckAll: function (rows) {
+                    vm.SetSelfButtonState();
+                },
+                onUncheckAll: function (rows) {
+                    vm.SetSelfButtonState();
+                },
+                columns: [{
+                    checkbox: true
+                }, {
+                    field: 'Id',
+                    title: 'id',
+                    visible: false,
+                }, {
+                    field: 'Code',
+                    sortable: true,
+                    title: '@BDMall.Resources.Label.ZoneCode',
+
+                }, {
+                    field: 'Name',
+                        sortable: true,
+                    title: '@BDMall.Resources.Label.ZoneName',
+
+                }, {
+                    field: 'ExpressCompanyName',
+                        sortable: true,
+                    title: '@BDMall.Resources.Label.ExpressCompany'
+                }, {
+                    field: 'FuelSurcharge',
+                    sortable: true,
+                    title: '@BDMall.Resources.Label.FuelSurcharge'
+                },
+                ]
+            });
+        };
+
+        oTableInit.queryParams = function (params) {
+            return {
+                exId: vm.exId,
+            };
+        }
+        return oTableInit;
+    }
+        function Search() {
+            vm.IsDelete = true;
+            vm.IsModify = true;
+        //vm.exId = $("#cboBuyerGroup").val();
+        vm.Search();
+    }
+    $(document).ajaxStart(function () {
+        showLoading();
+    });
+    $(document).ajaxStop(function () {
+        hideLoading();
+    });
+    $(document).ready(function () {
+
+        //InitNormalSelect("cboBuyerGroup", "/adminapi/Delivery/GetExpressCompany", true);
+        var oTable = SelfAttrTableInit();
+        oTable.Init();
+
+    });
+    </script>
+}

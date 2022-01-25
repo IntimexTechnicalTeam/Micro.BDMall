@@ -77,6 +77,11 @@ namespace Web.Swagger
             return services;
         }
 
+        /// <summary>
+        /// 注册Swagger
+        /// </summary>
+        /// <param name="app"></param>
+        /// <param name="version"></param>
         public static void ConfigureSwagger(this IApplicationBuilder app, string version = "v1")
         {
             Assembly entryAssembly = Assembly.GetEntryAssembly();
