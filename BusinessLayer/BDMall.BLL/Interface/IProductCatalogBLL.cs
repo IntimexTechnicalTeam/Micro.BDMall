@@ -28,6 +28,6 @@ namespace BDMall.BLL
 
         string GetCatalogPath(Guid catID);
 
-      
+        Task<SystemResult> GetCatalogAsync();
     }
 }

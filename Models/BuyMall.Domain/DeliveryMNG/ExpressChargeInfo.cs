@@ -9,13 +9,13 @@ namespace BDMall.Domain
 {
     public class ExpressChargeInfo
     {
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.Empty;
 
-        public string CountryCode { get; set; }
-        public string ShipCode { get; set; }
-        public string ServiceType { get; set; }
-        public Guid ExpressCompanyId { get; set; }
-        public string ExpressCompanyName { get; set; }
+        public string CountryCode { get; set; } = string.Empty;
+        public string ShipCode { get; set; } = string.Empty;
+        public string ServiceType { get; set; } = string.Empty;
+        public Guid ExpressCompanyId { get; set; } =Guid.Empty;
+        public string ExpressCompanyName { get; set; } = string.Empty;
         public decimal Price { get; set; }
         public decimal Discount { get; set; }
         public decimal DiscountPrice
@@ -48,6 +48,6 @@ namespace BDMall.Domain
         /// <summary>
         /// 校驗碼
         /// </summary>
-        public string Vcode { get; set; }
+        public string Vcode { get; set; } = string.Empty;
     }
 }

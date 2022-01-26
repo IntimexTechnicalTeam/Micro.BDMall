@@ -25,6 +25,8 @@ namespace Web.Jwt
         /// <returns></returns>
         CurrentUser CreateCurrentUser(string encodeJwt);
 
+        CurrentUser BuildUser(string token, CurrentUser _currentUser, Func<string, SystemResult> func=null);
+
         /// <summary>
         /// 生成token
         /// </summary>

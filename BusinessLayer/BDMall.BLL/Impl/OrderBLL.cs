@@ -72,13 +72,13 @@ namespace BDMall.BLL
             {
                 foreach (var item in checkout.Items)
                 {
-                    if (item.DeliveryType == DeliveryType.D.ToString())
+                    if (item.DeliveryType == DeliveryType.D)
                     {
                         if (item.AddressId == Guid.Empty) throw new BLException(Resources.Message.DeliveryAddressRequire);
                     }
 
-                    if (item.DeliveryType.IsEmpty()) throw new BLException(Resources.Message.DeliveryTypeRequire);
-                    if (item.DeliveryType == DeliveryType.D.ToString() && item.ChargeId == Guid.Empty) throw new BLException(Resources.Message.CourierRequire);
+                    if (item.DeliveryType == null) throw new BLException(Resources.Message.DeliveryTypeRequire);
+                    if (item.DeliveryType == DeliveryType.D && item.ChargeId == Guid.Empty) throw new BLException(Resources.Message.CourierRequire);
                     if (item.ChargeInfo == null) throw new BLException("express ChargeInfo is null");
 
                     string md5Formate = "{0}{1}{2}{3}";
@@ -894,11 +894,11 @@ namespace BDMall.BLL
                 orderDelivery.Status = OrderStatus.ReceivedOrder;
                 orderDelivery.LocationId = Guid.Empty;
                 orderDelivery.TrackingNo = "";
-                orderDelivery.DeliveryType = (DeliveryType)Enum.Parse(typeof(DeliveryType), item.DeliveryType);
+                orderDelivery.DeliveryType = item.DeliveryType;
                 orderDelivery.ServiceType = item.ServiceType;
 
                 #region 设置送货方式
-                if (item.DeliveryType == DeliveryType.D.ToString())
+                if (item.DeliveryType == DeliveryType.D)
                 {
                     orderDelivery.Recipients = (address?.FirstName ?? "") + " " + (address?.LastName ?? "");
                     orderDelivery.Address = address?.Address ?? "";

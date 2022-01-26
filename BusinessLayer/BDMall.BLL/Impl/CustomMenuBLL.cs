@@ -130,6 +130,25 @@ namespace BDMall.BLL
             return CustomMenuRepo.GetCustomMenuById(id);
         }
 
+        public async Task<SystemResult> GetMenuBarAsync()
+        {
+            var result = new SystemResult();
+            string key = CacheKey.MenuBars.ToString();
+            string field = $"{CacheField.Menu}_{CurrentUser.Lang}";
+            var data = await RedisHelper.HGetAsync<MenuModel>(key, field);
+            if (data == null)
+            {
+                data = CustomMenuRepo.GetMenuBar();
+                await RedisHelper.HSetAsync(key, field, data);
+            }
+
+            var menuData = data?.HeaderMenus?.Select(item => new Menu { Id = item.Id, Name= item.Name }).ToList();
+
+            result.ReturnValue = menuData;
+            result.Succeeded = true;
+            return result;
+        }
+
         public List<CustomMenuDetailDto> GetCustomMenuDetailByMenuId(Guid menuId)
         {
             return CustomMenuRepo.GetCustomMenuDetailByMenuId(menuId);

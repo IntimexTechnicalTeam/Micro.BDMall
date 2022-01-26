@@ -2,18 +2,21 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using Web.Framework;
 
 namespace BDMall.Domain
 {
+    [DataContract]
     public class ProdSearchCond  
     {
         public PageInfo PageInfo { get; set; }
 
         public Language Language { get; set; }
 
+        [DataMember]
         public Guid MerchantId { get; set; } = Guid.Empty;
         public string Key { get; set; }
 
@@ -26,16 +29,6 @@ namespace BDMall.Domain
 
         public bool OnSale { get; set; }
         public bool SaleOff { get; set; }
-
-        public int PermissionLevel { get; set; }
-
-        /// <summary>
-        /// 是否權限範圍，如果true，則取範圍内的產品
-        /// </summary>
-        public bool IsPermissionRange { get; set; }
-        public string SortedBy { get; set; }
-
-        public string Sorted { get; set; }
 
         public DateTime? CreateDateFrom { get; set; }
         public DateTime? CreateDateTo { get; set; }
@@ -55,11 +48,6 @@ namespace BDMall.Domain
         /// 
         /// </summary>
         public ProductSearchType ProductSearchType { get; set; }
-
-        /// <summary>
-        /// 查询数据集的类型，0-Or模式、1-And模式
-        /// </summary>
-        //public int Type { get; set; }
 
         /// <summary>
         /// 目錄與屬性之間的類型,0-or模式,1-and模式

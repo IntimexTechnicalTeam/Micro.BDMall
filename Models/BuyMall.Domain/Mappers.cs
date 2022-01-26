@@ -68,6 +68,8 @@ namespace Domain
             ConfigMap<Order,OrderDto>();
             ConfigMap<OrderDelivery, OrderDeliveryDto>();
             ConfigMap<OrderDeliveryDetail, OrderDeliveryDetailDto>();
+
+            ConfigMap<ProdCatatogInfo, Catalog>();
         }
         void ConfigMap<TSource, TDestination>()
         {

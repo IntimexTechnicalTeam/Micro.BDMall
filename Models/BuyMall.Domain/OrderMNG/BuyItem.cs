@@ -9,16 +9,16 @@ namespace BDMall.Domain
 {
     public class BuyItem
     {
-        public Guid Sku { get; set; }
+        public Guid Sku { get; set; }=Guid.Empty;
 
         public int Qty { get; set; }
 
         /// <summary>
-        /// PromotionRule Id
+        /// 一般为PromotionRule Id
         /// </summary>
-        public Guid RuleId { get; set; }
+        public Guid RuleId { get; set; } = Guid.Empty;
 
-        public PromotionRuleType RuleType { get; set; }
+        public PromotionRuleType RuleType { get; set; } = PromotionRuleType.BuySend;
         /// <summary>
         /// 是否贈品
         /// </summary>

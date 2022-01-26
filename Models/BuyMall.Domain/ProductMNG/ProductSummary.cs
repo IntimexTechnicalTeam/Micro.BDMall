@@ -168,7 +168,7 @@ namespace BDMall.Domain
        
         public string IconLUrl { get; set; }
 
-        public string UpdateDateString =>UpdateDate.Value.ToString("yyyy-MM-dd HH:mm:ss") ?? "";
+        public string UpdateDateString =>UpdateDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "";
         /// <summary>
         /// 是否香港信心產品
         /// </summary>
@@ -183,7 +183,7 @@ namespace BDMall.Domain
         public string PackagingInfo { get; set; }
         public DateTime? CreateDate { get; set; }
 
-        public string CreateDateString=> CreateDate.Value.ToString("yyyy-MM-dd HH:mm:ss");
+        public string CreateDateString=> CreateDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "";
         public DateTime? UpdateDate { get; set; }
 
         public string PromotionRuleTitle { get; set; }

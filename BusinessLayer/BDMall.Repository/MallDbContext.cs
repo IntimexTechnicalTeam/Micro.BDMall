@@ -80,6 +80,8 @@ namespace BDMall.Repository
 
         public DbSet<Merchant> Merchants { get; set; }
 
+        public DbSet<MerchantFavorite> MerchantFavorites { get; set; }
+
         public DbSet<ProductAttribute> ProductAttributes { get; set; }
         public DbSet<ProductAttributeValue> ProductAttributeValues { get; set; }
 
@@ -112,6 +114,8 @@ namespace BDMall.Repository
         public DbSet<ScheduleJob> ScheduleJobs { get; set; }
 
         public DbSet<MemberLoginRecord> MemberLoginRecords { get; set; }
+
+        public DbSet<MemberFavorite> MemberFavorites { get; set; }
 
         public DbSet<CurrencyExchangeRate> CurrencyExchangeRates { get; set; }
 

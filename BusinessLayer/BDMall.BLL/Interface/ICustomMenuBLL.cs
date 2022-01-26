@@ -37,5 +37,7 @@ namespace BDMall.BLL
         bool VerifySeq(MenuDetailInfo info);
 
         SystemResult SaveSeq(MenuCond cond);
+
+        Task<SystemResult> GetMenuBarAsync();
     }
 }

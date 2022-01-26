@@ -337,6 +337,64 @@ namespace BDMall.BLL
             return list;
         }
 
+        public List<ProdAtt> GetFrontAttribute(ProdAttCond cond)
+        {
+            List<ProdAtt> list = new List<ProdAtt>();
+             
+            var attrs = (from a in baseRepository.GetList<ProductAttribute>()
+                         join m in baseRepository.GetList<ProductCatalogAttr>() on a.Id equals m.AttrId
+                         where a.IsActive == true && a.IsDeleted == false                        
+                         select new { a,m.CatalogId}
+                        );
+
+            if (!cond.CatalogIds?.Any() ?? false)
+                attrs = attrs.Where(x => cond.CatalogIds.Contains(x.CatalogId));
+
+            if (cond.Type == 1)          
+                attrs = attrs.Where(p => p.a.IsInvAttribute == true);            
+            else if (cond.Type == 2)
+                attrs = attrs.Where(p => p.a.IsInvAttribute == false);
+            
+            list = (from d in attrs
+                    join t in baseRepository.GetList<Translation>() on new { a1 = d.a.DescTransId, a2 = CurrentUser.Lang } equals new { a1 = t.TransId, a2 = t.Lang }
+                    into tc
+                    from tt in tc.DefaultIfEmpty()
+                    select new ProdAtt
+                    {
+                        Id = d.a.Id,
+                        Layout = d.a.Layout,
+                        Name = tt.Value,
+                    }).ToList();
+            foreach (var item in list)
+            {
+
+                var imagePerfix = string.Empty;
+                var attrValues = (from d in baseRepository.GetList <ProductAttributeValue>()
+                                  join t in baseRepository.GetList<Translation>() on new { a1 = d.DescTransId, a2 = CurrentUser.Lang } equals new { a1 = t.TransId, a2 = t.Lang } into tc
+                                  from tt in tc.DefaultIfEmpty()
+                                  where d.AttrId == item.Id
+                                  && d.IsActive == true && d.IsDeleted == false
+                                  select new ProdAttValue
+                                  {
+                                      Id = d.Id,
+                                      Name = tt.Value,
+                                      //AddPrice = d.AddPrice,
+                                      Image = d.Image
+                                  }).ToList();
+
+                foreach (var attrValue in attrValues)
+                {
+                    if (!string.IsNullOrEmpty(attrValue.Image))
+                    {
+                        attrValue.Image = imagePerfix + attrValue.Image;
+                    }
+                }
+
+                item.Values = attrValues;
+            }
+            return list;
+        }
+
         private List<AttributeObjectView> GenAttributeObjectView(List<ProductAttribute> dbAttrs)
         {
             List<AttributeObjectView> list = new List<AttributeObjectView>();
@@ -501,6 +559,26 @@ namespace BDMall.BLL
             }
 
             return list;
+        }
+
+        public async Task<SystemResult> GetFrontAttributeAsync(ProdAttCond cond)
+        {         
+            cond.Type = 2;
+
+            string key = CacheKey.ProdAttr.ToString();
+            string field = $"{CacheField.Atts}_{cond.Type}_{CurrentUser.Lang}";
+            var data = await RedisHelper.HGetAsync<List<ProdAtt>>(key,field);
+            if (!data?.Any() ?? false)
+            {
+                data = GetFrontAttribute(cond);
+                await RedisHelper.HSetAsync(key,field,data);
+            }
+
+            var result = new SystemResult();
+            result.ReturnValue = data;
+            result.Succeeded=   true;
+            return result;
+
         }
 
         private ProductAttributeValueDto GenProductAttrValue(ProductAttributeValueDto attributeValue)

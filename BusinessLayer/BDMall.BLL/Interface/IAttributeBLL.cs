@@ -50,5 +50,9 @@ namespace BDMall.BLL
         InvAttributeLst GetInvAttributeItemsByCatID(Guid catID);
 
         List<ProdAtt> GetInvAttributeByProductWithMapForFront(Guid prodId);
+
+        List<ProdAtt> GetFrontAttribute(ProdAttCond cond);
+
+        Task<SystemResult> GetFrontAttributeAsync(ProdAttCond cond);
     }
 }

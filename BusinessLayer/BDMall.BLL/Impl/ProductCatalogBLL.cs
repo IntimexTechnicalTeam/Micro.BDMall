@@ -171,6 +171,82 @@ namespace BDMall.BLL
             return result;
         }
 
+        public List<ProdCatatogInfo> GetActiveCatalogTree()
+        {
+            var allCatalogList = productCatalogRepository.GetAllActiveCatalog();
+
+            var catalogInfos = allCatalogList.Select(s => GenProductCatalogInfo(s)).ToList();
+            var parents = catalogInfos.Where(p => p.ParentId == Guid.Empty).ToList();
+            var result = GenCatalogTree(catalogInfos, parents, Guid.Empty);
+
+            return result;
+        }
+
+        public async Task<SystemResult> GetCatalogAsync()
+        {
+            var result =new SystemResult();
+            string key = CacheKey.MenuCatalog.ToString();
+            string field = $"{CacheField.SubCatalog}_{CurrentUser.Lang}";
+
+            var data = await RedisHelper.HGetAsync<List<ProdCatatogInfo>>(key, field);
+            if (data == null)
+            {
+                data = GetActiveCatalogTree();
+                await RedisHelper.HSetAsync(key,field,data);
+            }
+
+            result.ReturnValue = AutoMapperExt.MapToList<ProdCatatogInfo,Catalog>(data);
+            result.Succeeded = true;
+            return result;
+        }
+
+        private ProdCatatogInfo GenProductCatalogInfo(ProductCatalogDto catalog)
+        {
+            var fileServer = string.Empty;
+            ProdCatatogInfo info = new ProdCatatogInfo();
+            info.Id = catalog.Id;
+            info.Children = null;
+            info.Img = fileServer + catalog.OriginalIcon;
+            info.ImgS = fileServer + catalog.SmallIcon;
+            info.ImgB = fileServer + catalog.BigIcon;
+            info.ImgM = fileServer + catalog.MOriginalIcon;
+            info.ImgSM = fileServer + catalog.MSmallIcon;
+            info.ImgBM = fileServer + catalog.MBigIcon;
+            info.Name = translationRepository.GetDescForLang(catalog.NameTransId, CurrentUser.Lang);
+            info.ParentId = catalog.ParentId;
+            //info.PathId = catalog.PathId;
+            info.Level = catalog.Level;
+
+            return info;
+        }
+
+        private List<ProdCatatogInfo> GenCatalogTree(List<ProdCatatogInfo> data, List<ProdCatatogInfo> nodes, Guid parentId)
+        {
+            List<ProdCatatogInfo> result = new List<ProdCatatogInfo>();
+
+            foreach (ProdCatatogInfo item in nodes)
+            {
+                ProdCatatogInfo node = new ProdCatatogInfo();
+                node.Id = item.Id;
+                node.ParentId = item.ParentId;
+                node.PathId = item.PathId;
+                node.Img = item.Img;
+                node.ImgS = item.ImgS;
+                node.ImgB = item.ImgB;
+                node.ImgM = item.ImgM;
+                node.ImgSM = item.ImgSM;
+                node.ImgBM = item.ImgBM;
+                node.Name = item.Name;
+                result.Add(node);
+                var childs = data.Where(p => p.ParentId == item.Id && p.ParentId != p.Id).ToList();
+                if (childs.Count > 0)
+                {
+                    node.Children = GenCatalogTree(data, childs, item.Id);
+                }
+            }
+            return result;
+        }
+
         private async Task UpdateCatalogSeq(List<ProductCatalogEditModel> list)
         {
             var catalogList = await baseRepository.GetListAsync<ProductCatalog>(x => list.Select(s => s.Id).Contains(x.Id));

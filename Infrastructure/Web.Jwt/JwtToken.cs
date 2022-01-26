@@ -18,6 +18,7 @@ namespace Web.Jwt
     {
         IServiceProvider service;
         IConfiguration configuration;
+         
         public JwtToken(IServiceProvider _service)
         {
             this.service = _service;
@@ -108,6 +109,8 @@ namespace Web.Jwt
         {
             var currentUser = new CurrentUser();
 
+            if (encodeJwt.IsEmpty()) return currentUser;
+
             var payload = DecodeJwt(encodeJwt);
 
             var prop = currentUser.GetType().GetProperties();
@@ -135,6 +138,37 @@ namespace Web.Jwt
             return currentUser;
         }
 
+        public CurrentUser BuildUser(string token, CurrentUser _currentUser,Func<string,SystemResult> func=null)
+        {
+            if (_currentUser == null || token.IsEmpty())
+            {
+                _currentUser = new CurrentUser();
+                //return _currentUser;
+            }
+
+            _currentUser = CreateCurrentUser(token);
+            //admin,商家和第三方商家
+            if (_currentUser.LoginType <= LoginType.Admin)
+            {
+                //加载用户角色，先从缓存读
+                string key = $"{CacheKey.CurrentUser}";
+                var cacheUser = RedisHelper.HGet<UserDto>(key, _currentUser.UserId);
+                if (!cacheUser?.Roles?.Any() ?? false)
+                {
+                    if (func != null)
+                    {
+                        var result = func.Invoke(_currentUser.UserId);
+                        var userInfo = result.ReturnValue as UserDto;
+                        RedisHelper.HSetAsync($"{CacheKey.CurrentUser}", userInfo.Id.ToString(), userInfo);
+                        cacheUser.Roles = userInfo.Roles;
+                    }
+                }
+                _currentUser.Roles = cacheUser?.Roles;
+                _currentUser.MerchantId = cacheUser?.MerchantId ?? Guid.Empty;
+            }
+            return _currentUser;
+        }
+
         /// <summary>
         /// 解析token中的payload信息,payload信息来源于tokeninfo类
         /// </summary>
@@ -143,6 +177,8 @@ namespace Web.Jwt
         /// <exception cref="ApiServiceException"></exception>
         public Dictionary<string, string> DecodeJwt(string encodeJwt)
         {
+            if (encodeJwt.IsEmpty()) throw new ApiServiceException(500, "Token不能为空");
+
             var jwtArr = encodeJwt.Split('.');
             if (jwtArr.Length < 3) throw new ApiServiceException(500, "解析Token出错");
 

@@ -23,12 +23,12 @@ namespace Web.Framework
         /// <summary>
         /// 排序名称
         /// </summary>
-        public string SortName { get; set; }
+        public string SortName { get; set; } = "";
 
         /// <summary>
         /// 正序(Asc)，反序(Desc)
         /// </summary>
-        public string SortOrder { get; set; }
+        public string SortOrder { get; set; } = "Desc";
 
     }
 }

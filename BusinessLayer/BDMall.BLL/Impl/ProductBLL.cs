@@ -34,6 +34,7 @@ namespace BDMall.BLL
         public PreHeatProductImageService productImageService;
         public PreHeatProductStaticsService productStatisticsService;
         public PreHeatProductSkuService  productSkuService; 
+        public PreHeatFavoriteService productFavoriteService;
 
         public ProductBLL(IServiceProvider services) : base(services)
         {
@@ -54,6 +55,7 @@ namespace BDMall.BLL
             productImageService = (PreHeatProductImageService)Services.GetService(typeof(PreHeatProductImageService));
             productStatisticsService = (PreHeatProductStaticsService)Services.GetService(typeof(PreHeatProductStaticsService));
             productSkuService = (PreHeatProductSkuService)Services.GetService(typeof(PreHeatProductSkuService));
+            productFavoriteService = (PreHeatFavoriteService)Services.GetService(typeof(PreHeatFavoriteService));
         }
 
         public Dictionary<string, ClickRateSummaryView> GetClickRateView(int topMonthQty, int topWeekQty, int topDayQty)
@@ -739,6 +741,143 @@ namespace BDMall.BLL
 
         }
 
+        public async Task<PageData<MicroProduct>> GetProductListAsync(ProductCond cond)
+        {
+            var result = new PageData<MicroProduct>();
+
+            Favorite favoriteData = null;
+           
+            var proKey = $"{PreHotType.Hot_Products}_{CurrentUser.Lang}";
+            var productList = await RedisHelper.HGetAllAsync<HotProduct>(proKey);
+            //读数据库，并回写缓存           
+            if ((!productList?.Keys.Any() ?? false) || (!productList.Values?.Any() ?? false))
+            {
+                var view = await this.productService.GetDataSourceAsync(Guid.Empty);
+                if (view != null && view.Any())
+                {
+                    //重新刷新缓存
+                    await productService.SetDataToHashCache(view, CurrentUser.Lang);
+                    productList = view.Where(x => x.LangType == CurrentUser.Lang).ToDictionary(x => x.ProductId.ToString());
+                }
+            }
+
+            var statistKey = $"{PreHotType.Hot_PreProductStatistics}";
+            var productStatists = await RedisHelper.HGetAllAsync<HotPreProductStatistics>(statistKey);
+            //读数据库，并回写缓存
+            if ((!productStatists?.Keys.Any() ?? false) || (!productStatists.Values?.Any() ?? false))
+            {
+                var statitsView = await productStatisticsService.GetDataSourceAsync(Guid.Empty, "");
+                if (statitsView != null)
+                {
+                    //重新刷新缓存
+                    await productStatisticsService.SetDataToHashCache(statitsView);
+                    productStatists = statitsView.ToDictionary(x => x.Code);
+                }
+            }
+
+            if (CurrentUser.IsLogin)
+            {
+                string favKey = CacheKey.Favorite.ToString();
+                string favField = CurrentUser.UserId;
+                favoriteData = await RedisHelper.HGetAsync<Favorite>(favKey, favField);
+                //读数据库,回写缓存
+                if (favoriteData == null)
+                {
+                    favoriteData = await productFavoriteService.GetDataSourceAsync(Guid.Parse(CurrentUser.UserId));
+                    if (favoriteData != null)
+                    {
+                        await productFavoriteService.SetDataToHashCache(Guid.Parse(CurrentUser.UserId), favoriteData);
+                    }
+                }
+            }
+
+            var query = from a in productList.Values.AsQueryable()
+                        join b in productStatists.Values.AsQueryable() on a.Code equals b.Code                  
+                        select new 
+                        {
+                            MerchantId = a.MchId,
+                            ProductId = a.ProductId,
+                            Code = a.Code,
+                            Name = a.Name,
+                            SalePrice = a.SalePrice,                          
+                            Score = NumberUtil.ConvertToRounded(b.Score),
+                            CurrencyCode = a.CurrencyCode,    
+                            CreateDate = a.CreateDate,
+                            UpdateDate= a.UpdateDate,
+                            
+                        };
+
+            #region 组装条件
+
+            if (cond.MerchantId != Guid.Empty)
+                query = query.Where(x => x.MerchantId == cond.MerchantId);
+
+            if (!cond.KeyWord.IsEmpty())
+            { 
+            }
+
+            if (!cond.ProductCode.IsEmpty())
+                query = query.Where(x => x.Code.Contains(cond.ProductCode));
+
+            if (!cond.ProductName.IsEmpty())
+                query = query.Where(x => x.Name.Contains(cond.ProductName));
+
+            #endregion
+
+
+            result.TotalRecord = query.Count();
+
+            if (cond.SortName.IsEmpty()) cond.SortName = "CreateDate";
+            if (cond.SortOrder.IsEmpty()) cond.SortOrder = "Desc";
+
+            var sortBy = (SortType)Enum.Parse(typeof(SortType), cond.SortOrder.ToUpper());
+            query = query.AsQueryable().SortBy(cond.SortName, sortBy).Skip(cond.Offset).Take(cond.PageSize);
+
+            var list = query.Select(s => new MicroProduct
+            {
+                ProductId = s.ProductId,
+                Code = s.Code,
+                Name = s.Name,
+                SalePrice = s.SalePrice,
+                CurrencyCode = s.CurrencyCode,
+
+            }).ToList();
+
+
+            if (list != null && list.Any())
+            {
+                foreach (var item in list)
+                {
+                    item.Currency = currencyBLL.GetDefaultCurrency();
+                    item.Score = NumberUtil.ConvertToRounded(item.Score);
+                    item.IsFavorite = favoriteData?.ProductList?.Any(x => x == item.Code) ?? false;
+                    item.ImagePath = (await GetProductImages(item.ProductId, item.Code)).FirstOrDefault();
+                }
+                result.Data = list;
+            }
+
+            return result;
+        }
+
+        public async Task<List<string>> GetProductImages(Guid ProductId, string Code)
+        {
+            var fileServer = string.Empty;
+
+            string key = $"{PreHotType.Hot_ProductImage}";
+            var cacheData = await RedisHelper.HGetAsync<List<HotProductImage>>(key, Code);
+            //读数据库，回写缓存
+            if (cacheData == null || !cacheData.Any())
+            {
+                var view = await productImageService.GetDataSourceAsync(Guid.Empty);
+                if (view != null && view.Any())
+                {
+                    await productImageService.SetDataToHashCache(view);
+                    cacheData = await RedisHelper.HGetAsync<List<HotProductImage>>(key, Code);
+                }
+            }
+            var productImages = cacheData.Select(s => fileServer + s.ImagePath).ToList();
+            return productImages;
+        }
 
         public bool CheckProductIsExists(string code)
         {

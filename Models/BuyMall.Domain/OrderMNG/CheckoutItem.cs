@@ -9,23 +9,19 @@ namespace BDMall.Domain
 {
     public class CheckoutItem
     {
-        public CheckoutItem()
-        {
-            this.DeliveryId = Guid.NewGuid();
-        }
 
-        public ShoppingCartItemType CartType { get; set; }
+        public ShoppingCartItemType CartType { get; set; } = ShoppingCartItemType.BUYDONG;
 
-        public Guid DeliveryId { get; set; }
+        public Guid DeliveryId { get; set; } = Guid.Empty;
 
         public List<BuyItem> Detail { get; set; } = new List<BuyItem>();
 
         /// <summary>
         /// 送貨方式
         /// </summary>
-        public string DeliveryType { get; set; }
+        public DeliveryType DeliveryType { get; set; } = DeliveryType.D;
 
-        public Guid AddressId { get; set; }
+        public Guid AddressId { get; set; } = Guid.Empty;
 
         /// <summary>
         /// 扣除了免运费产品重量得出的运费
@@ -39,25 +35,28 @@ namespace BDMall.Domain
 
         public decimal FreightDiscount { get; set; }
 
-        public Guid ChargeId { get; set; }
+        public Guid ChargeId { get; set; } =Guid.Empty;
 
-        public ExpressChargeInfo ChargeInfo { get; set; }
+        public ExpressChargeInfo ChargeInfo { get; set; } = new ExpressChargeInfo();
 
         //public CollectionOfficeChargeInfo COChargeInfo { get; set; }
 
-        public string ChargeGroupId { get; set; }
+        public string ChargeGroupId { get; set; }=string.Empty;
 
-        public Guid ExpressCompanyId { get; set; }
+        /// <summary>
+        /// 快递公司ID
+        /// </summary>
+        public Guid ExpressCompanyId { get; set; } = Guid.Empty;
 
         /// <summary>
         /// 柜台Code
         /// </summary>
-        public string COCode { get; set; }
+        public string COCode { get; set; } = string.Empty;
 
         /// <summary>
         /// 智邮站领取编号
         /// </summary>
-        public string MCNCode { get; set; }
+        public string MCNCode { get; set; } = string.Empty;
 
         /// <summary>
         /// 智邮站类型MCN、Phone
@@ -67,20 +66,20 @@ namespace BDMall.Domain
         /// <summary>
         /// 智邮站站点Code
         /// </summary>
-        public string IPSCode { get; set; }
+        public string IPSCode { get; set; } = string.Empty;
 
         /// <summary>
         /// 取件人联系电话
         /// </summary>
-        public string ContactPhone { get; set; }
+        public string ContactPhone { get; set; } = string.Empty;
         /// <summary>
         /// 取件人名称
         /// </summary>
-        public string ContactName { get; set; }
+        public string ContactName { get; set; } = string.Empty;
         /// <summary>
         /// 取件人郵箱
         /// </summary>
-        public string ContactEmail { get; set; }
+        public string ContactEmail { get; set; } = string.Empty;
 
         /// <summary>
         /// 智邮站运费
@@ -102,16 +101,19 @@ namespace BDMall.Domain
         /// </summary>
         public bool IsSameAsSender { get; set; }
 
-        public string PickupDate { get; set; }
+        public string PickupDate { get; set; } = string.Empty;
 
-        public string PickupTime { get; set; }
+        public string PickupTime { get; set; } = string.Empty;
 
         /// <summary>
         /// 送货方式
         /// </summary>
-        public string ServiceType { get; set; }
+        public string ServiceType { get; set; } = string.Empty;
 
-        public string CountryCode { get; set; }
+        /// <summary>
+        /// 国家代码
+        /// </summary>
+        public string CountryCode { get; set; } = string.Empty;
 
         /// <summary>
         /// 
@@ -122,9 +124,9 @@ namespace BDMall.Domain
         /// <summary>
         /// e-coupon :货价券，运费券，Rule，promotionCode等
         /// </summary>
-        public List<DiscountView> Discounts { get; set; }
+        public List<DiscountView> Discounts { get; set; } = new List<DiscountView>();
 
-        public string Remark { get; set; }
+        public string Remark { get; set; } = string.Empty;
 
     }
 }

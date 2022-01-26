@@ -60,5 +60,7 @@ namespace BDMall.BLL
         /// </summary>
         /// <returns></returns>
         Task<List<string>> GetSelloutSkus();
+
+        Task<PageData<MicroProduct>> GetProductListAsync(ProductCond cond);
     }
 }

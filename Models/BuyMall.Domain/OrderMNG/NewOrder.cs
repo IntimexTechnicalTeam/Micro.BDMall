@@ -12,9 +12,9 @@ namespace BDMall.Domain
 
         public List<CheckoutItem> Items { get; set; } = new List<CheckoutItem>();
 
-        public Guid PaymentMethodId { get; set; }
+        public Guid PaymentMethodId { get; set; } = Guid.Empty;
 
-        public Currency Currency { get; set; } 
+        public Currency Currency { get; set; } = new Currency();
 
         /// <summary>
         /// 积分
@@ -30,6 +30,6 @@ namespace BDMall.Domain
         /// <summary>
         /// 創建訂單成功返回訂單編號
         /// </summary>
-        public string OrderNO { get; set; }
+        public string OrderNO { get; set; } = "";
     }
 }

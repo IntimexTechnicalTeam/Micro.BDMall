@@ -10,6 +10,7 @@ namespace BDMall.Domain
     public class CartItem
     {
         public Guid Sku { get; set; }
+        [Required(ErrorMessage = "ProductId必填")]
         public Guid ProductId { get; set; }
         public string ProdCode { get; set; }
         /// <summary>

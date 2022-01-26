@@ -162,36 +162,10 @@ namespace BDMall.BLL
         {
             get
             {
-                //注意区分BaseMvcController的写法              
                 string token = CurrentContext?.HttpContext?.Request.Headers["Authorization"].FirstOrDefault()?.Substring("Bearer ".Length).Trim() ?? "";
+                if (token.IsEmpty()) token = CurrentContext?.HttpContext.Request?.Cookies["access_token"]?.ToString() ?? "";
 
-                if (token.IsEmpty()) token = CurrentContext?.HttpContext.Request?.Cookies["access_token"].ToString() ?? "";
-
-                if (_currentUser == null || token.IsEmpty())
-                {
-                    _currentUser = new CurrentUser();
-                    //return _currentUser;
-                }
-
-                _currentUser = jwtToken.CreateCurrentUser(token);
-
-                //admin,商家和第三方商家
-                if (_currentUser.LoginType <= LoginType.Admin)
-                {
-                    //加载用户角色，先从缓存读
-                    string key = $"{CacheKey.CurrentUser}";
-                    var cacheUser = RedisHelper.HGet<UserDto>(key, _currentUser.UserId);
-
-                    if (!cacheUser?.Roles?.Any() ?? false)
-                    {
-                        var result = (loginBLL.AdminLogin(new UserDto { Id = Guid.Parse(_currentUser.UserId) })).Result;
-                        var userInfo = result.ReturnValue as UserDto;
-                        RedisHelper.HSetAsync($"{CacheKey.CurrentUser}", userInfo.Id.ToString(), userInfo);
-                        cacheUser.Roles = userInfo.Roles;
-                    }
-                    _currentUser.Roles = cacheUser?.Roles;
-                    _currentUser.MerchantId = cacheUser?.MerchantId ?? Guid.Empty;
-                }
+                _currentUser = jwtToken.BuildUser(token, _currentUser, x => (loginBLL.AdminLogin(new UserDto { Id = Guid.Parse(_currentUser.UserId) })).Result);
 
                 return _currentUser;
             }

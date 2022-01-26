@@ -390,6 +390,17 @@ namespace BDMall.Admin.Areas.AdminApi.Controllers
             PageData<ProductSummary> data =productBLL.SearchProductList(condition);
             return data;
         }
+
+        [HttpGet]
+        [AdminApiAuthorize(Module = ModuleConst.ProductModule, Function = new string[] { FunctionConst.Prod_Edit })]
+        public ProductEditModel GetNewVerProduct(Guid id)
+        {
+            ProductEditModel product = new ProductEditModel();
+            product = productBLL.GetProductInfo(id);
+            product.OriginalId = id;     
+            product.Action = ActionTypeEnum.NewVer.ToString();          
+            return product;
+        }
     }
 
 }
