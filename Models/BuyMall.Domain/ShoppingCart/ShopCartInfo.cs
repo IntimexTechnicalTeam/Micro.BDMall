@@ -7,6 +7,9 @@ namespace BDMall.Domain
     {
         public List<ShopcartItem> Items { get; set; }
 
+        /// <summary>
+        /// 总数量
+        /// </summary>
         public int Qty { get; set; }
 
         public decimal TotalAmount { get; set; }
@@ -42,6 +45,6 @@ namespace BDMall.Domain
         /// 活动产品合计
         /// </summary>
         public decimal EventProductPrice { get; set; }
-
+     
     }
 }

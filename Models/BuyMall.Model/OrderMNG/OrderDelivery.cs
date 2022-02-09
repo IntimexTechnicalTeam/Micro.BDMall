@@ -26,7 +26,6 @@ namespace BDMall.Model
         //[Required]
         [StringLength(20)]
         [Column(TypeName = "varchar")]
-        [Display(Description = "送貨單號")]
         public string DeliveryNO { get; set; }
 
         /// <summary>
@@ -61,14 +60,14 @@ namespace BDMall.Model
         /// <summary>
         /// 仓库Id
         /// </summary>
-        public Guid LocationId { get; set; }
+        public Guid LocationId { get; set; }= Guid.Empty;
 
         /// <summary>
         /// 快递单号
         /// </summary>
         [StringLength(200)]
         [Column(TypeName = "varchar")]
-        public string TrackingNo { get; set; }
+        public string TrackingNo { get; set; } = string.Empty;
 
         /// <summary>
         /// 快递公司id
@@ -295,15 +294,6 @@ namespace BDMall.Model
 
         [StringLength(2000)]
         [Column(TypeName = "nvarchar")]
-        public string Remark { get; set; }
-
-        /// <summary>
-        /// 货品明细
-        /// </summary>
-        [NotMapped]
-        public List<OrderDeliveryDetail> DeliveryDetails { get; set; } = new List<OrderDeliveryDetail>();
-
-        [ForeignKey("OrderId")]
-        public virtual Order Order { get; set; }
+        public string Remark { get; set; }     
     }
 }

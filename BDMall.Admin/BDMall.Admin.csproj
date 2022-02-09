@@ -8,7 +8,6 @@
     <Content Remove="Views\Order\ConfirmOrderDetailList.cshtml" />
     <Content Remove="Views\Order\DeliveryECShipLabel.cshtml" />
     <Content Remove="Views\Order\ECShipLabelDetail.cshtml" />
-    <Content Remove="Views\Order\Edit.cshtml" />
     <Content Remove="Views\Order\MassProcessFlow.cshtml" />
     <Content Remove="Views\Order\OldEdit.cshtml" />
     <Content Remove="Views\Order\OldOrders.cshtml" />
@@ -54,7 +53,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BDMall.Resources\BDMall.Resources.csproj" />
     <ProjectReference Include="..\BusinessLayer\BDMall.BLL\BDMall.BLL.csproj" />
     <ProjectReference Include="..\Infrastructure\BDMall.Utility\BDMall.Utility.csproj" />
     <ProjectReference Include="..\Infrastructure\Intimex.Common\Intimex.Common.csproj" />

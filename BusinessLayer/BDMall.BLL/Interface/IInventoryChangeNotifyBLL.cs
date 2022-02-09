@@ -11,5 +11,7 @@ namespace BDMall.BLL
     public interface IInventoryChangeNotifyBLL:IDependency
     {
         SystemResult AddInventoryChangeNotify(InventoryChangeNotify notify);
+
+        void CheckAndNotifyAsync(IList<Guid> skuIds);
     }
 }

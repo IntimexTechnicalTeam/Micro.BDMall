@@ -38,6 +38,6 @@ namespace BDMall.BLL
 
         SystemResult SaveSeq(MenuCond cond);
 
-        Task<SystemResult> GetMenuBarAsync();
+        Task<List<Menu>> GetMenuBarAsync();
     }
 }

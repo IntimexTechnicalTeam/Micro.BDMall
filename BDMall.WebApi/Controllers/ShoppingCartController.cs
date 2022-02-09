@@ -27,17 +27,17 @@ namespace BDMall.WebApi.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost("GetShopCart")]
-        [ProducesResponseType(typeof(SystemResult), 200)]
-        public async Task<SystemResult> GetShopCart()
+        [ProducesResponseType(typeof(SystemResult<ShopCartInfo>), 200)]
+        public async Task<SystemResult<ShopCartInfo>> GetShopCart()
         {
-            SystemResult result = new SystemResult { Succeeded = true };
+            var result = new SystemResult<ShopCartInfo> { Succeeded = true };
             result.Succeeded = CurrentUser?.IsLogin ?? false;
             if (!result.Succeeded)return result;
 
             string key = $"{CacheKey.ShoppingCart}_{CurrentUser.UserId}";
             //读缓存
             var cacheData = await RedisHelper.GetAsync<ShopCartInfo>(key);
-            if (cacheData == null)  cacheData = RedisHelper.CacheShell(key, 300, () => shoppingCartBLL.GetShoppingCart());
+            if (cacheData == null)  cacheData = RedisHelper.CacheShell(key, 600, () => shoppingCartBLL.GetShoppingCart());
 
             result.ReturnValue = cacheData;
             return result;

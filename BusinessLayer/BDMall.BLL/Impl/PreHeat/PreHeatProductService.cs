@@ -60,7 +60,7 @@ namespace BDMall.BLL
                             LangType = vv.Lang,
                             Status = p.Status,
                             ProductCode = p.Code,
-                            UpdateDate = p.UpdateDate.HasValue ? p.UpdateDate.Value : new DateTime(1970,1,1),    //LinqToSql ，请注意FrameWork的写法
+                            UpdateDate = p.UpdateDate ?? new DateTime(1970, 01, 01),
                             CreateDate = p.CreateDate,
                             CatalogId = p.CatalogId
                         };

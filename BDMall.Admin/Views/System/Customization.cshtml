@@ -333,7 +333,7 @@
 
                     WS.AjaxP("post", "/adminapi/SysCustomization/UpdateSysCustomization", vm.items, function (response) {
                         if (response.Succeeded == true) {
-                            showInfo('@BDMall.Resources.Message.SaveSuccess', true);
+                            showInfo('@BDMall.Resources.Message.SaveSuccess');
                         }
                         else {
                             showWarn('@BDMall.Resources.Message.SaveFail' + "\n\n" + response.Message);

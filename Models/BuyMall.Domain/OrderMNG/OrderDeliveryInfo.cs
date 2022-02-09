@@ -12,13 +12,13 @@ namespace BDMall.Domain
         /// <summary>
         /// 送货单ID
         /// </summary>
-        public string Id { get; set; }
+        public Guid Id { get; set; }
 
-        public string OrderId { get; set; }
+        public Guid OrderId { get; set; }
         /// <summary>
         /// 优惠
         /// </summary>
-        public List<CouponDiscountInfo> Coupon { get; set; }
+        public List<CouponDiscountInfo> Coupon { get; set; } = new List<CouponDiscountInfo>();
         public string OrderNo { get; set; }
         /// <summary>
         /// 送货单单号
@@ -28,7 +28,7 @@ namespace BDMall.Domain
         /// <summary>
         /// 送货单产品
         /// </summary>
-        public List<OrderItem> DeliveryItems { get; set; }
+        public List<OrderItem> DeliveryItems { get; set; } = new List<OrderItem> { new OrderItem() };
 
         /// <summary>
         /// 商家Id
@@ -127,63 +127,12 @@ namespace BDMall.Domain
         /// <summary>
         /// 快遞類型名稱
         /// </summary>
-        public string DeliveryTypeName
-        {
-            get; set;
-            //get
-            //{
-            //    string typeName = string.Empty;
-            //    switch (DeliveryType)
-            //    {
-            //        case DeliveryType.D:
-            //            typeName = Resources.Label.Posting;
-            //            break;
-            //        case DeliveryType.P:
-            //            typeName = Resources.Label.CounterCollection;
-            //            break;
-            //        case DeliveryType.Z:
-            //            typeName = Resources.Label.iPostalStation;
-            //            break;
-            //        default:
-            //            break;
-            //    }
-            //    return typeName;
-            //}
-            //set { }
-        }
+        public string DeliveryTypeName { get; set;  }
 
         /// <summary>
         /// 
         /// </summary>
-        public string DeliveryTypeCode
-        {
-            get; set;
-            //get
-            //{
-            //    string code = "";
-            //    switch (DeliveryType)
-            //    {
-            //        case DeliveryType.D:
-            //            code = DeliveryType.D.ToString();
-            //            break;
-            //        case DeliveryType.P:
-            //            code = DeliveryType.P.ToString();
-            //            break;
-            //        case DeliveryType.Z:
-            //            code = DeliveryType.Z.ToString();
-            //            break;
-            //        default:
-            //            break;
-            //    }
-            //    return code;
-            //}
-            //set
-            //{
-            //    //DeliveryTypeCode = "";
-            //}
-
-        }
-
+        public string DeliveryTypeCode => DeliveryType.ToString();
 
         /// <summary>
         /// 快递ID
@@ -297,7 +246,7 @@ namespace BDMall.Domain
         /// <summary>
         /// 子訂單使用的優惠券
         /// </summary>
-        public List<DiscountView> Discounts { get; set; }
+        public List<DiscountView> Discounts { get; set; } = new List<DiscountView>();
 
         public bool CanComment { get; set; }
 
@@ -328,7 +277,7 @@ namespace BDMall.Domain
         /// <summary>
         /// 商品類型
         /// </summary>
-        public ShoppingCartItemType GoodsType { get; set; }
+        public ShoppingCartItemType GoodsType { get; set; } = ShoppingCartItemType.BUYDONG;
 
         //public RouteResp RouteResp { get; set; }
     }

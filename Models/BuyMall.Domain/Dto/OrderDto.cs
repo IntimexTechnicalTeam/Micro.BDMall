@@ -27,7 +27,7 @@ namespace BDMall.Domain
         public string CurrencyCode { get; set; }
 
       
-        public SimpleCurrency Currency { get; set; }
+        public SimpleCurrency Currency { get; set; } = new SimpleCurrency();
 
         /// <summary>
         /// 兑换率
@@ -151,5 +151,12 @@ namespace BDMall.Domain
         ///  VISA - Visa
         /// </summary>     
         public string Acquirer { get; set; }
+
+        /// <summary>
+        /// 过期时间
+        /// </summary>
+        public DateTime ExpireDate { get; set; }
+
+        public List<Guid> skuList { get; set; } = new List<Guid>();
     }
 }

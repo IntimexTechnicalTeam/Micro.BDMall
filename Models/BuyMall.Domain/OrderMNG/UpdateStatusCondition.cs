@@ -30,7 +30,7 @@ namespace BDMall.Domain
         /// <summary>
         /// 送貨單快遞單號信息
         /// </summary>
-        public List<DeliveryTrackingInfo> DeliveryTrackingInfo { get; set; }
+        public List<DeliveryTrackingInfo> DeliveryTrackingInfo { get; set; } = new List<DeliveryTrackingInfo> { new DeliveryTrackingInfo { } };
 
         /// <summary>
         /// 是否自动发货记录

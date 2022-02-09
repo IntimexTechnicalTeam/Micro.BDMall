@@ -68,5 +68,9 @@ namespace BDMall.BLL
         /// <param name="reserve"></param>
         /// <returns></returns>
         SystemResult CancelInvReserved(InventoryReservedDto reserve);
+
+        void InventoryChangeCheckAndNotify(InventoryReservedDto reserve);
+
+        SystemResult SaveSalesReturnRec(SalesReturnOrderDto salesReturnIns);
     }
 }

@@ -3285,4 +3285,13 @@
   <data name="Ticket" xml:space="preserve">
     <value>Ticket</value>
   </data>
+  <data name="ProductIcon" xml:space="preserve">
+    <value>Product Icon</value>
+  </data>
+  <data name="EmailSwitch" xml:space="preserve">
+    <value>EmailSwitch</value>
+  </data>
+  <data name="WhatsAppSwitch" xml:space="preserve">
+    <value>WhatsAppSwitch</value>
+  </data>
 </root>

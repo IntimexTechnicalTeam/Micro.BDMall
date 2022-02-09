@@ -18,7 +18,7 @@ namespace BDMall.BLL
     public class ProductBLL : BaseBLL, IProductBLL
     {
         public IProductRepository productRepository;
-        public ICurrencyBLL currencyBLL;
+        //public ICurrencyBLL currencyBLL;
         public IAttributeBLL attributeBLL;
         public IProductCatalogBLL productCatalogBLL;
         public ITranslationRepository translationRepository;
@@ -29,17 +29,19 @@ namespace BDMall.BLL
         public ISettingBLL settingBLL;
         public IProductSkuRepository productSkuRepository;
         public IProductDetailRepository productDetailRepository;
-        
+        public ICodeMasterBLL codeMasterBLL;
+
         public PreHeatProductService productService;
         public PreHeatProductImageService productImageService;
         public PreHeatProductStaticsService productStatisticsService;
         public PreHeatProductSkuService  productSkuService; 
         public PreHeatFavoriteService productFavoriteService;
+        public PreHeatMerchantService merchantService;
 
         public ProductBLL(IServiceProvider services) : base(services)
         {
             productRepository = Services.Resolve<IProductRepository>();
-            currencyBLL = Services.Resolve<ICurrencyBLL>();
+            
             attributeBLL = Services.Resolve<IAttributeBLL>();
             translationRepository = Services.Resolve<ITranslationRepository>();
             productCatalogBLL = Services.Resolve<IProductCatalogBLL>();
@@ -50,12 +52,14 @@ namespace BDMall.BLL
             productImageBLL = Services.Resolve<IProductImageBLL>();
             settingBLL = Services.Resolve<ISettingBLL>();
             productDetailRepository = Services.Resolve<IProductDetailRepository>();
+            codeMasterBLL = Services.Resolve<ICodeMasterBLL>();
 
             productService = (PreHeatProductService)Services.GetService(typeof(PreHeatProductService));
             productImageService = (PreHeatProductImageService)Services.GetService(typeof(PreHeatProductImageService));
             productStatisticsService = (PreHeatProductStaticsService)Services.GetService(typeof(PreHeatProductStaticsService));
             productSkuService = (PreHeatProductSkuService)Services.GetService(typeof(PreHeatProductSkuService));
             productFavoriteService = (PreHeatFavoriteService)Services.GetService(typeof(PreHeatFavoriteService));
+            merchantService = (PreHeatMerchantService)Services.GetService(typeof(PreHeatMerchantService));
         }
 
         public Dictionary<string, ClickRateSummaryView> GetClickRateView(int topMonthQty, int topWeekQty, int topDayQty)
@@ -893,6 +897,178 @@ namespace BDMall.BLL
             return result;
         }
 
+        public async Task<ProductDetailView> GetProductDetailAsync(string Code)
+        {
+            ProductDetailView view = null;
+
+            string pKey = $"{PreHotType.Hot_Products}_{CurrentUser.Lang}";
+            var ProductId = Guid.Empty;
+            var dbProduct = baseRepository.GetModel<Product>(x => x.Code == Code && x.IsActive && !x.IsDeleted && x.Status == ProductStatus.OnSale);
+            if (dbProduct != null) ProductId = dbProduct.Id;
+
+            var product = await RedisHelper.HGetAsync<HotProduct>(pKey, Code);
+            if (product == null)
+            {
+                //读数据库，回写缓存            
+                var pList = await productService.GetDataSourceAsync(ProductId);
+                if (pList != null && pList.Any())
+                {
+                    //重新刷新缓存
+                    await productService.SetDataToHashCache(pList, CurrentUser.Lang);
+                    product = pList.FirstOrDefault();
+                }
+            }
+
+            pKey = $"{PreHotType.Hot_PreProductStatistics}";
+            var proStatistics = await RedisHelper.HGetAsync<HotPreProductStatistics>(pKey, Code);
+            //读数据库，回写缓存
+            if (proStatistics == null)
+            {
+                var statitsView = await  this.productStatisticsService.GetDataSourceAsync(Guid.Empty, Code); //这里是用Code作为查询条件的
+                if (statitsView != null && statitsView.Any())
+                {
+                    await productStatisticsService.SetDataToHashCache(statitsView);
+                    proStatistics = statitsView.FirstOrDefault(x => x.Code == Code);
+                }
+            }
+
+            var extension = await baseRepository.GetModelByIdAsync<ProductExtension>(ProductId);
+            var detail = await baseRepository.GetModelAsync<ProductDetail>(x => x.ProductId == ProductId && x.Lang == CurrentUser.Lang);
+            var specification = await baseRepository.GetModelByIdAsync<ProductSpecification>(ProductId);
+
+            view = AutoMapperExt.MapTo<ProductDetailView>(product);
+
+            view.Id = product.ProductId;
+            view.MerchantId = product.MchId;
+
+            view.Currency =  currencyBLL.GetDefaultCurrency();
+            view.CatTreeNodes = productCatalogBLL.GetCatalogListById(view.CatalogId);
+            view.AttrList = attributeBLL.GetInvAttributeByProductWithMapForFront(ProductId);
+            //view.Images = GetProductImages(ProductId);
+            view.AdditionalImages = GetProductAdditionalImages(ProductId);
+            //view.PromotionRuleTitle = PromotionRuleRepository.GetPromotionRuleTitle(Code) ?? "";
+
+            view.YoutubeUrl = extension?.YoutubeLink ?? "";
+            view.YoukuUrl = extension?.YoukuLink ?? "";
+            view.ProductType = extension?.ProductType;
+            view.SaleQuota = extension?.MaxPurQty ?? 1;
+            view.MinPurQty = extension?.MinPurQty ?? 1;
+            view.IsLimit = extension?.IsLimit ?? false;
+            view.IsSalesReturn = extension?.IsSalesReturn ?? true;
+            view.Detail = detail?.Value ?? "";
+            view.Score = proStatistics?.Score ?? 0;
+
+            if (specification.PackageLength == 0 && specification.PackageWidth == 0 && specification.PackageHeigth == 0)
+                view.PackagingInfo = string.Empty;
+            else
+            {
+                view.PackagingInfo = "{0}{3}(D) X {1}{3}(W) X {2}{3}(H)";
+                var unit = codeMasterBLL.GetCodeMaster(CodeMasterModule.Setting, CodeMasterFunction.CTNUnit, "", specification.Unit.ToString())?.Description ?? "";
+                view.PackagingInfo = string.Format(view.PackagingInfo, specification.PackageLength, specification.PackageWidth, specification.PackageHeigth, unit);
+            }
+
+            #region 处理拒送国家，可配送国家
+
+            var deliveryCountries = await GenProductDeliveryArea(ProductId, Code);
+            view.RefuseCountry = deliveryCountries.Item1.Select(s => 
+                NameUtil.GetCountryName(CurrentUser.Lang.ToString(), 
+                new CountryDto {  Name_c =s.Country.Name_c ,Name_s= s.Country.Name_s,Name_e = s.Country.Name_s  })).ToList();
+            view.SupportCountry = deliveryCountries.Item2.Select(s =>
+                NameUtil.GetCountryName(CurrentUser.Lang.ToString(), 
+                new CountryDto { Name_c = s.Country.Name_c, Name_s = s.Country.Name_s, Name_e = s.Country.Name_s })).ToList();
+
+            #endregion
+
+            //商家条款
+            if (view != null)
+            {
+                var mchkey = $"{PreHotType.Hot_Merchants}_{CurrentUser.Lang}";
+                var mchInfo = await RedisHelper.HGetAsync<HotMerchant>(mchkey, view.MerchantId.ToString());
+                //读数据库,回写缓存
+                if (mchInfo == null)
+                {
+                    var result = await merchantService.GetDataSourceAsync(view.MerchantId);
+                    if (result != null && result.Any())
+                    {
+                        //重新刷新缓存
+                        await merchantService.SetDataToHashCache(result, CurrentUser.Lang);
+
+                        mchInfo = result.FirstOrDefault();
+                        var mp = await baseRepository.GetModelAsync<MerchantPromotion>(x => x.MerchantId == view.MerchantId && x.IsActive && !x.IsDeleted && x.ApproveStatus == ApproveType.Pass);
+                        var mRecord = await merchantService.DicCollection(mp, CurrentUser.Lang);
+                        var banners = await merchantService.GetMerchantBannerList(mp);
+
+                        mchInfo.Notice = mRecord["NoticeTranId"]?.Value ?? "";
+                        mchInfo.Cover = mRecord["CoverId"]?.Value ?? "";
+                        mchInfo.ExpCompleteDays = mRecord["OrderTransId"]?.Value ?? "2~4";
+                        mchInfo.Logo = mRecord["SmallLogoId"]?.Value ?? "";
+                        mchInfo.PromIntroduction = mRecord["CoverId"]?.Value ?? "";
+                        mchInfo.PromName = mRecord["NameTranId"]?.Value ?? "";
+                        mchInfo.TandC = mRecord["TAndCTranId"]?.Value ?? "";
+                        mchInfo.ReturnTerms = mRecord["ReturnTermsTranId"]?.Value ?? "";
+                        mchInfo.Description = mRecord["DescTransId"]?.Value ?? "";
+                        mchInfo.Banners = banners.Where(x => x.Lang == CurrentUser.Lang).ToList();
+                    }
+                }
+
+                view.MerchantInfo = new MerchantSummary();
+                view.MerchantInfo.MerchantTerms = mchInfo.TandC;
+                view.MerchantInfo.ReturnTerms = mchInfo.ReturnTerms;
+                view.IsGS1 = mchInfo.MerchantType == MerchantType.GS1 ? true : false;
+
+                if (view.IsGS1)
+                {
+                    var gs1Link = codeMasterBLL.GetCodeMaster(CodeMasterModule.Setting, CodeMasterFunction.GS1, "TrustProductLink")?.Value ?? "";
+
+                    if (!string.IsNullOrEmpty(gs1Link))
+                    {
+                        gs1Link = gs1Link.Replace("[GTIN]", extension.Gtin ?? "");
+
+                        switch (CurrentUser.Lang)
+                        {
+                            case Language.E:
+                                gs1Link = gs1Link.Replace("[LANG]", "en");
+                                break;
+                            case Language.C:
+                                gs1Link = gs1Link.Replace("[LANG]", "zh_TW");
+                                break;
+                            case Language.S:
+                                gs1Link = gs1Link.Replace("[LANG]", "zh_CN");
+                                break;
+                        }
+                    }
+                    view.GS1Link = gs1Link ?? "";
+                }
+            }
+
+            if (CurrentUser.IsLogin)
+            {
+                string favKey = CacheKey.Favorite.ToString();
+                string favField = CurrentUser.UserId.ToString();
+                var favoriteData = await RedisHelper.HGetAsync<Favorite>(favKey, favField);
+                //读数据库,回写缓存
+                if (favoriteData == null)
+                {
+                    favoriteData = await this.productFavoriteService.GetDataSourceAsync(Guid.Parse(CurrentUser.UserId));
+                    if (favoriteData != null && (favoriteData.MchList.Any() || favoriteData.ProductList.Any()))
+                    {
+                        await productFavoriteService.SetDataToHashCache(Guid.Parse(CurrentUser.UserId), favoriteData);
+                    }
+                }
+
+                view.IsFavorite = favoriteData?.ProductList?.Any(x => x == Code) ?? false;
+            }
+
+            return view;
+        }
+
+        public async Task<MicroProductDetail> GetMicroProductDetail(string Code)
+        { 
+            var data = await GetProductDetailAsync(Code);
+            var view = AutoMapperExt.MapTo<MicroProductDetail>(data);
+            return view;
+        }
+
         /// <summary>
         /// 获取SaleQty<0的数据
         /// </summary>
@@ -912,6 +1088,92 @@ namespace BDMall.BLL
                 cacheData = query.Select(d => d.ToString()).ToArray();
             }
             return cacheData.ToList();
+        }
+
+        public List<List<string>> GetProductAdditionalImages(Guid prodID)
+        {
+            List<List<string>> result = new List<List<string>>();
+     
+                var product = baseRepository.GetModelById<Product>(prodID);
+                if (product != null)
+                {
+
+                var fileServer = string.Empty;
+
+                    #region 將主產品加入附加圖片
+                    var dbproductImage = baseRepository.GetModelById<ProductImage>(product.DefaultImage);
+                    if (dbproductImage != null)
+                    {
+                        //var productImageList = dbproductImage.ImageItems.OrderBy(d => d.Type).ToList();
+                        var productImageList = baseRepository.GetList<ProductImageList>(x=>x.ImageID == dbproductImage.Id).OrderBy(d => d.Type).ToList();
+                        var activeImages = productImageList.Where(p => p.Path != null && p.Path != "").OrderBy(d => d.Type).ToList();
+                        var maxIndex = activeImages.Count - 1;
+                        var defaultImage = new List<string>();
+                        if (productImageList.Count >= 8)
+                        {
+                            if (!string.IsNullOrEmpty(productImageList[0].Path))
+                            {
+                                defaultImage.Add(fileServer + productImageList[0].Path);
+                            }
+                            else
+                            {
+                                defaultImage.Add(fileServer + productImageList[maxIndex].Path);
+                            }
+
+                            if (!string.IsNullOrEmpty(productImageList[3].Path))
+                            {
+                                defaultImage.Add(fileServer + productImageList[3].Path);
+                            }
+                            else
+                            {
+                                defaultImage.Add(fileServer + productImageList[maxIndex].Path);
+                            }
+
+                            if (!string.IsNullOrEmpty(productImageList[7].Path))
+                            {
+                                defaultImage.Add(fileServer + productImageList[7].Path);
+                            }
+                            else
+                            {
+                                defaultImage.Add(fileServer + productImageList[maxIndex].Path);
+                            }
+                        }
+                        else
+                        {
+                            defaultImage.Add("");
+                            defaultImage.Add("");
+                            defaultImage.Add("");
+                        }
+
+                        result.Add(defaultImage);
+
+                        var dbAdditionImages = productImageRepository.GetAdditionalImageBySkuImageId(dbproductImage.Id);
+
+                        if (dbAdditionImages != null)
+                        {
+
+                            foreach (var item in dbAdditionImages)
+                            {
+                                var addiImageItems = item.ImageItems.OrderBy(o => o.Type).ToList();
+
+                                if (addiImageItems != null)
+                                {
+                                    var addiAllSizeImage = new List<string>();
+
+                                    foreach (var item2 in addiImageItems)
+                                    {
+                                        addiAllSizeImage.Add(fileServer + item2.Path);
+                                    }
+                                    result.Add(addiAllSizeImage);
+                                }
+                            }
+                        }
+                    }
+
+                    #endregion
+
+                }
+            return result;
         }
 
         /// <summary>
@@ -1653,90 +1915,85 @@ namespace BDMall.BLL
             summary.IconType = prodExtension?.ProductType ?? ProductType.Basic;
             summary.IsLimit = prodExtension?.IsLimit ?? false;
 
+            if (skuId != Guid.Empty)
+            {
+                #region 生成產品屬性
 
+                
+                var productInvAttrs = baseRepository.GetList<ProductAttr>(p => p.ProductId == product.Id && p.IsInv).OrderBy(o => o.Seq).ToList();
 
-            //var addPrices = new List<ProductAtrtValueModel>();
-            //if (skuId != Guid.Empty)
-            //{
-            //    #region 生成產品屬性
+                var skuInfo = baseRepository.GetModelById<ProductSku>(skuId);
 
-            //    var productInvAttrs = product.Attrs.Where(p => p.IsInv == true).OrderBy(o => o.Seq).ToList();
+                //var skuAttrValues1 = productInvAttrs.FirstOrDefault(p => p.AttrId == skuInfo.Attr1)?.AttrValues;
+                //var skuAttrValues2 = productInvAttrs.FirstOrDefault(p => p.AttrId == skuInfo.Attr2)?.AttrValues;
+                //var skuAttrValues3 = productInvAttrs.FirstOrDefault(p => p.AttrId == skuInfo.Attr3)?.AttrValues;
 
-            //    var skuInfo = _productSkuRepository.GetByKey(skuId);
+                // var AttrValueLst = UnitOfWork.DataContext.ProductAttrs.Where(x => x.IsInv == true && x.ProductId == product.Id)
+                var AttrValueLst = productInvAttrs.Join(baseRepository.GetList<ProductAttrValue>(),
+                                                pa => pa.Id, pav => pav.ProdAttrId, (pa, pav) => pav).ToList();
 
-            //    //var skuAttrValues1 = productInvAttrs.FirstOrDefault(p => p.AttrId == skuInfo.Attr1)?.AttrValues;
-            //    //var skuAttrValues2 = productInvAttrs.FirstOrDefault(p => p.AttrId == skuInfo.Attr2)?.AttrValues;
-            //    //var skuAttrValues3 = productInvAttrs.FirstOrDefault(p => p.AttrId == skuInfo.Attr3)?.AttrValues;
+                var productAttrValue1 = AttrValueLst.FirstOrDefault(f => f.AttrValueId == skuInfo.AttrValue1);
+                var productAttrValue2 = AttrValueLst.FirstOrDefault(f => f.AttrValueId == skuInfo.AttrValue2);
+                var productAttrValue3 = AttrValueLst.FirstOrDefault(f => f.AttrValueId == skuInfo.AttrValue3);
 
-            //    // var AttrValueLst = UnitOfWork.DataContext.ProductAttrs.Where(x => x.IsInv == true && x.ProductId == product.Id)
-            //    var AttrValueLst = productInvAttrs.Join(UnitOfWork.DataContext.ProductAttrValues,
-            //                                    pa => pa.Id, pav => pav.ProdAttrId, (pa, pav) => pav).ToList();
+                var attribute = baseRepository.GetList<ProductAttribute>()
+                                        .Where(a => a.Id == skuInfo.Attr1 || a.Id == skuInfo.Attr2 || a.Id == skuInfo.Attr3).ToList();
 
-            //    var productAttrValue1 = AttrValueLst.FirstOrDefault(f => f.AttrValueId == skuInfo.AttrValue1);
-            //    var productAttrValue2 = AttrValueLst.FirstOrDefault(f => f.AttrValueId == skuInfo.AttrValue2);
-            //    var productAttrValue3 = AttrValueLst.FirstOrDefault(f => f.AttrValueId == skuInfo.AttrValue3);
+                var attributeValues = baseRepository.GetList<ProductAttributeValue>()
+                                       .Where(a => a.Id == skuInfo.AttrValue1 || a.Id == skuInfo.AttrValue2 || a.Id == skuInfo.AttrValue3).ToList();
 
-            //    var attribute = UnitOfWork.DataContext.ProductAttributes.AsNoTracking()
-            //                            .Where(a => a.Id == skuInfo.Attr1 || a.Id == skuInfo.Attr2 || a.Id == skuInfo.Attr3).ToList();
+                if (productAttrValue1 != null)
+                {
+                    ProductAtrtValueModel model = GenProductAtrtValueModel(productAttrValue1, skuInfo.Attr1, attribute, attributeValues);
+                    summary.AttrValues.Add(model);
+                }
+                if (productAttrValue2 != null)
+                {
+                    ProductAtrtValueModel model = GenProductAtrtValueModel(productAttrValue2, skuInfo.Attr2, attribute, attributeValues);
+                    summary.AttrValues.Add(model);
+                }
+                if (productAttrValue3 != null)
+                {
+                    ProductAtrtValueModel model = GenProductAtrtValueModel(productAttrValue3, skuInfo.Attr3, attribute, attributeValues);
+                    summary.AttrValues.Add(model);
+                }
+            }
 
-            //    var attributeValues = UnitOfWork.DataContext.ProductAttributeValues.AsNoTracking()
-            //                           .Where(a => a.Id == skuInfo.AttrValue1 || a.Id == skuInfo.AttrValue2 || a.Id == skuInfo.AttrValue3).ToList();
+            #endregion
 
-            //    if (productAttrValue1 != null)
-            //    {
-            //        ProductAtrtValueModel model = GenProductAtrtValueModel(productAttrValue1, skuInfo.Attr1, attribute, attributeValues);
-            //        addPrices.Add(model);
-            //    }
-            //    if (productAttrValue2 != null)
-            //    {
-            //        ProductAtrtValueModel model = GenProductAtrtValueModel(productAttrValue2, skuInfo.Attr2, attribute, attributeValues);
-            //        addPrices.Add(model);
-            //    }
-            //    if (productAttrValue3 != null)
-            //    {
-            //        ProductAtrtValueModel model = GenProductAtrtValueModel(productAttrValue3, skuInfo.Attr3, attribute, attributeValues);
-            //        addPrices.Add(model);
-            //    }
-            //}
+            summary.TotalPrice = summary.SalePrice + summary.AttrValues.Sum(s => s.AddPrice);
+            if (CurrentUser != null)
+            {
+                if (CurrentUser.IsLogin)
+                {
+                    var favoriteList = baseRepository.GetModel<MemberFavorite>(d => d.MemberId == Guid.Parse(CurrentUser.UserId) && d.ProductCode == product.Code && d.IsActive == true && d.IsDeleted == false);
+                    if (favoriteList != null)
+                    {
+                        summary.IsFavorite = true;
+                    }
+                }
 
-            //#endregion
+                summary.IconRUrl = PathUtil.GetProductIconUrl(summary.IconRType, CurrentUser.Lang);
+                if (summary.IsGS1)
+                {
+                    summary.GS1Url = PathUtil.GetProductIconUrl(ProductType.GS1, CurrentUser.Lang);
+                }
+                else
+                {
+                    summary.GS1Url = PathUtil.GetProductIconUrl(ProductType.Basic, CurrentUser.Lang);
+                }
+                summary.DescriptionDetail = baseRepository.GetModel<ProductDetail>(x => x.ProductId == product.Id && x.Lang == CurrentUser.Lang)?.Value ?? "";
 
-            //summary.AttrValues = addPrices;
-            //summary.TotalPrice = summary.SalePrice + addPrices.Sum(s => s.AddPrice);
-            //if (CurrentUser != null)
-            //{
-            //    if (CurrentUser.IsLogin)
-            //    {
-            //        var favoriteList = MemberFavoriteRepos.Entities.FirstOrDefault(d => d.MemberId == CurrentUser.Id && d.ProductCode == product.Code && d.IsActive == true && d.IsDeleted == false);
-            //        if (favoriteList != null)
-            //        {
-            //            summary.IsFavorite = true;
-            //        }
-            //    }
-
-            //    summary.IconRUrl = PathUtil.GetProductIconUrl(summary.IconRType, CurrentUser.ComeFrom, CurrentUser.Language);
-            //    if (summary.IsGS1)
-            //    {
-            //        summary.GS1Url = PathUtil.GetProductIconUrl(ProductType.GS1, CurrentUser.ComeFrom, CurrentUser.Language);
-            //    }
-            //    else
-            //    {
-            //        summary.GS1Url = PathUtil.GetProductIconUrl(ProductType.Basic, CurrentUser.ComeFrom, CurrentUser.Language);
-            //    }
-            //    if (product.DetailDescriptions?.Count > 0)
-            //    {
-            //        summary.DescriptionDetail = product.DetailDescriptions.FirstOrDefault(x => x.Lang == CurrentUser.Language)?.Value ?? string.Empty;
-            //    }
-            //    if (!IsMatchBaseCurrency(CurrentUser.Currency))
-            //    {
-            //        summary.Currency2 = CurrentUser.Currency;
-            //        summary.SalePrice2 = MoneyConversion(product.SalePrice);
-            //        summary.OriginalPrice2 = MoneyConversion(product.OriginalPrice);
-            //    }
-            //}
+                if (!IsMatchBaseCurrency(CurrentUser.CurrencyCode))
+                {
+                    summary.Currency2 = currencyBLL.GetSimpleCurrency(CurrentUser.CurrencyCode);
+                    summary.SalePrice2 = MoneyConversion(product.SalePrice);
+                    summary.OriginalPrice2 = MoneyConversion(product.OriginalPrice);
+                }
+            }
 
             //summary.PromotionRuleTitle = PromotionRuleRepository.GetPromotionRuleTitle(product.Code);
-            //summary.IsSalesReturn = product.ProductExtension?.IsSalesReturn ?? false;
+            summary.IsSalesReturn = prodExtension?.IsSalesReturn ?? false;
 
             if (!string.IsNullOrEmpty(product.Remark))
             {
@@ -1759,6 +2016,65 @@ namespace BDMall.BLL
             return summary;
         }
 
+        public ProductSummary GenProductInfoBySkuId(Guid productId, Guid skuId)
+        {
+            var product = baseRepository.GetModelById<Product>(productId);
+            ProductSummary summary = AutoMapperExt.MapTo<ProductSummary>(product);
+            var statistic = baseRepository.GetModel<ProductStatistics>(x => x.Code == product.Code);
+           
+            summary.Code = product.Code;
+            summary.Currency = currencyBLL.GetSimpleCurrency(product.CurrencyCode);
+            summary.Imgs = GetProductImages(product.Id);
+            summary.Name = translationRepository.GetDescForLang(product.NameTransId, CurrentUser.Lang);                    
+            summary.ProductId = product.Id;
+
+            summary.Score = statistic == null ? 0M : NumberUtil.ConvertToRounded(statistic.Score);
+            if (summary.Score < 1)  summary.Score = 0;
+
+            
+            if (skuId != Guid.Empty)
+            {
+                #region 生成產品屬性
+
+                var productInvAttrs = baseRepository.GetList<ProductAttr>(p => p.ProductId == product.Id && p.IsInv).OrderBy(o => o.Seq).ToList();
+                var skuInfo = baseRepository.GetModelById<ProductSku>(skuId);
+                var AttrValueLst = productInvAttrs.Join(baseRepository.GetList<ProductAttrValue>(),
+                                                pa => pa.Id, pav => pav.ProdAttrId, (pa, pav) => pav).ToList();
+
+                var productAttrValue1 = AttrValueLst.FirstOrDefault(f => f.AttrValueId == skuInfo.AttrValue1);
+                var productAttrValue2 = AttrValueLst.FirstOrDefault(f => f.AttrValueId == skuInfo.AttrValue2);
+                var productAttrValue3 = AttrValueLst.FirstOrDefault(f => f.AttrValueId == skuInfo.AttrValue3);
+
+                var attribute = baseRepository.GetList<ProductAttribute>()
+                                        .Where(a => a.Id == skuInfo.Attr1 || a.Id == skuInfo.Attr2 || a.Id == skuInfo.Attr3).ToList();
+
+                var attributeValues = baseRepository.GetList<ProductAttributeValue>()
+                                       .Where(a => a.Id == skuInfo.AttrValue1 || a.Id == skuInfo.AttrValue2 || a.Id == skuInfo.AttrValue3).ToList();
+
+                if (productAttrValue1 != null)
+                {
+                    ProductAtrtValueModel model = GenProductAtrtValueModel(productAttrValue1, skuInfo.Attr1, attribute, attributeValues);
+                    summary.AttrValues.Add(model);
+                }
+                if (productAttrValue2 != null)
+                {
+                    ProductAtrtValueModel model = GenProductAtrtValueModel(productAttrValue2, skuInfo.Attr2, attribute, attributeValues);
+                    summary.AttrValues.Add(model);
+                }
+                if (productAttrValue3 != null)
+                {
+                    ProductAtrtValueModel model = GenProductAtrtValueModel(productAttrValue3, skuInfo.Attr3, attribute, attributeValues);
+                    summary.AttrValues.Add(model);
+                }
+
+                #endregion
+            }
+
+            summary.TotalPrice = summary.SalePrice + summary.AttrValues.Sum(s => s.AddPrice);
+
+            return summary;
+        }
+
         private void InsertOrUpdateProductRefuseDelivery(ProductEditModel product)
         {
             if (product.CountryIds != null && product.CountryIds.Any())
@@ -1777,6 +2093,16 @@ namespace BDMall.BLL
                 baseRepository.Insert(newRefuse);
             }
 
+        }
+
+        private ProductAtrtValueModel GenProductAtrtValueModel(ProductAttrValue value, Guid Attr, List<ProductAttribute> attribute, List<ProductAttributeValue> attributeValues)
+        {
+            ProductAtrtValueModel model = new ProductAtrtValueModel();
+            model.Id = value.AttrValueId;
+            model.AddPrice = value.AdditionalPrice;
+            model.AttrName = translationRepository.GetDescForLang(attribute.FirstOrDefault(p => p.Id == Attr)?.DescTransId ?? Guid.Empty, CurrentUser.Lang);
+            model.Desc = translationRepository.GetDescForLang(attributeValues.FirstOrDefault(p => p.Id == value.AttrValueId)?.DescTransId ?? Guid.Empty, CurrentUser.Lang);
+            return model;
         }
 
         public void InsertProductStatistics(Product product)
@@ -2030,7 +2356,7 @@ namespace BDMall.BLL
                             AdditionalPrice = attrValue.Price
                         }).ToList();
 
-                        dbProductAttr.AttrValues = eachAttrValueList;
+                        //dbProductAttr.AttrValues = eachAttrValueList;
                         productAttrList.Add(dbProductAttr);
                         productAttrValueList.AddRange(eachAttrValueList);
 

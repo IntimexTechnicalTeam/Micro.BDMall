@@ -3285,4 +3285,13 @@
   <data name="EndTime" xml:space="preserve">
     <value>結束時間</value>
   </data>
+  <data name="ProductIcon" xml:space="preserve">
+    <value>產品認證</value>
+  </data>
+  <data name="EmailSwitch" xml:space="preserve">
+    <value>郵件開關</value>
+  </data>
+  <data name="WhatsAppSwitch" xml:space="preserve">
+    <value>WhatsApp開關</value>
+  </data>
 </root>

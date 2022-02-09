@@ -561,7 +561,7 @@ namespace BDMall.BLL
             return list;
         }
 
-        public async Task<SystemResult> GetFrontAttributeAsync(ProdAttCond cond)
+        public async Task<List<ProdAtt>> GetFrontAttributeAsync(ProdAttCond cond)
         {         
             cond.Type = 2;
 
@@ -573,12 +573,7 @@ namespace BDMall.BLL
                 data = GetFrontAttribute(cond);
                 await RedisHelper.HSetAsync(key,field,data);
             }
-
-            var result = new SystemResult();
-            result.ReturnValue = data;
-            result.Succeeded=   true;
-            return result;
-
+            return data;
         }
 
         private ProductAttributeValueDto GenProductAttrValue(ProductAttributeValueDto attributeValue)

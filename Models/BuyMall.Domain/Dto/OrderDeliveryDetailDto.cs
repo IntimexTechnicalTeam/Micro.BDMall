@@ -114,5 +114,8 @@ namespace BDMall.Domain
         /// </summary>
 
         public decimal AddPrice3 { get; set; }
+
+
+        public int Seq { get; set; }
     }
 }

@@ -460,7 +460,7 @@ namespace BDMall.BLL
             }
             else
             {
-                //订单已创建了，订单是待付款状态（后台可在待付款状态时手动取消订单）或者支付超时取消订单
+                //订单已创建了，订单是待付款状态,取消订单
                 result = await UpdateQtyWhenPayTimeOut(OrderId);
                 result.Succeeded = true;
             }
@@ -469,7 +469,7 @@ namespace BDMall.BLL
         }
 
         /// <summary>
-        /// 支付超时，恢复Hold货数量
+        /// 支付超时或者后台在待付款状态时手动取消订单，恢复Hold货数
         /// </summary>
         /// <param name="OrderId"></param>
         /// <returns></returns>

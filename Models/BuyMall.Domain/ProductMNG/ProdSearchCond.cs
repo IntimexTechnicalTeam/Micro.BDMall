@@ -9,14 +9,13 @@ using Web.Framework;
 
 namespace BDMall.Domain
 {
-    [DataContract]
+   
     public class ProdSearchCond  
     {
-        public PageInfo PageInfo { get; set; }
+        public PageInfo PageInfo { get; set; } = new PageInfo();
 
         public Language Language { get; set; }
 
-        [DataMember]
         public Guid MerchantId { get; set; } = Guid.Empty;
         public string Key { get; set; }
 
@@ -33,10 +32,10 @@ namespace BDMall.Domain
         public DateTime? CreateDateFrom { get; set; }
         public DateTime? CreateDateTo { get; set; }
 
-        public int IsActive { get; set; }
+        public int IsActive { get; set; } = 1;
 
-        public int IsDeleted { get; set; }
-        public int IsApprove { get; set; }
+        public int IsDeleted { get; set; } = 0;
+        public int IsApprove { get; set; } = 1;
 
         public string ApproveStatus { get; set; }
         /// <summary>

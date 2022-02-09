@@ -8,6 +8,9 @@ namespace BDMall.Enums
 {
     public enum DeliveryMailType
     {
+
+        Default = 0,
+
         /// <summary>
         /// 派送
         /// </summary>

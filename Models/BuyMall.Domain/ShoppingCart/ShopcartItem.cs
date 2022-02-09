@@ -9,23 +9,23 @@ namespace BDMall.Domain
     {
         public Guid Id { get; set; }
 
-        public ProductSummary Product { get; set; }
+        public ProductSummary Product { get; set; } = new ProductSummary();
 
 
-        public ProdAttValue AttrValue1 { get; set; }
+        public ProdAttValue AttrValue1 { get; set; } = new ProdAttValue();
 
-        public ProdAttValue AttrValue2 { get; set; }
+        public ProdAttValue AttrValue2 { get; set; } = new ProdAttValue();
 
-        public ProdAttValue AttrValue3 { get; set; }
+        public ProdAttValue AttrValue3 { get; set; } = new ProdAttValue();
 
         public Guid SkuId { get; set; }
 
 
-        public ProdAtt Attr1 { get; set; }
+        public ProdAtt Attr1 { get; set; } = new ProdAtt();
 
-        public ProdAtt Attr2 { get; set; }
+        public ProdAtt Attr2 { get; set; } = new ProdAtt();
 
-        public ProdAtt Attr3 { get; set; }
+        public ProdAtt Attr3 { get; set; } = new ProdAtt();
 
         public int Qty { get; set; }
 
@@ -99,7 +99,7 @@ namespace BDMall.Domain
         /// <summary>
         /// 产品属性列表
         /// </summary>        
-        public List<ProdAtt> AttrList { get; set; }
+        public List<ProdAtt> AttrList { get; set; } = new List<ProdAtt>();
 
     }
 }

@@ -28,7 +28,6 @@ namespace BDMall.Model
         [Column(Order = 7)]
         public Guid CatalogID { get; set; }
         
-        [NotMapped]
-        public List<ProductAttrValue> AttrValues { get; set; }
+       
     }
 }

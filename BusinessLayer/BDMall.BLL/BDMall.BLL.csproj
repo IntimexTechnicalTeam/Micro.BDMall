@@ -5,7 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\BDMall.Resources\BDMall.Resources.csproj" />
+    <Compile Remove="NotificationHandler\MemberCreateHandler.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\Infrastructure\BDMall.ECShip\BDMall.ECShip.csproj" />
     <ProjectReference Include="..\..\Infrastructure\BDMall.Runtime\BDMall.Runtime.csproj" />
     <ProjectReference Include="..\..\Infrastructure\BDMall.Utility\BDMall.Utility.csproj" />

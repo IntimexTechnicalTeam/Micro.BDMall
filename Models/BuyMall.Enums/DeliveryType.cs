@@ -8,6 +8,8 @@ namespace BDMall.Enums
 {
     public enum DeliveryType
     {
+        Default = 0,
+
         /// <summary>
         /// 邮递
         /// </summary>
@@ -19,10 +21,7 @@ namespace BDMall.Enums
         /// <summary>
         /// 智邮站
         /// </summary>
-        Z
-
+        Z,
     }
-
-
 }
 

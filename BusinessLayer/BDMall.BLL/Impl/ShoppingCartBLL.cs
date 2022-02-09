@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Web.Framework;
+using Web.MQ;
 
 namespace BDMall.BLL
 {
@@ -22,6 +23,8 @@ namespace BDMall.BLL
         public ICurrencyBLL CurrencyBLL;
         public ITranslationRepository TranslationRepository;
         public IPromotionRuleRepository PromotionRuleRepository;
+        public IMerchantBLL MerchantBLL;
+        public ICodeMasterBLL CodeMasterBLL;
 
         public ShoppingCartBLL(IServiceProvider services) : base(services)
         {
@@ -33,6 +36,8 @@ namespace BDMall.BLL
             CurrencyBLL = Services.Resolve<ICurrencyBLL>();
             TranslationRepository = Services.Resolve<ITranslationRepository>();
             PromotionRuleRepository = Services.Resolve<IPromotionRuleRepository>();
+            MerchantBLL = Services.Resolve<IMerchantBLL>();
+            CodeMasterBLL = Services.Resolve<ICodeMasterBLL>();
         }
 
         public ShopCartInfo GetShoppingCart()
@@ -54,10 +59,9 @@ namespace BDMall.BLL
             shoppingCart.Currency = CurrencyBLL.GetSimpleCurrency(CurrentUser.CurrencyCode);
             shoppingCart.Qty = shoppingCart.Items.Sum(d => d.Qty);
             shoppingCart.IsTemp = !CurrentUser.IsLogin;
-
+            
             return shoppingCart;
         }
-
 
         public async Task<SystemResult> AddtoCartAsync(CartItem cartItem)
         {
@@ -94,12 +98,14 @@ namespace BDMall.BLL
             
             cartItem.Sku = sku.Id;
 
-            var existRecord = baseRepository.GetModel<ShoppingCartItem>(d => d.ProductId == cartItem.ProductId && d.SkuId == sku.Id && d.MemberId == Guid.Parse(CurrentUser.UserId) && d.IsActive && !d.IsDeleted);
+            ShoppingCartItem item = baseRepository.GetModel<ShoppingCartItem>(d => d.ProductId == cartItem.ProductId && d.SkuId == sku.Id && d.MemberId == Guid.Parse(CurrentUser.UserId) && d.IsActive && !d.IsDeleted);
             //var rule = _promotionRuleRepository.GetProductPromotionRule(product.MerchantId, cartItem.ProdCode);//贈品都要Hold住
 
             decimal freeQty = 0;
+            bool flag = false;
 
-            if (existRecord == null)
+            var timeOut = CodeMasterBLL.GetCodeMasterByKey(CodeMasterModule.Setting.ToString(), CodeMasterFunction.Order.ToString(), "ShopcartTimeout")?.Value ?? "30";
+            if (item == null)
             {
                 cartItem.AddQty = cartItem.Qty;//設定增量
                 cartItem.ProdCode = product.Code;
@@ -107,13 +113,13 @@ namespace BDMall.BLL
                 if (result.Succeeded)
                 {
                     UnitOfWork.IsUnitSubmit = true;
-
-                    ShoppingCartItem item = new ShoppingCartItem();
+                    item = new ShoppingCartItem();
                     item.Id = Guid.NewGuid();
                     item.SkuId = sku.Id;
                     item.MemberId = Guid.Parse(CurrentUser.UserId);
                     item.Qty = cartItem.Qty;
                     item.ProductId = cartItem.ProductId;
+                    item.ExpireDate = item.CreateDate.AddMinutes(timeOut.ToInt());
                     baseRepository.Insert(item);
                     CreateShoppingCartItemDetail(item);
 
@@ -124,12 +130,13 @@ namespace BDMall.BLL
                         Qty = cartItem.Qty + (int)freeQty,
                     });
                     UnitOfWork.Submit();
+                    flag = true;
                 }
             }
             else
             {
                 cartItem.AddQty = cartItem.Qty;
-                cartItem.Qty += existRecord.Qty;
+                cartItem.Qty += item.Qty;
                 cartItem.ProdCode = product.Code;
  
                 result = await CheckPurchasePermissionAsync(cartItem);
@@ -137,9 +144,9 @@ namespace BDMall.BLL
                 {
                     UnitOfWork.IsUnitSubmit = true;
 
-                    existRecord.Qty = cartItem.Qty;
-                    baseRepository.Update(existRecord);
-                    CreateShoppingCartItemDetail(existRecord);
+                    item.Qty = cartItem.Qty;
+                    baseRepository.Update(item);
+                    CreateShoppingCartItemDetail(item);
 
                     result = InventoryBLL.InsertInventoryHold(new InventoryHold()
                     {
@@ -156,7 +163,15 @@ namespace BDMall.BLL
                 await dealProductQtyCacheBLL.UpdateQtyWhenAddToCart(sku.Id, cartItem.AddQty + (int)freeQty);
                 result.Message = BDMall.Resources.Message.AddtoCartSuccess;
             }
-           
+
+            ////发送延时队列
+            if (flag)
+            {
+                var millionSecond = timeOut.ToInt() * 60 * 1000;     //分钟转毫秒
+                rabbitMQService.PublishDelayMsg(MQSetting.DelayShoppingCartTimeOutQueue,
+                    MQSetting.WeChatShoppingCartTimeOutQueue, MQSetting.WeChatShoppingCartTimeOutExchange, item.Id.ToString(), millionSecond);
+            }
+
             return result;
         }
 
@@ -223,21 +238,8 @@ namespace BDMall.BLL
             var existRecord = baseRepository.GetModel<ShoppingCartItem>(d => d.Id == itemId);
             if (existRecord != null)
             {
-                UnitOfWork.IsUnitSubmit = true;
-
-                existRecord.IsDeleted = true;
-                baseRepository.Update(existRecord);
-
-                result = InventoryBLL.DeleteInventoryHold(new InventoryHold()
-                {
-                    SkuId = existRecord.SkuId,
-                    MemberId = existRecord.MemberId,
-                });
-
-                UnitOfWork.Submit();
-
-                if (result.Succeeded)               
-                    await this.dealProductQtyCacheBLL.UpdateQtyWhenDeleteCart(existRecord.SkuId, existRecord.Qty);                
+                var items = baseRepository.GetList<ShoppingCartItemDetail>(x => x.ShoppingCartItemId == itemId).ToList();
+                result = await RemoveFromCart(existRecord);
             }
             return result;
         }
@@ -374,7 +376,7 @@ namespace BDMall.BLL
 
         private List<ShopcartItem> GetShoppingCartItem()
         {           
-            var query = baseRepository.GetList<ShoppingCartItemDetail>(x => x.MemberId == Guid.Parse(CurrentUser.UserId))
+            var query = baseRepository.GetList<ShoppingCartItemDetail>(x => x.MemberId == Guid.Parse(CurrentUser.UserId) && x.IsActive && !x.IsDeleted)
                             .Select(item => new ShopcartItem
                             {
                                 Id = item.Id,
@@ -391,8 +393,7 @@ namespace BDMall.BLL
                                 {
                                     ProductId = item.ProductId,
                                     Code = item.ProductCode,
-                                    MerchantId = item.MerchantId,
-                                    
+                                    MerchantId = item.MerchantId,                                   
                                 }
                             }).ToList();
 
@@ -401,6 +402,7 @@ namespace BDMall.BLL
                 var product = baseRepository.GetModelById<Product>(item.Product.ProductId);
 
                 item.AttrList = AttributeBLL.GetInvAttributeByProductWithMapForFront(item.Product.ProductId);
+                item.Product.MerchantName = MerchantBLL.GetMerchById(item.Product.MerchantId).Name ?? "";
                 item.Product.Name = TranslationRepository.GetDescForLang(product.NameTransId, CurrentUser.Lang);
                 item.Product.Currency = CurrencyBLL.GetSimpleCurrency(product.CurrencyCode);
                 item.Product.Imgs = ProductBLL.GetProductImages(item.Product.ProductId);
@@ -486,6 +488,36 @@ namespace BDMall.BLL
                 cartItem.SingleDiscountPrice = Math.Round(cartItem.GroupSaleDiscountPrice / cartItem.Qty, 2);
             }
 
+        }
+
+        /// <summary>
+        /// 处理购物车过期
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        public async Task<SystemResult> RemoveFromCart(ShoppingCartItem shoppingCart)
+        {
+            var items = baseRepository.GetList<ShoppingCartItemDetail>(x => x.ShoppingCartItemId == shoppingCart.Id).ToList();
+
+            UnitOfWork.IsUnitSubmit = true;
+
+            shoppingCart.IsDeleted = true;
+            shoppingCart.UpdateDate = DateTime.Now;
+            baseRepository.Update(shoppingCart);
+            baseRepository.Delete(items);                   //直接硬删
+
+            var result = InventoryBLL.DeleteInventoryHold(new InventoryHold()
+            {
+                SkuId = shoppingCart.SkuId,
+                MemberId = shoppingCart.MemberId,
+            });
+
+            UnitOfWork.Submit();
+
+            if (result.Succeeded)
+                await this.dealProductQtyCacheBLL.UpdateQtyWhenDeleteCart(shoppingCart.SkuId, shoppingCart.Qty);
+
+            return result;
         }
     }
 }

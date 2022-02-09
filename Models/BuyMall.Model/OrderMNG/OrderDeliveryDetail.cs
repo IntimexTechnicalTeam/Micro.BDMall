@@ -102,11 +102,6 @@ namespace BDMall.Model
         [Column(TypeName = "varchar")]
         public string TrackingNo { get; set; }
 
-        [ForeignKey("SkuId")]
-        public virtual ProductSku Sku { get; set; }
-
-        [ForeignKey("DeliveryId")]
-        public virtual OrderDelivery OrderDelivery { get; set; }
-
+      
     }
 }

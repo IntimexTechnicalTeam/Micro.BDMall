@@ -190,11 +190,11 @@ namespace BDMall.Repository
 
         public override bool Any<T>(Expression<Func<T, bool>> funcWhere)
         {
-            bool flag = UnitWork.DataContext.Set<T>() .Any(funcWhere);
+            bool flag = UnitWork.DataContext.Set<T>().Any(funcWhere);
             return flag;
         }
 
-        public override List<T> SqlQuery<T>(string sql, params object[] parameters)
+        public override List<T>SqlQuery<T>(string sql, params object[] parameters)
         {
             return UnitWork.DataContext.Database.SqlQuery<T>(sql, parameters);
         }
@@ -354,19 +354,19 @@ namespace BDMall.Repository
 
         public override async Task<T> GetModelAsync<T>(Expression<Func<T, bool>> funcWhere)
         {
-            var model = await UnitWork.DataContext.Set<T>() .FirstOrDefaultAsync(funcWhere);
+            var model = await UnitWork.DataContext.Set<T>().FirstOrDefaultAsync(funcWhere);
             return model;
         }
 
         public override async Task<IQueryable<T>> GetListAsync<T>()
         {
-            var result = await UnitWork.DataContext.Set<T>() .ToArrayAsync();
+            var result = await UnitWork.DataContext.Set<T>().ToArrayAsync();
             return result.AsQueryable();
         }
 
         public override async Task<IQueryable<T>> GetListAsync<T>(Expression<Func<T, bool>> funcWhere)
         {
-            var result = await UnitWork.DataContext.Set<T>() .Where(funcWhere).ToArrayAsync();
+            var result = await UnitWork.DataContext.Set<T>().Where(funcWhere).ToArrayAsync();
             return result.AsQueryable();
         }
 
@@ -378,7 +378,7 @@ namespace BDMall.Repository
 
         public override async Task<bool> AnyAsync<T>(Expression<Func<T, bool>> funcWhere)
         {
-            bool flag = await UnitWork.DataContext.Set<T>() .AnyAsync(funcWhere);
+            bool flag = await UnitWork.DataContext.Set<T>().AnyAsync(funcWhere);
             return flag;
         }
 

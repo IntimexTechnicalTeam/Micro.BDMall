@@ -60,7 +60,6 @@ namespace Domain
 
             ConfigMap<DeliveryAddressDto, DeliveryAddress>();
             
-
             ConfigMap<RolePermission,RolePermissionDto>();
 
             ConfigMap<ShoppingCartItemDetail, ShoppingCartItemDetailDto>();
@@ -68,8 +67,15 @@ namespace Domain
             ConfigMap<Order,OrderDto>();
             ConfigMap<OrderDelivery, OrderDeliveryDto>();
             ConfigMap<OrderDeliveryDetail, OrderDeliveryDetailDto>();
+            ConfigMap<OrderDeliveryInfo, OrderDelivery>();
+            ConfigMap<DiscountView, OrderDiscount>();
 
+            ConfigMap<HotProduct, ProductDetailView>();
             ConfigMap<ProdCatatogInfo, Catalog>();
+            ConfigMap<MicroProductDetail,ProductDetailView>();
+
+            ConfigMap<SalesReturnOrder, SalesReturnOrderDto>();
+            ConfigMap<SalesReturnOrderDetail, SalesReturnOrderDetailDto>();
         }
         void ConfigMap<TSource, TDestination>()
         {

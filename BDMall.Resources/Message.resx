@@ -1221,4 +1221,10 @@ Try “ShopThruPost” online service now.&lt;br/&gt;</value>
   <data name="Event4" xml:space="preserve">
     <value>Special area for “Showbiz Spy” Premiere Ticket will be published on 12/11 (Friday) at 9:30am. Stay tuned.</value>
   </data>
+  <data name="ProductNotCode" xml:space="preserve">
+    <value>The productcode does not exist, please re-enter the productcode</value>
+  </data>
+  <data name="PreferentialPeriodConfirm" xml:space="preserve">
+    <value>Modifying the price during the preferential period will affect the price during the preferential period. Are you sure to modify it?</value>
+  </data>
 </root>

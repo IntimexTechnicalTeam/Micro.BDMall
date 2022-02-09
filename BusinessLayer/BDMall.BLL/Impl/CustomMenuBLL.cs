@@ -130,7 +130,7 @@ namespace BDMall.BLL
             return CustomMenuRepo.GetCustomMenuById(id);
         }
 
-        public async Task<SystemResult> GetMenuBarAsync()
+        public async Task<List<Menu>> GetMenuBarAsync()
         {
             var result = new SystemResult();
             string key = CacheKey.MenuBars.ToString();
@@ -143,10 +143,7 @@ namespace BDMall.BLL
             }
 
             var menuData = data?.HeaderMenus?.Select(item => new Menu { Id = item.Id, Name= item.Name }).ToList();
-
-            result.ReturnValue = menuData;
-            result.Succeeded = true;
-            return result;
+            return menuData;
         }
 
         public List<CustomMenuDetailDto> GetCustomMenuDetailByMenuId(Guid menuId)

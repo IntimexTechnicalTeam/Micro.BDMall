@@ -48,7 +48,7 @@ namespace BDMall.Repository
 
         public List<CodeMasterDto> GetCodeMasters(Guid clientId, string module, string function, string key)
         {
-            var list = GetCodeMasters(module, function, null, null);
+            var list = GetCodeMasters(module, function, key, null);
             return list;
         }
 
@@ -90,20 +90,14 @@ namespace BDMall.Repository
                 query = query.Where(d => d.Value == value);
             }
 
-            var skipRecord = query.ToList();
-
-            List<CodeMasterDto> data = new List<CodeMasterDto>();
-            var supportLang = GetSupportLanguage();
+            var skipRecord = query.ToList();           
             foreach (var item in skipRecord)
-            {
-                CodeMasterDto dto = new CodeMasterDto();
-                dto = AutoMapperExt.MapTo<CodeMasterDto>(item);
-                dto.Descriptions = _translationRpo.GetMutiLanguage(item.DescTransId);
-                dto.Description = dto.Descriptions.FirstOrDefault(d => d.Language == CurrentUser.Lang)?.Desc ?? "";
-                data.Add(dto);
+            {              
+                item.Descriptions = _translationRpo.GetMutiLanguage(item.DescTransId);
+                item.Description = item.Descriptions.FirstOrDefault(d => d.Language == CurrentUser.Lang)?.Desc ?? "";              
             }
 
-            return data;
+            return skipRecord;
         }
 
         public PageData<CodeMasterDto> GetCodeMastersByPage(CodeMasterCondition cond)

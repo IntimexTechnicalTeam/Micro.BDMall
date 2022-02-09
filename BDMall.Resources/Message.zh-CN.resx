@@ -1224,4 +1224,10 @@
   <data name="Event3" xml:space="preserve">
     <value>恭喜你！获得《假冒女团》戏飞一张，请查看电邮了解换领方法</value>
   </data>
+  <data name="ProductNotCode" xml:space="preserve">
+    <value>产品编号不存在，请输入正确的产品编号</value>
+  </data>
+  <data name="PreferentialPeriodConfirm" xml:space="preserve">
+    <value>在优惠期内修改价格将影响优惠期内的价格。您确定要修改它吗？</value>
+  </data>
 </root>

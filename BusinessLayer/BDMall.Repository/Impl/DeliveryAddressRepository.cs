@@ -166,7 +166,7 @@ namespace BDMall.Repository
         {
             try
             {
-                var sql = @"OPEN SYMMETRIC KEY AES256key_Do1Mall DECRYPTION BY CERTIFICATE [CERTDO1MAll]; 
+                var sql = $@"OPEN SYMMETRIC KEY AES256key_Do1Mall DECRYPTION BY CERTIFICATE [CERTDO1MAll]; 
                        select  CONVERT(nvarchar(1000),DecryptByKey(CONVERT(varbinary(1000), FirstName))) as  FirstName, 
 					   CONVERT(nvarchar(1000),DecryptByKey(CONVERT(varbinary(1000), LastName))) as LastName,					   
 					   CONVERT(nvarchar(1000),DecryptByKey(CONVERT(varbinary(1000), Mobile))) as Mobile,
@@ -176,10 +176,15 @@ namespace BDMall.Repository
 						CONVERT(nvarchar(1000),DecryptByKey(CONVERT(varbinary(1000), Address2))) as Address2,
 						CONVERT(nvarchar(1000),DecryptByKey(CONVERT(varbinary(1000), Address3))) as Address3,
 						id,ClientId,IsActive,IsDeleted,CreateDate,CreateBy,UpdateDate,UpdateBy,Remark,[Default],MemberId,City,PostalCode,Gender,Email,ProvinceId,CountryId 
-					    from DeliveryAddresses  where MemberId=  {0} and IsActive={1} and IsDeleted={2};         
+					    from DeliveryAddresses  where MemberId= @memberId and IsActive=@isActive and IsDeleted=@isDeleted;         
                         CLOSE SYMMETRIC KEY AES256key_Do1Mall;";
 
-                var result = baseRepository.SqlQuery<DeliveryAddress>(sql, new object[] { memberId, isActive, isDeleted }).ToList();
+                List<SqlParameter> sqlParameters = new List<SqlParameter>();
+                sqlParameters.Add(new SqlParameter("@memberId", memberId));
+                sqlParameters.Add(new SqlParameter("@isActive", isActive));
+                sqlParameters.Add(new SqlParameter("@isDeleted", isDeleted));
+
+                var result = baseRepository.SqlQuery<DeliveryAddress>(sql, sqlParameters.ToArray());
 
                 var finalResult = new List<DeliveryAddress>();
                 if (result?.Count > 0)

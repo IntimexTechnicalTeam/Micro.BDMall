@@ -4,6 +4,7 @@ using BDMall.Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Web.Framework;
 using Web.Mvc;
@@ -28,10 +29,12 @@ namespace BDMall.WebApi.Controllers
         /// <returns></returns>
         [HttpPost("GetCatalogs")]
         [AllowAnonymous]
-        [ProducesResponseType(typeof(SystemResult), 200)]
-        public async Task<SystemResult> GetFrontAttribute(ProdAttCond cond)
+        [ProducesResponseType(typeof(SystemResult<List<ProdAtt>>), 200)]
+        public async Task<SystemResult<List<ProdAtt>>> GetFrontAttribute(ProdAttCond cond)
         {
-            var result = await attributeBLL.GetFrontAttributeAsync(cond);
+            var result = new SystemResult<List<ProdAtt>>();
+            result.ReturnValue = await attributeBLL.GetFrontAttributeAsync(cond);
+            result.Succeeded = true;
             return result;
         }
     }

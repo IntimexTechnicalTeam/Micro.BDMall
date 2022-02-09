@@ -155,7 +155,7 @@
                     ExpressId: WS.GuidEmpty,
                     PaymentMethod: WS.GuidEmpty,
                     StatusCode: -1,
-                    MerchantId: "",
+                    MerchantId: WS.GuidEmpty,
                     MerchantName: "",
                     OrderDiscount: "",
                     PageInfo: {
@@ -320,8 +320,12 @@
                 
                 vm.condition.CreateDateFrom = $("#dtOrderDateFrom").val();
                 vm.condition.CreateDateTo = $("#dtOrderDateTo").val();
+
                 vm.condition.ExpressId = $("#cboLogisticMethod").val();
                 vm.condition.PaymentMethod = $("#cboPaymentMethod").val();
+                if ($("#cboLogisticMethod").val()=="-1"  || $("#cboLogisticMethod").val()== null) vm.condition.ExpressId  = WS.GuidEmpty;
+                if ($("#cboPaymentMethod").val()=="-1"  || $("#cboPaymentMethod").val()== null) vm.condition.PaymentMethod  = WS.GuidEmpty;
+
                 if(orderStatus>-1)
                 {
                     vm.condition.StatusCode=orderStatus;

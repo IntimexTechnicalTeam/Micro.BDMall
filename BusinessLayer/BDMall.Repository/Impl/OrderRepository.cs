@@ -1,5 +1,6 @@
 ﻿using BDMall.Domain;
 using BDMall.Model;
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -138,6 +139,37 @@ namespace BDMall.Repository.Impl
              
             return pageData;
 
+        }
+
+        /// <summary>
+        /// 更新订单记录状态
+        /// </summary>
+        /// <param name="order"></param>
+        public void UpdateOrderStatus(Order order)
+        {
+            try
+            {
+
+                string sql = @"
+                             update orders set Status =@status,IsPaid=@ispay
+                             ,updateBy=@updateBy,UpdateDate=getDate(),Remark=@remark
+                             where id=@id;
+                            ";
+                List<SqlParameter> paramList = new List<SqlParameter>();
+                paramList.Add(new SqlParameter("@id", order.Id));
+                paramList.Add(new SqlParameter("@status", order.Status));
+                paramList.Add(new SqlParameter("@ispay", order.IsPaid));
+                paramList.Add(new SqlParameter("@updateBy", CurrentUser.UserId));
+                paramList.Add(new SqlParameter("@remark", order.Remark));
+
+                baseRepository.ExecuteSqlCommand(sql, paramList.ToArray());
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+                //throw new EncryptException("更新OrderStatus失败", ex);
+            }
         }
     }
 }

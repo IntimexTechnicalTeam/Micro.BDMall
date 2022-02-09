@@ -739,7 +739,7 @@ namespace BDMall.BLL
             #endregion
 
             //Hold Product Cancel
-            #region Hold貨取消 單位（分鐘）
+            #region 購物車貨物過期 單位（分鐘）
             funcEnm = CodeMasterFunction.Order;
             codeMaster = GetCodeMaster(CodeMasterModule.Setting, funcEnm, "ShopcartTimeout");
             if (codeMaster != null)
@@ -753,7 +753,7 @@ namespace BDMall.BLL
             }
             #endregion
             //Order No Pay Cancel 
-            #region 購物車貨物過期 單位（分鐘）
+            #region 订单支付超时 單位（分鐘）
             funcEnm = CodeMasterFunction.Order;
             codeMaster = GetCodeMaster(CodeMasterModule.Setting, funcEnm, "OrderPayTimeout");
             if (codeMaster != null)

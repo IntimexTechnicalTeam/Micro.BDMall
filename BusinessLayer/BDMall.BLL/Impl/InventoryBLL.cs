@@ -732,42 +732,42 @@ namespace BDMall.BLL
         public SystemResult InsertInventoryHold(InventoryHold insRec)
         {
             var sysRslt = new SystemResult();
-          
-                Guid skuId = insRec.SkuId;
-                if (skuId == Guid.Empty)
-                {
-                    throw new BLException("skuId不能為空值");
-                }
-                Guid memberId = insRec.MemberId;
-                if (memberId == Guid.Empty)
-                {
-                    throw new BLException("memberId不能為空值");
-                }
 
-                var invtHold = baseRepository.GetModel<InventoryHold>(x => x.SkuId == skuId && x.MemberId == memberId && x.IsActive && !x.IsDeleted);
+            Guid skuId = insRec.SkuId;
+            if (skuId == Guid.Empty)
+            {
+                throw new BLException("skuId不能為空值");
+            }
+            Guid memberId = insRec.MemberId;
+            if (memberId == Guid.Empty)
+            {
+                throw new BLException("memberId不能為空值");
+            }
 
-                if (invtHold != null)
-                {
-                    //存在原記錄，更新
-                    invtHold.Qty = insRec.Qty;
-                    baseRepository.Update(invtHold);
-                    sysRslt.Succeeded = true;
-                }
-                else
-                {
-                    //不存在原記錄，新增
-                    invtHold = new InventoryHold()
-                    {
-                        Id = Guid.NewGuid(),
-                        SkuId = insRec.SkuId,
-                        MemberId = insRec.MemberId,
-                        Qty = insRec.Qty,
-                    };
-                    baseRepository.Insert(invtHold);
+            var invtHold = baseRepository.GetModel<InventoryHold>(x => x.SkuId == skuId && x.MemberId == memberId && x.IsActive && !x.IsDeleted);
 
-                    sysRslt.Succeeded = true;
-                }
-           
+            if (invtHold != null)
+            {
+                //存在原記錄，更新
+                invtHold.Qty = insRec.Qty;
+                baseRepository.Update(invtHold);
+                sysRslt.Succeeded = true;
+            }
+            else
+            {
+                //不存在原記錄，新增
+                invtHold = new InventoryHold()
+                {
+                    Id = Guid.NewGuid(),
+                    SkuId = insRec.SkuId,
+                    MemberId = insRec.MemberId,
+                    Qty = insRec.Qty,
+                };
+                baseRepository.Insert(invtHold);
+
+                sysRslt.Succeeded = true;
+            }
+
             return sysRslt;
         }
 
@@ -858,6 +858,34 @@ namespace BDMall.BLL
                 sysRslt.Succeeded = true;
             }
             return sysRslt;
+        }
+
+        /// <summary>
+        /// 保存銷售退回數據
+        /// </summary>
+        /// <param name="saveInfo">保存數據</param>
+        /// <returns>操作結果</returns>
+        public SystemResult SaveSalesReturnRec(SalesReturnOrderDto salesReturnIns)
+        {
+            var sysRslt = new SystemResult();
+
+            if (salesReturnIns == null || !salesReturnIns.SalesReturnItemList.Any()) throw new BLException(Resources.Message.DataVerifyFail);
+            salesReturnIns.Validate();
+
+            var transList = salesReturnIns.SalesReturnItemList.Select(rtnItem => new InvTransactionDtlDto
+            {
+                Sku = rtnItem.Sku,
+                TransQty = rtnItem.ReturnQty,
+                TransDate = DateTime.Now,
+                TransType = InvTransType.SalesReturn,
+                ToId = rtnItem.WHId,
+                SOId = salesReturnIns.SOId,
+                UnitPrice = rtnItem.UnitPrice
+
+            }).ToList();
+           
+            sysRslt = InsertInvTransListWithSign(InvTransType.SalesReturn, transList, true);
+            return sysRslt;    
         }
 
         /// <summary>
@@ -955,6 +983,7 @@ namespace BDMall.BLL
 
             //更新庫存預存記錄的狀態
             currentInvReserved.ProcessState = InvReservedState.FINISH;
+            currentInvReserved.UpdateDate = DateTime.Now;
             baseRepository.Update(currentInvReserved);
 
             sysRslt.ReturnValue = new InventoryReservedDto() { ReservedQty = (int)reservedQty, WHId = reserve.WHId };
@@ -1144,7 +1173,7 @@ namespace BDMall.BLL
                 item.BizId = orderDtl.Id;
             }
             baseRepository.Insert(poDtlList);
-
+            sysRslt.ReturnValue = insertLst;
             sysRslt.Succeeded = true;
             return sysRslt;
         }
@@ -1191,7 +1220,7 @@ namespace BDMall.BLL
                 item.BizId = orderDtl.Id;
             }
             baseRepository.Insert(roDtlList);
-
+            sysRslt.ReturnValue = insertLst;
             sysRslt.Succeeded = true;
             return sysRslt;
         }
@@ -1234,7 +1263,7 @@ namespace BDMall.BLL
                 item.BizId = orderDtl.Id;
             }
             baseRepository.Insert(dtlList);
-
+            sysRslt.ReturnValue = insertLst;
             sysRslt.Succeeded = true;
             return sysRslt;
         }
@@ -1271,7 +1300,8 @@ namespace BDMall.BLL
                     SROId = order.Id,                  
                     Sku = item.Sku,
                     UnitPrice = item.UnitPrice,
-                    ReturnQty = item.TransQty
+                    ReturnQty = item.TransQty,
+                    //WHId =toId,
                 };
                 dtlList.Add(orderDtl);
 
@@ -1279,6 +1309,7 @@ namespace BDMall.BLL
             }
             baseRepository.Insert(dtlList);
 
+            sysRslt.ReturnValue = insertLst;
             sysRslt.Succeeded = true;
             return sysRslt;
         }

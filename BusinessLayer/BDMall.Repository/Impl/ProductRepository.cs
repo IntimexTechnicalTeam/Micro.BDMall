@@ -272,15 +272,12 @@ namespace BDMall.Repository
             {
                 if (i == 0)
                 {
-                    var attrValue1 = attrs[0].AttrValues.FirstOrDefault(p => p.AttrValueId == skus.AttrValue1);
-                    if (attrValue1 != null)
-                    {
-                        addPrices.Add(attrValue1.AdditionalPrice);
-                    }
+                    var attrValue1 = baseRepository.GetModel<ProductAttrValue>(p => p.ProdAttrId == attrs[0].Id && p.AttrValueId == skus.AttrValue1);            
+                    if (attrValue1 != null) addPrices.Add(attrValue1.AdditionalPrice);                    
                 }
                 else if (i == 1)
                 {
-                    var attrValue2 = attrs[1].AttrValues.FirstOrDefault(p => p.AttrValueId == skus.AttrValue2);
+                    var attrValue2 = baseRepository.GetModel<ProductAttrValue>(p => p.ProdAttrId == attrs[1].Id && p.AttrValueId == skus.AttrValue2);
                     if (attrValue2 != null)
                     {
                         addPrices.Add(attrValue2.AdditionalPrice);
@@ -289,7 +286,7 @@ namespace BDMall.Repository
                 }
                 else if (i == 2)
                 {
-                    var attrValue3 = attrs[2].AttrValues.FirstOrDefault(p => p.AttrValueId == skus.AttrValue3);
+                    var attrValue3 = baseRepository.GetModel<ProductAttrValue>(p => p.ProdAttrId == attrs[2].Id && p.AttrValueId == skus.AttrValue3);
                     if (attrValue3 != null)
                     {
                         addPrices.Add(attrValue3.AdditionalPrice);

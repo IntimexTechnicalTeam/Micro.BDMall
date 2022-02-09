@@ -29,11 +29,7 @@ namespace BDMall.Model
         [Required]
         [Column(Order = 4)]
         public Guid SOId { get; set; }
-        [ForeignKey("SOId")]
-        public virtual Order SalesOrder { get; set; }
-
-        [ForeignKey("WHId")]
-        public virtual Warehouse ExportWarehouse { get; set; }
+         
         /// <summary>
         /// 銷售退回時間
         /// </summary>

@@ -1,8 +1,10 @@
 ﻿using Autofac;
 using BDMall.BLL;
+using BDMall.Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Web.Framework;
 using Web.Mvc;
@@ -27,10 +29,11 @@ namespace BDMall.WebApi.Controllers
         /// <returns></returns>
         [HttpGet("GetMenuBar")]
         [AllowAnonymous]
-        [ProducesResponseType(typeof(SystemResult), 200)]
-        public async Task<SystemResult> GetMenuBar()
+        [ProducesResponseType(typeof(SystemResult<List<Menu>>), 200)]
+        public async Task<SystemResult<List<Menu>>> GetMenuBar()
         {
-            var result = await customMenuBLL.GetMenuBarAsync();
+            var result = new SystemResult<List<Menu>>();
+            result.ReturnValue = await customMenuBLL.GetMenuBarAsync();
             return result;
         }
 

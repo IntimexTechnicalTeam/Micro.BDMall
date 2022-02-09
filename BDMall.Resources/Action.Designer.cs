@@ -727,6 +727,15 @@ namespace BDMall.Resources {
         }
         
         /// <summary>
+        ///   查找类似 Generate express No 的本地化字符串。
+        /// </summary>
+        public static string GenExpNo {
+            get {
+                return ResourceManager.GetString("GenExpNo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Hidden 的本地化字符串。
         /// </summary>
         public static string Hidden {

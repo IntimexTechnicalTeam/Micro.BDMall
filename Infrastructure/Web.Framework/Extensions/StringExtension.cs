@@ -10,6 +10,7 @@ namespace System
     {
         public static int ToInt(this string s)
         {
+            if (s.IsEmpty()) return 0;
             return Convert.ToInt32(s);
         }
 

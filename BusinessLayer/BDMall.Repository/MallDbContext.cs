@@ -35,6 +35,9 @@ namespace BDMall.Repository
                     modelBuilder.Entity(type).Property(p.Name).HasColumnType($"decimal({precis.Precision},{precis.Scale})");
                 }
             }
+
+            //modelBuilder.Entity<ProductSalesSummry>().Property(b=>b.Id).UseIdentityColumn();   //使用自增列
+
             base.OnModelCreating(modelBuilder);
         }
 
@@ -116,6 +119,10 @@ namespace BDMall.Repository
         public DbSet<MemberLoginRecord> MemberLoginRecords { get; set; }
 
         public DbSet<MemberFavorite> MemberFavorites { get; set; }
+
+        public DbSet<MemberGroup> MemberGroups { get; set; }
+
+        public DbSet<MemberAccount> MemberAccounts { get; set; }    
 
         public DbSet<CurrencyExchangeRate> CurrencyExchangeRates { get; set; }
 
@@ -223,5 +230,15 @@ namespace BDMall.Repository
         public DbSet<SubOrderStatusHistory> SubOrderStatusHistories { get; set; }
 
         public DbSet<MerchantSalesStatistic> MerchantSalesStatistics { get; set; }
+
+        public DbSet<ReturnOrder> ReturnOrders { get; set; }
+
+        public DbSet<ReturnOrderDetail> ReturnOrderDetails { get; set; }    
+
+        public DbSet<ReturnOrderImage> ReturnOrderImages { get; set; }
+
+        public DbSet<ReturnOrderMessage> ReturnOrderMessages { get; set; }  
+
+        public DbSet<OrderMassProcessStatus> OrderMassProcessStatus { get; set; }
     }
 }

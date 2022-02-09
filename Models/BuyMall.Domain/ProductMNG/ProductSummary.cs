@@ -54,6 +54,8 @@ namespace BDMall.Domain
 
         public WeightUnit WeightUnit { get; set; }
 
+        public List<ProductAtrtValueModel> AttrValues { get; set; } = new List<ProductAtrtValueModel>();
+
         /// <summary>
         /// SalePrice+附加价钱
         /// </summary>
@@ -159,6 +161,8 @@ namespace BDMall.Domain
         }
 
         public SimpleCurrency Currency { get; set; } = new SimpleCurrency();
+
+        public SimpleCurrency Currency2 { get; set; } = new SimpleCurrency();
 
         /// <summary>
         /// 優惠描述

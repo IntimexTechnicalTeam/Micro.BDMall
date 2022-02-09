@@ -1,6 +1,7 @@
 ﻿using BDMall.Model;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,7 +13,11 @@ namespace BDMall.Domain
 
         public List<CheckoutItem> Items { get; set; } = new List<CheckoutItem>();
 
-        public Guid PaymentMethodId { get; set; } = Guid.Empty;
+        /// <summary>
+        ///  付款方式
+        /// </summary>
+        [Required(ErrorMessage = "付款方式不能为空")]
+        public Guid PaymentMethodId { get; set; }
 
         public Currency Currency { get; set; } = new Currency();
 

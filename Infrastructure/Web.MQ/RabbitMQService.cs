@@ -83,7 +83,7 @@ namespace Web.MQ
         }
 
         /// <summary>
-        /// 发送延时消息
+        /// 发送消息或延时消息
         /// </summary>
         /// <param name="queueName"></param>
         /// <param name="exchangeName"></param>

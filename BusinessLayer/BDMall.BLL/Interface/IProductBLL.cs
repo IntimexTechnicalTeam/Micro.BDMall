@@ -1,5 +1,6 @@
 ﻿using BDMall.Domain;
 using BDMall.Enums;
+using BDMall.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -53,6 +54,8 @@ namespace BDMall.BLL
 
         ProductSummary GetProductSummary(Guid id, Guid skuId);
 
+        ProductSummary GenProductInfoBySkuId(Guid productId, Guid skuId);
+
         ProductSkuDto GetProductSku(Guid skuId);
 
         /// <summary>
@@ -62,5 +65,9 @@ namespace BDMall.BLL
         Task<List<string>> GetSelloutSkus();
 
         Task<PageData<MicroProduct>> GetProductListAsync(ProductCond cond);
+
+        Task<ProductDetailView> GetProductDetailAsync(string Code);
+
+        Task<MicroProductDetail> GetMicroProductDetail(string Code);
     }
 }

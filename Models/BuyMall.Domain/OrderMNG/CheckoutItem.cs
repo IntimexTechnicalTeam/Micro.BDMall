@@ -1,6 +1,7 @@
 ﻿using BDMall.Enums;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +15,10 @@ namespace BDMall.Domain
 
         public Guid DeliveryId { get; set; } = Guid.Empty;
 
+        /// <summary>
+        /// 物品清单
+        /// </summary>
+        [Required]
         public List<BuyItem> Detail { get; set; } = new List<BuyItem>();
 
         /// <summary>
@@ -21,6 +26,10 @@ namespace BDMall.Domain
         /// </summary>
         public DeliveryType DeliveryType { get; set; } = DeliveryType.D;
 
+        /// <summary>
+        /// 邮递地址
+        /// </summary>
+        [Required(ErrorMessage = "邮递地址不能为空")]
         public Guid AddressId { get; set; } = Guid.Empty;
 
         /// <summary>
@@ -35,8 +44,11 @@ namespace BDMall.Domain
 
         public decimal FreightDiscount { get; set; }
 
-        public Guid ChargeId { get; set; } =Guid.Empty;
+        public Guid ChargeId { get; set; }
 
+        /// <summary>
+        /// 快递相关参数
+        /// </summary>
         public ExpressChargeInfo ChargeInfo { get; set; } = new ExpressChargeInfo();
 
         //public CollectionOfficeChargeInfo COChargeInfo { get; set; }

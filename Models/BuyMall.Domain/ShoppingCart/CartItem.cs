@@ -10,17 +10,28 @@ namespace BDMall.Domain
     public class CartItem
     {
         public Guid Sku { get; set; }
+
+        /// <summary>
+        /// ///商品Id
+        /// </summary>
         [Required(ErrorMessage = "ProductId必填")]
         public Guid ProductId { get; set; }
-        public string ProdCode { get; set; }
+        
         /// <summary>
-        /// 对应数值为ProductSku.AttrValue1
+        ///商品Code 
         /// </summary>
-        public Guid Attr1 { get; set; } = Guid.Empty;
+        [Required(ErrorMessage = "ProdCode必填")]
+        public string ProdCode { get; set; } = string.Empty;
+        
+        /// <summary>
+        /// 所选属性1
+        /// </summary>
+        public Guid Attr1 { get; set; } = Guid.Empty;   //对应数值为ProductSku.AttrValue1
 
         public Guid Attr2 { get; set; } = Guid.Empty;
 
         public Guid Attr3 { get; set; } = Guid.Empty;
+
 
         public string AttrName1 { get; set; }
 

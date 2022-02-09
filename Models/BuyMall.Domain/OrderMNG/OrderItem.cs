@@ -36,6 +36,8 @@ namespace BDMall.Domain
         /// </summary>
         public Guid DeliveryId { get; set; }
 
+        public Guid OrderId { get; set; }
+
         /// <summary>
         /// 所屬送貨單編號
         /// </summary>

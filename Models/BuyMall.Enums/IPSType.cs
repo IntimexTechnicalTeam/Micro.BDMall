@@ -11,6 +11,8 @@ namespace BDMall.Enums
     /// </summary>
     public enum IPSType
     {
+        Default=0,
+
         /// <summary>
         /// 用MCN码获取站点
         /// </summary>

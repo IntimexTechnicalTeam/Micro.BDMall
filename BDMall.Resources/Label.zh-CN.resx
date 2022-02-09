@@ -3267,4 +3267,13 @@
   <data name="Ticket" xml:space="preserve">
     <value>普通戏飞</value>
   </data>
+  <data name="ProductIcon" xml:space="preserve">
+    <value>产品认证</value>
+  </data>
+  <data name="EmailSwitch" xml:space="preserve">
+    <value>邮件开关</value>
+  </data>
+  <data name="WhatsAppSwitch" xml:space="preserve">
+    <value>WhatsApp 开关</value>
+  </data>
 </root>

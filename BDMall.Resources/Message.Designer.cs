@@ -19,7 +19,7 @@ namespace BDMall.Resources {
     // 类通过类似于 ResGen 或 Visual Studio 的工具自动生成的。
     // 若要添加或移除成员，请编辑 .ResX 文件，然后重新运行 ResGen
     // (以 /str 作为命令选项)，或重新生成 VS 项目。
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Message {
@@ -47,8 +47,8 @@ namespace BDMall.Resources {
         }
         
         /// <summary>
-        ///   重写当前线程的 CurrentUICulture 属性
-        ///   重写当前线程的 CurrentUICulture 属性。
+        ///   重写当前线程的 CurrentUICulture 属性，对
+        ///   使用此强类型资源类的所有资源查找执行重写。
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
         public static global::System.Globalization.CultureInfo Culture {
@@ -2395,15 +2395,16 @@ namespace BDMall.Resources {
                 return ResourceManager.GetString("PointsRecordNotExist", resourceCulture);
             }
         }
-
-        public static string PosterMsg
-        {
-            get
-            {
+        
+        /// <summary>
+        ///   查找类似 Successfully get one “Showbiz Spy” official poster 的本地化字符串。
+        /// </summary>
+        public static string PosterMsg {
+            get {
                 return ResourceManager.GetString("PosterMsg", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   查找类似 Modifying the price during the preferential period will affect the price during the preferential period. Are you sure to modify it? 的本地化字符串。
         /// </summary>
@@ -2527,6 +2528,15 @@ namespace BDMall.Resources {
         public static string ProductNotAllowedEmpty {
             get {
                 return ResourceManager.GetString("ProductNotAllowedEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 The productcode does not exist, please re-enter the productcode 的本地化字符串。
+        /// </summary>
+        public static string ProductNotCode {
+            get {
+                return ResourceManager.GetString("ProductNotCode", resourceCulture);
             }
         }
         

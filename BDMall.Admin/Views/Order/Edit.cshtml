@@ -67,19 +67,19 @@
                                 <tr>
                                     <td colspan="4">
                                         <div id="divStatusControl">
-                                            <div v-show="delivery.StatusCode=='0'">
+                                            <div v-show="delivery.StatusCode=='0'"> <!--待付款--> 
                                                 <div class="form-group">
                                                     <input type="button" class="btn btn-primary" value="@BDMall.Resources.Action.Proceed" v-on:click="updateStatus(1,delivery)" v-if="OrderInfo.IsMerchant==false" />
                                                     <input type="button" class="btn btn-warning" value="@BDMall.Resources.Action.CancelOrder" v-on:click="cancelOrder(5,delivery)" v-if="OrderInfo.IsMerchant==false" />
                                                 </div>
                                             </div>
-                                            <div v-show="delivery.StatusCode=='1'">
+                                            <div v-show="delivery.StatusCode=='1'">  <!--己確認付款--> 
                                                 <div class="form-group">
                                                     <input type="button" class="btn btn-primary" value="@BDMall.Resources.Action.Proceed" v-on:click="updateStatus(2,delivery)" />
                                                     <input type="button" class="btn btn-warning" value="@BDMall.Resources.Action.CancelOrder" v-on:click="cancelOrder(5,delivery)" v-if="OrderInfo.IsMerchant==false" />
                                                 </div>
                                             </div>
-                                            <div v-show="delivery.StatusCode=='2'">
+                                            <div v-show="delivery.StatusCode=='2'">   <!--處理中--> 
 
                                                 <div class="form-group">
                                                     <div class="form-inline">
@@ -113,7 +113,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div v-show="delivery.StatusCode=='3'">
+                                            <div v-show="delivery.StatusCode=='3'">   <!--已安排送貨--> 
 
                                                 <div class="form-inline">
                                                     @BDMall.Resources.Label.DeliveryNoWithSymbol
@@ -127,7 +127,7 @@
                                                     @*<input type="button" class="btn btn-primary" value="@BDMall.Resources.Action.MailTracking" v-on:click="showMailTracking(delivery.TrackingNo,index)" />
                                                         <label v-bind:id="'spnTrackingInfo_'+index"></label>*@
 
-                                                </div>
+                                                </div> 
 
                                             </div>
                                             <div v-show="delivery.StatusCode=='3'">
@@ -137,7 +137,7 @@
                                                 <input type="button" class="btn btn-warning" value="@BDMall.Resources.Action.CancelOrder" v-on:click="salesReturn(delivery)" v-show="OrderInfo.IsMerchant==false" />
                                             </div>
 
-                                            <div v-show="delivery.StatusCode=='4'||delivery.StatusCode=='5'">
+                                            <div v-show="delivery.StatusCode=='4'||delivery.StatusCode=='5'"> <!--訂單完成,用户取消订单-->  
                                                 <div class="form-inline">
                                                     @BDMall.Resources.Label.DeliveryNoWithSymbol
                                                     {{delivery.DeliveryNo}}
@@ -544,7 +544,7 @@
                     data.orderId = orderId;
                     WS.AjaxP("get", "/adminapi/Order/GetById", data, function (response) {
                         vm.OrderInfo = response;
-
+                        console.log(vm.OrderInfo);
                         vm.getOrderTotalDiscount();
 
                         vm.getOrderSummary();
@@ -557,9 +557,9 @@
                                     }
                                     else
                                     {
-                                        val.LocationId = $("#cboLocation" + index).val();
+                                        val.LocationId = $("#cboLocation" + index).val() ==null ? WS.GuidEmpty  : $("#cboLocation" + index).val();
                                     }
-
+                                   
                                     vm.checkIsProceed(val);
                                 });
 
@@ -811,6 +811,12 @@
                     }
                     else
                     {
+                        console.log(delivery);
+
+                        //delivery.PLType =1;
+                        //delivery.MailType =1;
+                        //delivery.GoodsType=1;
+
                         WS.AjaxP("post", "/adminapi/order/UpdateDeliveryInfo", delivery, function (response) {
                             if (response.Succeeded == true) {
                                 showInfo(response.Message);

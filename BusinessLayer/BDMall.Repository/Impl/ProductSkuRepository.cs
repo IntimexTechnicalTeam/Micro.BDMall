@@ -80,17 +80,20 @@ namespace BDMall.Repository
                 if (i == 0)
                 {
                     attrID1 = invAttrs[0].AttrId;
-                    attrValue1 = invAttrs[0].AttrValues.Where(p => p.IsDeleted == false).ToList();
+                    //attrValue1 = invAttrs[0].AttrValues.Where(p => p.IsDeleted == false).ToList();
+                    attrValue1 =  baseRepository.GetList<ProductAttrValue>(p=>p.ProdAttrId == attrID1 && !p.IsDeleted).ToList();
                 }
                 else if (i == 1)
                 {
                     attrID2 = invAttrs[1].AttrId;
-                    attrValue2 = invAttrs[1].AttrValues.Where(p => p.IsDeleted == false).ToList();
+                    //attrValue2 = invAttrs[1].AttrValues.Where(p => p.IsDeleted == false).ToList();
+                    attrValue2 = baseRepository.GetList<ProductAttrValue>(p => p.ProdAttrId == attrID2 && !p.IsDeleted).ToList();
                 }
                 else if (i == 2)
                 {
                     attrID3 = invAttrs[2].AttrId;
-                    attrValue3 = invAttrs[2].AttrValues.Where(p => p.IsDeleted == false).ToList();
+                    //attrValue3 = invAttrs[2].AttrValues.Where(p => p.IsDeleted == false).ToList();
+                    attrValue3 = baseRepository.GetList<ProductAttrValue>(p => p.ProdAttrId == attrID3 && !p.IsDeleted).ToList();
                 }
             }
 

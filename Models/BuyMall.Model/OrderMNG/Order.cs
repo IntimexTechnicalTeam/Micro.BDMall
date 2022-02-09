@@ -138,6 +138,11 @@ namespace BDMall.Model
         [MaxLength(20)]
         [Column(TypeName = "varchar")]
         public string Acquirer { get; set; }
+
+        /// <summary>
+        /// 过期时间
+        /// </summary>
+        public DateTime ExpireDate { get; set; }
     }
 
 

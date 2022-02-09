@@ -28,6 +28,7 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
         public IAttributeBLL attributeBLL;
         public ICountryBLL countryBLL;
         public IPaymentBLL paymentBLL;
+        public IInventoryBLL inventoryBLL;
 
         public DictController(IComponentContext services) : base(services)
         {
@@ -37,6 +38,7 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
             attributeBLL = Services.Resolve<IAttributeBLL>();
             countryBLL = Services.Resolve<ICountryBLL>();
             paymentBLL = Services.Resolve<IPaymentBLL>();
+            inventoryBLL = Services.Resolve<IInventoryBLL>();
         }
 
         /// <summary>
@@ -236,7 +238,8 @@ namespace BDMall.Admin.Areas.AdminAPI.Controllers
         [HttpGet]
         public async Task<List<KeyValue>> GetWhseComboSrcByMerchant(Guid merchantId)
         {
-            return new List<KeyValue>();
+            var result = inventoryBLL.GetWhseComboSrc(merchantId);
+            return result;
         }
 
         /// <summary>

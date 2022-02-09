@@ -182,9 +182,9 @@ namespace BDMall.BLL
             return result;
         }
 
-        public async Task<SystemResult> GetCatalogAsync()
+        public async Task<List<Catalog>> GetCatalogAsync()
         {
-            var result =new SystemResult();
+            var result =new List<Catalog>();
             string key = CacheKey.MenuCatalog.ToString();
             string field = $"{CacheField.SubCatalog}_{CurrentUser.Lang}";
 
@@ -195,9 +195,24 @@ namespace BDMall.BLL
                 await RedisHelper.HSetAsync(key,field,data);
             }
 
-            result.ReturnValue = AutoMapperExt.MapToList<ProdCatatogInfo,Catalog>(data);
-            result.Succeeded = true;
+            result = AutoMapperExt.MapToList<ProdCatatogInfo,Catalog>(data);      
             return result;
+        }
+
+        public List<ProdCatatogInfo> GetCatalogListById(Guid catID)
+        {
+            List<ProdCatatogInfo> list = new List<ProdCatatogInfo>();
+
+            var dBcatalog = baseRepository.GetModelById<ProductCatalog>(catID);
+            var catalog = AutoMapperExt.MapTo<ProductCatalogDto>(dBcatalog);
+            var catalogView = GenProductCatalogInfo(catalog);
+
+            if (catalog != null)
+            {
+                var catalogParentPaths = productCatalogRepository.GetCatalogUrlByCatalogId(catalog.Id).OrderBy(o => o.Level).ToList();
+                list = catalogParentPaths.Select(item => GenProductCatalogInfo(item)).ToList();
+            }
+            return list;
         }
 
         private ProdCatatogInfo GenProductCatalogInfo(ProductCatalogDto catalog)

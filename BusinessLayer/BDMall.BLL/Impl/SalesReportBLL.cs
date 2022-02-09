@@ -21,7 +21,7 @@ namespace BDMall.BLL
         {
             var dic = new Dictionary<string, HotSalesSummaryView>();
 
-            var merchId = Guid.Parse(CurrentUser.UserId);
+            var merchId = CurrentUser.MerchantId;
             var isMerch = CurrentUser.LoginType == LoginType.Merchant ? true : false;
 
             DateTime today = DateTime.Now.Date;
@@ -65,7 +65,7 @@ namespace BDMall.BLL
             var dic = new Dictionary<string, List<OrderShowCaseSummary>>();
 
            
-            var merchId =Guid.Parse(CurrentUser.UserId);
+            var merchId = CurrentUser.MerchantId;
             var isMerch = CurrentUser.LoginType == LoginType.Merchant ? true : false;
 
             var baseQuery = (from o in baseRepository.GetList<Order>()

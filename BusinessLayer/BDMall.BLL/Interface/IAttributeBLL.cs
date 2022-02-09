@@ -53,6 +53,6 @@ namespace BDMall.BLL
 
         List<ProdAtt> GetFrontAttribute(ProdAttCond cond);
 
-        Task<SystemResult> GetFrontAttributeAsync(ProdAttCond cond);
+        Task<List<ProdAtt>> GetFrontAttributeAsync(ProdAttCond cond);
     }
 }

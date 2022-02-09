@@ -26,6 +26,8 @@ namespace HandleUpdateQtyService
                 Web.RegisterConfig.ServiceCollectionExtensions.AddServices<Program>(services, Globals.Configuration);
                 WebCache.ServiceCollectionExtensions.AddCacheServices(services, Globals.Configuration);
                 BDMall.Repository.ServiceCollectionExtensions.AddServices(services, Globals.Configuration);
+                Web.MQ.ServiceCollectionExtensions.AddServices(services, Globals.Configuration);                                      //注入RabbitMQ  
+                Web.Framework.AutoMapperConfiguration.InitAutoMapper();
                 return services;
             }, args);
 

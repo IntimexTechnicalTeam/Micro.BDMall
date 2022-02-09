@@ -39,6 +39,15 @@ namespace BDMall.Model
         [Column(Order = 6)]
         public int Qty { get; set; }
 
+        /// <summary>
+        /// 过期时间
+        /// </summary>
+        [Column(Order = 7)]
+        public DateTime ExpireDate  { get; set; }
+
+        [Column(Order = 8)]
+        public string Remark { get; set; }
+
         [ForeignKey("SkuId")]
         public virtual ProductSku Sku { get; set; }
 

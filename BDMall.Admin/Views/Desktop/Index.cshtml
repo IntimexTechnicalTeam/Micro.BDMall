@@ -12,14 +12,14 @@
             <div class="col-lg-4" style="height:400px;">
                 <div class="panel panel-info">
                     <div class="panel-heading">
-                        @*<h3 class="panel-title">@BDMall.Resources.Label.ShowCaseNewReceivedOrderLst</h3>*@
+                        <h3 class="panel-title">@BDMall.Resources.Label.ShowCaseNewReceivedOrderLst</h3>
                     </div>
                     <div class="panel-body">
                         <table id="tblNewOrders" class="table table-bordered">
                             <tbody>
                                 <tr>
-                                    @*<th>@BDMall.Resources.Label.OrderNO</th>
-                                    <th>@BDMall.Resources.Label.CreateDate</th>*@
+                                    <th>@BDMall.Resources.Label.OrderNO</th>
+                                    <th>@BDMall.Resources.Label.CreateDate</th>
                                 </tr>
                                 <tr v-for="(order,index) in newReceivedOrderLst">
                                     <td>
@@ -32,7 +32,7 @@
                         </table>
                     </div>
                     <div class="panel-footer">
-                        @*<div class="btn btn-default" v-on:click="showOrder">@BDMall.Resources.Label.More</div>*@
+                        <div class="btn btn-default" v-on:click="showOrder">@BDMall.Resources.Label.More</div>
                     </div>
                 </div>
             </div>
@@ -40,14 +40,14 @@
             <div class="col-lg-4" style="height:400px;">
                 <div class="panel panel-info">
                     <div class="panel-heading">
-                        @*<h3 class="panel-title">@BDMall.Resources.Label.ShowCaseProcessingOrderLst</h3>*@
+                        <h3 class="panel-title">@BDMall.Resources.Label.ShowCaseProcessingOrderLst</h3>
                     </div>
                     <div class="panel-body">
                         <table id="tblProcessingOrders" class="table table-bordered">
                             <tbody>
                                 <tr>
-                                    @*<th>@BDMall.Resources.Label.OrderNO</th>
-                                    <th>@BDMall.Resources.Label.UpdateDate</th>*@
+                                    <th>@BDMall.Resources.Label.OrderNO</th>
+                                    <th>@BDMall.Resources.Label.UpdateDate</th>
                                 </tr>
                                 <tr v-for="(order,index) in processingOrderLst">
                                     <td>
@@ -60,7 +60,7 @@
                         </table>
                     </div>
                     <div class="panel-footer">
-                        @*<div class="btn btn-default" v-on:click="showOrder">@BDMall.Resources.Label.More</div>*@
+                        <div class="btn btn-default" v-on:click="showOrder">@BDMall.Resources.Label.More</div>
                     </div>
                 </div>
             </div>
@@ -68,14 +68,14 @@
             <div class="col-lg-4" style="height:400px;">
                 <div class="panel panel-info">
                     <div class="panel-heading">
-                        @*<h3 class="panel-title">@BDMall.Resources.Label.ShowCaseConfirmPaymentOrderLst</h3>*@
+                        <h3 class="panel-title">@BDMall.Resources.Label.ShowCaseConfirmPaymentOrderLst</h3>
                     </div>
                     <div class="panel-body">
                         <table id="tblNewOrders" class="table table-bordered">
                             <tbody>
                                 <tr>
-                                    @*<th>@BDMall.Resources.Label.OrderNO</th>
-                                    <th>@BDMall.Resources.Label.UpdateDate</th>*@
+                                    <th>@BDMall.Resources.Label.OrderNO</th>
+                                    <th>@BDMall.Resources.Label.UpdateDate</th>
                                 </tr>
                                 <tr v-for="(order,index) in confirmedPayOrderLst">
                                     <td>
@@ -87,7 +87,7 @@
                         </table>
                     </div>
                     <div class="panel-footer">
-                        @*<div class="btn btn-default" v-on:click="showOrder">@BDMall.Resources.Label.More</div>*@
+                        <div class="btn btn-default" v-on:click="showOrder">@BDMall.Resources.Label.More</div>
                     </div>
                 </div>
             </div>
@@ -95,14 +95,14 @@
             <div class="col-lg-4" style="height:400px;">
                 <div class="panel panel-info">
                     <div class="panel-heading">
-                        @*<h3 class="panel-title">@BDMall.Resources.Label.ShowCaseCompletedOrderLst</h3>*@
+                        <h3 class="panel-title">@BDMall.Resources.Label.ShowCaseCompletedOrderLst</h3>
                     </div>
                     <div class="panel-body">
                         <table id="tblNewOrders" class="table table-bordered">
                             <tbody>
                                 <tr>
-                                    @*<th>@BDMall.Resources.Label.OrderNO</th>
-                                    <th>@BDMall.Resources.Label.UpdateDate</th>*@
+                                    <th>@BDMall.Resources.Label.OrderNO</th>
+                                    <th>@BDMall.Resources.Label.UpdateDate</th>
                                 </tr>
                                 <tr v-for="(order,index) in completedOrderLst">
                                     <td>
@@ -114,11 +114,11 @@
                         </table>
                     </div>
                     <div class="panel-footer">
-                        @*<div class="btn btn-default" v-on:click="showOrder">@BDMall.Resources.Label.More</div>*@
+                        <div class="btn btn-default" v-on:click="showOrder">@BDMall.Resources.Label.More</div>
                     </div>
                 </div>
             </div>
-            @*<div class="col-lg-4" style="height:400px;">
+            <div class="col-lg-4" style="height:400px;">
                 <div class="panel panel-info">
                             <div class="panel-heading">
                                 <h3 class="panel-title">@BDMall.Resources.Label.ShowCasePendingOrderLst</h3>
@@ -143,12 +143,12 @@
                                 <div class="btn btn-default" v-on:click="showOrder">@BDMall.Resources.Label.More</div>
                             </div>
                         </div>
-                    </div>*@
+                    </div>
             <!--近六個月訂單統計-->
             <div class="col-lg-4" style="height:400px;">
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                       @* <h3 class="panel-title">@BDMall.Resources.Label.ShowCaseMonthlySalesOrder</h3>*@
+                        <h3 class="panel-title">@BDMall.Resources.Label.ShowCaseMonthlySalesOrder</h3>
                     </div>
                     <div class="panel-body">
                         <canvas id="chartMonthlySalesOrder" width="400" height="250"></canvas>
@@ -156,17 +156,17 @@
                 </div>
             </div>
             <!--待审批产品-->
-            <div class="col-lg-4" style="height:400px;">
+            @*<div class="col-lg-4" style="height:400px;">
                 <div class="panel panel-info">
                     <div class="panel-heading">
-                        @*<h3 class="panel-title">@BDMall.Resources.Label.ShowCaseProductApprove</h3>*@
+                        <h3 class="panel-title">@BDMall.Resources.Label.ShowCaseProductApprove</h3>
                     </div>
                     <div class="panel-body">
                         <table id="tblWaitingApproveProd" class="table table-bordered">
                             <tbody>
                                 <tr>
-                                    @*<th>@BDMall.Resources.Label.ProductCode</th>
-                                    <th>@BDMall.Resources.Label.UpdateDate</th>*@
+                                    <th>@BDMall.Resources.Label.ProductCode</th>
+                                    <th>@BDMall.Resources.Label.UpdateDate</th>
                                 </tr>
                                 <tr v-for="(product,index) in waitingApproveProdLst">
                                     <td>
@@ -178,15 +178,15 @@
                         </table>
                     </div>
                     <div class="panel-footer">
-                        @*<div class="btn btn-default" v-on:click="showProduct">@BDMall.Resources.Label.More</div>*@
+                        <div class="btn btn-default" v-on:click="showProduct">@BDMall.Resources.Label.More</div>
                     </div>
                 </div>
-            </div>
+            </div>*@
             <!--熱銷產品（本月）-->
             <div class="col-lg-4" style="height:400px;">
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        @*<h3 class="panel-title">@BDMall.Resources.Label.ShowCaseMonthlyHotSales</h3>*@
+                        <h3 class="panel-title">@BDMall.Resources.Label.ShowCaseMonthlyHotSales</h3>
                     </div>
                     <div class="panel-body">
                         <canvas id="chartMonthlyHotSales" width="400" height="250"></canvas>
@@ -197,7 +197,7 @@
             <div class="col-lg-4" style="height:400px;">
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        @*<h3 class="panel-title">@BDMall.Resources.Label.ShowCaseWeeklyHotSales</h3>*@
+                        <h3 class="panel-title">@BDMall.Resources.Label.ShowCaseWeeklyHotSales</h3>
                     </div>
                     <div class="panel-body">
                         <canvas id="chartWeeklyHotSales" width="400" height="250"></canvas>
@@ -208,7 +208,7 @@
             <div class="col-lg-4" style="height:400px;">
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        @*<h3 class="panel-title">@BDMall.Resources.Label.ShowCaseTodayHotSales</h3>*@
+                        <h3 class="panel-title">@BDMall.Resources.Label.ShowCaseTodayHotSales</h3>
                     </div>
                     <div class="panel-body">
                         <canvas id="chartTodayHotSales" width="400" height="250"></canvas>
@@ -225,7 +225,7 @@
             <div class="col-lg-4" style="height:400px;">
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        @*<h3 class="panel-title">@BDMall.Resources.Label.ShowCaseMonthlyClickRate</h3>*@
+                        <h3 class="panel-title">@BDMall.Resources.Label.ShowCaseMonthlyClickRate</h3>
                     </div>
                     <div class="panel-body">
                         <canvas id="chartMonthlyClickRate" width="400" height="250"></canvas>
@@ -236,7 +236,7 @@
             <div class="col-lg-4" style="height:400px;">
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        @*<h3 class="panel-title">@BDMall.Resources.Label.ShowCaseWeeklyClickRate</h3>*@
+                        <h3 class="panel-title">@BDMall.Resources.Label.ShowCaseWeeklyClickRate</h3>
                     </div>
                     <div class="panel-body">
                         <canvas id="chartWeeklyClickRate" width="400" height="250"></canvas>
@@ -247,7 +247,7 @@
             <div class="col-lg-4" style="height:400px;">
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        @*<h3 class="panel-title">@BDMall.Resources.Label.ShowCaseTodayClickRate</h3>*@
+                        <h3 class="panel-title">@BDMall.Resources.Label.ShowCaseTodayClickRate</h3>
                     </div>
                     <div class="panel-body">
                         <canvas id="chartTodayClickRate" width="400" height="250"></canvas>
@@ -259,7 +259,7 @@
             <div class="col-lg-4" style="height:400px;">
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        @*<h3 class="panel-title">@BDMall.Resources.Label.ShowCaseMonthlySearchClickRate</h3>*@
+                        <h3 class="panel-title">@BDMall.Resources.Label.ShowCaseMonthlySearchClickRate</h3>
                     </div>
                     <div class="panel-body">
                         <canvas id="chartMonthlySearchClickRate" width="400" height="250"></canvas>
@@ -270,7 +270,7 @@
             <div class="col-lg-4" style="height:400px;">
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        @*<h3 class="panel-title">@BDMall.Resources.Label.ShowCaseWeeklySearchClickRate</h3>*@
+                        <h3 class="panel-title">@BDMall.Resources.Label.ShowCaseWeeklySearchClickRate</h3>
                     </div>
                     <div class="panel-body">
                         <canvas id="chartWeeklySearchClickRate" width="400" height="250"></canvas>
@@ -281,7 +281,7 @@
             <div class="col-lg-4" style="height:400px;">
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        @*<h3 class="panel-title">@BDMall.Resources.Label.ShowCaseTodaySearchClickRate</h3>*@
+                        <h3 class="panel-title">@BDMall.Resources.Label.ShowCaseTodaySearchClickRate</h3>
                     </div>
                     <div class="panel-body">
                         <canvas id="chartTodaySearchClickRate" width="400" height="250"></canvas>
@@ -406,21 +406,21 @@
             <div class="col-lg-4" style="height:400px;" v-if="!isMerchant">
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        @*<h3 class="panel-title">@BDMall.Resources.Label.MemberManagement</h3>*@
+                        <h3 class="panel-title">@BDMall.Resources.Label.MemberManagement</h3>
                     </div>
                     <div class="panel-body">
                         <ul class="list-group">
                             <li class="list-group-item">
                                 <span class="badge" style="cursor:pointer;" v-on:click="showMember()">{{mbrSummary.MemberTotal}}</span>
-                                @*@BDMall.Resources.Label.MemberNumber*@
+                                @BDMall.Resources.Label.MemberNumber
                             </li>
                             <li class="list-group-item">
                                 <span class="badge" style="cursor:pointer;" v-on:click="getLastMthMbr()">{{mbrSummary.LastMth}}</span>
-                                @*@BDMall.Resources.Label.NumberOfRegisteredMembersLastMonth*@
+                                @BDMall.Resources.Label.NumberOfRegisteredMembersLastMonth
                             </li>
                             <li class="list-group-item">
                                 <span class="badge" style="cursor:pointer;" v-on:click="getThisMthMbr()">{{mbrSummary.ThisMth}}</span>
-                               @* @BDMall.Resources.Label.NumberOfRegisteredMembersThisMonth*@
+                                @BDMall.Resources.Label.NumberOfRegisteredMembersThisMonth
                             </li>
                         </ul>
                     </div>
@@ -539,42 +539,42 @@
                 var tabId = self.frameElement.parentElement.id;
                 miniTab.openNewTabByIframe({
                     href:"/Member/Index/",
-                    title:"",
+                    title:"@BDMall.Resources.Menu.MemberList",
                 });
             },
             showOrder: function () {
                 var tabId = self.frameElement.parentElement.id;
                 miniTab.openNewTabByIframe({
                     href:"/Order/Index/",
-                    title: ""
+                    title: "@BDMall.Resources.Menu.OrderMng"
                 });
             },
             showProduct: function () {
                 var tabId = self.frameElement.parentElement.id;
                 miniTab.openNewTabByIframe({
                     href:"/Product/ApproveProduct/",
-                    title: ""
+                    title: "@BDMall.Resources.Menu.ProductApprove"
                 });
             },
             showReturnOrder: function () {
                 var tabId = self.frameElement.parentElement.id;
                 miniTab.openNewTabByIframe({
                     href:"/ReturnOrder/Index",
-                    title: ""
+                    title: "@BDMall.Resources.Menu.ReturnOrderMng"
                 });
             },
             showProductComment: function () {
                 var tabId = self.frameElement.parentElement.id;
                 miniTab.openNewTabByIframe({
                     href:"/Marketing/ProductCommentIndex",
-                    title: ""
+                    title: "@BDMall.Resources.Menu.CommentMng"
                 });
             },
             showMoreMerchant: function () {
                 var tabId = self.frameElement.parentElement.id;
                 miniTab.openNewTabByIframe({
                     href:"/Merchant/Index",
-                    title: ""
+                    title: "@BDMall.Resources.Menu.MerchantList"
                 });
             },
             getLastMthMbr: function () {
@@ -587,7 +587,7 @@
                 var tabId = self.frameElement.parentElement.id;
                 miniTab.openNewTabByIframe({
                     href:"/Member/Index/" + firstdate + "/" + end,
-                    title: ""
+                    title: "@BDMall.Resources.Menu.MemberList"
                 });
             },
             getThisMthMbr: function () {
@@ -600,7 +600,7 @@
                 var tabId = self.frameElement.parentElement.id;
                 miniTab.openNewTabByIframe({
                     href:"/Member/Index/" + firstdate + "/" + end,
-                    title: ""
+                    title: "@BDMall.Resources.Menu.MemberList"
                 });
             },         
             //合并當月熱銷，當週熱銷，當日熱銷产品图表
@@ -886,7 +886,7 @@
                     var tabId = self.frameElement.parentElement.id;
                     miniTab.openNewTabByIframe({
                         href: "/Order/Edit/" + id,
-                        title: '' + "-" + orderNO
+                        title: '@BDMall.Resources.Action.Modify' + "-" + orderNO
                     });
                 }
             },
@@ -898,7 +898,7 @@
                     var tabId = self.frameElement.parentElement.id;
                     miniTab.openNewTabByIframe({
                         href:  "/ReturnOrder/Edit/" + strId,
-                        title: '' + "-" + strROrderNo
+                        title: '@BDMall.Resources.Action.Modify' + "-" + strROrderNo
                     });
                 }
             },
@@ -910,7 +910,7 @@
                     var tabId = self.frameElement.parentElement.id;
                     miniTab.openNewTabByIframe({
                         href:   "/Merchant/MerchantEdit/" + strId+"/Modify",
-                        title: '' + "-" + strMerchantName
+                        title: '@BDMall.Resources.Action.Modify' + "-" + strMerchantName
                     });
                 }
             },
@@ -921,7 +921,7 @@
                     var tabId = self.frameElement.parentElement.id;
                     miniTab.openNewTabByIframe({
                         href: "/Product/ApproveProductDetail/" + id,
-                        title: '' + "-" + name
+                        title: '@BDMall.Resources.Action.Approve' + "-" + name
                     });
                 }
             },

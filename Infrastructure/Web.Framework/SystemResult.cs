@@ -22,6 +22,7 @@ namespace Web.Framework
 
     public class SystemResult<T> : SystemResult
     { 
+        
         public new T ReturnValue { get; set; }
     }
 

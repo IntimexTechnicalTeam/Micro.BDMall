@@ -1,6 +1,7 @@
 ﻿
 using Autofac;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using Web.Mvc;
 
 namespace BDMall.Admin.Controllers
@@ -42,17 +43,18 @@ namespace BDMall.Admin.Controllers
         //    return View("Index");
         //}
 
-        //public ActionResult Edit(Guid id)
-        //{
-        //    ViewBag.OrderId = id;
-        //    return View();
-        //}
+        public ActionResult Edit(Guid id)
+        {
+            ViewBag.OrderId = id;
+            return View();
+        }
+
         //public ActionResult OldEdit(string id)
         //{
         //    ViewBag.OrderId = id;
         //    return View();
         //}
-        
+
 
         //public ActionResult ConfirmOrderDetailList()
         //{

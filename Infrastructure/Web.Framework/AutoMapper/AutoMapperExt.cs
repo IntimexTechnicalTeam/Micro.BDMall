@@ -26,7 +26,13 @@ namespace Web.Framework
             return AutoMapperConfiguration.Mapper.Map<TSource, TDestination>(source);
         }
 
-        //注：这个没有测试过是否可用。上面那个MapToList是可用的
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TSource">数据源</typeparam>
+        /// <typeparam name="TDestination">目标源</typeparam>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public static List<TDestination> MapToList<TSource, TDestination>(this IEnumerable<TSource> source)
         {
             return AutoMapperConfiguration.Mapper.Map<List<TDestination>>(source);

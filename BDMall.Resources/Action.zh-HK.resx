@@ -576,4 +576,7 @@
   <data name="RemoveCustSetting" xml:space="preserve">
     <value>刪除客製化設定</value>
   </data>
+  <data name="GenExpNo" xml:space="preserve">
+    <value>生成快遞單號</value>
+  </data>
 </root>

@@ -17,8 +17,9 @@ namespace Web.MQ
         /// <param name="msg"></param>
         /// <param name="throwIfErrorCaused"></param>
         void PublishMsg(string queueName, string exchangeName, string msg, bool throwIfErrorCaused = true);
+
         /// <summary>
-        /// 发送延时消息
+        /// 发送消息或延时消息
         /// </summary>
         /// <param name="queueName"></param>
         /// <param name="exchangeName"></param>
@@ -26,6 +27,7 @@ namespace Web.MQ
         /// <param name="delay">延时时间，单位毫秒</param>
         /// <param name="throwIfErrorCaused"></param>
         void PublishMsg(string queueName, string exchangeName, string msg, long delay, bool throwIfErrorCaused = true);
+
         /// <summary>
         /// 发送延时消息
         /// </summary>

@@ -46,7 +46,7 @@ namespace BDMall.BLL
         }
 
         IMediator _mediator;
-        public IMediator Mediator
+        public IMediator mediator
         {
             get
             {
@@ -144,6 +144,19 @@ namespace BDMall.BLL
             }
         }
 
+        public ICurrencyBLL _currencyBLL;
+        public ICurrencyBLL currencyBLL
+        {
+            get
+            {
+                if (_currencyBLL == null)
+                {
+                    _currencyBLL = Services.Resolve<ICurrencyBLL>();
+                }
+                return this._currencyBLL;
+            }
+        }
+
         IHostEnvironment _hostEnvironment;
         public IHostEnvironment hostEnvironment
         {
@@ -237,6 +250,41 @@ namespace BDMall.BLL
                 }
             }
             return langs;
+        }
+
+        /// <summary>
+        /// 判斷是否與基準貨幣一致
+        /// </summary>
+        /// <param name="checkCurrency">檢查的貨幣資料</param>
+        public bool IsMatchBaseCurrency(string CurrencyCode)
+        {
+            bool result = false;
+            var checkCurrency = currencyBLL.GetSimpleCurrency(CurrencyCode);
+            if (checkCurrency != null)
+            {
+                var baseCurrency = currencyBLL.GetDefaultCurrency();
+                if (baseCurrency != null && !string.IsNullOrEmpty(baseCurrency.Code))
+                {
+                    if (baseCurrency.Code == checkCurrency.Code)
+                    {
+                        result = true;
+                    }
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 將金額使用基準貨幣兌換率換算成當前貨幣金額
+        /// </summary>
+        /// <param name="baseMoney">基準貨幣類型金額</param>
+        /// <returns>換算後的當前貨幣金額</returns>
+        public decimal MoneyConversion(decimal baseMoney)
+        {
+            var myCurrency = currencyBLL.GetSimpleCurrency(CurrentUser.CurrencyCode);
+            decimal curMoney = baseMoney * myCurrency.ExchangeRate;
+            curMoney = Math.Round(curMoney, 2);
+            return curMoney;
         }
 
         public string AutoGenerateNumber(string perfix="BD")
