@@ -188,6 +188,12 @@ namespace BDMall.Repository
             return result;
         }
 
+        public override IQueryable<T> GetList<T>(string sql, List<SqlParameter> parameters)
+        {
+            var result = UnitWork.DataContext.Set<T>().FromSqlRaw(sql, parameters);
+            return result;
+        }
+
         public override bool Any<T>(Expression<Func<T, bool>> funcWhere)
         {
             bool flag = UnitWork.DataContext.Set<T>().Any(funcWhere);
@@ -208,6 +214,17 @@ namespace BDMall.Repository
         public override int IntFromSql(string sql, params object[] parameters)
         {
             return UnitWork.DataContext.Database.IntFromSql(sql, parameters);
+        }
+
+        /// <summary>
+        /// 返回操作Sql影响条数
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <param name="param"></param>
+        /// <returns></returns>
+        public override int ExecuteSqlCommand(string sql, IEnumerable<object> param)
+        {
+            return UnitWork.DataContext.Database.ExecuteSqlRaw(sql, param);
         }
 
         #endregion
@@ -338,8 +355,6 @@ namespace BDMall.Repository
             await SubmitChangesAsync();
         }
 
-      
-
         /// <summary>
         /// 根据主键获取一条数据
         /// </summary>
@@ -376,20 +391,6 @@ namespace BDMall.Repository
             return result.AsQueryable();
         }
 
-        public override async Task<bool> AnyAsync<T>(Expression<Func<T, bool>> funcWhere)
-        {
-            bool flag = await UnitWork.DataContext.Set<T>().AnyAsync(funcWhere);
-            return flag;
-        }
-
-        #endregion
-
-        public override IQueryable<T> GetList<T>(string sql, List<SqlParameter> parameters)
-        {
-            var result =  UnitWork.DataContext.Set<T>().FromSqlRaw(sql, parameters);
-            return result;
-        }
-
         public override async Task<IQueryable<T>> GetListAsync<T>(string sql, List<SqlParameter> parameters)
         {
             var result = await UnitWork.DataContext.Set<T>().FromSqlRaw(sql, parameters).ToArrayAsync();
@@ -397,8 +398,8 @@ namespace BDMall.Repository
         }
 
         public override async Task<int> ExecuteSqlCommandAsync(string sql, IEnumerable<object> param)
-        {           
-           return await UnitWork.DataContext.Database.ExecuteSqlRawAsync(sql, param);
+        {
+            return await UnitWork.DataContext.Database.ExecuteSqlRawAsync(sql, param);
         }
 
         public override async Task<int> ExecuteSqlRawAsync(string sql, params object[] param)
@@ -406,10 +407,13 @@ namespace BDMall.Repository
             return await UnitWork.DataContext.Database.ExecuteSqlRawAsync(sql, param);
         }
 
-        public override int ExecuteSqlCommand(string sql, IEnumerable<object> param)
-        {            
-            return UnitWork.DataContext.Database.ExecuteSqlRaw(sql, param);
+        public override async Task<bool> AnyAsync<T>(Expression<Func<T, bool>> funcWhere)
+        {
+            bool flag = await UnitWork.DataContext.Set<T>().AnyAsync(funcWhere);
+            return flag;
         }
+
+        #endregion
 
         public override IDbContextTransaction CreateTransation()
         {

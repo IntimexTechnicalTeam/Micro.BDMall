@@ -40,6 +40,31 @@ namespace BDMall.Repository
             return dt;
         }
 
+        private static async Task<DataTable> SqlQueryAsync(this DatabaseFacade facade, string sql, params object[] parameters)
+        {
+            var command = CreateCommand(facade, sql, out DbConnection conn, parameters);
+            var reader = await command.ExecuteReaderAsync();
+            var dt = new DataTable();
+            dt.Load(reader);
+            reader.Close();
+            conn.Close();
+            return dt;
+        }
+
+        /// <summary>
+        /// 自定义Sql异步查询，并返回集合
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="facade"></param>
+        /// <param name="sql"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        public static async Task<List<T>> SqlQueryAsync<T>(this DatabaseFacade facade, string sql, params object[] parameters) where T : class, new()
+        {
+            var dt = await SqlQueryAsync(facade, sql, parameters);
+            return dt.DataTableToList<T>().ToList();
+        }
+
         /// <summary>
         /// 自定义Sql查询，并返回集合
         /// </summary>
@@ -64,5 +89,14 @@ namespace BDMall.Repository
             return count;
         }
 
+        public static async  Task<int> IntFromSqlAsync(this DatabaseFacade facade, string sql, params object[] parameters)
+        {
+            int count = 0;
+            var command = CreateCommand(facade, sql, out DbConnection conn, parameters);
+            var result = await command.ExecuteScalarAsync();
+            if (result != null) count = int.Parse(result.ToString());
+            conn.Close();
+            return count;
+        }
     }
 }
