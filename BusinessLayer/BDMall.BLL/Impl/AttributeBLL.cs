@@ -18,8 +18,7 @@ namespace BDMall.BLL
     {
         IAttributeRepository attributeRepository;
         ITranslationRepository translationRepository;
-        ICodeMasterRepository codeMasterRepository;
-        IMerchantBLL merchantBLL;
+        ICodeMasterRepository codeMasterRepository;     
         IProductAttrValueRepository productAttrValueRepository;
         IProductRepository productRepository;
         IProductAttrRepository productAttrRepository;
@@ -27,8 +26,7 @@ namespace BDMall.BLL
         public AttributeBLL(IServiceProvider services) : base(services)
         {
             attributeRepository = Services.Resolve<IAttributeRepository>();
-            translationRepository = Services.Resolve<ITranslationRepository>();
-            merchantBLL = Services.Resolve<IMerchantBLL>();
+            translationRepository = Services.Resolve<ITranslationRepository>();           
             codeMasterRepository = Services.Resolve<ICodeMasterRepository>();
             productAttrValueRepository = Services.Resolve<IProductAttrValueRepository>();
             productRepository = Services.Resolve<IProductRepository>();
@@ -430,7 +428,8 @@ namespace BDMall.BLL
             attribute.AttributeValues = AutoMapperExt.MapTo<List<ProductAttributeValueDto>>(attrValuelist.ToList());
             foreach (var item in attribute.AttributeValues)
             {
-                item.MerchantName = merchantBLL.GetMerchById(item.MerchantId)?.Name ?? string.Empty;
+                var mch = baseRepository.GetModelById<Merchant>(item.MerchantId);
+                item.MerchantName = translationRepository.GetDescForLang(mch.NameTransId, CurrentUser.Lang) ?? "";
                 item.Descs = translationRepository.GetMutiLanguage(item.DescTransId);
                 item.ImagePath = item.Image;
                 item.Status = item.MerchantName == string.Empty ? RecordStatus.Add : RecordStatus.Update;

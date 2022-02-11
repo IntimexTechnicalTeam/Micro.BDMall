@@ -25,8 +25,7 @@ namespace BDMall.BLL
 
         IUserBLL userBLL;
         ISettingBLL settingBLL;
-        ICurrencyBLL currencyBLL;
-        IProductBLL productBLL;
+        public IProductBLL productBLL;
 
         PreHeatMerchantService mchHeatService;
 
@@ -37,8 +36,7 @@ namespace BDMall.BLL
             merchantShipMethodMappingRepository = Services.Resolve<IMerchantShipMethodMappingRepository>();
             codeMasterRepository = Services.Resolve<ICodeMasterRepository>();
             expressCompanyRepository = Services.Resolve<IExpressCompanyRepository>();
-            userBLL = Services.Resolve<IUserBLL>();
-            currencyBLL = Services.Resolve<ICurrencyBLL>();
+            userBLL = Services.Resolve<IUserBLL>();           
             settingBLL = Services.Resolve<ISettingBLL>();
             merchantPromotionRepository = Services.Resolve<IMerchantPromotionRepository>();
             productBLL = Services.Resolve<IProductBLL>();

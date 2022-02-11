@@ -21,11 +21,7 @@ namespace BDMall.WebApi.Controllers
         public ProductController(IComponentContext services) : base(services)
         {
             productCatalogBLL = Services.Resolve<IProductCatalogBLL>();
-            //productBLL = Services.Resolve<IProductBLL>();   
-
-
-           
-
+            productBLL = Services.Resolve<IProductBLL>();   
         }
 
         /// <summary>
@@ -43,36 +39,36 @@ namespace BDMall.WebApi.Controllers
             return result;
         }
 
-        ///// <summary>
-        ///// 获取商品
-        ///// </summary>
-        ///// <param name="cond"></param>
-        ///// <returns></returns>
-        //[HttpPost("GetProducts")]
-        //[AllowAnonymous]
-        //[ProducesResponseType(typeof(SystemResult<PageData<MicroProduct>>), 200)]
-        //public async Task<SystemResult<PageData<MicroProduct>>> GetProducts([FromBody] ProductCond cond)
-        //{
-        //    var result = new SystemResult<PageData<MicroProduct>>();
-        //    result.ReturnValue = await productBLL.GetProductListAsync(cond);
-        //    result.Succeeded = true;
-        //    return result;
-        //}
+        /// <summary>
+        /// 获取商品
+        /// </summary>
+        /// <param name="cond"></param>
+        /// <returns></returns>
+        [HttpPost("GetProducts")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(SystemResult<PageData<MicroProduct>>), 200)]
+        public async Task<SystemResult<PageData<MicroProduct>>> GetProducts([FromBody] ProductCond cond)
+        {
+            var result = new SystemResult<PageData<MicroProduct>>();
+            result.ReturnValue = await productBLL.GetProductListAsync(cond);
+            result.Succeeded = true;
+            return result;
+        }
 
-        ///// <summary>
-        ///// 获取商品明细
-        ///// </summary>
-        ///// <param name="code"></param>
-        ///// <returns></returns>
-        //[HttpGet("GetByCode")]
-        //[AllowAnonymous]
-        //[ProducesResponseType(typeof(SystemResult<MicroProductDetail>), 200)]
-        //public async Task<SystemResult<MicroProductDetail>> GetByCode(string code)
-        //{
-        //    var result = new SystemResult<MicroProductDetail>();
-        //    result.ReturnValue = await productBLL.GetMicroProductDetail(code);
-        //    result.Succeeded = true;
-        //    return result;
-        //}
+        /// <summary>
+        /// 获取商品明细
+        /// </summary>
+        /// <param name="code"></param>
+        /// <returns></returns>
+        [HttpGet("GetByCode")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(SystemResult<MicroProductDetail>), 200)]
+        public async Task<SystemResult<MicroProductDetail>> GetByCode(string code)
+        {
+            var result = new SystemResult<MicroProductDetail>();
+            result.ReturnValue = await productBLL.GetMicroProductDetail(code);
+            result.Succeeded = true;
+            return result;
+        }
     }
 }

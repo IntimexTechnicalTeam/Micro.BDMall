@@ -109,8 +109,8 @@ namespace BDMall.WebApi
             {
                 options.SerializerSettings.DateFormatString = "yyyy-MM-dd HH:mm:ss";
                 options.SerializerSettings.ContractResolver = new DefaultContractResolver();
-            });           
-            //.AddControllersAsServices();   //在控制器中进行属性注入
+            })           
+            .AddControllersAsServices();   //在控制器中进行属性注入
         }
 
         /// <summary>

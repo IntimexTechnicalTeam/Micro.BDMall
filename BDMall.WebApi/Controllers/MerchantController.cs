@@ -30,13 +30,13 @@ namespace BDMall.WebApi.Controllers
         [AllowAnonymous]
         [HttpGet("GetMerchantInfo")]
         [ProducesResponseType(typeof(SystemResult<MerchantInfoView>), 200)]
-        public async Task<SystemResult<MerchantInfoView>> GetMerchantInfo(string merchID)
+        public async Task<SystemResult<MerchantInfoView>> GetMerchantInfo(Guid merchID)
         {
             var result = new SystemResult<MerchantInfoView>() { Succeeded = true };
 
-            if (merchID.IsEmpty()) throw new BLException();
+            if (merchID==  Guid.Empty) throw new BLException();
 
-            result.ReturnValue=await merchantBLL.GetMerchantInfoAsync(Guid.Parse(merchID));
+            result.ReturnValue=await merchantBLL.GetMerchantInfoAsync(merchID);
             return result;
         }
 

@@ -47,9 +47,9 @@ namespace BDMall.WebApi.Controllers
         [ProducesResponseType(typeof(SystemResult<PageData<MicroOrderView>>), 200)]
         public async Task<SystemResult<PageData<MicroOrderView>>> MyOrder([FromBody] MicroOrderCond orderCond)
         {
-            var result = new SystemResult<PageData<MicroOrderView>>() { Succeeded =true};
-            result.ReturnValue= orderBLL.MyOrder(orderCond);
-            
+            var result = new SystemResult<PageData<MicroOrderView>>() { Succeeded = true };
+            result.ReturnValue = orderBLL.MyOrder(orderCond);
+
             return result;
         }
     }

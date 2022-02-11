@@ -94,8 +94,8 @@ namespace BDMall.WebApi.Controllers
         [ProducesResponseType(typeof(SystemResult<PageData<FavoriteMchView>>), 200)]
         public async Task<SystemResult<PageData<FavoriteMchView>>> MyFavMerchant([FromBody] FavoriteCond cond)
         {
-            var result = new SystemResult<PageData<FavoriteMchView>>() { Succeeded =true };
-             
+            var result = new SystemResult<PageData<FavoriteMchView>>() { Succeeded = true };
+
             return result;
         }
 

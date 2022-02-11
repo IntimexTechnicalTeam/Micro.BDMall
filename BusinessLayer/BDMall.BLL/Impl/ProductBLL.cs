@@ -17,8 +17,7 @@ namespace BDMall.BLL
 {
     public class ProductBLL : BaseBLL, IProductBLL
     {
-        public IProductRepository productRepository;
-        //public ICurrencyBLL currencyBLL;
+        public IProductRepository productRepository;       
         public IAttributeBLL attributeBLL;
         public IProductCatalogBLL productCatalogBLL;
         public ITranslationRepository translationRepository;
