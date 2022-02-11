@@ -152,7 +152,7 @@ namespace BDMall.Repository.Impl
 
                 string sql = @"
                              update orders set Status =@status,IsPaid=@ispay
-                             ,updateBy=@updateBy,UpdateDate=getDate(),Remark=@remark
+                             ,updateBy=@updateBy,UpdateDate=getDate(),Remark=@Remark
                              where id=@id;
                             ";
                 List<SqlParameter> paramList = new List<SqlParameter>();
@@ -160,7 +160,7 @@ namespace BDMall.Repository.Impl
                 paramList.Add(new SqlParameter("@status", order.Status));
                 paramList.Add(new SqlParameter("@ispay", order.IsPaid));
                 paramList.Add(new SqlParameter("@updateBy", CurrentUser.UserId));
-                paramList.Add(new SqlParameter("@remark", order.Remark));
+                paramList.Add(new SqlParameter("@Remark", order.Remark ?? ""));
 
                 baseRepository.ExecuteSqlCommand(sql, paramList.ToArray());
 

@@ -12,6 +12,6 @@ namespace BDMall.BLL
     {
         SystemResult AddInventoryChangeNotify(InventoryChangeNotify notify);
 
-        void CheckAndNotifyAsync(IList<Guid> skuIds);
+        Task CheckAndNotifyAsync(IList<Guid> skuIds);
     }
 }

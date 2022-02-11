@@ -35,6 +35,6 @@ namespace BDMall.Repository
 
         List<LastVersionProductView> GetLastVersionProductLstByCode(List<string> prodCodeLst);
 
-        List<decimal> GetProductAddPriceBySku(Guid id, Guid skuId);
+        Task<List<decimal>> GetProductAddPriceBySku(Guid id, Guid skuId);
     }
 }

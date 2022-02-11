@@ -53,9 +53,9 @@ namespace HandleItemExpireService
             if (ts.Minutes >= timeOut.ToInt())
             {
                 var order = AutoMapperExt.MapTo<OrderDto>(dbOrder);
-                order.OrderDetails = baseRepository.GetList<OrderDetail>(x => x.OrderId == dbOrder.Id).ToList();
+                order.OrderDetails =(await baseRepository.GetListAsync<OrderDetail>(x => x.OrderId == dbOrder.Id)).ToList();
 
-                var deliverys = baseRepository.GetList<OrderDelivery>(x => x.OrderId == order.Id && x.IsActive && !x.IsDeleted).ToList();
+                var deliverys = (await baseRepository.GetListAsync<OrderDelivery>(x => x.OrderId == order.Id && x.IsActive && !x.IsDeleted)).ToList();
                 order.OrderDeliverys = AutoMapperExt.MapToList<OrderDelivery, OrderDeliveryDto>(deliverys);
 
                 order.Remark = "支付超时，取消订单";

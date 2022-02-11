@@ -132,6 +132,7 @@ namespace BDMall.Repository
         public abstract int ExecuteSqlCommand(string sql, IEnumerable<object> param);
 
         public abstract IDbContextTransaction CreateTransation();
+
     }
 
     public interface IBaseRepository : IDependency
@@ -334,4 +335,5 @@ namespace BDMall.Repository
 
         IDbContextTransaction CreateTransation();
     }
+
 }

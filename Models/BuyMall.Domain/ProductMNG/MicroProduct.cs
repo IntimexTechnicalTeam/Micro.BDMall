@@ -41,5 +41,11 @@ namespace BDMall.Domain
         public string CurrencyCode { get; set; }
 
         public decimal Score { get; set; }
+
+        public int PurchaseCounter { get; set; }
+
+        public DateTime CreateDate { get; set; }
+
+        public DateTime UpdateDate { get; set; }    
     }
 }

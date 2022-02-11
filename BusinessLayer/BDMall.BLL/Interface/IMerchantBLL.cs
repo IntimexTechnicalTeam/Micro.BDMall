@@ -53,5 +53,9 @@ namespace BDMall.BLL
         Task<SystemResult> RejectMerchant(Guid merchId, string reason);
 
         PageData<MerchantSelectSummary> SearchMerchantList(MerchantCond cond);
+
+        Task<MerchantInfoView> GetMerchantInfoAsync(Guid merchID);
+
+        Task<PageData<MicroProduct>> GetMchProductListAsync(ProductCond cond);
     }
 }

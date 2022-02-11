@@ -128,5 +128,158 @@ namespace BDMall.BLL
             summary.ThisMth = baseRepository.GetList<Member>().Count(d => d.CreateDate > d1 && d.CreateDate < DateTime.Now && !d.IsDeleted);
             return summary;
         }
+
+        public async Task<SystemResult> AddFavMerchant(string merchCode)
+        {
+            var result = new SystemResult();
+            var mch = await baseRepository.GetModelAsync<Merchant>(x => x.MerchNo == merchCode);
+            if (mch == null) throw new BLException(Resources.Message.AddFavoriteFail);
+
+            var merchFavEntity = await baseRepository.GetModelAsync<MerchantFavorite>(x => x.MemberId == Guid.Parse(CurrentUser.UserId) && x.MerchId == mch.Id);
+            if (merchFavEntity == null)
+            {
+                merchFavEntity = new MerchantFavorite
+                {
+                    Id = Guid.NewGuid(),
+                    MemberId = Guid.Parse(CurrentUser.UserId),
+                    MerchId = mch.Id
+                };
+                await baseRepository.InsertAsync(merchFavEntity);
+            }
+            else
+            {
+                merchFavEntity.IsActive = true;
+                await baseRepository.UpdateAsync(merchFavEntity);
+            }
+
+            //更新缓存
+            string key = CacheKey.Favorite.ToString();
+            string field = CurrentUser.UserId;
+            var cacheData = await RedisHelper.HGetAsync<Favorite>(key, field);
+            cacheData.MchList.Add(mch.Id);
+            await RedisHelper.HSetAsync(key, field, cacheData);
+
+            result.ReturnValue = cacheData;
+            result.Succeeded = true;
+            result.Message = Resources.Message.AddFavoriteSuccess;
+            return result;
+        }
+
+        public async Task<SystemResult> RemoveFavMerchant(string merchCode)
+        {
+            var result = new SystemResult();
+            var mch = await baseRepository.GetModelAsync<Merchant>(x => x.MerchNo == merchCode);
+            if (mch == null) throw new BLException(Resources.Message.AddFavoriteFail);
+
+            var merchFavEntity = await baseRepository.GetModelAsync<MerchantFavorite>(x => x.MemberId == Guid.Parse(CurrentUser.UserId) && x.MerchId == mch.Id && x.IsActive);
+            if (merchFavEntity != null)
+            {
+                merchFavEntity.IsActive = false;
+                await baseRepository.UpdateAsync(merchFavEntity);               
+            }
+
+            //更新缓存
+            string key = CacheKey.Favorite.ToString();
+            string field = CurrentUser.UserId;
+            var cacheData = await RedisHelper.HGetAsync<Favorite>(key, field);
+            cacheData.MchList.Remove(mch.Id);
+            await RedisHelper.HSetAsync(key, field, cacheData);
+
+            result.ReturnValue = cacheData;
+            result.Succeeded = true;
+            result.Message = BDMall.Resources.Message.RemoveFavoriteSuccess;
+            return result;
+        }
+
+        public async Task<SystemResult> AddFavProduct(Guid productId)
+        {
+            var result = new SystemResult();
+            var product = await baseRepository.GetModelByIdAsync<Product>(productId);
+            if (product == null) throw new BLException(BDMall.Resources.Message.ProductCodeEmpty);
+
+            var memberFavorite = await baseRepository.GetModelAsync<MemberFavorite>(d => d.ProductCode == product.Code && d.MemberId == Guid.Parse(CurrentUser.UserId));
+            if (memberFavorite == null)
+            {
+                memberFavorite = new MemberFavorite();
+                memberFavorite.Id = Guid.NewGuid();
+                memberFavorite.MemberId = Guid.Parse(CurrentUser.UserId);
+                memberFavorite.ProductId = product.Id;
+                memberFavorite.ProductCode = product.Code;
+                await baseRepository.InsertAsync(memberFavorite);
+            }
+            else
+            {
+                memberFavorite.IsActive = true;
+                await baseRepository.UpdateAsync(memberFavorite);
+            }
+
+            string key = CacheKey.Favorite.ToString();
+            string field = CurrentUser.UserId;
+            var cacheData = await RedisHelper.HGetAsync<Favorite>(key, field);
+            cacheData.ProductList.Add(product.Code);
+            await RedisHelper.HSetAsync(key, field, cacheData);
+
+            result.ReturnValue = cacheData;
+            result.Succeeded = true;
+            result.Message = BDMall.Resources.Message.AddFavoriteSuccess;
+
+            return result;
+        }
+
+        public async Task<SystemResult> RemoveFavProduct(Guid productId)
+        {
+            var result = new SystemResult();
+            var product = await baseRepository.GetModelByIdAsync<Product>(productId);
+            if (product == null) throw new BLException(BDMall.Resources.Message.ProductCodeEmpty);
+
+            var memberFavorite = await baseRepository.GetModelAsync<MemberFavorite>(d => d.ProductCode == product.Code && d.MemberId == Guid.Parse(CurrentUser.UserId) && d.IsActive);
+            if (memberFavorite != null)          
+            {
+                memberFavorite.IsActive = false;
+                await baseRepository.UpdateAsync(memberFavorite);
+            }
+
+            string key = CacheKey.Favorite.ToString();
+            string field = CurrentUser.UserId;
+            var cacheData = await RedisHelper.HGetAsync<Favorite>(key, field);
+            cacheData.ProductList.Remove(product.Code);
+            await RedisHelper.HSetAsync(key, field, cacheData);
+
+            result.ReturnValue = cacheData;
+            result.Succeeded = true;
+            result.Message = Resources.Message.RemoveFavoriteSuccess;
+
+            return result;
+        }
+
+        public async Task<PageData<FavoriteMchView>> MyFavMerchant(FavoriteCond cond)
+        {
+            var result = new PageData<FavoriteMchView>();
+            cond.FavoriteType = FavoriteType.Merchant;
+            string key = CacheKey.Favorite.ToString();
+            string field = CurrentUser.UserId;
+            var cacheData = await RedisHelper.HGetAsync<Favorite>(key, field);
+            if (cacheData == null || (cacheData.MchList?.Any() ?? false))
+            { 
+                //重新读取喜欢商家数据
+            }
+
+            return result;
+        }
+
+        public async Task<PageData<FavoriteProductView>> MyFavProduct(FavoriteCond cond)
+        {
+            var result = new PageData<FavoriteProductView>();
+            cond.FavoriteType = FavoriteType.Product;
+            string key = CacheKey.Favorite.ToString();
+            string field = CurrentUser.UserId;
+            var cacheData = await RedisHelper.HGetAsync<Favorite>(key, field);
+            if (cacheData == null || (cacheData.ProductList?.Any() ?? false))
+            {
+                //重新读取喜欢产品数据
+            }
+
+            return result;
+        }
     }
 }

@@ -256,16 +256,18 @@ namespace BDMall.Repository
         /// <param name="id"></param>
         /// <param name="skuId"></param>
         /// <returns></returns>
-        public List<decimal> GetProductAddPriceBySku(Guid id, Guid skuId)
+        public async Task<List<decimal>> GetProductAddPriceBySku(Guid id, Guid skuId)
         {
 
             List<decimal> addPrices = new List<decimal>();
 
-            var attrs = (from d in baseRepository.GetList<ProductAttr>()
-                         where d.IsInv == true && d.ProductId == id
-                         orderby d.Seq
-                         select d
-                         ).ToList();
+            //var attrs = (from d in baseRepository.GetList<ProductAttr>()
+            //             where d.IsInv == true && d.ProductId == id
+            //             orderby d.Seq
+            //             select d
+            //             ).ToList();
+
+            var attrs= (await baseRepository.GetListAsync<ProductAttr>(d => d.IsInv && d.ProductId == id)).OrderBy(o => o.Seq).ToList();
 
             var skus = baseRepository.GetModel<ProductSku>(p => p.Id == skuId);
             for (int i = 0; i < attrs.Count(); i++)

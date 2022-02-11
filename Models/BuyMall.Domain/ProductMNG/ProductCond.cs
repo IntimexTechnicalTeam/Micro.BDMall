@@ -27,5 +27,7 @@ namespace BDMall.Domain
         /// 商品Code
         /// </summary>
         public string ProductCode { get; set; } = "";
+
+        public string OrderBy { get; set; } = "New";
     }
 }

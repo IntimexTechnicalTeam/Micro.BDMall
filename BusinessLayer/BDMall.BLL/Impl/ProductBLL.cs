@@ -808,7 +808,7 @@ namespace BDMall.BLL
                             CurrencyCode = a.CurrencyCode,    
                             CreateDate = a.CreateDate,
                             UpdateDate= a.UpdateDate,
-                            
+                            PurchaseCounter = b.PurchaseCounter,
                         };
 
             #region 组装条件
@@ -844,6 +844,10 @@ namespace BDMall.BLL
                 Name = s.Name,
                 SalePrice = s.SalePrice,
                 CurrencyCode = s.CurrencyCode,
+                Score = s.Score,             
+                CreateDate = s.CreateDate,
+                UpdateDate = s.UpdateDate,
+                PurchaseCounter = s.PurchaseCounter,
 
             }).ToList();
 

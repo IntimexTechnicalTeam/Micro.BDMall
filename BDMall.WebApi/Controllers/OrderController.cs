@@ -38,6 +38,19 @@ namespace BDMall.WebApi.Controllers
             return result;
         }
 
-       
+        /// <summary>
+        /// 会员订单数据
+        /// </summary>
+        /// <param name="orderCond"></param>
+        /// <returns></returns>
+        [HttpPost("MyOrder")]
+        [ProducesResponseType(typeof(SystemResult<PageData<MicroOrderView>>), 200)]
+        public async Task<SystemResult<PageData<MicroOrderView>>> MyOrder([FromBody] MicroOrderCond orderCond)
+        {
+            var result = new SystemResult<PageData<MicroOrderView>>() { Succeeded =true};
+            result.ReturnValue= orderBLL.MyOrder(orderCond);
+            
+            return result;
+        }
     }
 }

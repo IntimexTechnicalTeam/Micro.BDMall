@@ -26,6 +26,7 @@ namespace BDMall.BLL
         IUserBLL userBLL;
         ISettingBLL settingBLL;
         ICurrencyBLL currencyBLL;
+        IProductBLL productBLL;
 
         PreHeatMerchantService mchHeatService;
 
@@ -40,6 +41,7 @@ namespace BDMall.BLL
             currencyBLL = Services.Resolve<ICurrencyBLL>();
             settingBLL = Services.Resolve<ISettingBLL>();
             merchantPromotionRepository = Services.Resolve<IMerchantPromotionRepository>();
+            productBLL = Services.Resolve<IProductBLL>();
             mchHeatService = (PreHeatMerchantService)Services.GetService(typeof(PreHeatMerchantService));
         }
 
@@ -116,6 +118,50 @@ namespace BDMall.BLL
             return data;
         }
 
+        public async Task<MerchantInfoView> GetMerchantInfoAsync(Guid merchID)
+        {
+            var view = new MerchantInfoView();
+            var mchkey = $"{PreHotType.Hot_Merchants}_{CurrentUser.Lang}";
+            var mchInfo = await RedisHelper.HGetAsync<HotMerchant>(mchkey, merchID.ToString());
+            //读数据库,并回写缓存
+            if (mchInfo == null)
+            {
+                var result = await mchHeatService.GetDataSourceAsync(merchID);
+                if (result != null && result.Any())
+                {
+                    //重新刷新缓存
+                    await mchHeatService.SetDataToHashCache(result, CurrentUser.Lang);
+
+                    mchInfo = result.FirstOrDefault();
+                    var mp = await baseRepository.GetModelAsync<MerchantPromotion>(x => x.MerchantId == merchID && x.IsActive && !x.IsDeleted && x.ApproveStatus == ApproveType.Pass);
+                    var mRecord = await mchHeatService.DicCollection(mp, CurrentUser.Lang);
+                    var banners = await mchHeatService.GetMerchantBannerList(mp);
+
+                    mchInfo.Notice = mRecord["NoticeTranId"]?.Value ?? "";
+                    mchInfo.Cover = mRecord["CoverId"]?.Value ?? "";
+                    //mchInfo.MobileCover = mRecord["MobileCoverId"]?.Value ?? "";
+                    mchInfo.ExpCompleteDays = mRecord["OrderTransId"]?.Value ?? "2~4";
+                    mchInfo.Logo = mRecord["SmallLogoId"]?.Value ?? "";
+                    mchInfo.PromIntroduction = mRecord["IntorductionTranId"]?.Value ?? "";
+                    mchInfo.PromName = mRecord["NameTranId"]?.Value ?? "";
+                    mchInfo.TandC = mRecord["TAndCTranId"]?.Value ?? "";
+                    mchInfo.ReturnTerms = mRecord["ReturnTermsTranId"]?.Value ?? "";
+                    mchInfo.Description = mRecord["DescTransId"]?.Value ?? "";
+
+                    mchInfo.Banners = banners.Where(x => x.Lang == CurrentUser.Lang).ToList();
+
+                }
+            }
+
+            if (mchInfo != null)
+            {
+                view =AutoMapperExt.MapTo<MerchantInfoView>(mchInfo);
+                view.CustomUrl = Configuration["WebServer"] + view.CustomUrl;         //自定义商家链接
+                view.IsActive = true;
+            }
+
+            return view;
+        }
 
         public MerchantView GetMerchById(Guid Id)
         {
@@ -491,6 +537,33 @@ namespace BDMall.BLL
             return view;
         }
 
+        public async Task<PageData<MicroProduct>> GetMchProductListAsync(ProductCond cond)
+        {
+            switch (cond.OrderBy)
+            {
+                case "UpdateDate":
+                    cond.SortName = "UpdateDate";
+                    break;
+                case "New":
+                    cond.SortName = "UpdateDate";
+                    break;
+                case "HighPrice":
+                    cond.SortName = "SalePrice";
+                    break;
+                case "LowPrice":
+                    cond.SortName = "SalePrice";
+                    cond.SortOrder = "Asc";
+                    break;
+                case "HotSale":
+                    cond.SortName = "PurchaseCounter";
+                    break;
+                default:
+                    cond.SortName = "CreateDate";
+                    break;
+            }
+            var result = await productBLL.GetProductListAsync(cond);
+            return result;
+        }
 
         public List<string> GetProductImages(Guid prodID)
         {

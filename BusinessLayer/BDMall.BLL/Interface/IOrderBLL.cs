@@ -39,7 +39,7 @@ namespace BDMall.BLL
         /// 支付失败，取消订单
         /// </summary>
         /// <param name="orderId"></param>
-        void UpdateOrderCancelStatus(Guid orderId);
+        Task UpdateOrderCancelStatus(Guid orderId);
 
         /// <summary>
         /// 支付成功，更新订单
@@ -54,5 +54,7 @@ namespace BDMall.BLL
         /// <param name="order"></param>
         /// <param name="cond"></param>
         void UpdateOrderStatusToECancel(OrderDto order, UpdateStatusCondition cond);
+
+        PageData<MicroOrderView> MyOrder(MicroOrderCond orderCond);
     }
 }

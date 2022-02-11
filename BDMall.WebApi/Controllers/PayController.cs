@@ -59,7 +59,7 @@ namespace BDMall.WebApi.Controllers
             }
             else                    //支付失败
             {
-                orderBLL.UpdateOrderCancelStatus(orderId);
+                await orderBLL.UpdateOrderCancelStatus(orderId);
                 result.Succeeded = true;
             }
             return result;

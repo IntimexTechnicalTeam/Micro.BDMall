@@ -79,6 +79,13 @@ namespace BDMall.Repository
             return dt.DataTableToList<T>().ToList();
         }
 
+        /// <summary>
+        /// 返回查询语句条数
+        /// </summary>
+        /// <param name="facade"></param>
+        /// <param name="sql"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
         public static int IntFromSql(this DatabaseFacade facade, string sql, params object[] parameters)
         {
             int count = 0;
@@ -89,6 +96,13 @@ namespace BDMall.Repository
             return count;
         }
 
+        /// <summary>
+        /// 异步返回查询语句条数
+        /// </summary>
+        /// <param name="facade"></param>
+        /// <param name="sql"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
         public static async  Task<int> IntFromSqlAsync(this DatabaseFacade facade, string sql, params object[] parameters)
         {
             int count = 0;

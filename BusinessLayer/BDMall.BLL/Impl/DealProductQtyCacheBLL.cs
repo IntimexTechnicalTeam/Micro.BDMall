@@ -469,7 +469,7 @@ namespace BDMall.BLL
         }
 
         /// <summary>
-        /// 支付超时或者后台在待付款状态时手动取消订单，恢复Hold货数
+        /// 支付超时，支付失败，或者后台在待付款状态时手动取消订单，恢复Hold货数
         /// </summary>
         /// <param name="OrderId"></param>
         /// <returns></returns>

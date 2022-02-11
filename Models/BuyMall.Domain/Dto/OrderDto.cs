@@ -158,5 +158,6 @@ namespace BDMall.Domain
         public DateTime ExpireDate { get; set; }
 
         public List<Guid> skuList { get; set; } = new List<Guid>();
+
     }
 }

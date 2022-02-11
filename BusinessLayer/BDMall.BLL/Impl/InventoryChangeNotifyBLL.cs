@@ -73,19 +73,19 @@ namespace BDMall.BLL
             return sysRslt;
         }
 
-        public void CheckAndNotifyAsync(IList<Guid> skuIds)
+        public async Task CheckAndNotifyAsync(IList<Guid> skuIds)
         {
             foreach (var skuId in skuIds)
             {
                 //獲取商品的可銷售數量
-                int saleableQty = baseRepository.GetModel<ProductQty>(x => x.SkuId == skuId && x.IsActive && !x.IsDeleted)?.SalesQty ?? 0;
-                var productSku = baseRepository.GetModel<ProductSku>(x => x.Id == skuId);
+                int saleableQty = (await baseRepository.GetModelAsync<ProductQty>(x => x.SkuId == skuId && x.IsActive && !x.IsDeleted))?.SalesQty ?? 0;
+                var productSku = await baseRepository.GetModelAsync<ProductSku>(x => x.Id == skuId);
                 string prodCode = productSku?.ProductCode;
                 var lvProduct = productRepository.GetLastVersionProductByCode(prodCode);
                 if (lvProduct != null)
                 {
-                    var product = baseRepository.GetModelById<Product>(lvProduct.Id);
-                    var prduxtExt = baseRepository.GetModel<ProductExtension>(x => x.Id == product.Id && x.IsActive && !x.IsDeleted);
+                    var product = await baseRepository.GetModelByIdAsync<Product>(lvProduct.Id);
+                    var prduxtExt =await baseRepository.GetModelAsync<ProductExtension>(x => x.Id == product.Id && x.IsActive && !x.IsDeleted);
                     if (prduxtExt != null)
                     {
                         //低於安全庫存

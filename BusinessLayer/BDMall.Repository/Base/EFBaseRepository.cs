@@ -419,7 +419,5 @@ namespace BDMall.Repository
         {
             return UnitWork.DataContext.Database.BeginTransaction();
         }
-
-       
     }
 }

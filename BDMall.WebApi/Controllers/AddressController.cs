@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Web.Framework;
 using Web.Mvc;
 
@@ -75,7 +76,7 @@ namespace BDMall.WebApi.Controllers
         /// <returns></returns>
         [AllowAnonymous]
         [HttpGet("City")]
-        [ProducesResponseType(typeof(SystemResult<List<CityDto>>), 200)]
+        [ProducesResponseType(typeof(SystemResult), 200)]      
         public SystemResult City(int provinceId)
         {
             var result = new SystemResult<List<CityDto>>();

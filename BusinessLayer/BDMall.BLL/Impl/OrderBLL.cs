@@ -33,6 +33,7 @@ namespace BDMall.BLL
         public IDeliveryBLL deliveryBLL;
         public IReturnOrderRepository returnOrderRepository;
         public ICodeMasterBLL codeMasterBLL;
+        public IDealProductQtyCacheBLL deliveryProductQtyCacheBLL;
 
         public OrderBLL(IServiceProvider services) : base(services)
         {
@@ -52,6 +53,7 @@ namespace BDMall.BLL
             orderDeliveryRepository = Services.Resolve<IOrderDeliveryRepository>();
             deliveryBLL = Services.Resolve<IDeliveryBLL>();
             returnOrderRepository = Services.Resolve<IReturnOrderRepository>();
+            deliveryProductQtyCacheBLL = Services.Resolve<IDealProductQtyCacheBLL>();
         }
 
         public PageData<OrderSummaryView> GetSimpleOrders(OrderCondition cond)
@@ -60,6 +62,27 @@ namespace BDMall.BLL
             var orders = orderRepository.GetSimpleOrderByPage(cond);
             result.Data = orders.Data.Select(d => GenOrderSummaryView(d)).ToList();
             result.TotalRecord = orders.TotalRecord;
+            return result;
+        }
+
+        public PageData<MicroOrderView> MyOrder(MicroOrderCond orderCond)
+        {
+            var result = new PageData<MicroOrderView>();
+            var cond = new OrderCondition { StatusCode = orderCond.StatusCode, PageInfo = orderCond.PageInfo, MemberId = Guid.Parse(CurrentUser.UserId) };
+            var orders = orderRepository.GetSimpleOrderByPage(cond);
+            result.TotalRecord = orders.TotalRecord;
+            result.Data = orders.Data.Select(s => new MicroOrderView
+            {
+                CreateDate = s.CreateDate,
+                CurrencyCode = s.CurrencyCode,
+                Freight = s.Freight,
+                Id = s.Id,
+                ItemQty = s.ItemQty,
+                OrderNO = s.OrderNO,
+                TotalAmount = s.TotalAmount,
+
+            }).ToList();
+            
             return result;
         }
 
@@ -99,7 +122,7 @@ namespace BDMall.BLL
 
             }
 
-            var result = CreateOrder(checkout);
+            var result = await CreateOrder(checkout);
             string key = $"{CacheKey.ShoppingCart}_{CurrentUser.UserId}";
             await RedisHelper.DelAsync(key);
             return result;
@@ -109,52 +132,31 @@ namespace BDMall.BLL
         {
             var result = new SystemResult();
 
-            var dbOrder = await baseRepository.GetModelByIdAsync<Order>(cond.OrderId);
-            if (dbOrder != null)
+            var order = await GenOrder(cond.OrderId);
+            
+            if (!CheckDeliveryStautsIsSame(cond, order)) throw new BLException(Resources.Message.StatusHasChanged);
+            switch (cond.Status)
             {
-                var order = AutoMapperExt.MapTo<OrderDto>(dbOrder);
-                order.OrderDetails = baseRepository.GetList<OrderDetail>(x => x.OrderId == cond.OrderId).ToList();
-
-                var deliverys = baseRepository.GetList<OrderDelivery>(x => x.OrderId == order.Id && x.IsActive && !x.IsDeleted).ToList();
-                order.OrderDeliverys = AutoMapperExt.MapTo<List<OrderDeliveryDto>>(deliverys);
-                order.Currency = new SimpleCurrency() { Code = order.CurrencyCode, Name = order.CurrencyCode };
-
-                order.OrderDeliverys.ForEach(x => {
-
-                    var details = baseRepository.GetList<OrderDeliveryDetail>(x => order.OrderDeliverys.Select(s => s.Id).Contains(x.DeliveryId));
-                    x.DeliveryDetails = AutoMapperExt.MapToList<OrderDeliveryDetail, OrderDeliveryDetailDto>(details);
-
-                });
-
-                order.skuList = order.OrderDeliverys.SelectMany(x => x.DeliveryDetails).GroupBy(g => g.SkuId)
-                    .Select(s => new { SkuId = s.Key, Qty = s.Sum(a => a.Qty) }).Select(s => s.SkuId).ToList();
-
-                //order.skuList = baseRepository.GetList<OrderDeliveryDetail>(x => order.OrderDeliverys.Select(s => s.Id).Contains(x.DeliveryId))
-                //                    .GroupBy(g => g.SkuId).Select(s => new { SkuId = s.Key, Qty = s.Sum(a => a.Qty) }).Select(s => s.SkuId).ToList();
-
-                if (!CheckDeliveryStautsIsSame(cond, order)) throw new BLException(Resources.Message.StatusHasChanged);
-                switch (cond.Status)
-                {
-                    case OrderStatus.PaymentConfirmed:
-                        UpdateOrderStatusToPayConfirm(order, cond);
-                        break;
-                    case OrderStatus.Processing:
-                        UpdateOrderStatusToProcess(order, cond);
-                        break;
-                    case OrderStatus.DeliveryArranged:
-                        UpdateOrderStatusToDeliveryArranged(order, cond);
-                        break;
-                    case OrderStatus.OrderCompleted:
-                        UpdateOrderStatusToOrderCompleted(order, cond);
-                        break;
-                    case OrderStatus.SCancelled:
-                        UpdateOrderStatusToCancel(order, cond);
-                        break;                   
-                }
-
-                result.Succeeded = true;
-                if (result.Succeeded) result = await dealProductQtyCacheBLL.UpdateQtyWhenOrderStateChange(cond);
+                case OrderStatus.PaymentConfirmed:
+                    UpdateOrderStatusToPayConfirm(order, cond);
+                    break;
+                case OrderStatus.Processing:
+                    UpdateOrderStatusToProcess(order, cond);
+                    break;
+                case OrderStatus.DeliveryArranged:
+                    UpdateOrderStatusToDeliveryArranged(order, cond);
+                    break;
+                case OrderStatus.OrderCompleted:
+                    UpdateOrderStatusToOrderCompleted(order, cond);
+                    break;
+                case OrderStatus.SCancelled:
+                    UpdateOrderStatusToCancel(order, cond);
+                    break;
             }
+
+            result.Succeeded = true;
+            if (result.Succeeded) result = await dealProductQtyCacheBLL.UpdateQtyWhenOrderStateChange(cond);
+
 
             return result;
         }
@@ -203,8 +205,7 @@ namespace BDMall.BLL
 
         public void UpdateInventoryQty(OrderDto order, UpdateStatusCondition cond)
         {
-            UnitOfWork.IsUnitSubmit = true;
-
+           
             var orderDeliveryInfo = cond.DeliveryTrackingInfo.FirstOrDefault();
             var orderDelivery = order.OrderDeliverys.FirstOrDefault(p => p.Id == orderDeliveryInfo.Id);
 
@@ -253,7 +254,7 @@ namespace BDMall.BLL
                     }
                 }
             }
-            UnitOfWork.Submit();
+           
         }
 
         /// <summary>
@@ -269,20 +270,7 @@ namespace BDMall.BLL
             var delivery = baseRepository.GetModelById<OrderDelivery>(id);
             if (delivery != null)
             {
-                var dbOrder = baseRepository.GetModel<Order>(x => x.Id == delivery.OrderId);
-
-                var order = AutoMapperExt.MapTo<OrderDto>(dbOrder);
-                order.OrderDetails = baseRepository.GetList<OrderDetail>(x => x.OrderId == delivery.OrderId).ToList();
-
-                var deliverys = baseRepository.GetList<OrderDelivery>(x => x.OrderId == order.Id && x.IsActive && !x.IsDeleted).ToList();
-                order.OrderDeliverys = AutoMapperExt.MapTo<List<OrderDeliveryDto>>(deliverys);
-                //order.Currency = new SimpleCurrency() { Code = order.CurrencyCode, Name = order.CurrencyCode };
-
-                order.OrderDeliverys.ForEach(x =>
-                {
-                    var details = baseRepository.GetList<OrderDeliveryDetail>(x => order.OrderDeliverys.Select(s => s.Id).Contains(x.DeliveryId));
-                    x.DeliveryDetails = AutoMapperExt.MapToList<OrderDeliveryDetail, OrderDeliveryDetailDto>(details);
-                });
+                var order = await GenOrder(delivery.OrderId);
 
                 UpdateStatusCondition cond = new UpdateStatusCondition();
                 cond.OrderId = delivery.OrderId;
@@ -412,6 +400,7 @@ namespace BDMall.BLL
                     if (hotSalesSummary != null)
                     {
                         hotSalesSummary.Qty += orderDtl.Qty;
+                        hotSalesSummary.UpdateDate = DateTime.Now;
                         baseRepository.Update(hotSalesSummary);
                     }
                     else
@@ -444,54 +433,9 @@ namespace BDMall.BLL
         /// 支付失败，取消订单
         /// </summary>
         /// <param name="orderId"></param>
-        public void UpdateOrderCancelStatus(Guid orderId)
-        {        
-            var dbOrder = baseRepository.GetModel<Order>(x => x.Id == orderId);
-            if (dbOrder == null) throw new BLException(Message.CantFindOrder);
-
-            var order = AutoMapperExt.MapTo<OrderDto>(dbOrder);
-            order.OrderDetails = baseRepository.GetList<OrderDetail>(x => x.OrderId == orderId).ToList();
-
-            var deliverys = baseRepository.GetList<OrderDelivery>(x => x.OrderId == order.Id && x.IsActive && !x.IsDeleted).ToList();
-            order.OrderDeliverys = AutoMapperExt.MapTo<List<OrderDeliveryDto>>(deliverys);
-            //order.Currency = new SimpleCurrency() { Code = order.CurrencyCode, Name = order.CurrencyCode };
-
-            order.OrderDeliverys.ForEach(x =>
-            {
-                var details = baseRepository.GetList<OrderDeliveryDetail>(x => order.OrderDeliverys.Select(s => s.Id).Contains(x.DeliveryId));
-                x.DeliveryDetails = AutoMapperExt.MapToList<OrderDeliveryDetail, OrderDeliveryDetailDto>(details);
-            });
-
-            UnitOfWork.IsUnitSubmit = true;
-            UpdateStatus(order, OrderStatus.SCancelled, null);
-            CancelInventoryQty(order, null);
-
-            UnitOfWork.Submit();
-        }
-
-        /// <summary>
-        /// 支付超时，取消订单
-        /// </summary>
-        /// <param name="order"></param>
-        /// <param name="cond"></param>
-        public void UpdateOrderStatusToECancel(OrderDto order, UpdateStatusCondition cond)
+        public async Task UpdateOrderCancelStatus(Guid orderId)
         {
-            UpdateStatus(order, OrderStatus.ECancelled, cond);
-            if (order.Status == OrderStatus.ECancelled)
-            {
-                CancelInventoryQty(order, cond);
-            }
-        }
-
-        /// <summary>
-        /// 支付成功，更新订单
-        /// </summary>
-        /// <param name="orderId"></param>
-        /// <returns></returns>
-        /// <exception cref="BLException"></exception>
-        public async Task<bool> UpdateOrderPayStatus(Guid orderId)
-        {
-            var dbOrder = await baseRepository.GetModelByIdAsync<Order>(orderId);
+            var dbOrder = await baseRepository.GetModelAsync<Order>(x => x.Id == orderId);
             if (dbOrder == null) throw new BLException(Message.CantFindOrder);
 
             var order = AutoMapperExt.MapTo<OrderDto>(dbOrder);
@@ -506,6 +450,39 @@ namespace BDMall.BLL
                 var details = (await baseRepository.GetListAsync<OrderDeliveryDetail>(x => order.OrderDeliverys.Select(s => s.Id).Contains(x.DeliveryId))).ToList();
                 x.DeliveryDetails = AutoMapperExt.MapToList<OrderDeliveryDetail, OrderDeliveryDetailDto>(details);
             });
+
+            UnitOfWork.IsUnitSubmit = true;
+            UpdateStatus(order, OrderStatus.SCancelled, null);
+            CancelInventoryQty(order, null);
+
+            await deliveryProductQtyCacheBLL.UpdateQtyWhenPayTimeOut(order.Id);
+
+            UnitOfWork.Submit();
+        }
+
+        /// <summary>
+        /// 支付超时，取消订单
+        /// </summary>
+        /// <param name="order"></param>
+        /// <param name="cond"></param>
+        public void UpdateOrderStatusToECancel(OrderDto order, UpdateStatusCondition cond)
+        {
+            UnitOfWork.IsUnitSubmit = true;
+            UpdateStatus(order, OrderStatus.ECancelled, cond);
+            if (order.Status == OrderStatus.ECancelled)            
+                CancelInventoryQty(order, cond);            
+            UnitOfWork.Submit();
+        }
+
+        /// <summary>
+        /// 支付成功，更新订单
+        /// </summary>
+        /// <param name="orderId"></param>
+        /// <returns></returns>
+        /// <exception cref="BLException"></exception>
+        public async Task<bool> UpdateOrderPayStatus(Guid orderId)
+        {         
+            var order = await GenOrder(orderId);
 
             UnitOfWork.IsUnitSubmit = true;
             foreach (var item in order.OrderDeliverys)
@@ -528,9 +505,36 @@ namespace BDMall.BLL
 
             UnitOfWork.Submit();
 
-            //通知商家，买家
+            //通知商家，买家,可通过中介者meditor实现
 
             return true;
+        }
+
+        async Task<OrderDto> GenOrder(Guid orderId)
+        {
+            var dbOrder = await baseRepository.GetModelByIdAsync<Order>(orderId);
+            if (dbOrder == null) throw new BLException(Message.CantFindOrder);
+
+            var order = AutoMapperExt.MapTo<OrderDto>(dbOrder);
+            order.OrderDetails = (await baseRepository.GetListAsync<OrderDetail>(x => x.OrderId == orderId)).ToList();
+
+            var deliverys = (await baseRepository.GetListAsync<OrderDelivery>(x => x.OrderId == order.Id && x.IsActive && !x.IsDeleted)).ToList();
+            order.OrderDeliverys = AutoMapperExt.MapTo<List<OrderDeliveryDto>>(deliverys);
+            //order.Currency = new SimpleCurrency() { Code = order.CurrencyCode, Name = order.CurrencyCode };
+
+            order.OrderDeliverys.ForEach(async x =>
+            {
+                var details = (await baseRepository.GetListAsync<OrderDeliveryDetail>(x => order.OrderDeliverys.Select(s => s.Id).Contains(x.DeliveryId))).ToList();
+                x.DeliveryDetails = AutoMapperExt.MapToList<OrderDeliveryDetail, OrderDeliveryDetailDto>(details);
+            });
+
+            order.skuList = order.OrderDeliverys.SelectMany(x => x.DeliveryDetails).GroupBy(g => g.SkuId)
+                   .Select(s => new { SkuId = s.Key, Qty = s.Sum(a => a.Qty) }).Select(s => s.SkuId).ToList();
+
+            //order.skuList = baseRepository.GetList<OrderDeliveryDetail>(x => order.OrderDeliverys.Select(s => s.Id).Contains(x.DeliveryId))
+            //                    .GroupBy(g => g.SkuId).Select(s => new { SkuId = s.Key, Qty = s.Sum(a => a.Qty) }).Select(s => s.SkuId).ToList();
+
+            return order;
         }
 
         /// <summary>
@@ -769,9 +773,15 @@ namespace BDMall.BLL
         /// <param name="cond"></param>
         void UpdateOrderStatusToPayConfirm(OrderDto order, UpdateStatusCondition cond)
         {
-            order.IsPaid = true;
-            UpdateStatus(order, OrderStatus.PaymentConfirmed, cond);
-            mediator.Publish(new PaymentConfirmedRequest<OrderDto> { cond = cond, Param = order });
+            UnitOfWork.IsUnitSubmit = true;
+            order.IsPaid = true;           
+            UpdateStatus(order, OrderStatus.PaymentConfirmed, cond);    
+            AddInventoryReserved(order, out var o);
+            UpdateProductSaleSummary(order);
+            UnitOfWork.Submit();
+
+            //mediator.Publish(new PaymentConfirmedRequest<OrderDto> { cond = cond, Param = order });
+            mediator.Publish(new LowQtyEmailRequest { skuList = order.skuList });
         }
 
         /// <summary>
@@ -781,7 +791,9 @@ namespace BDMall.BLL
         /// <param name="cond"></param>
         void UpdateOrderStatusToProcess(OrderDto order, UpdateStatusCondition cond)
         {
+            UnitOfWork.IsUnitSubmit = true;
             UpdateStatus(order, OrderStatus.Processing, cond);
+            UnitOfWork.Submit();
         }
 
         /// <summary>
@@ -791,10 +803,35 @@ namespace BDMall.BLL
         /// <param name="cond"></param>
         void UpdateOrderStatusToDeliveryArranged(OrderDto order, UpdateStatusCondition cond)
         {
+            UnitOfWork.IsUnitSubmit = true;
+
             order.OrderDeliverys.FirstOrDefault().TrackingNo = GetTrackingNo(order.OrderDeliverys.FirstOrDefault(), cond.DeliveryTrackingInfo.FirstOrDefault());
             UpdateStatus(order, OrderStatus.DeliveryArranged, cond);
+            UpdateOrderDeliveryDetail(order, cond);
+            UpdateInventoryQty(order, cond);
 
-            mediator.Publish(new DeliveryArrangedRequest<OrderDto> { cond = cond, Param = order });
+            UnitOfWork.Submit();
+
+            mediator.Publish(new LowQtyEmailRequest { skuList = order.skuList });
+        }
+
+        void UpdateOrderDeliveryDetail(OrderDto order, UpdateStatusCondition cond)
+        {
+            var deliveryData = order.OrderDeliverys.FirstOrDefault(p => p.Id == cond.DeliveryTrackingInfo.FirstOrDefault().Id);
+
+            var trackingNoList = deliveryData.TrackingNo.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+            foreach (var trackingNO in trackingNoList)              //如果是EMS的快遞單，有機會出現一章送貨單對應多張快遞單號
+            {
+                var deliveryDetails = deliveryData.DeliveryDetails.Where(w => w.DeliveryId == deliveryData.Id).OrderBy(o => o.Id).ToList();
+                foreach (var item in deliveryDetails)
+                {
+                    item.TrackingNo = trackingNO;
+                    item.LocationId = deliveryData.LocationId;
+                    orderDeliveryRepository.UpdateOrderDeliveryDetail(item);
+                    //baseRepository.Update(item);
+                }
+
+            }
         }
 
         /// <summary>
@@ -804,11 +841,13 @@ namespace BDMall.BLL
         /// <param name="cond"></param>
         void UpdateOrderStatusToOrderCompleted(OrderDto order, UpdateStatusCondition cond)
         {
+            UnitOfWork.IsUnitSubmit = true;
             UpdateStatus(order, OrderStatus.OrderCompleted, cond);
             //更新商家銷售數量
             UpdateMerchantSalesStatistic(order);
             //更新产品的销售数量
             UpdateProductPurchaseStatistic(order);
+            UnitOfWork.Submit();
         }
 
         /// <summary>
@@ -818,11 +857,13 @@ namespace BDMall.BLL
         /// <param name="cond"></param>
         void UpdateOrderStatusToCancel(OrderDto order, UpdateStatusCondition cond)
         {
+            UnitOfWork.IsUnitSubmit = true;
             UpdateStatus(order, OrderStatus.SCancelled, cond);
             if (order.Status == OrderStatus.SCancelled)
             {
                 CancelInventoryQty(order, cond);
             }
+            UnitOfWork.Submit();
         }
 
         void UpdateStatus(OrderDto order, OrderStatus status, UpdateStatusCondition cond)
@@ -902,7 +943,7 @@ namespace BDMall.BLL
         /// </summary>
         /// <param name="orderView"></param>
         /// <returns></returns>
-        private SystemResult CreateOrder(NewOrder orderView)
+        private async Task<SystemResult> CreateOrder(NewOrder orderView)
         {
             SystemResult result = new SystemResult();
             List<string> transinCodes = new List<string>();
@@ -917,7 +958,7 @@ namespace BDMall.BLL
             var discountMessage = CheckOrderDiscount(orderView);
             if (!discountMessage.IsEmpty()) throw new BLException(discountMessage);
 
-            var items = baseRepository.GetList<ShoppingCartItem>(d => d.MemberId == Guid.Parse(CurrentUser.UserId) && d.IsActive && !d.IsDeleted).ToList();
+            var items =(await baseRepository.GetListAsync<ShoppingCartItem>(d => d.MemberId == Guid.Parse(CurrentUser.UserId) && d.IsActive && !d.IsDeleted)).ToList();
             if (!items?.Any() ?? false) throw new BLException(Resources.Message.NotValidProduct);
 
             decimal totalWeightKG = 0;
@@ -939,12 +980,12 @@ namespace BDMall.BLL
             #region 处理订单明细，商品时段价格流水账，购物车数据
             foreach (var item in items)
             {
-                Product p = baseRepository.GetModelById<Product>(item.ProductId);
-                var productSpecifications = baseRepository.GetModel<ProductSpecification>(x => x.Id == item.ProductId);
+                Product p = await baseRepository.GetModelByIdAsync<Product>(item.ProductId);
+                var productSpecifications = await baseRepository.GetModelAsync<ProductSpecification>(x => x.Id == item.ProductId);
                 if (p.Status != ProductStatus.OnSale || p.IsDeleted) throw new BLException(Resources.Message.ProductExpired + p.Code);
 
                 #region 处理订单明细
-                var addPrices = productRepository.GetProductAddPriceBySku(item.ProductId, item.SkuId);
+                var addPrices = await productRepository.GetProductAddPriceBySku(item.ProductId, item.SkuId);
                 //create order detail record
                 OrderDetail orderDetail = new OrderDetail();
                 orderDetail.Id = Guid.NewGuid();
@@ -983,7 +1024,7 @@ namespace BDMall.BLL
 
                 item.IsDeleted = true;
 
-                var itemDetails = baseRepository.GetList<ShoppingCartItemDetail>(x => x.ShoppingCartItemId == item.Id).ToList();
+                var itemDetails =(await baseRepository.GetListAsync<ShoppingCartItemDetail>(x => x.ShoppingCartItemId == item.Id)).ToList();
 
                 foreach (var dd in itemDetails)
                 {
@@ -1261,7 +1302,7 @@ namespace BDMall.BLL
             var millionSecond = timeOut.ToInt() * 60 * 1000;
             rabbitMQService.PublishDelayMsg(MQSetting.DelayPayTimeOutQueue, MQSetting.WeChatPayTimeOutQueue, MQSetting.WeChatPayTimeOutExchange, order.Id.ToString(), millionSecond);
 
-            result.ReturnValue = order.OrderNO;
+            result.ReturnValue = order.Id;
             return result;
         }
 
@@ -2586,16 +2627,16 @@ namespace BDMall.BLL
         /// </summary>
         /// <param name="id"></param>
         /// <param name="status"></param>
-        private void InsertOrderStatusHistory(Guid id, OrderStatus status)
+        private  void InsertOrderStatusHistory(Guid id, OrderStatus status)
         {
             var operatorDate = DateTime.Now;
 
-            var lastHistory = baseRepository.GetModel<SubOrderStatusHistory>(p => p.IsActive && !p.IsDeleted && p.OrderId == id && p.Status == status-1);
+            var lastHistory = baseRepository.GetModel<OrderStatusHistory>(p => p.IsActive && !p.IsDeleted && p.OrderId == id && p.Status == status-1);
             if (lastHistory != null)
             {
                 lastHistory.UpdateBy = Guid.Parse(CurrentUser.UserId);
                 lastHistory.UpdateDate = operatorDate;
-                baseRepository.Update(lastHistory);
+                baseRepository.Update(lastHistory);  
             }
 
             OrderStatusHistory orderStatushistory = new OrderStatusHistory();

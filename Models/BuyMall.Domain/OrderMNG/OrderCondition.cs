@@ -10,41 +10,41 @@ namespace BDMall.Domain
 {
     public class OrderCondition
     {
-        public string PayRef { get; set; }
+        public string PayRef { get; set; } = "";
         /// <summary>
         /// 訂單生日日期開始日期
         /// </summary>
-        public string CreateDateFrom { get; set; }
+        public string CreateDateFrom { get; set; } = "";
         /// <summary>
         /// 訂單生日日期結束日期
         /// </summary>
-        public string CreateDateTo { get; set; }
+        public string CreateDateTo { get; set; } = "";
 
         /// <summary>
         /// 發票編號
         /// </summary>
-        public string InvoiceNoFrom { get; set; }
+        public string InvoiceNoFrom { get; set; } = "";
 
         /// <summary>
         /// 發票編號
         /// </summary>
-        public string InvoiceNoTo { get; set; }
+        public string InvoiceNoTo { get; set; } = "";
 
         /// <summary>
         /// 訂單編號
         /// </summary>
-        public string OrderNo { get; set; }
+        public string OrderNo { get; set; } = "";
 
 
         /// <summary>
         /// 送貨單編號
         /// </summary>
-        public string DeliveryNoFrom { get; set; }
+        public string DeliveryNoFrom { get; set; } = "";
 
         /// <summary>
         /// /// 送貨單編號
         /// </summary>
-        public string DeliveryNoTo { get; set; }
+        public string DeliveryNoTo { get; set; } = "";
 
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace BDMall.Domain
         /// <summary>
         /// 用于查询旧订单的状态
         /// </summary>
-        public string StatusName { get; set; }
+        public string StatusName { get; set; } = "";
 
         public PageInfo PageInfo { get; set; }
 
@@ -74,7 +74,7 @@ namespace BDMall.Domain
         /// <summary>
         /// 排序
         /// </summary>
-        public string OrderBy { get; set; }
+        public string OrderBy { get; set; } = "";
 
         /// <summary>
         /// 是否前端搜寻
@@ -91,6 +91,6 @@ namespace BDMall.Domain
         /// <summary>
         /// 订单折扣
         /// </summary>
-        public string OrderDiscount { get; set; }
+        public string OrderDiscount { get; set; } = "";
     }
 }

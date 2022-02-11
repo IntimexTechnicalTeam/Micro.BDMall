@@ -15,7 +15,6 @@ namespace BDMall.BLL
 
     public interface IMemberBLL : IDependency
     {
-
         PageData<MemberDto> SearchMember(MbrSearchCond cond);
 
         SystemResult Register(RegisterMember member);
@@ -25,5 +24,17 @@ namespace BDMall.BLL
         Task<SystemResult> ChangeCurrencyCode(CurrentUser currentUser, string CurrencyCode);
 
         RegSummary GetRegSummary();
+
+        Task<SystemResult> AddFavMerchant(string merchCode);
+
+        Task<SystemResult> RemoveFavMerchant(string merchCode);
+
+        Task<SystemResult> AddFavProduct(Guid productId);
+
+        Task<SystemResult> RemoveFavProduct(Guid productId);
+
+        Task<PageData<FavoriteMchView>> MyFavMerchant(FavoriteCond cond);
+
+        Task<PageData<FavoriteProductView>> MyFavProduct(FavoriteCond cond);
     }
 }
