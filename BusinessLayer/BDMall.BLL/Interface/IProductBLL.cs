@@ -22,6 +22,19 @@ namespace BDMall.BLL
 
         List<string> GetProductImages(Guid prodID);
 
+        /// <summary>
+        /// 检测Sku相关状态
+        /// </summary>
+        /// <param name="code"></param>
+        /// <param name="attr1"></param>
+        /// <param name="attr2"></param>
+        /// <param name="attr3"></param>
+        /// <param name="saleTime"></param>
+        /// <returns></returns>
+        Task<SystemResult<ProductCheck>> CheckSkuStateAsync(string code, Guid attr1, Guid attr2, Guid attr3, string saleTime);
+
+        Task<SystemResult> CheckOnSaleAsync(string code);
+
         SystemResult CheckTimePriceByCode(string code, Guid MerchantId);
 
         ProductDto SaveProduct(ProductEditModel product);
@@ -59,7 +72,7 @@ namespace BDMall.BLL
         ProductSkuDto GetProductSku(Guid skuId);
 
         /// <summary>
-        /// 获取SaleQty<0的数据
+        /// 获取SaleQty售罄的数据
         /// </summary>
         /// <returns></returns>
         Task<List<string>> GetSelloutSkus();
@@ -69,5 +82,9 @@ namespace BDMall.BLL
         Task<ProductDetailView> GetProductDetailAsync(string Code);
 
         Task<MicroProductDetail> GetMicroProductDetail(string Code);
+
+        Task<List<string>> GetProductImages(Guid ProductId, string Code);
+
+        Task CountClick(string code, bool isSearch);
     }
 }

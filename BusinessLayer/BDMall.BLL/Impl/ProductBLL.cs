@@ -37,6 +37,8 @@ namespace BDMall.BLL
         public PreHeatFavoriteService productFavoriteService;
         public PreHeatMerchantService merchantService;
 
+        private static ProductClickView ProductClickView = new ProductClickView();
+
         public ProductBLL(IServiceProvider services) : base(services)
         {
             productRepository = Services.Resolve<IProductRepository>();
@@ -1017,6 +1019,9 @@ namespace BDMall.BLL
                 view.MerchantInfo = new MerchantSummary();
                 view.MerchantInfo.MerchantTerms = mchInfo.TandC;
                 view.MerchantInfo.ReturnTerms = mchInfo.ReturnTerms;
+                view.MerchantInfo.Name = mchInfo.Name;
+                view.MerchantInfo.Code = mchInfo.Code;
+
                 view.IsGS1 = mchInfo.MerchantType == MerchantType.GS1 ? true : false;
 
                 if (view.IsGS1)
@@ -1067,13 +1072,14 @@ namespace BDMall.BLL
 
         public async Task<MicroProductDetail> GetMicroProductDetail(string Code)
         { 
-            var data = await GetProductDetailAsync(Code);
+            var data = await GetProductDetailAsync(Code);         
             var view = AutoMapperExt.MapTo<MicroProductDetail>(data);
+            view.MerchantName = data.MerchantInfo.Name;
             return view;
         }
 
         /// <summary>
-        /// 获取SaleQty<0的数据
+        /// 获取SaleQty售罄的数据
         /// </summary>
         /// <returns></returns>
         public async Task<List<string>> GetSelloutSkus()
@@ -1091,6 +1097,30 @@ namespace BDMall.BLL
                 cacheData = query.Select(d => d.ToString()).ToArray();
             }
             return cacheData.ToList();
+        }
+        
+        /// <summary>
+        /// 检测Sku相关状态
+        /// </summary>
+        /// <param name="code"></param>
+        /// <param name="attr1"></param>
+        /// <param name="attr2"></param>
+        /// <param name="attr3"></param>
+        /// <param name="saleTime"></param>
+        /// <returns></returns>
+        public async Task<SystemResult<ProductCheck>> CheckSkuStateAsync(string code, Guid attr1, Guid attr2, Guid attr3, string saleTime)
+        {
+            var result = new SystemResult<ProductCheck> { Succeeded = false };
+            result.ReturnValue = new ProductCheck { IsSelling = false, IsOnSale = false, IsSaleOut = true };
+
+            var sku = await baseRepository.GetModelAsync<ProductSku>(d => d.ProductCode == code && d.AttrValue1 == attr1 && d.AttrValue2 == attr2 && d.AttrValue3 == attr3 && d.IsActive && d.IsDeleted == false);
+            result.ReturnValue.IsSaleOut = (await GetSelloutSkus()).Any(x => x == sku.Id.ToString());
+            result.ReturnValue.IsOnSale = (await CheckOnSaleAsync(code)).Succeeded;
+
+            if (!saleTime.IsEmpty() && DateTime.Now >= DateUtil.ConvertoDateTime(saleTime, "yyyy-M-d H:m:s"))
+                result.ReturnValue.IsSelling = true;
+
+            return result;
         }
 
         public List<List<string>> GetProductAdditionalImages(Guid prodID)
@@ -1177,6 +1207,182 @@ namespace BDMall.BLL
 
                 }
             return result;
+        }
+
+        /// <summary>
+        /// 检测产品是否上架
+        /// </summary>
+        /// <param name="code"></param>
+        /// <returns></returns>
+        public async Task<SystemResult> CheckOnSaleAsync(string code)
+        {
+            SystemResult result = new SystemResult();
+
+            string key = $"{PreHotType.Hot_Products}_{CurrentUser.Lang}";
+            var product = await RedisHelper.HGetAsync<HotProduct>(key, code);
+            if (product == null)
+            {
+                var dbProduct = await baseRepository.GetModelAsync<Product>(x => x.Code == code && x.IsActive && !x.IsDeleted && x.Status == ProductStatus.OnSale);
+                if (dbProduct == null)
+                    result.Succeeded = false;
+                else
+                    result.Succeeded = true;
+            }
+            if (product.Status == ProductStatus.OnSale) result.Succeeded = true;
+            return result;
+        }
+
+        public async Task CountClick(string code, bool isSearch)
+        {
+            if (isSearch)
+            {
+                ProductClickView.SearchQueue.Enqueue(code);
+            }
+            else
+            {
+                ProductClickView.ClickQueue.Enqueue(code);
+            }
+
+            if ((ProductClickView.SearchQueue.Any() || ProductClickView.ClickQueue.Any()) && DateTime.Now.Subtract(ProductClickView.UpdateDate).TotalMinutes > 1)
+            {
+                var clickGroup = ProductClickView.ClickQueue.GroupBy(g => g).Select(d => new
+                {
+                    code = d.Key,
+                    count = d.Count()
+                }).ToList();
+                
+                var searchGroup = ProductClickView.SearchQueue.GroupBy(g => g).Select(d => new
+                {
+                    code = d.Key,
+                    count = d.Count()
+                }).ToList();
+
+                ProductClickView.ClickQueue.Clear();
+                ProductClickView.SearchQueue.Clear();
+
+                foreach (var item in clickGroup)
+                {
+                     await SaveClickRecord(item.code, item.count);
+                }
+
+                foreach (var item in searchGroup)
+                {
+                    await SaveClickRecord(item.code, item.count);
+                    await SaveSearchClickRecord(item.code, item.count);
+                }
+                ProductClickView.UpdateDate = DateTime.Now;
+            }
+
+            //记录会员浏览足迹
+            if (CurrentUser.IsLogin)
+            {
+                string key = $"{CacheKey.ProductTrack}";               
+                string filed = $"{CurrentUser.UserId}|{DateTime.Now.ToString("yyyyMMdd")}";
+                
+                var cacheData = await RedisHelper.HGetAsync<string>(key, filed);
+                if (cacheData.IsEmpty())
+                {
+                    await RedisHelper.HSetAsync(key, filed, code);
+                    //插入数据库
+                    var trackInfo = new ProductTrack {
+                        ProductCode = code, MemberId = Guid.Parse(CurrentUser.UserId) , 
+                        IsActive = true ,IsDeleted=false, 
+                        CreateDate = DateTime.Now,
+                        CreateBy = Guid.Parse(CurrentUser.UserId)
+                    };
+                    await baseRepository.InsertAsync(trackInfo);
+                }
+                //else
+                //{ 
+                //    //更新数据库
+                //}
+            }
+
+        }
+        private async Task SaveClickRecord(string code, int count)
+        {
+            var productClickSummary = await baseRepository.GetModelAsync<ProductClickRateSummry>(x => x.ProductCode == code && x.IsActive && !x.IsDeleted);
+            if (productClickSummary != null)
+            {
+                productClickSummary.ClickCounter += count;
+                productClickSummary.UpdateDate = DateTime.Now;
+                await baseRepository.UpdateAsync(productClickSummary);
+            }
+            else
+            {
+                ProductClickRateSummry productClick = new ProductClickRateSummry();
+                productClick.ProductCode = code.Trim();
+                productClick.CreateBy = Guid.Parse(CurrentUser.UserId);
+                productClick.CreateDate = DateTime.Now;
+                productClick.ClickCounter = 1;
+                productClick.SearchClickCounter = 0;
+                productClick.Year = DateTime.Now.Year;
+                productClick.Month = DateTime.Now.Month;
+                productClick.Day = DateTime.Now.Day;               
+                await baseRepository.InsertAsync(productClick);
+            }
+
+            var productStatics = await baseRepository.GetModelAsync<ProductStatistics>(x => x.Code == code && x.IsActive && !x.IsDeleted);
+            if (productStatics != null)
+            {
+                productStatics.VisitCounter += count;
+                await baseRepository.UpdateAsync(productStatics);
+                await UpdateProductStatisticsCache(productStatics);
+            }
+        }
+
+        private async Task SaveSearchClickRecord(string code, int count)
+        {
+            var productClickSummary = await baseRepository.GetModelAsync<ProductClickRateSummry>(x => x.ProductCode == code && x.IsActive && !x.IsDeleted);
+            if (productClickSummary != null)
+            {
+                productClickSummary.SearchClickCounter += count;
+                productClickSummary.UpdateDate = DateTime.Now;
+                await baseRepository.UpdateAsync(productClickSummary);
+            }
+            else
+            {
+                ProductClickRateSummry productClick = new ProductClickRateSummry();
+
+                productClick.ProductCode = code.Trim();
+                productClick.CreateBy = Guid.Parse(CurrentUser.UserId);
+                productClick.CreateDate = DateTime.Now;
+                productClick.ClickCounter = 0;
+                productClick.SearchClickCounter = 1;
+                productClick.Year = DateTime.Now.Year;
+                productClick.Month = DateTime.Now.Month;
+                productClick.Day = DateTime.Now.Day;
+                await baseRepository.InsertAsync(productClick);
+            }
+
+            var productStatics = await baseRepository.GetModelAsync <ProductStatistics>(x => x.Code == code && x.IsActive && !x.IsDeleted);
+            if (productStatics != null)
+            {
+                productStatics.SearchCounter += count;
+                await baseRepository.UpdateAsync(productStatics);
+                await UpdateProductStatisticsCache(productStatics);
+            }
+
+        }
+
+        /// <summary>
+        /// 刷新缓存
+        /// </summary>
+        /// <param name="productStatics"></param>
+        private async Task UpdateProductStatisticsCache(ProductStatistics productStatics)
+        {
+            string key = $"{PreHotType.Hot_PreProductStatistics}";
+            var statisticsData = new HotPreProductStatistics
+            {
+                Code = productStatics.Code,
+                Score = productStatics.Score,
+                PurchaseCounter = productStatics.PurchaseCounter,
+                SearchCounter = productStatics.SearchCounter,
+                VisitCounter = productStatics.VisitCounter
+            };
+
+            //刷新缓存
+            await RedisHelper.HSetAsync(key, productStatics.Code, statisticsData);
         }
 
         /// <summary>

@@ -15,12 +15,17 @@ namespace BDMall.BLL
 {
     public class MemberBLL : BaseBLL, IMemberBLL
     {
-        IMediator mediatR;
-        IProductRepository productRepository;
+        IProductBLL productBLL;
+        PreHeatFavoriteService preHeatFavoriteService;
+        PreHeatProductService preHeatProductService;
+        PreHeatMerchantService preHeatMerchantService;
+
         public MemberBLL(IServiceProvider services) : base(services)
         {
-            mediatR = this.Services.Resolve<IMediator>();
-            productRepository = this.Services.Resolve<IProductRepository>();
+            productBLL = this.Services.Resolve<IProductBLL>();
+            preHeatFavoriteService = (PreHeatFavoriteService)Services.GetService(typeof(PreHeatFavoriteService));
+            preHeatProductService = (PreHeatProductService)Services.GetService(typeof(PreHeatProductService));
+            preHeatMerchantService = (PreHeatMerchantService)Services.GetService(typeof(PreHeatMerchantService));
         }
 
         public PageData<MemberDto> SearchMember(MbrSearchCond cond)
@@ -33,31 +38,31 @@ namespace BDMall.BLL
 
             #region 组装条件
 
-            if (!cond.EmailAdd.IsEmpty())            
+            if (!cond.EmailAdd.IsEmpty())
                 query = query.Where(x => x.Email.Contains(cond.EmailAdd));
-            
+
             if (!cond.FirstName.IsEmpty())
                 query = query.Where(x => x.FirstName.Contains(cond.FirstName));
 
             if (!cond.Code.IsEmpty())
                 query = query.Where(x => x.Code.Contains(cond.Code));
 
-            if (cond.RegDateFrom !=null  && cond.RegDateTo !=null)
-            {               
+            if (cond.RegDateFrom != null && cond.RegDateTo != null)
+            {
                 query = query.Where(x => x.CreateDate >= cond.RegDateFrom && x.CreateDate <= cond.RegDateTo);
             }
             #endregion
 
             result.TotalRecord = query.Count();
 
-            result.Data = query.MapToList<Member,MemberDto>();
-            
+            result.Data = query.MapToList<Member, MemberDto>();
+
             return result;
         }
 
         public SystemResult Register(RegisterMember member)
-        { 
-            var result = new SystemResult() ;
+        {
+            var result = new SystemResult();
 
             member.Validate();
 
@@ -70,9 +75,9 @@ namespace BDMall.BLL
                 IsActive = true, IsApprove = true, IsDeleted = false,
                 CreateDate = DateTime.Now, UpdateDate = DateTime.Now,
                 CurrencyCode = "HKD", Language = Language.C, BirthDate = member.BirthDate,
-                Code = AutoGenerateNumber("MB"), 
-                 FirstName = member.FirstName, LastName = member.LastName,
-                  OptOutPromotion = member.OptOutPromotion,
+                Code = AutoGenerateNumber("MB"),
+                FirstName = member.FirstName, LastName = member.LastName,
+                OptOutPromotion = member.OptOutPromotion,
             };
 
             baseRepository.Insert(dbModel);
@@ -83,9 +88,9 @@ namespace BDMall.BLL
 
         public async Task<SystemResult> ChangeLang(CurrentUser currentUser, Language Lang)
         {
-            var result = new SystemResult() { Succeeded =false };
-            
-            var member  = await baseRepository.GetModelByIdAsync<Member>(Guid.Parse(currentUser.UserId));
+            var result = new SystemResult() { Succeeded = false };
+
+            var member = await baseRepository.GetModelByIdAsync<Member>(Guid.Parse(currentUser.UserId));
             member.Language = Lang;
 
             if (currentUser.IsLogin)
@@ -175,7 +180,7 @@ namespace BDMall.BLL
             if (merchFavEntity != null)
             {
                 merchFavEntity.IsActive = false;
-                await baseRepository.UpdateAsync(merchFavEntity);               
+                await baseRepository.UpdateAsync(merchFavEntity);
             }
 
             //更新缓存
@@ -233,7 +238,7 @@ namespace BDMall.BLL
             if (product == null) throw new BLException(BDMall.Resources.Message.ProductCodeEmpty);
 
             var memberFavorite = await baseRepository.GetModelAsync<MemberFavorite>(d => d.ProductCode == product.Code && d.MemberId == Guid.Parse(CurrentUser.UserId) && d.IsActive);
-            if (memberFavorite != null)          
+            if (memberFavorite != null)
             {
                 memberFavorite.IsActive = false;
                 await baseRepository.UpdateAsync(memberFavorite);
@@ -252,31 +257,201 @@ namespace BDMall.BLL
             return result;
         }
 
-        public async Task<PageData<FavoriteMchView>> MyFavMerchant(FavoriteCond cond)
+        public async Task<PageData<MicroMerchant>> MyFavMerchant(FavoriteCond cond)
         {
-            var result = new PageData<FavoriteMchView>();
-            cond.FavoriteType = FavoriteType.Merchant;
+            var result = new PageData<MicroMerchant>();
+            //cond.FavoriteType = FavoriteType.Merchant;
             string key = CacheKey.Favorite.ToString();
             string field = CurrentUser.UserId;
-            var cacheData = await RedisHelper.HGetAsync<Favorite>(key, field);
-            if (cacheData == null || (cacheData.MchList?.Any() ?? false))
-            { 
+
+            var favData = await RedisHelper.HGetAsync<Favorite>(key, field);
+            if (favData == null || (favData.ProductList?.Any() ?? false))
+            {
                 //重新读取喜欢商家数据
+                favData = await this.preHeatFavoriteService.GetDataSourceAsync(Guid.Parse(field));
+                if (favData != null)
+                {
+                    //重新刷新缓存
+                    await preHeatFavoriteService.SetDataToHashCache(Guid.Parse(CurrentUser.UserId), favData);
+                }
             }
+
+            key = $"{PreHotType.Hot_Merchants}_{CurrentUser.Lang}";
+            var mchList = await RedisHelper.HGetAllAsync<HotMerchant>(key);
+            //读数据库，并回写缓存           
+            if ((!mchList?.Keys.Any() ?? false) || (!mchList.Values?.Any() ?? false))
+            {
+                var view = await this.preHeatMerchantService.GetDataSourceAsync(Guid.Empty);
+                if (view != null && view.Any())
+                {
+                    //重新刷新缓存
+                    await preHeatMerchantService.SetDataToHashCache(view, CurrentUser.Lang);
+                    mchList = view.Where(x => x.LangType == CurrentUser.Lang).ToDictionary(x => x.MchId.ToString());
+                }
+            }
+
+            var query = mchList.Values.AsQueryable().Where(x => favData.MchList.Contains(x.MchId));
+
+            result.TotalRecord = query.Count();
+            query = query.Skip(cond.Offset).Take(cond.PageSize);
+
+            var list = query.Select(s => new MicroMerchant
+            {
+                Id = s.MchId,
+                Code = s.Code,
+                Name = s.Name,
+                IsFavorite = true,
+
+            }).ToList();
+
+            foreach (var item in list)
+            {
+                var mp = await baseRepository.GetModelAsync<MerchantPromotion>(x => x.MerchantId == item.Id && x.IsActive && !x.IsDeleted && x.ApproveStatus == ApproveType.Pass);
+                var mRecord = await preHeatMerchantService.DicCollection(mp, CurrentUser.Lang);
+                item.ImagePath = mRecord["SmallLogoId"]?.Value ?? "";
+            }
+            result.Data = list;
+            return result;
+        }
+
+        public async Task<PageData<MicroProduct>> MyFavProduct(FavoriteCond cond)
+        {
+            var result = new PageData<MicroProduct>();
+            //cond.FavoriteType = FavoriteType.Product;
+            string key = CacheKey.Favorite.ToString();
+            string field = CurrentUser.UserId;
+
+            var favData = await RedisHelper.HGetAsync<Favorite>(key, field);
+            if (favData == null || (favData.ProductList?.Any() ?? false))
+            {
+                //重新读取喜欢商家数据
+                favData = await this.preHeatFavoriteService.GetDataSourceAsync(Guid.Parse(field));
+                if (favData != null)
+                {
+                    //重新刷新缓存
+                    await preHeatFavoriteService.SetDataToHashCache(Guid.Parse(CurrentUser.UserId), favData);
+                }
+            }
+
+            key = $"{PreHotType.Hot_Products}_{CurrentUser.Lang}";
+            var productList = await RedisHelper.HGetAllAsync<HotProduct>(key);
+            //读数据库，并回写缓存           
+            if ((!productList?.Keys.Any() ?? false) || (!productList.Values?.Any() ?? false))
+            {
+                var view = await this.preHeatProductService.GetDataSourceAsync(Guid.Empty);
+                if (view != null && view.Any())
+                {
+                    //重新刷新缓存
+                    await preHeatProductService.SetDataToHashCache(view, CurrentUser.Lang);
+                    productList = view.Where(x => x.LangType == CurrentUser.Lang).ToDictionary(x => x.ProductId.ToString());
+                }
+            }
+
+            var query = productList.Values.AsQueryable().Where(x => favData.ProductList.Contains(x.ProductCode));
+
+            result.TotalRecord = query.Count();
+            query = query.Skip(cond.Offset).Take(cond.PageSize);
+
+            var list = query.Select(s => new MicroProduct
+            {
+                ProductId = s.ProductId,
+                Code = s.Code,
+                Name = s.Name,
+                SalePrice = s.SalePrice,
+                CurrencyCode = s.CurrencyCode,
+                Score = s.Score,
+                CreateDate = s.CreateDate,
+                UpdateDate = s.UpdateDate,
+                IsFavorite = true
+
+            }).ToList();
+
+            foreach (var item in list)
+            {
+                item.ImagePath = (await productBLL.GetProductImages(item.ProductId, item.Code)).FirstOrDefault();
+            }
+            result.Data = list;
 
             return result;
         }
 
-        public async Task<PageData<FavoriteProductView>> MyFavProduct(FavoriteCond cond)
+        /// <summary>
+        /// 获取会员信息
+        /// </summary>
+        /// <returns></returns>
+        public async Task<CurrentUser<MemberUser>> GetMemberInfo()
         {
-            var result = new PageData<FavoriteProductView>();
-            cond.FavoriteType = FavoriteType.Product;
+            var member = await baseRepository.GetModelAsync<MemberAccount>(x => x.MemberId == Guid.Parse(CurrentUser.UserId));
+            var memberData = new CurrentUser<MemberUser>
+            {
+                Account = CurrentUser.Account,
+                CurrencyCode = CurrentUser.CurrencyCode,
+                Email = CurrentUser.Email,
+                IsLogin = CurrentUser.IsLogin,
+                Lang = CurrentUser.Lang,
+                LoginType = CurrentUser.LoginType,
+                MerchantId = CurrentUser.MerchantId,
+                Roles = null,
+                Token = "",
+                UserId = "",
+                UserData = new MemberUser
+                {
+                    Fun = member.Fun,
+                    MaxLimitDayFun = member.MaxLimitDayFun,
+                    MaxLimitMonthFun = member.MaxLimitMonthFun,
+                    MaxLimitYearFun = member.MaxLimitYearFun,
+                    TotalDayFun = member.TotalDayFun,
+                    TotalMonthFun = member.TotalMonthFun,
+                    TotalYearFun = member.TotalYearFun,
+                }
+            };
+
+            return memberData;
+        }
+
+        public async Task<PageData<MicroProduct>> MyProductTrack(TrackCond cond)
+        {
+            var result = new PageData<MicroProduct>();
+
             string key = CacheKey.Favorite.ToString();
             string field = CurrentUser.UserId;
-            var cacheData = await RedisHelper.HGetAsync<Favorite>(key, field);
-            if (cacheData == null || (cacheData.ProductList?.Any() ?? false))
+
+            var favData = await RedisHelper.HGetAsync<Favorite>(key, field);
+            if (favData == null || (favData.ProductList?.Any() ?? false))
             {
-                //重新读取喜欢产品数据
+                //重新读取喜欢商家数据
+                favData = await this.preHeatFavoriteService.GetDataSourceAsync(Guid.Parse(field));
+                if (favData != null)
+                {
+                    //重新刷新缓存
+                    await preHeatFavoriteService.SetDataToHashCache(Guid.Parse(CurrentUser.UserId), favData);
+                }
+            }
+
+            var query = (await baseRepository.GetListAsync<ProductTrack>(x => x.MemberId == Guid.Parse(CurrentUser.UserId) && x.IsActive && !x.IsDeleted));
+
+            key = $"{PreHotType.Hot_Products}_{CurrentUser.Lang}";
+            var productList = (await RedisHelper.HMGetAsync<HotProduct>(key, query.Select(s => s.ProductCode).ToArray()))
+                .Select(s => new MicroProduct
+                {
+                    ProductId = s.ProductId,
+                    Code = s.Code,
+                    Name = s.Name,
+                    SalePrice = s.SalePrice,
+                    CurrencyCode = s.CurrencyCode,
+                    Score = s.Score,
+                    IsFavorite = favData.ProductList.Any(x=>x == s.Code),
+                    CreateDate = query.FirstOrDefault(x => x.ProductCode == s.Code).CreateDate,
+                    UpdateDate = s.UpdateDate,
+
+                }).OrderByDescending(o => o.CreateDate).ToList();
+
+            result.TotalRecord = productList.Count();
+            result.Data = productList.Skip(cond.Offset).Take(cond.PageSize).ToList();
+
+            foreach (var item in result.Data)
+            {
+                item.ImagePath = (await productBLL.GetProductImages(item.ProductId, item.Code)).FirstOrDefault();
             }
 
             return result;

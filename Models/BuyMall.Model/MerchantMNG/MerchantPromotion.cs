@@ -76,9 +76,9 @@ namespace BDMall.Model
         [Column(Order = 17)]
         public Guid MobileCoverId { get; set; }
 
-        public virtual ICollection<MerchantPromotionBanner> Banners { get; set; }
+        //public virtual ICollection<MerchantPromotionBanner> Banners { get; set; }
 
-        public virtual ICollection<MerchantPromotionProduct> Products { get; set; }
+        //public virtual ICollection<MerchantPromotionProduct> Products { get; set; }
 
     }
 }

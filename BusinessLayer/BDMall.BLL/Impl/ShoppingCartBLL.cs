@@ -98,6 +98,9 @@ namespace BDMall.BLL
             
             cartItem.Sku = sku.Id;
 
+            var saleOut = (await ProductBLL.GetSelloutSkus()).Any(x=>x == sku.Id.ToString());
+            if (saleOut) throw new BLException("AddToCartFail: Sale Out");
+
             ShoppingCartItem item = baseRepository.GetModel<ShoppingCartItem>(d => d.ProductId == cartItem.ProductId && d.SkuId == sku.Id && d.MemberId == Guid.Parse(CurrentUser.UserId) && d.IsActive && !d.IsDeleted);
             //var rule = _promotionRuleRepository.GetProductPromotionRule(product.MerchantId, cartItem.ProdCode);//贈品都要Hold住
 

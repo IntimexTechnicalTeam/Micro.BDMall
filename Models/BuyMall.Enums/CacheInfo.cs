@@ -34,6 +34,8 @@ namespace BDMall.Enums
         ProdAttr,
 
         Favorite,
+
+        ProductTrack,
     }
 
     public enum CacheField

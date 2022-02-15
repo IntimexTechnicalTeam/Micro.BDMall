@@ -36,7 +36,12 @@ namespace BDMall.Repository
                 }
             }
 
-            //modelBuilder.Entity<ProductSalesSummry>().Property(b=>b.Id).UseIdentityColumn();   //使用自增列
+            modelBuilder.Entity<ProductClickRateSummry>().Property(b => b.Id).UseIdentityColumn();   //使用自增列
+            modelBuilder.Entity<ProductSalesSummry>().Property(b=>b.Id).UseIdentityColumn();   //使用自增列
+            modelBuilder.Entity<Country>().Property(b => b.Id).UseIdentityColumn();                     //使用自增列
+            modelBuilder.Entity<Province>().Property(b => b.Id).UseIdentityColumn();
+            modelBuilder.Entity<City>().Property(b => b.Id).UseIdentityColumn();
+            modelBuilder.Entity<ProductTrack>().Property(b => b.Id).UseIdentityColumn();
 
             base.OnModelCreating(modelBuilder);
         }
@@ -240,5 +245,7 @@ namespace BDMall.Repository
         public DbSet<ReturnOrderMessage> ReturnOrderMessages { get; set; }  
 
         public DbSet<OrderMassProcessStatus> OrderMassProcessStatus { get; set; }
+
+        public DbSet<ProductTrack> ProductTracks { get; set; }
     }
 }

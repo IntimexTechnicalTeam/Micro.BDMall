@@ -10,7 +10,7 @@ namespace BDMall.Domain
     public class FavoriteCond : PageInfo
     {
         
-        public FavoriteType FavoriteType { get; set; }
+        //public FavoriteType FavoriteType { get; set; }
     }
 
     public enum FavoriteType

@@ -79,7 +79,7 @@ namespace BDMall.Domain
         /// </summary>
         public string CatalogName { get; set; }
 
-        public List<string> Imgs { get; set; }
+        public List<string> Imgs { get; set; } = new List<string>();
 
 
         public bool IsFavorite { get; set; }

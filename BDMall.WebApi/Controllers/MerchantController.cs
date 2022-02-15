@@ -23,6 +23,21 @@ namespace BDMall.WebApi.Controllers
         }
 
         /// <summary>
+        /// 获取商家列表
+        /// </summary>
+        /// <param name="cond"></param>
+        /// <returns></returns>
+        [AllowAnonymous]
+        [HttpPost("GetMerchantListAsync")]
+        [ProducesResponseType(typeof(SystemResult<PageData<MicroMerchant>>), 200)]
+        public async Task<SystemResult<PageData<MicroMerchant>>> GetMerchantListAsync(MerchantCond cond)
+        {
+            var result = new SystemResult<PageData<MicroMerchant>>() { Succeeded = true };
+            result.ReturnValue = await merchantBLL.GetMerchantListAsync(cond);
+            return result;
+        }
+
+        /// <summary>
         /// 获取商家明细信息
         /// </summary>
         /// <param name="merchID"></param>

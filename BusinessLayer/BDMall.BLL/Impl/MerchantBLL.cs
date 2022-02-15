@@ -28,6 +28,7 @@ namespace BDMall.BLL
         public IProductBLL productBLL;
 
         PreHeatMerchantService mchHeatService;
+        PreHeatFavoriteService preHeatFavoriteService;
 
         public MerchantBLL(IServiceProvider services) : base(services)
         {
@@ -41,6 +42,7 @@ namespace BDMall.BLL
             merchantPromotionRepository = Services.Resolve<IMerchantPromotionRepository>();
             productBLL = Services.Resolve<IProductBLL>();
             mchHeatService = (PreHeatMerchantService)Services.GetService(typeof(PreHeatMerchantService));
+            preHeatFavoriteService = (PreHeatFavoriteService)Services.GetService(typeof(PreHeatFavoriteService));
         }
 
         public List<KeyValue> GetMerchantCboSrcByCond(bool containMall)
@@ -114,6 +116,64 @@ namespace BDMall.BLL
             data.TotalRecord = query.Select(d => d.Id).Count();
             data.Data = query.Skip(cond.Offset).Take(cond.PageSize).ToList();
             return data;
+        }
+
+        public async Task<PageData<MicroMerchant>> GetMerchantListAsync(MerchantCond cond)
+        {
+            var result = new PageData<MicroMerchant>();
+
+            string key = CacheKey.Favorite.ToString();
+            string field = CurrentUser.UserId;
+            var favData = await RedisHelper.HGetAsync<Favorite>(key, field);
+            if (favData == null || (favData.ProductList?.Any() ?? false))
+            {
+                //重新读取喜欢商家数据
+                favData = await this.preHeatFavoriteService.GetDataSourceAsync(Guid.Parse(field));
+                if (favData != null)
+                {
+                    //重新刷新缓存
+                    await preHeatFavoriteService.SetDataToHashCache(Guid.Parse(CurrentUser.UserId), favData);
+                }
+            }
+
+            key = $"{PreHotType.Hot_Merchants}_{CurrentUser.Lang}";
+            var mchList = await RedisHelper.HGetAllAsync<HotMerchant>(key);
+            //读数据库，并回写缓存           
+            if ((!mchList?.Keys.Any() ?? false) || (!mchList.Values?.Any() ?? false))
+            {
+                var view = await this.mchHeatService.GetDataSourceAsync(Guid.Empty);
+                if (view != null && view.Any())
+                {
+                    //重新刷新缓存
+                    await mchHeatService.SetDataToHashCache(view, CurrentUser.Lang);
+                    mchList = view.Where(x => x.LangType == CurrentUser.Lang).ToDictionary(x => x.MchId.ToString());
+                }
+            }
+
+            var query = mchList.Values.AsQueryable();
+            if (!cond.Name.IsEmpty())
+                query = query.Where(x => x.Name.Contains(cond.Name));
+
+            result.TotalRecord = query.Count();
+            query = query.Skip(cond.Offset).Take(cond.PageSize);
+
+            var list = query.Select(s => new MicroMerchant
+            {
+                Id = s.MchId,
+                Code = s.Code,
+                Name = s.Name,
+            }).ToList();
+
+            foreach (var item in list)
+            {
+                var mp = await baseRepository.GetModelAsync<MerchantPromotion>(x => x.MerchantId == item.Id && x.IsActive && !x.IsDeleted && x.ApproveStatus == ApproveType.Pass);
+                var mRecord = await mchHeatService.DicCollection(mp, CurrentUser.Lang);
+                item.ImagePath = mRecord["SmallLogoId"]?.Value ?? "";
+                item.IsFavorite = favData?.MchList?.Any(x => x == item.Id) ?? false;
+            }
+            result.Data = list;
+            return result;
+
         }
 
         public async Task<MerchantInfoView> GetMerchantInfoAsync(Guid merchID)
@@ -1922,25 +1982,25 @@ namespace BDMall.BLL
                     var appHistory = InsertMerchantApproveHistory(Guid.Parse(item), ApproveResult.Pass, "");
                     appHistoryList.Add(appHistory);
 
-                    var merchInfo = baseRepository.GetModelById<Merchant>(notApproveMerchantPromotion.MerchantId);
-                    if (merchInfo != null)
-                    {
-                        //RecipientInfo info = new RecipientInfo();
-                        //info.Id = merchInfo.Id;
-                        //info.Code = merchInfo.MerchNo;
-                        //info.Email = merchInfo.ContactEmail;
-                        //info.Lang = merchInfo.Language;
-                        //info.Mobile = merchInfo.ContactPhoneNum;
-                        //info.Name = TranslationRepo.Entities.FirstOrDefault(d => d.TransId == merchInfo.NameTransId && d.Lang == info.Lang)?.Value ?? "";
-                        //ContentAppr model = new ContentAppr();
-                        //model.CreateDate = notApproveMerchantPromotion.UpdateDate ?? notApproveMerchantPromotion.CreateDate;
-                        //model.StatusName = Resources.Value.Pass;
-                        //model.Reason = "";
-                        //MessageBLL.SendMerchPromApproveToMerch(info, model);
+                    //var merchInfo = await baseRepository.GetModelByIdAsync<Merchant>(notApproveMerchantPromotion.MerchantId);
+                    //if (merchInfo != null)
+                    //{
+                    //    //RecipientInfo info = new RecipientInfo();
+                    //    //info.Id = merchInfo.Id;
+                    //    //info.Code = merchInfo.MerchNo;
+                    //    //info.Email = merchInfo.ContactEmail;
+                    //    //info.Lang = merchInfo.Language;
+                    //    //info.Mobile = merchInfo.ContactPhoneNum;
+                    //    //info.Name = TranslationRepo.Entities.FirstOrDefault(d => d.TransId == merchInfo.NameTransId && d.Lang == info.Lang)?.Value ?? "";
+                    //    //ContentAppr model = new ContentAppr();
+                    //    //model.CreateDate = notApproveMerchantPromotion.UpdateDate ?? notApproveMerchantPromotion.CreateDate;
+                    //    //model.StatusName = Resources.Value.Pass;
+                    //    //model.Reason = "";
+                    //    //MessageBLL.SendMerchPromApproveToMerch(info, model);
 
-                        //生成审批通过的消息,待完成
+                    //    //生成审批通过的消息,待完成
 
-                    }                     
+                    //}                     
                 }
 
                 if (activeMerchPromotion != null)
@@ -1954,9 +2014,9 @@ namespace BDMall.BLL
             }
           
             using var tran = baseRepository.CreateTransation();
-            baseRepository.Insert(appHistoryList);
-            baseRepository.Update(notApproveList);
-            baseRepository.Update(hisActiveMerchList);
+            await baseRepository.InsertAsync(appHistoryList);
+            await baseRepository.UpdateAsync(notApproveList);
+            await baseRepository.UpdateAsync(hisActiveMerchList);
             result.Succeeded = true;
             tran.Commit();
 

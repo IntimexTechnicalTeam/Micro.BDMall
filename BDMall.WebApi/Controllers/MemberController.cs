@@ -88,28 +88,54 @@ namespace BDMall.WebApi.Controllers
         /// <summary>
         /// 我收藏的商家列表
         /// </summary>
-        /// <param name="orderCond"></param>
+        /// <param name="cond"></param>
         /// <returns></returns>
         [HttpPost("MyFavMerchant")]
-        [ProducesResponseType(typeof(SystemResult<PageData<FavoriteMchView>>), 200)]
-        public async Task<SystemResult<PageData<FavoriteMchView>>> MyFavMerchant([FromBody] FavoriteCond cond)
+        [ProducesResponseType(typeof(SystemResult<PageData<MicroMerchant>>), 200)]
+        public async Task<SystemResult<PageData<MicroMerchant>>> MyFavMerchant([FromBody] FavoriteCond cond)
         {
-            var result = new SystemResult<PageData<FavoriteMchView>>() { Succeeded = true };
-
+            var result = new SystemResult<PageData<MicroMerchant>>() { Succeeded = true };
+            result.ReturnValue = await memberBll.MyFavMerchant(cond);
             return result;
         }
 
         /// <summary>
         /// 我收藏的商品列表
         /// </summary>
-        /// <param name="orderCond"></param>
+        /// <param name="cond"></param>
         /// <returns></returns>
         [HttpPost("MyFavProduct")]
-        [ProducesResponseType(typeof(SystemResult<PageData<FavoriteProductView>>), 200)]
-        public async Task<SystemResult<PageData<FavoriteProductView>>> MyFavProduct([FromBody] FavoriteCond cond)
+        [ProducesResponseType(typeof(SystemResult<PageData<MicroProduct>>), 200)]
+        public async Task<SystemResult<PageData<MicroProduct>>> MyFavProduct([FromBody] FavoriteCond cond)
         {
-            var result = new SystemResult<PageData<FavoriteProductView>>() { Succeeded = true };
+            var result = new SystemResult<PageData<MicroProduct>>() { Succeeded = true };
+            result.ReturnValue = await memberBll.MyFavProduct(cond);
+            return result;
+        }
 
+        /// <summary>
+        /// 会员信息
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost("GetMemberInfo")]
+        [ProducesResponseType(typeof(SystemResult<CurrentUser<MemberUser>>), 200)]
+        public async Task<SystemResult<CurrentUser<MemberUser>>> GetMemberInfo()
+        {
+            var result = new SystemResult<CurrentUser<MemberUser>> { Succeeded = true };
+            result.ReturnValue  = await memberBll.GetMemberInfo();
+            return result;
+        }
+
+        /// <summary>
+        /// 我的足迹
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost("MyProductTrack")]
+        [ProducesResponseType(typeof(SystemResult<PageData<MicroProduct>>), 200)]
+        public async Task<SystemResult<PageData<MicroProduct>>> MyProductTrack(TrackCond cond)
+        {
+            var result = new SystemResult<PageData<MicroProduct>> { Succeeded = true };
+            result.ReturnValue = await memberBll.MyProductTrack(cond);
             return result;
         }
     }

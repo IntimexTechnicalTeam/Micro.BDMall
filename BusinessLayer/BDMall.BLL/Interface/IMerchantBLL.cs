@@ -16,6 +16,8 @@ namespace BDMall.BLL
 
         PageData<MerchantView> GetMerchLstByCond(MerchantPageInfo condition);
 
+        Task<PageData<MicroMerchant>> GetMerchantListAsync(MerchantCond cond);
+
         MerchantView GetMerchById(Guid Id);
 
         Task<SystemResult> Save(MerchantView merchVw);

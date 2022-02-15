@@ -428,8 +428,8 @@ namespace BDMall.BLL
             attribute.AttributeValues = AutoMapperExt.MapTo<List<ProductAttributeValueDto>>(attrValuelist.ToList());
             foreach (var item in attribute.AttributeValues)
             {
-                var mch = baseRepository.GetModelById<Merchant>(item.MerchantId);
-                item.MerchantName = translationRepository.GetDescForLang(mch.NameTransId, CurrentUser.Lang) ?? "";
+                var mch = baseRepository.GetModelById<Merchant>(item.MerchantId);    
+                item.MerchantName = translationRepository.GetDescForLang(mch?.NameTransId ?? Guid.Empty, CurrentUser.Lang) ?? "";
                 item.Descs = translationRepository.GetMutiLanguage(item.DescTransId);
                 item.ImagePath = item.Image;
                 item.Status = item.MerchantName == string.Empty ? RecordStatus.Add : RecordStatus.Update;

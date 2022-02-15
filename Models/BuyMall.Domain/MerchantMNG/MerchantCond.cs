@@ -9,7 +9,7 @@ namespace BDMall.Domain
 {
     public class MerchantCond : PageInfo
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
 
         public bool ShowPass { get; set; }
 

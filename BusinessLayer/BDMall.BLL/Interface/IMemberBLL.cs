@@ -33,8 +33,12 @@ namespace BDMall.BLL
 
         Task<SystemResult> RemoveFavProduct(Guid productId);
 
-        Task<PageData<FavoriteMchView>> MyFavMerchant(FavoriteCond cond);
+        Task<PageData<MicroMerchant>> MyFavMerchant(FavoriteCond cond);
 
-        Task<PageData<FavoriteProductView>> MyFavProduct(FavoriteCond cond);
+        Task<PageData<MicroProduct>> MyFavProduct(FavoriteCond cond);
+
+        Task<CurrentUser<MemberUser>> GetMemberInfo();
+
+        Task<PageData<MicroProduct>> MyProductTrack(TrackCond cond);
     }
 }

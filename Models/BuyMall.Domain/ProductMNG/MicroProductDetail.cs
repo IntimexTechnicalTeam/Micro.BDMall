@@ -23,6 +23,8 @@ namespace BDMall.Domain
         /// </summary>
         public string Name { get; set; }
 
+        public string MerchantName { get; set; }
+
         /// <summary>
         /// 所属目录
         /// </summary>
