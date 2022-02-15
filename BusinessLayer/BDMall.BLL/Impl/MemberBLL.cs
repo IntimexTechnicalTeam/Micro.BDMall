@@ -446,6 +446,11 @@ namespace BDMall.BLL
 
                 }).OrderByDescending(o => o.CreateDate).ToList();
 
+            if (productList?.Any() ?? false)
+            { 
+                //从数据库读
+            }
+
             result.TotalRecord = productList.Count();
             result.Data = productList.Skip(cond.Offset).Take(cond.PageSize).ToList();
 
