@@ -15,6 +15,11 @@ namespace BDMall.Repository
         {
         }
 
+        /// <summary>
+        /// 生成Detail
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
         public ShoppingCartItemDetailDto GetItemDetail(ShoppingCartItem item)
         {
             var strSql = @"select ps.Id as SkuId,ps.ProductCode,p.MerchantId
@@ -30,7 +35,7 @@ namespace BDMall.Repository
                             left join ProductAttributes at1 on at1.Id = ps.Attr1
                             left join ProductAttributes at2 on at2.Id = ps.Attr2
                             left join ProductAttributes at3 on at3.Id = ps.Attr3
-                            left join ProductAttrs pa on pa.ProductId = p.Id and pa.IsInv=1
+                            left join ProductAttrs pa on pa.ProductId = p.Id and pa.IsInv=1 and pa.IsDeleted =0 
                             left join ProductAttrValues ap1 on ap1.AttrValueId = ps.AttrValue1 and pa.Id = ap1.ProdAttrId
                             left join ProductAttrValues ap2 on ap2.AttrValueId = ps.AttrValue2 and pa.Id = ap2.ProdAttrId
                             left join ProductAttrValues ap3 on ap3.AttrValueId = ps.AttrValue3 and pa.Id = ap3.ProdAttrId 

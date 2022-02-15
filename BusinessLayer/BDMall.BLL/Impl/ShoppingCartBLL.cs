@@ -359,8 +359,8 @@ namespace BDMall.BLL
         private void CreateShoppingCartItemDetail(ShoppingCartItem item)
         { 
             var detail = ShoppingCartRepository.GetItemDetail(item);
-            var deleteDetails = baseRepository.GetList<ShoppingCartItemDetail>(x=>x.ShoppingCartItemId== item.Id).ToList();
 
+            var deleteDetails = baseRepository.GetList<ShoppingCartItemDetail>(x=>x.ShoppingCartItemId== item.Id).ToList();
             var dbDetails = AutoMapperExt.MapTo<ShoppingCartItemDetail>(detail);
 
             dbDetails.Id = Guid.NewGuid();

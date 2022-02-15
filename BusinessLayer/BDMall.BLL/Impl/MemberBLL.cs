@@ -30,9 +30,6 @@ namespace BDMall.BLL
 
         public PageData<MemberDto> SearchMember(MbrSearchCond cond)
         {
-
-            var testuser = CurrentUser;
-
             var result = new PageData<MemberDto>();
             var query = baseRepository.GetList<Member>();
 
