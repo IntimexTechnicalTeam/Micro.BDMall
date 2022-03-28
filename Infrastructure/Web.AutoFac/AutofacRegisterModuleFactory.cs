@@ -26,9 +26,11 @@ namespace Web.AutoFac
             builder.RegisterAssemblyTypes(assemblys)
                       .Where(t => !t.GetTypeInfo().IsAbstract && typeof(IDependency).IsAssignableFrom(t))
                       .EnableInterfaceInterceptors()//AOP拦截
-                       .AsImplementedInterfaces()            //构造函数注入                     
-                      .PropertiesAutowired()                    //属性注入
-                      .InstancePerLifetimeScope();           ////自动注册    
+                      .InstancePerLifetimeScope()        //同一个生命周期生成的对象是同一个
+                      //.InstancePerRequest()   //单个 Web / HTTP / API 请求的范围内的组件的共享一个实例。仅可用于支持每个请求的依赖关系的整合（如MVC，Web API，Web Forms等）。                                  
+                      .AsImplementedInterfaces()            //构造函数注入                                                         
+                      .PropertiesAutowired();                   //属性注入
+                       
 
             //注入SqlSugarDbContext,泛型注入
             //builder.RegisterGeneric(typeof(SugarDbContext<>)).As(typeof(ISugarDbContext<>)).InstancePerLifetimeScope().AsImplementedInterfaces();

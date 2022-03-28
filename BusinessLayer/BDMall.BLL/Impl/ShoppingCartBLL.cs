@@ -93,7 +93,7 @@ namespace BDMall.BLL
 
             if (cartItem.ProdCode.IsEmpty()) cartItem.ProdCode = product.Code;
 
-            var sku = baseRepository.GetModel<ProductSku>(d => d.ProductCode == cartItem.ProdCode && d.IsActive && !d.IsDeleted && d.ProductCode == cartItem.ProdCode && d.AttrValue1 == cartItem.Attr1 && d.AttrValue2 == cartItem.Attr2 && d.AttrValue3 == cartItem.Attr3 && d.IsActive && !d.IsDeleted);
+            var sku = baseRepository.GetModel<ProductSku>(d => d.ProductCode == cartItem.ProdCode && d.IsActive && !d.IsDeleted && d.AttrValue1 == cartItem.Attr1 && d.AttrValue2 == cartItem.Attr2 && d.AttrValue3 == cartItem.Attr3);
             if (sku == null) throw new BLException("sku is empty");
             
             cartItem.Sku = sku.Id;

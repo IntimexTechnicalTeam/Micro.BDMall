@@ -393,13 +393,13 @@ namespace BDMall.BLL
                 UserId = "",
                 UserData = new MemberUser
                 {
-                    Fun = member.Fun,
-                    MaxLimitDayFun = member.MaxLimitDayFun,
-                    MaxLimitMonthFun = member.MaxLimitMonthFun,
-                    MaxLimitYearFun = member.MaxLimitYearFun,
-                    TotalDayFun = member.TotalDayFun,
-                    TotalMonthFun = member.TotalMonthFun,
-                    TotalYearFun = member.TotalYearFun,
+                    Fun = member?.Fun ?? 0,
+                    MaxLimitDayFun = member?.MaxLimitDayFun ?? 0,
+                    MaxLimitMonthFun = member?.MaxLimitMonthFun ?? 0,
+                    MaxLimitYearFun = member?.MaxLimitYearFun ?? 0,
+                    TotalDayFun = member?.TotalDayFun ?? 0,
+                    TotalMonthFun = member?.TotalMonthFun ?? 0,
+                    TotalYearFun = member?.TotalYearFun ?? 0,
                 }
             };
 
