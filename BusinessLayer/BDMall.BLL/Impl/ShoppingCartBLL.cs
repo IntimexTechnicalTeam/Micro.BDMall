@@ -40,10 +40,10 @@ namespace BDMall.BLL
             CodeMasterBLL = Services.Resolve<ICodeMasterBLL>();
         }
 
-        public ShopCartInfo GetShoppingCart()
+        public async Task<ShopCartInfo> GetShoppingCart()
         {
             var shoppingCart = new ShopCartInfo();
-            shoppingCart.Items = GetShoppingCartItem();
+            shoppingCart.Items = await GetShoppingCartItem();
 
             double taxRate = 0;
             foreach (var item in shoppingCart.Items)
@@ -377,9 +377,9 @@ namespace BDMall.BLL
             baseRepository.Insert(dbDetails);           
         }
 
-        private List<ShopcartItem> GetShoppingCartItem()
-        {           
-            var query = baseRepository.GetList<ShoppingCartItemDetail>(x => x.MemberId == Guid.Parse(CurrentUser.UserId) && x.IsActive && !x.IsDeleted)
+        private async Task<List<ShopcartItem>> GetShoppingCartItem()
+        {
+            var query = (await baseRepository.GetListAsync<ShoppingCartItemDetail>(x => x.MemberId == Guid.Parse(CurrentUser.UserId) && x.IsActive && !x.IsDeleted)).ToList()
                             .Select(item => new ShopcartItem
                             {
                                 Id = item.Id,
@@ -396,9 +396,9 @@ namespace BDMall.BLL
                                 {
                                     ProductId = item.ProductId,
                                     Code = item.ProductCode,
-                                    MerchantId = item.MerchantId,                                   
+                                    MerchantId = item.MerchantId,
                                 }
-                            }).ToList();
+                            });
 
             foreach (var item in query)
             {
@@ -419,9 +419,7 @@ namespace BDMall.BLL
 
                 GenPromotionRule(item);
             }
-
-          
-            return query;
+            return query.ToList();
         }
 
         private void GenPromotionRule(ShopcartItem cartItem)

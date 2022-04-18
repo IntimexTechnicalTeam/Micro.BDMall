@@ -11,7 +11,7 @@ namespace BDMall.BLL
 {
     public interface IShoppingCartBLL:IDependency
     {
-        ShopCartInfo GetShoppingCart();
+        Task<ShopCartInfo> GetShoppingCart();
 
         Task<SystemResult> AddtoCartAsync(CartItem cartItem);
 

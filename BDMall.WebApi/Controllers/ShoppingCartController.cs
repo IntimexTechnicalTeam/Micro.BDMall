@@ -37,7 +37,7 @@ namespace BDMall.WebApi.Controllers
             string key = $"{CacheKey.ShoppingCart}_{CurrentUser.UserId}";
             //读缓存
             var cacheData = await RedisHelper.GetAsync<ShopCartInfo>(key);
-            if (cacheData == null)  cacheData = RedisHelper.CacheShell(key, 600, () => shoppingCartBLL.GetShoppingCart());
+            if (cacheData == null)  cacheData =await RedisHelper.CacheShellAsync(key, 600, async () =>await shoppingCartBLL.GetShoppingCart());
 
             result.ReturnValue = cacheData;
             return result;
