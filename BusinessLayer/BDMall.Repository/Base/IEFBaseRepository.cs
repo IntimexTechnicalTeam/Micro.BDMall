@@ -125,6 +125,10 @@ namespace BDMall.Repository
 
         #endregion
 
+        public abstract Task<PageData<T>> GetPageListAsync<T>(string sql, params SqlParameter[] parameters)  where T : class;
+
+        public abstract Task<PageData<T>> GetPageListAsync<T>(string sql, PageInfo pageInfo, params SqlParameter[] parameters) where T : class;
+
         public abstract Task<int> ExecuteSqlCommandAsync(string sql, IEnumerable<object> param);
 
         public abstract Task<int> ExecuteSqlRawAsync(string sql, params object[] param);
@@ -326,6 +330,10 @@ namespace BDMall.Repository
         Task<IQueryable<T>> GetListAsync<T>(string sql, List<SqlParameter> parameters) where T : class;
 
         #endregion
+
+        Task<PageData<T>> GetPageListAsync<T>(string sql, params SqlParameter[] parameters) where T : class;
+
+        Task<PageData<T>> GetPageListAsync<T>(string sql, PageInfo pageInfo, params SqlParameter[] parameters) where T : class;
 
         Task<int> ExecuteSqlCommandAsync(string sql, IEnumerable<object> param);
 
