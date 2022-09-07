@@ -1,11 +1,4 @@
-﻿using AutoMapper;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-
-namespace Web.Framework
+﻿namespace Web.Framework
 {
     public static class AutoMapperConfiguration
     {

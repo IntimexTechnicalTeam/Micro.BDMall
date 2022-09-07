@@ -1,10 +1,4 @@
-﻿using BDMall.Domain;
-using BDMall.Enums;
-using System;
-using System.Collections.Generic;
-using Web.Framework;
-
-namespace BDMall.Repository
+﻿namespace BDMall.Repository
 {
     public interface ICodeMasterRepository:IDependency
     {

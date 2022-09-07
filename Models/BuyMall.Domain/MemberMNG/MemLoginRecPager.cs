@@ -1,9 +1,4 @@
-﻿using BDMall.Enums;
-using System;
-using System.Collections.Generic;
-using Web.Framework;
-
-namespace BDMall.Domain
+﻿namespace BDMall.Domain
 {
     public class MemLoginRecPager : PageInfo
     {

@@ -1,14 +1,4 @@
-﻿using Intimex.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Web.Framework;
-using BDMall.Domain;
-using BDMall.Model;
-
-namespace BDMall.Repository
+﻿namespace BDMall.Repository
 {
     public interface IPromotionCodeCouponRepository : IDependency
     {

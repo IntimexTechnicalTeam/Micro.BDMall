@@ -1,0 +1,15 @@
+﻿global using BDMall.Enums;
+global using System;
+global using System.Collections.Generic;
+global using System.Linq;
+global using System.Text;
+global using System.ComponentModel.DataAnnotations;
+global using Web.Framework; 
+global using  BDMall.Model;
+global using Intimex.Common; 
+global using  System.Runtime.Serialization;
+global using System.ComponentModel.DataAnnotations.Schema;
+global using BDMall.Resources;
+global using System.Text.RegularExpressions;
+global using AutoMapper;
+global using BDMall.Domain;

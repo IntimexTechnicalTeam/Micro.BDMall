@@ -1,13 +1,4 @@
-﻿
-using System;
-using System.Collections.Generic;
-using Microsoft.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BDMall.Domain;
-
-namespace BDMall.Repository
+﻿namespace BDMall.Repository
 {
     /// <summary>
     /// 这里只做数据同步，一切与Redis的数据为准，MQ从Redis中获取数据，回写数据库

@@ -1,17 +1,4 @@
-﻿using BDMall.Domain;
-using BDMall.Enums;
-using BDMall.Model;
-using BDMall.Repository;
-using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Web.Framework;
-
-namespace BDMall.Repository
+﻿namespace BDMall.Repository
 {
     public class ProductRepository : PublicBaseRepository ,IProductRepository
     {

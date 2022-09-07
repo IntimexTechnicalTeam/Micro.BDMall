@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Web.Framework
+﻿namespace Web.Framework
 {
     public static class AutoMapperExt
     {

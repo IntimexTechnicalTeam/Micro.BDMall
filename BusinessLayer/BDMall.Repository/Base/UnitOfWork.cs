@@ -1,11 +1,4 @@
-﻿
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Threading.Tasks;
-
-
-namespace BDMall.Repository
+﻿namespace BDMall.Repository
 {
     public class UnitOfWork : IUnitOfWork
     {

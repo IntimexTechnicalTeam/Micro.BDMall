@@ -1,18 +1,4 @@
-﻿using BDMall.BLL;
-using BDMall.Domain;
-using BDMall.Enums;
-using BDMall.Model;
-using BDMall.Repository;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Web.Framework;
-using Web.MQ;
-
-namespace HandleItemExpireService
+﻿namespace HandleItemExpireService
 {
     /// <summary>
     /// 处理订单支付超时服务类

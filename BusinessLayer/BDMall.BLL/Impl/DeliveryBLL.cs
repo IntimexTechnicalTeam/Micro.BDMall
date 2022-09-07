@@ -1,17 +1,4 @@
-﻿using BDMall.Domain;
-using BDMall.ECShip;
-using BDMall.ECShip.Model.Calculator;
-using BDMall.Enums;
-using BDMall.Model;
-using BDMall.Repository;
-using BDMall.Utility;
-using Intimex.Common;
-using Microsoft.Data.SqlClient;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Web.Framework;
+﻿
 
 namespace BDMall.BLL
 {

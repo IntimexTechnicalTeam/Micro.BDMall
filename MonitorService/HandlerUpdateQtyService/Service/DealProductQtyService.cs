@@ -1,11 +1,4 @@
-﻿using BDMall.BLL;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Threading.Tasks;
-using Web.Framework;
-using Web.MQ;
-
-namespace HandleUpdateQtyService
+﻿namespace HandleUpdateQtyService
 {
     /// <summary>
     ///  消费者队列服务类

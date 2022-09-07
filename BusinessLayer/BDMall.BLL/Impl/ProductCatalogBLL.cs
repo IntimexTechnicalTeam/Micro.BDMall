@@ -1,18 +1,4 @@
-﻿using BDMall.Domain;
-using BDMall.Enums;
-using BDMall.Model;
-using BDMall.Repository;
-using BDMall.Utility;
-using Intimex.Common;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Web.Framework;
-
-namespace BDMall.BLL
+﻿namespace BDMall.BLL
 {
     public class ProductCatalogBLL : BaseBLL, IProductCatalogBLL
     {

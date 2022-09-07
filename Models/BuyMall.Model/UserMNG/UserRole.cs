@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BDMall.Model
+﻿namespace BDMall.Model
 {
-   
+
     public class UserRole : BaseEntity<Guid>
     {
         [Required]

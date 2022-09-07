@@ -1,17 +1,4 @@
-﻿using AutoMapper;
-using BDMall.Model;
-using BDMall.BLL;
-using BDMall.Domain;
-using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Web.Framework;
-using BDMall.Repository;
-using BDMall.Enums;
-using System.Threading.Tasks;
-
-namespace BDMall.BLL
+﻿namespace BDMall.BLL
 {
     public class MemberBLL : BaseBLL, IMemberBLL
     {

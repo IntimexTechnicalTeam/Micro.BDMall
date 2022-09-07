@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-
-namespace BDMall.Model
+﻿namespace BDMall.Model
 {
     /// <summary>
     /// 銷售退回可選項資料

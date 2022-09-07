@@ -1,14 +1,4 @@
-﻿using BDMall.Domain;
-using BDMall.Enums;
-using BDMall.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Web.Framework;
-using Web.MQ;
-
-namespace BDMall.BLL
+﻿namespace BDMall.BLL
 {
     /// <summary>
     /// 处理缓存中的ProductQty

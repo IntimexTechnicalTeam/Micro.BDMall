@@ -1,11 +1,4 @@
-﻿
-using System;
-using System.Linq;
-using System.Reflection;
-using BDMall.Model;
-using Microsoft.EntityFrameworkCore;
-
-namespace BDMall.Repository
+﻿namespace BDMall.Repository
 {
     public class MallDbContext : DbContext
     {

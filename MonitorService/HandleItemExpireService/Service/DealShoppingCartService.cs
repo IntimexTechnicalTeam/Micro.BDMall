@@ -1,15 +1,4 @@
-﻿using BDMall.BLL;
-using BDMall.Enums;
-using BDMall.Model;
-using BDMall.Repository;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Threading.Tasks;
-using Web.Framework;
-using Web.MQ;
-
-
-namespace HandleItemExpireService
+﻿namespace HandleItemExpireService
 {
     /// <summary>
     /// 处理购物车过期服务类

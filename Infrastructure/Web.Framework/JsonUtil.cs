@@ -1,13 +1,4 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Data;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Xml.Serialization;
+﻿
 
 namespace Web.Framework
 {
@@ -33,17 +24,11 @@ namespace Web.Framework
         /// <typeparam name="T">对象类型</typeparam>
         /// <param name="json">json字符串(eg.{"ID":"112","Name":"石子儿"})</param>
         /// <returns>对象实体</returns>
-        public static T JsonToObject<T>(string json) where T : class
+        public static T JsonToObject<T>(string json) 
         {
-            if (string.IsNullOrWhiteSpace(json))
-            {
-                return default(T);
-            }
-            JsonSerializer serializer = new JsonSerializer();
-            StringReader sr = new StringReader(json);
-            object o = serializer.Deserialize(new JsonTextReader(sr), typeof(T));
-            T t = o as T;
-            return t;
+            if (!string.IsNullOrWhiteSpace(json))
+                return JsonConvert.DeserializeObject<T>(json);
+            return default(T);
         }
 
         ///// <summary>

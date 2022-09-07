@@ -1,102 +1,68 @@
-using Autofac;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Rewrite;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json.Serialization;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using Web.AutoFac;
-using Web.Framework;
-using Web.Mvc;
-using Web.Swagger;
-
 namespace BDMall.WebApi
 {
-    public class Startup
+    public static class Startup
     {
-        public Startup(IConfiguration configuration)
+        // 在IServiceCollection容器中注册全局设置
+        public static void ConfigureServices(WebApplicationBuilder builder)
         {
-            var builder = new ConfigurationBuilder()
-                       .AddJsonFile("Config/appsettings.json", optional: true, reloadOnChange: true)
-                       .AddEnvironmentVariables();
-            this.Configuration = builder.Build();
-            Globals.Configuration = this.Configuration;
-        }
-
-        public IConfiguration Configuration { get; }
-
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
-        {
-            this.AddControllers(services);
-            this.ConfigureApiBehaviorOptions(services);
-
-            string assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
-            SwaggerExtension.AddSwagger(services, $"{assemblyName}.xml", "BDMall.WebApi.xml");
+            AddControllers(builder.Services);
+            ConfigureApiBehaviorOptions(builder.Services);
 
             //追加API 参数描述
-            var basePath = Path.GetDirectoryName(typeof(Program).Assembly.Location);
-            basePath = Path.Combine(basePath, "BDMall.Domain.xml");
-            SwaggerExtension.AddSwagger(services,basePath);
+            SwaggerExtension.AddSwagger(builder.Services, "BDMall.WebApi.xml", "BDMall.Domain.xml");
 
-            services.AddMvc(options =>
+            builder.Services.AddMvc(options =>
             {
                 //options.Filters.Add(typeof(UserAuthorizeAttribute));            //全局鉴权
                 options.EnableEndpointRouting = false;
             });
 
             Web.Framework.AutoMapperConfiguration.InitAutoMapper();
-            services.AddSingleton(this.Configuration);
+            builder.Services.AddSingleton(builder.Configuration);
                      
-            WebCache.ServiceCollectionExtensions.AddCacheServices(services, Globals.Configuration);                          //注入redis组件
-            BDMall.Repository.ServiceCollectionExtensions.AddServices(services, Globals.Configuration);                      //注入EFCore DataContext
-            Web.MQ.ServiceCollectionExtensions.AddServices(services, Globals.Configuration);                                      //注入RabbitMQ  
-
-            Web.Mvc.ServiceCollectionExtensions.AddHttpContextAccessor(services);
-            Web.Mvc.ServiceCollectionExtensions.AddServiceProvider(services);
-            Web.MediatR.ServiceCollectionExtensions.AddServices(services, typeof(Startup));
+            WebCache.ServiceCollectionExtensions.AddCacheServices(builder.Services, builder.Configuration);                        //注入redis组件
+            BDMall.Repository.ServiceCollectionExtensions.AddServices(builder.Services, builder.Configuration);                      //注入EFCore DataContext
+            Web.MQ.ServiceCollectionExtensions.AddServices(builder.Services, builder.Configuration);                                    //注入RabbitMQ  
+            Web.Mvc.ServiceCollectionExtensions.AddHttpContextAccessor(builder.Services);
+            Web.Mvc.ServiceCollectionExtensions.AddServiceProvider(builder.Services);
+            Web.MediatR.ServiceCollectionExtensions.AddServices(builder.Services, typeof(Program));
 
             //注入支付宝的配置
-            //Web.AliPay.ServiceCollectionExtensions.AddServices(services, this.Configuration);
+            //Web.AliPay.ServiceCollectionExtensions.AddServices(builder.Services, builder.Configuration);
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        // 设置 HTTP request pipeline 
+        public static void ConfigurePipeLine(IApplicationBuilder app, WebApplicationBuilder builder)
         {
             Globals.Services = app.ApplicationServices;
+            Globals.Configuration = builder.Configuration;
 
             //如果是开发者模式
-            if (env.IsDevelopment())
+            if (builder.Environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();            
+            }
+            else
+            {
+                //app.UseExceptionHandler("/Home/Error");
+                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                app.UseHsts();
             }
 
             app.ConfigureSwagger();
             app.UseMiddleware<GlobalErrorHandlingMiddleware>();         //全局异常处理
             //app.UseMiddleware<JwtAuthenticationMiddleware>();
 
-            app.UseHttpsRedirection();  ////HTTPS重定向
+            app.UseHttpsRedirection();           ////HTTPS重定向
             app.UseRouting();
-            app.UseAuthorization();
+            app.UseAuthorization();              //这个必须在UseRouting 和 UseEndpoints 之间
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
         }
 
-        public void ConfigureContainer(ContainerBuilder builder)
-        {
-            builder.RegisterModule<AutofacRegisterModuleFactory>();
-            //builder.RegisterModule<ControllerRegisterModuleFactory>();
-        }
-
-        void AddControllers(IServiceCollection services)
+        static void AddControllers(IServiceCollection services)
         {
             services.AddControllers(options =>
             {
@@ -117,7 +83,7 @@ namespace BDMall.WebApi
         /// 模型验证
         /// </summary>
         /// <param name="services"></param>
-        void ConfigureApiBehaviorOptions(IServiceCollection services)
+        static void ConfigureApiBehaviorOptions(IServiceCollection services)
         {
             services.Configure<ApiBehaviorOptions>(options =>
             {

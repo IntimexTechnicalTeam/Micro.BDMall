@@ -1,9 +1,4 @@
-﻿using BDMall.Enums;
-using System;
-using System.Collections.Generic;
-
-
-namespace BDMall.Domain
+﻿namespace BDMall.Domain
 {
     public class ShopcartItem
     {

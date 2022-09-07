@@ -1,15 +1,4 @@
-﻿using BDMall.Domain;
-using BDMall.Model;
-using BDMall.Utility;
-using Microsoft.Data.SqlClient;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Web.Framework;
-
-namespace BDMall.Repository
+﻿namespace BDMall.Repository
 {
     public class DeliveryAddressRepository : PublicBaseRepository, IDeliveryAddressRepository
     {

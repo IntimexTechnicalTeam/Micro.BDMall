@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Text;
-
-namespace System
+﻿namespace System
 {
     public static class StringExtension
     {

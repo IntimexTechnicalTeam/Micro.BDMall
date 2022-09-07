@@ -1,13 +1,4 @@
-﻿using BDMall.Domain;
-using BDMall.Model;
-using BDMall.Utility;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BDMall.Repository
+﻿namespace BDMall.Repository
 {
     public class PromotionRuleRepository : PublicBaseRepository, IPromotionRuleRepository
     {

@@ -1,7 +1,4 @@
-﻿using AutoMapper;
-using BDMall.Model;
-using BDMall.Domain;
-using Web.Framework;
+﻿
 
 namespace Domain
 {

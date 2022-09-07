@@ -1,10 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using BDMall.Enums;
-
-
-namespace BDMall.Model
+﻿namespace BDMall.Model
 {
     /// <summary>
     /// 翻译

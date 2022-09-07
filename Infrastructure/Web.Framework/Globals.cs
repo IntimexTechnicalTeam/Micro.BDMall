@@ -1,10 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-
-namespace Web.Framework
+﻿namespace Web.Framework
 {
     /// <summary>
     /// 想要用Globals,必须做config.Build()

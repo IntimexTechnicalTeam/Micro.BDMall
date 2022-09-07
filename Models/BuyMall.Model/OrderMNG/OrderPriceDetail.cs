@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BDMall.Model
+﻿namespace BDMall.Model
 {
     /// <summary>
     /// 订单时段价格改变明细

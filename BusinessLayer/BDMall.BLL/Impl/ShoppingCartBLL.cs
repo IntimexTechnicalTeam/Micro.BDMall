@@ -1,17 +1,4 @@
-﻿using BDMall.Domain;
-using BDMall.Enums;
-using BDMall.Model;
-using BDMall.Repository;
-using BDMall.Utility;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Web.Framework;
-using Web.MQ;
-
-namespace BDMall.BLL
+﻿namespace BDMall.BLL
 {
     public class ShoppingCartBLL : BaseBLL, IShoppingCartBLL
     {

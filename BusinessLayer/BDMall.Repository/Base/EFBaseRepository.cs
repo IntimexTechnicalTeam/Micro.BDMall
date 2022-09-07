@@ -1,17 +1,4 @@
-﻿
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
-using System.ComponentModel;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
-using Web.Framework;
-
-namespace BDMall.Repository
+﻿namespace BDMall.Repository
 {
     public class EFBaseRepository : BaseRepository
     {

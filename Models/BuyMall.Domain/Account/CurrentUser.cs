@@ -1,11 +1,4 @@
-﻿using BDMall.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BDMall.Domain
+﻿namespace BDMall.Domain
 {
     /// <summary>
     /// 当前用户信息实体

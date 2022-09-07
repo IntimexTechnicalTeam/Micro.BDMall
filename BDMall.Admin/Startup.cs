@@ -1,42 +1,14 @@
-using Autofac;
-using BDMall.BLL;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using System.IO;
-using System.Linq;
-using Web.AutoFac;
-using Web.Framework;
-using Web.Mvc;
-using UEditorNetCore;
-
 namespace BDMall.Admin
 {
-    public class Startup
+    public  class Startup
     {
-        public Startup(IConfiguration configuration)
-        {
-            var builder = new ConfigurationBuilder()
-                      .AddJsonFile("Config/appsettings.json", optional: true, reloadOnChange: true)
-                      .AddEnvironmentVariables();
-            this.Configuration = builder.Build();
-            Globals.Configuration = this.Configuration;
-        }
+        // 在IServiceCollection容器中注册全局设置
+       public static void ConfigureServices(WebApplicationBuilder builder)
+       {
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                       .AddCookie(opt => { opt.LoginPath = new PathString("/Default/Index"); });
 
-        public IConfiguration Configuration { get; }
-
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddControllersWithViews()
+            builder.Services.AddControllersWithViews()
                 .AddNewtonsoftJson(options =>
                 {
                     // 忽略循环引用
@@ -49,42 +21,39 @@ namespace BDMall.Admin
                     // options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
                 })
                 .AddRazorRuntimeCompilation();              //可以在编译调试模式下编辑view
+            builder.Services.AddScoped(typeof(AdminApiAuthorizeAttribute));         //注入Filter
 
-            services.AddMvc(options =>
+            builder.Services.AddMvc(options =>
             {
                 //options.Filters.Add(typeof(UserAuthorizeAttribute));            //全局鉴权
                 options.EnableEndpointRouting = false;
             });
 
-            this.ConfigureApiBehaviorOptions(services);
-
-            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                        .AddCookie(opt => { opt.LoginPath = new PathString("/Default/Index"); });
+            ConfigureApiBehaviorOptions(builder.Services);
 
             Web.Framework.AutoMapperConfiguration.InitAutoMapper();
-            services.AddSingleton(this.Configuration);
-            services.AddScoped(typeof(AdminApiAuthorizeAttribute));         //注入Filter
+            builder.Services.AddSingleton(builder.Configuration);
 
-            WebCache.ServiceCollectionExtensions.AddCacheServices(services, Globals.Configuration);                        //注入redis组件
-            BDMall.Repository.ServiceCollectionExtensions.AddServices(services, Globals.Configuration);                      //注入EFCore DataContext
-            Web.MQ.ServiceCollectionExtensions.AddServices(services, Globals.Configuration);                                    //注入RabbitMQ  
+            WebCache.ServiceCollectionExtensions.AddCacheServices(builder.Services, builder.Configuration);                        //注入redis组件
+            BDMall.Repository.ServiceCollectionExtensions.AddServices(builder.Services, builder.Configuration);                      //注入EFCore DataContext
+            Web.MQ.ServiceCollectionExtensions.AddServices(builder.Services, builder.Configuration);                                    //注入RabbitMQ  
 
-            Web.Mvc.ServiceCollectionExtensions.AddHttpContextAccessor(services);
-            Web.Mvc.ServiceCollectionExtensions.AddServiceProvider(services);
-            Web.MediatR.ServiceCollectionExtensions.AddServices(services, typeof(Startup));
+            Web.Mvc.ServiceCollectionExtensions.AddHttpContextAccessor(builder.Services);
+            Web.Mvc.ServiceCollectionExtensions.AddServiceProvider(builder.Services);
+            Web.MediatR.ServiceCollectionExtensions.AddServices(builder.Services, typeof(Program));
+            Web.Mvc.ServiceCollectionExtensions.AddFileProviderServices(builder.Services, builder.Configuration);
 
-            Web.Mvc.ServiceCollectionExtensions.AddFileProviderServices(services, Globals.Configuration);
-            services.AddUEditorService("Config/config.json");
-
+            builder.Services.AddUEditorService("Config/config.json");
             //AddScopedIServiceProvider(services);
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        // 设置 HTTP request pipeline 
+       public static void ConfigurePipeLine(IApplicationBuilder app, WebApplicationBuilder builder)
         {
             Globals.Services = app.ApplicationServices;
+            Globals.Configuration = builder.Configuration;
 
-            if (env.IsDevelopment())
+            if (builder.Environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
@@ -96,25 +65,25 @@ namespace BDMall.Admin
             }
 
             app.UseMiddleware<GlobalErrorHandlingMiddleware>();         //全局异常处理
-            //app.UseMiddleware<JwtAuthenticationMiddleware>();
+                                                                        //app.UseMiddleware<JwtAuthenticationMiddleware>();
 
-            app.UseHttpsRedirection();
+            app.UseHttpsRedirection();      //开启HTTPS重定向
 
+            #region 设置文件保存路径
             var staticFiles = new StaticFileOptions
             {
                 FileProvider = new CompositeFileProvider(
-                    new PhysicalFileProvider(Path.Combine(Configuration["UploadPath"], "ClientResources"))
-                    //new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "wwwroot"))                    
-                 ),                
-                RequestPath ="/ClientResources"      //必须设置，否则上传完后相对路径下访问不了
+                    new PhysicalFileProvider(Path.Combine(builder.Configuration["UploadPath"], "ClientResources"))
+                 //new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "wwwroot"))                    
+                 ),
+                RequestPath = "/ClientResources"      //必须设置，否则上传完后相对路径下访问不了
             };
             app.UseStaticFiles(staticFiles);
             app.UseStaticFiles();
+            #endregion
 
             app.UseRouting();
-
-            app.UseAuthorization();
-
+            app.UseAuthorization();         //这个必须在UseRouting 和 UseEndpoints 之间
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
@@ -128,20 +97,26 @@ namespace BDMall.Admin
                          pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}/{para2?}");      //让Api Controller支持无参或一个参数以上
 
             });
+
         }
 
-        public void ConfigureContainer(ContainerBuilder builder)
+        void AddScopedIServiceProvider(IServiceCollection services)
         {
-            builder.RegisterModule<AutofacRegisterModuleFactory>();
-            //builder.RegisterModule<ControllerRegisterModuleFactory>();
-        }
+            var preHeatList = RuntimeHelper.Discovery().FirstOrDefault(type => type.GetName().Name == "BDMall.BLL")?
+                    .GetTypes()?.Where(type => type.Name.StartsWith("PreHeat"))?.ToArray();
 
+            foreach (var item in preHeatList)
+            {
+                services.AddScoped(item);
+            }
+            //return services;
+        }
 
         /// <summary>
         /// 模型验证
         /// </summary>
         /// <param name="services"></param>
-        void ConfigureApiBehaviorOptions(IServiceCollection services)
+        static void ConfigureApiBehaviorOptions(IServiceCollection services)
         {
             services.Configure<ApiBehaviorOptions>(options =>
             {
@@ -161,18 +136,6 @@ namespace BDMall.Admin
                     return new OkObjectResult(result);
                 };
             });
-        }
-
-        void AddScopedIServiceProvider(IServiceCollection services)
-        {
-            var preHeatList = RuntimeHelper.Discovery().FirstOrDefault(type => type.GetName().Name == "BDMall.BLL")?
-                    .GetTypes()?.Where(type => type.Name.StartsWith("PreHeat"))?.ToArray();
-
-            foreach (var item in preHeatList)
-            {
-                services.AddScoped(item);
-            }
-            //return services;
         }
     }
 }

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
-
-namespace BDMall.Model
+﻿namespace BDMall.Model
 {
     public class CodeMaster : BaseEntity<int>
     {

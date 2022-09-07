@@ -69,15 +69,15 @@ namespace Web.Swagger
             return services;
         }
 
-        public static IServiceCollection AddSwagger(this IServiceCollection services,string basePath)
-        {
-            services.AddSwaggerGen(c =>
-            {                
-                if (File.Exists(basePath))
-                    c.IncludeXmlComments(basePath);
-            });
-            return services;
-        }
+        //public static IServiceCollection AddSwagger(this IServiceCollection services,string basePath)
+        //{
+        //    services.AddSwaggerGen(c =>
+        //    {                
+        //        if (File.Exists(basePath))
+        //            c.IncludeXmlComments(basePath);
+        //    });
+        //    return services;
+        //}
 
         /// <summary>
         /// 注册Swagger

@@ -1,11 +1,4 @@
-﻿
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using BDMall.Enums;
-
-
-namespace BDMall.Model
+﻿namespace BDMall.Model
 {
     public class Member : BaseAccount<Guid>
     {

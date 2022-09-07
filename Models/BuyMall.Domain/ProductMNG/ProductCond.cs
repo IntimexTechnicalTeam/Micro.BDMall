@@ -1,8 +1,4 @@
-﻿using System;
-using System.ComponentModel;
-using Web.Framework;
-
-namespace BDMall.Domain
+﻿namespace BDMall.Domain
 {
     public class ProductCond : PageInfo
     {

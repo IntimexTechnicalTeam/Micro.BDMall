@@ -1,15 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
-using System;
-using System.Linq;
-using Web.Framework;
-using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Data.SqlClient;
-
-namespace BDMall.Repository
+﻿namespace BDMall.Repository
 {
-
     public abstract class BaseRepository : IBaseRepository
     {
         #region 同步

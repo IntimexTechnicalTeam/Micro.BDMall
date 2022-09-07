@@ -1,11 +1,4 @@
-﻿
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Reflection;
-using System.Text;
-
-namespace Web.Framework
+﻿namespace Web.Framework
 {
     /// <summary>
     /// 对象转换

@@ -1,11 +1,4 @@
-﻿using Autofac;
-using Autofac.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Web.AutoFac
+﻿namespace Web.AutoFac
 {
     /// <summary>
     /// 控制台程序的注入工厂类,只要控制台注册CustomAutofacServiceProviderFactory，将会完成CreateServiceProvider

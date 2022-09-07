@@ -1,23 +1,4 @@
-﻿
-using BDMall.Domain;
-using BDMall.Enums;
-using BDMall.Model;
-using BDMall.Repository;
-using BDMall.Utility;
-using Intimex.Common;
-using MediatR;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Web.Framework;
-using Web.Jwt;
-using Web.MQ;
-
-namespace BDMall.BLL
+﻿namespace BDMall.BLL
 {
     /// <summary>
     /// 业务逻辑层继承此类

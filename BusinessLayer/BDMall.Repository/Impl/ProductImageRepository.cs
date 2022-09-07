@@ -1,12 +1,4 @@
-﻿using BDMall.Enums;
-using BDMall.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BDMall.Repository
+﻿namespace BDMall.Repository
 {
     public class ProductImageRepository : PublicBaseRepository, IProductImageRepository
     {

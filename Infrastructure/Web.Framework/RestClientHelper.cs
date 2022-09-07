@@ -1,131 +1,38 @@
-﻿using Newtonsoft.Json;
-using RestSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace Web.Framework
 {
     public class RestClientHelper
     {
-        static RestClient client;
-        public RestClientHelper() {
-
-            client = new RestClient();
-        }
-
-        public static async Task<T> PostAsync<T>(string url, ICollection<KeyValuePair<string, string>> param = null, ICollection<KeyValuePair<string, string>> headers = null)
+        public static async Task<OutT> HttpPostAsync<OutT>(string url, object T, AuthorizationType authorizationType, string token = "", string jsonType = "application/json; charset=utf-8")
         {
-            client.BaseUrl = new Uri(url);
-
-            var request = new RestRequest(Method.POST);
-
-            if (param != null && param.Any())
-            {
-                foreach (var item in param)
-                {
-                    request.AddParameter(item.Key, item.Value);
-                }
-            }
-
-            if (headers != null && headers.Any())
-            {
-                foreach (var item in headers)
-                {
-                    request.AddHeader(item.Key, item.Value);
-                }
-            }
-
-            var response =await client.ExecuteAsync<T>(request);
-            var result = JsonConvert.DeserializeObject<T>(response.Content);
-
+            var result = await ExecuteClientAsync<OutT>(Method.POST, url, T, authorizationType, token, jsonType);
             return result;
         }
 
-        public static async Task<T> GetAsync<T>(string url, ICollection<KeyValuePair<string, string>> param = null, ICollection<KeyValuePair<string, string>> headers = null)
+        public static async Task<OutT> HttpGetAsync<OutT>(string url, object T, AuthorizationType authorizationType, string token = "", string jsonType = "application/json; charset=utf-8")
         {
-            client.BaseUrl = new Uri(url);
-
-            var request = new RestRequest(Method.GET);
-
-            if (param != null && param.Any())
-            {
-                foreach (var item in param)
-                {
-                    request.AddUrlSegment(item.Key, item.Value);
-                }
-            }
-
-            if (headers != null && headers.Any())
-            {
-                foreach (var item in headers)
-                {
-                    request.AddHeader(item.Key, item.Value);
-                }
-            }
-
-            var response = await client.ExecuteAsync<T>(request);
-            var result = JsonConvert.DeserializeObject<T>(response.Content);
-
+            var result = await ExecuteClientAsync<OutT>(Method.GET, url, T, authorizationType, token, jsonType);
             return result;
         }
 
-        public static  T Post<T>(string url, ICollection<KeyValuePair<string, string>> param = null, ICollection<KeyValuePair<string, string>> headers = null)
+        static async Task<OutT> ExecuteClientAsync<OutT>(Method method, string url, object T, AuthorizationType authorizationType, string token = "", string jsonType = "application/json; charset=utf-8")
         {
-            client.BaseUrl = new Uri(url);
+            var client = new RestClient(url);
 
-            var request = new RestRequest(Method.POST);
+            var request = new RestRequest(method).AddDecompressionMethod(System.Net.DecompressionMethods.GZip);
 
-            if (param != null && param.Any())
-            {
-                foreach (var item in param)
-                {
-                    request.AddParameter(item.Key, item.Value);
-                }
-            }
+            if (T != null) request.AddParameter(jsonType, JsonUtil.ToJson(T), ParameterType.RequestBody);
+            if (!string.IsNullOrEmpty(token)) request.AddHeader("Authorization", $"{authorizationType} {token}");
 
-            if (headers != null && headers.Any())
-            {
-                foreach (var item in headers)
-                {
-                    request.AddHeader(item.Key, item.Value);
-                }
-            }
-
-            var response =  client.Execute<T>(request);
-            var result = JsonConvert.DeserializeObject<T>(response.Content);
-
+            IRestResponse response = await client.ExecuteAsync(request);
+            var result = JsonUtil.JsonToObject<OutT>(response.Content);
             return result;
         }
+    }
 
-        public static  T Get<T>(string url, ICollection<KeyValuePair<string, string>> param = null, ICollection<KeyValuePair<string, string>> headers = null)
-        {
-            client.BaseUrl = new Uri(url);
-
-            var request = new RestRequest(Method.GET);
-
-            if (param != null && param.Any())
-            {
-                foreach (var item in param)
-                {
-                    request.AddUrlSegment(item.Key, item.Value);
-                }
-            }
-
-            if (headers != null && headers.Any())
-            {
-                foreach (var item in headers)
-                {
-                    request.AddHeader(item.Key, item.Value);
-                }
-            }
-
-            var response =  client.Execute<T>(request);
-            var result = JsonConvert.DeserializeObject<T>(response.Content);
-
-            return result;
-        }
+    public enum AuthorizationType
+    {
+        Bearer,
+        Basic
     }
 }

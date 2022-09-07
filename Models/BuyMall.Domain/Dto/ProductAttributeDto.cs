@@ -1,14 +1,4 @@
-﻿using BDMall.Enums;
-using BDMall.Resources;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Web.Framework;
-
-namespace BDMall.Domain
+﻿namespace BDMall.Domain
 {
     public class ProductAttributeDto
     {

@@ -1,16 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Common;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Data.SqlClient;
-
-namespace BDMall.Repository
+﻿namespace BDMall.Repository
 {
     public static class EntityFrameworkCoreExtension
     {

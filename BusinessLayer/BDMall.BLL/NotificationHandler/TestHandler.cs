@@ -1,12 +1,5 @@
-﻿using BDMall.Domain;
-using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Web.Framework;
+﻿using System.Threading;
+using MemberInfo = BDMall.Domain.MemberInfo;
 
 namespace BDMall.BLL
 {

@@ -1,18 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-
-namespace BDMall.Model
+﻿namespace BDMall.Model
 {
     /// <summary>
     /// 角色\用户组别
     /// </summary>
-  
+
     public class Role : BaseEntity<Guid>
     {
         public Role()

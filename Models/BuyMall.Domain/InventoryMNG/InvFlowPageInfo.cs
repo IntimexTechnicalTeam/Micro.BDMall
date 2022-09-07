@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BDMall.Domain
+﻿namespace BDMall.Domain
 {
     /// <summary>
     /// 庫存流動報告頁面信息

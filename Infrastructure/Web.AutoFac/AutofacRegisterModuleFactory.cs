@@ -1,13 +1,4 @@
-﻿using Autofac;
-using Autofac.Extras.DynamicProxy;
-using BDMall.BLL;
-using BDMall.Repository;
-using MediatR;
-using System.Linq;
-using System.Reflection;
-using Web.Framework;
-
-namespace Web.AutoFac
+﻿namespace Web.AutoFac
 {
     /// <summary>
     /// autofac注入工厂类

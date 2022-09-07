@@ -1,18 +1,4 @@
-﻿using BDMall.Domain;
-using BDMall.ECShip.Model;
-using BDMall.Enums;
-using BDMall.Model;
-using BDMall.Repository;
-using Intimex.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Web.Framework;
-using WS.ECShip.Model;
-
-namespace BDMall.BLL
+﻿namespace BDMall.BLL
 {
     public class SettingBLL : BaseBLL, ISettingBLL
     {

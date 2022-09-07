@@ -1,15 +1,4 @@
-﻿using BDMall.Enums;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-
-namespace BDMall.Model
+﻿namespace BDMall.Model
 {
     /// <summary>
     /// 退換單圖片

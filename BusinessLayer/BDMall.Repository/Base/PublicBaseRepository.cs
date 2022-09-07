@@ -1,19 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BDMall.Domain;
-using BDMall.Enums;
-using BDMall.Model;
-using BDMall.Utility;
-using Intimex.Common;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using Web.Framework;
-using Web.Jwt;
-
-namespace BDMall.Repository
+﻿namespace BDMall.Repository
 {
     public class PublicBaseRepository
     {

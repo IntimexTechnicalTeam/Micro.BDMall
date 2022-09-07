@@ -1,17 +1,4 @@
-﻿using BDMall.Domain;
-using BDMall.Enums;
-using BDMall.Model;
-using BDMall.Repository;
-using BDMall.Utility;
-using Intimex.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BDMall.BLL
+﻿namespace BDMall.BLL
 {
     public class PaymentGatewayBLL : BaseBLL, IPaymentGatewayBLL
     {

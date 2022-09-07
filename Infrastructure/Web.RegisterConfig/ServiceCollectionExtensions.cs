@@ -37,6 +37,13 @@ namespace Web.RegisterConfig
             return services;
         }
 
+        /// <summary>
+        /// 注册HostedService服务
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="services"></param>
+        /// <param name="config"></param>
+        /// <returns></returns>
         public static IServiceCollection AddServices<T>(this IServiceCollection services, IConfiguration config)
         {
 

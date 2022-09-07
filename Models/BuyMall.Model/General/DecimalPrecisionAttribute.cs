@@ -1,7 +1,4 @@
-﻿using System;
-
-
-namespace BDMall.Model
+﻿namespace BDMall.Model
 {
     /// <summary>
     /// decimal類型數據精度自定義屬性
