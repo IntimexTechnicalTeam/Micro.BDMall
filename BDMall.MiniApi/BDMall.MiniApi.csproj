@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.8" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="1.6.5" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Infrastructure\BDMall.Runtime\BDMall.Runtime.csproj" />
+    <ProjectReference Include="..\Infrastructure\BDMall.Utility\BDMall.Utility.csproj" />
+    <ProjectReference Include="..\Infrastructure\Intimex.Common\Intimex.Common.csproj" />
+    <ProjectReference Include="..\Infrastructure\Web.AutoFac\Web.AutoFac.csproj" />
+    <ProjectReference Include="..\Infrastructure\Web.Framework\Web.Framework.csproj" />
+    <ProjectReference Include="..\Infrastructure\Web.Jwt\Web.Jwt.csproj" />
+    <ProjectReference Include="..\Infrastructure\Web.Mvc\Web.Mvc.csproj" />
+    <ProjectReference Include="..\Infrastructure\Web.Swagger\Web.Swagger.csproj" />
+  </ItemGroup>
+
+</Project>

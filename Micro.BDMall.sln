@@ -61,6 +61,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BDMall.Resources", "BDMall.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HandleItemExpireService", "MonitorService\HandleItemExpireService\HandleItemExpireService.csproj", "{6746F152-E59B-4738-8829-8F9284271933}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BDMall.MiniApi", "BDMall.MiniApi\BDMall.MiniApi.csproj", "{D4241558-9D1A-45CD-BD19-3A27228EA717}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -218,6 +220,12 @@ Global
 		{6746F152-E59B-4738-8829-8F9284271933}.Debug2|Any CPU.Build.0 = Debug|Any CPU
 		{6746F152-E59B-4738-8829-8F9284271933}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6746F152-E59B-4738-8829-8F9284271933}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4241558-9D1A-45CD-BD19-3A27228EA717}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4241558-9D1A-45CD-BD19-3A27228EA717}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4241558-9D1A-45CD-BD19-3A27228EA717}.Debug2|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4241558-9D1A-45CD-BD19-3A27228EA717}.Debug2|Any CPU.Build.0 = Debug|Any CPU
+		{D4241558-9D1A-45CD-BD19-3A27228EA717}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4241558-9D1A-45CD-BD19-3A27228EA717}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

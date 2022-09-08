@@ -19,6 +19,9 @@
 
             //var userService = this.Services.Resolve<IUserService>();
 
+            var aa = this.Services.Resolve<IProductBLL>();
+
+
             // userService.GetUser();
             Console.WriteLine(msg);
             //return Task.CompletedTask;
