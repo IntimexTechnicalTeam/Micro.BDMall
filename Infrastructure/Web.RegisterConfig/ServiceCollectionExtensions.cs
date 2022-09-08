@@ -43,7 +43,7 @@ namespace Web.RegisterConfig
         /// <param name="services"></param>
         /// <param name="config"></param>
         /// <returns></returns>
-        public static IServiceCollection AddServices<T>(this IServiceCollection services, IConfiguration config, params string[] namespaceList)
+        public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration config)
         {
 
             ////找到当前的程序集  MethodBase.GetCurrentMethod().DeclaringType.Namespace
