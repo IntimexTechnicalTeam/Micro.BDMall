@@ -18,7 +18,12 @@ using Web.Jwt;
 namespace Web.Mvc
 {
     public class UserAuthorizeAttribute  : ActionFilterAttribute
-    {       
+    {
+        /// <summary>
+        /// 是否登录检查标识
+        /// </summary>
+        public bool IsLogin { get; set; } 
+
         /// <summary>
         /// 鉴权
         /// </summary>
@@ -27,7 +32,7 @@ namespace Web.Mvc
         /// <returns></returns>
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            if (await BaseAuthority.CheckTokenAuthorize(context, next))
+            if (await BaseAuthority.CheckTokenAuthorize(context, next, IsLogin))
             {
                 await next();
             }          

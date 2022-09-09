@@ -14,14 +14,15 @@ using Web.Jwt;
 namespace Web.Mvc
 {
     public  class BaseAuthority
-    {      
+    {
         /// <summary>
         /// 检查Token
         /// </summary>
         /// <param name="context"></param>
         /// <param name="next"></param>
+        /// <param name="IsLogin">是否登录检查标识</param>
         /// <returns></returns>
-        public static async Task<bool> CheckTokenAuthorize(ActionExecutingContext context, ActionExecutionDelegate next)
+        public static async Task<bool> CheckTokenAuthorize(ActionExecutingContext context, ActionExecutionDelegate next,bool IsLogin=false)
         {
             var  jwtToken = context.HttpContext.RequestServices.GetService(typeof(IJwtToken)) as IJwtToken;
             var  Configuration = context.HttpContext.RequestServices.GetService(typeof(IConfiguration)) as IConfiguration;
@@ -84,6 +85,11 @@ namespace Web.Mvc
                 return flag;
             }
 
+            //这里其实可以检查用户是否登录了
+            if (IsLogin)
+            { 
+                //检查redis数据或数据库
+            }
 
             return flag;
         }
