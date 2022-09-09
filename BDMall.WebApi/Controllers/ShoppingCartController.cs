@@ -5,6 +5,7 @@ using BDMall.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Web.Framework;
 using Web.Mvc;
@@ -32,8 +33,8 @@ namespace BDMall.WebApi.Controllers
         {
             var result = new SystemResult<ShopCartInfo> { Succeeded = true };
             result.Succeeded = CurrentUser?.IsLogin ?? false;
-            if (!result.Succeeded)return result;
-
+            if (!result.Succeeded) throw new BLException("请登录");
+             
             string key = $"{CacheKey.ShoppingCart}_{CurrentUser.UserId}";
             //读缓存
             var cacheData = await RedisHelper.GetAsync<ShopCartInfo>(key);
@@ -54,12 +55,7 @@ namespace BDMall.WebApi.Controllers
         {
             SystemResult result = new SystemResult { Succeeded = true };
             result.Succeeded = CurrentUser?.IsLogin ?? false;
-            if (!result.Succeeded)
-            {
-                result.ReturnValue = OrderErrorEnum.NeedLogin;
-                result.Message = "";
-                return result;
-            }
+            if (!result.Succeeded) throw new BLException("请登录");
 
             result = await shoppingCartBLL.AddtoCartAsync(item);
             string key = $"{CacheKey.ShoppingCart}_{CurrentUser.UserId}";
@@ -80,14 +76,8 @@ namespace BDMall.WebApi.Controllers
             SystemResult result = new SystemResult();
 
             result.Succeeded = CurrentUser?.IsLogin ?? false;
-            if (!result.Succeeded)
-            {
-                result.ReturnValue = OrderErrorEnum.NeedLogin;
-                result.Message = "";
-                return result;
-            }
-
-           result = await shoppingCartBLL.UpdateCartItemAsync(id, qty);
+            if (!result.Succeeded) throw new BLException("请登录");
+            result = await shoppingCartBLL.UpdateCartItemAsync(id, qty);
 
             //直接删除
             string key = $"{CacheKey.ShoppingCart}_{CurrentUser.UserId}";
@@ -107,13 +97,7 @@ namespace BDMall.WebApi.Controllers
             SystemResult result = new SystemResult();
 
             result.Succeeded = CurrentUser?.IsLogin ?? false;
-            if (!result.Succeeded)
-            {
-                result.ReturnValue = OrderErrorEnum.NeedLogin;
-                result.Message = "";
-                return result;
-            }
-
+            if (!result.Succeeded) throw new BLException("请登录");
             result = await shoppingCartBLL.RemoveFromCart(id);
 
             //直接删除

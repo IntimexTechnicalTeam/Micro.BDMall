@@ -60,7 +60,7 @@ namespace Web.Mvc
 
             string userId = "";
             //检查token
-            TokenType tokenType = jwtToken.ValidatePlus(token, a => a["iss"] == Configuration["Jwt:Issuer"] && a["aud"] == Configuration["Jwt:Audience"], action => { userId = action["UserId"]; });
+            TokenType tokenType = jwtToken.ValidatePlus(token, a => a["iss"] == Configuration["Jwt:Issuer"] && a["aud"] == Configuration["Jwt:Audience"], action => { userId = action["UserId"]; });         
             if (tokenType == TokenType.Fail)
             {
                 context.Result = new JsonResult(new SystemResult { Succeeded = false, Message = "token验证失败" });

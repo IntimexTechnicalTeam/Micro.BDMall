@@ -297,6 +297,27 @@ namespace Web.Jwt
             return TokenType.Ok;
         }
 
+        public TokenType Validate(string encodeJwt)
+        {
+            var token = new JwtSecurityTokenHandler().ReadJwtToken(encodeJwt);
+             
+            var hs256 = new HMACSHA256(Encoding.ASCII.GetBytes(this.configuration["Jwt:SecretKey"]));
+            //验证签名是否正确（把用户传递的签名部分取出来和服务器生成的签名匹配即可）
+            if (!string.Equals(token.RawSignature, Base64UrlEncoder.Encode(hs256.ComputeHash(Encoding.UTF8.GetBytes(string.Concat(token.RawHeader, ".", token.RawPayload))))))
+            {
+                return TokenType.Fail;
+            }
+
+            //其次验证是否在有效期内（必须验证）
+            var now = ToUnixEpochDate(DateTime.UtcNow);
+            if (!(now >= long.Parse(token.Claims.FirstOrDefault(x => x.Type == "nbf").Value) && now < long.Parse(token.Claims.FirstOrDefault(x => x.Type == "exp").Value)))
+            {
+                return TokenType.Expired;
+            }
+
+            return TokenType.Ok;
+        }
+
         private long ToUnixEpochDate(DateTime date) => (long)Math.Round((date.ToUniversalTime() - new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero)).TotalSeconds);
     }
 

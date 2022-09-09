@@ -54,6 +54,8 @@ namespace Web.Jwt
 
         bool Validate(string encodeJwt, Func<Dictionary<string, string>, bool> validatePayLoad = null);
 
+        TokenType Validate(string encodeJwt);
+
         bool ValidatePayLoad(string encodeJwt, out Dictionary<string, string> outpayLoad, Func<Dictionary<string, string>, bool> validatePayLoad = null);
 
         TokenType ValidatePlus(string encodeJwt, Func<Dictionary<string, string>, bool> validatePayLoad, Action<Dictionary<string, string>> action);
