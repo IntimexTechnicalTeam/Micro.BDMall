@@ -85,10 +85,16 @@ namespace Web.Mvc
                 return flag;
             }
 
-            //这里其实可以检查用户是否登录了
-            if (IsLogin)
-            { 
-                //检查redis数据或数据库
+            //检查用户是否登录
+            ///if (IsLogin)
+            {
+                if (!bool.Parse(payload["IsLogin"]))
+                {
+                    context.Result = new JsonResult(new SystemResult { Succeeded = false, Message = "请登录" });
+                    context.HttpContext.Response.StatusCode = 401;
+                    flag = false;
+                    return flag;
+                }
             }
 
             return flag;

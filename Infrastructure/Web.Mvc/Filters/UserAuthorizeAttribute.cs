@@ -19,6 +19,12 @@ namespace Web.Mvc
 {
     public class UserAuthorizeAttribute  : ActionFilterAttribute
     {
+        //不能打开构造函数，否则全局注入UserAuthorizeAttribute后，会抛异常
+        //public UserAuthorizeAttribute(bool isLogin)
+        //{
+        //    IsLogin = isLogin;
+        //}
+
         /// <summary>
         /// 是否登录检查标识
         /// </summary>
