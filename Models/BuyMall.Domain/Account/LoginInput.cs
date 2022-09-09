@@ -9,17 +9,17 @@ namespace BDMall.Domain
         /// <summary>
         /// 账号
         /// </summary>
-        [Required(ErrorMessage ="账号不能为空")]
-        public string Account { get; set; }
+        [Required(ErrorMessage = "账号不能为空")]
+        public string Account { get; set; } = "";
 
         /// <summary>
         /// 密码
         /// </summary>
         [Required(ErrorMessage = "密码不能为空")]
-        public string Password { get; set; }
+        public string Password { get; set; } = "";
 
         public string Email { get; set; } = "";
 
-        public string VerifyCode { get; set; }
+        public string VerifyCode { get; set; } = "123456";
     }
 }

@@ -1,19 +1,21 @@
 ﻿global using Autofac;
 global using Autofac.Extensions.DependencyInjection;
+global using BDMall.WebApi;
 global using Microsoft.AspNetCore.Builder;
 global using Microsoft.AspNetCore.Hosting;
 global using Microsoft.AspNetCore.Http;
 global using Microsoft.AspNetCore.Mvc;
+global using Microsoft.AspNetCore.Mvc.ApplicationModels;
 global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.DependencyInjection.Extensions;
 global using Microsoft.Extensions.Hosting;
 global using Newtonsoft.Json.Serialization;
 global using NLog.Extensions.Logging;
-global using System.IO;
 global using System.Linq;
-global using System.Reflection;
 global using Web.AutoFac;
 global using Web.Framework;
 global using Web.Mvc;
+global using Web.Mvc.Filters;
 global using Web.Swagger;
-global using BDMall.WebApi;
+

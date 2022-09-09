@@ -1,25 +1,31 @@
 ﻿namespace Web.Framework
 {
+    [Serializable]
+    [DataContract]
     public class SystemResult
     {
-        //[JsonProperty(PropertyName = "Succeeded")]
+        [DataMember]
         public bool Succeeded { get; set; } = false;
 
-        //[JsonProperty(PropertyName = "Message")]
+        [DataMember]
         public string Message { get; set; }
 
-       // [JsonProperty(PropertyName = "ReturnValue")]
+        [DataMember]
         public object ReturnValue { get; set; }
 
     }
 
+    /// <summary>
+    /// 强烈建议使用泛型对象
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     [Serializable]
     [DataContract]
     public class SystemResult<T> : SystemResult
     {
 
         [DataMember(Name = "ReturnValue")]
-        public virtual T ReturnValue { get; set; }
+        public new virtual T ReturnValue { get; set; } = default(T);
  
     }
 

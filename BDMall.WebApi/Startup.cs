@@ -1,3 +1,4 @@
+
 namespace BDMall.WebApi
 {
     public static class Startup
@@ -7,7 +8,7 @@ namespace BDMall.WebApi
         {
             AddControllers(builder.Services);
             ConfigureApiBehaviorOptions(builder.Services);
-
+            
             //追加API 参数描述
             SwaggerExtension.AddSwagger(builder.Services, "BDMall.WebApi.xml", "BDMall.Domain.xml");
 
@@ -16,6 +17,7 @@ namespace BDMall.WebApi
                 //options.Filters.Add(typeof(UserAuthorizeAttribute));            //全局鉴权
                 options.EnableEndpointRouting = false;
             });
+            builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IApplicationModelProvider, ProduceResponseTypeModelProvider>());
 
             Web.Framework.AutoMapperConfiguration.InitAutoMapper();
             builder.Services.AddSingleton(builder.Configuration);
